@@ -7,8 +7,8 @@
  - The second allows to quickly write a Spark SQL query with additions like LiveQuery, time windowing, in-memory accumulator and more.
  - The third enables integrating custom code written in Scala or via Azure functions.
 
-You can get started locally for Windows, macOs and Linux on the [[Local-mode-with-Docker]].  <br/>
-To deploy to Azure, you can use the ARM template; see instructions here [[Cloud-deployment]].<br/>
+You can get started locally for Windows, macOs and Linux following [these instructions](https://github.com/Microsoft/data-accelerator/wiki/Local-mode-with-Docker)  <br/>
+To deploy to Azure, you can use the ARM template; see instructions [deploy to Azure](Cloud-deployment).<br/>
 
 The [`data-accelerator`](https://github.com/Microsoft/data-accelerator/) repository contains everything needed to set up an end-to-end data pipeline.  There are many ways you can participate in the project:
  - [Submit bugs and requests](https://github.com/Microsoft/data-accelerator/issues)
