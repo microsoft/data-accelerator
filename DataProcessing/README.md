@@ -1,20 +1,20 @@
 Data Accelerator for Spark Engine
 
-## Projects Structure
+# Project Structure
 
-#Core
+## Core
 Interface and classes definition for contracts of the Data Accelerator Engine
 
-#Host
+## Host
 Spark-specific app jar for Data Accelerator
 
-#Samples
+## Samples
 Examples for UDFs and UDAFs in Scala
 
-#Utility
+## Utility
 Common classes and singleton helps used across projects
 
-##Properties
+# Properties
 
 Some basic rules:
 * Property names are akin to a full JSON path to locate a leaf in the JSON object
