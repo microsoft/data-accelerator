@@ -2,7 +2,7 @@ Unleash the full power of [Data Accelerator](Data-accelerator) by deploying it i
 
 # Prerequisites
  - Install [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
- - Download the scripts and templates via [this link](https://github.com/Microsoft/data-accelerator/DeploymentCloud/)
+ - Download the scripts and templates via [this link](https://github.com/Microsoft/data-accelerator/tree/stable/DeploymentCloud)
 
 # Deployment
 The deployment scripts require a minimum of configurations before launching the steps to set up the environment.  You can do so by following these steps:
