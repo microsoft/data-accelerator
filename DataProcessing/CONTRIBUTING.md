@@ -13,25 +13,24 @@ From a prompt:
 
 examples:
 ```
-> mvn package -f datax-core
-> mvn package -f datax-keyvault
-> mvn package -f datax-utility
-> mvn package -f datax-host
-> mvn package -f datax-udf-samples
+ mvn package -f datax-core
+ mvn package -f datax-keyvault
+ mvn package -f datax-utility
+ mvn package -f datax-host
+ mvn package -f datax-udf-samples
 ```
 
 
 ## Publish to Maven Repo
-<TODO replace with external repo>
 
 > mvn deploy -f project-name
 
 examples:
 ```
-> mvn deploy -f datax-core
-> mvn deploy -f datax-utility
-> mvn deploy -f datax-host
-> mvn deploy -f datax-udf-samples
+ mvn deploy -f datax-core
+ mvn deploy -f datax-utility
+ mvn deploy -f datax-host
+ mvn deploy -f datax-udf-samples
 ```
 
 ## Publish to Storage Account to cluster
