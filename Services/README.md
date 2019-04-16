@@ -10,7 +10,7 @@ Definition of APIs and Constants across projects
 Provides schema and live query services to Flow editing experience
 
 # Gateway
-Manages entry into other services by authenticating and validating roles.
+Manages entry into other services by authenticating and validating roles
 
 # Metrics
 Pushes metrics data into the Redis cache so it can be consummed by the Web Portal
