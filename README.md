@@ -34,7 +34,7 @@ See the [wiki](https://github.com/Microsoft/data-accelerator/wiki) pages for fur
 # Contributing
 If you are interested in fixing issues and contributing to the code base, we would love to partner with you. Try things out, join in the design conversations and make pull requests. 
 * [Download the latest stable or in-development releases](https://github.com/Microsoft/data-accelerator/wiki)
-* [Build Data Accelerator source code](CONTRIBUTING.md#build-and-run)
+* [Build and Debug Data Accelerator source code](CONTRIBUTING.md#build-and-run)
 
 # Feedback
 * Request new features on [GitHub](https://github.com/Microsoft/data-accelerator/blob/master/CONTRIBUTING.md)
