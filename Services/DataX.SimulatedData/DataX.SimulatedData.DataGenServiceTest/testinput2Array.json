@@ -1,0 +1,52 @@
+﻿{
+  "rulesCounterRefreshInSeconds": 180,
+  "dataSchema": [
+    {
+      "dataTypeName": "sensordata",
+      "simulationPeriodInSeconds": 5,
+      "numEventsPerBatch": 150,
+      "fields": [
+        {
+          "name": "msgschema",
+          "type": "struct",
+          "properties": [
+            {
+              "name": "msgversion",
+              "type": "int",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "name": "sensordetails",
+          "type": "struct",
+          "properties": [
+            {
+              "name": "sensor1",
+              "type": "array",
+              "length": 3,
+              "minRange": -2,
+              "maxRange": 2
+            },
+            {
+              "name": "sensor2",
+              "type": "array",
+              "length": 5,
+              "minRange": 0,
+              "maxRange": 10
+            },
+            {
+              "name": "sensor3",
+              "type": "array",
+              "length": 10,
+              "minRange": 0,
+              "maxRange": 150
+            }
+          ]
+        }
+      ],
+      "rulesData": [
+      ]
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+/*
+ *********************************************************************
+ Copyright (c) Microsoft Corporation.  All rights reserved.
+ Licensed under the MIT License
+ *********************************************************************
+*/
+
+/* Office UI Fabric Search Box overrides */
+.ms-SearchBox {
+    border-color: #c8c8c8 !important;
+    padding-left: 4px !important;
+    background-color: white !important;
+}
+
+.ms-SearchBox.is-active {
+    border-color: #0078d7 !important;
+    padding-left: 8px !important;
+}
+
+.filter-box {
+    width: 300px;
+    min-width: 200px;
+}
+
+.filter-box > input {
+    width: 200px;
+}
+
+/* Office UI Fabric Message Bar overrides */
+.ms-MessageBar-content {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+/* Office UI Fabric DetailsList overrides */
+.ms-DetailsRow.is-selected {
+    background-color: #deecf9 !important;
+}
+
+/* Office UI Fabric Dropdown overrides */
+.ms-Dropdown-title {
+    border-color: #c8c8c8 !important;
+}
+
+/* Office UI Fabric Text Field overrides */
+.ms-TextField-fieldGroup {
+    border-color: #c8c8c8 !important;
+}
+
+/* List item clickable style */
+.clickable-noselect {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Vertical Tabs Styles */
+.vertical-tabs {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.vertical-tabs-items {
+    width: 200px;
+    min-width: 200px;
+    margin-top: 30px;
+}
+
+.vertical-tabs-item {
+    padding: 18px;
+    margin-bottom: 12px;
+    font-weight: 600;
+    font-size: 12px;
+    border-left: 10px solid orange;
+    color: #58666e;
+    background-color: #dadada;
+}
+
+.vertical-tabs-item.selected {
+    color: #0078d4;
+    background-color: #f8f8f8;
+}
+
+.vertical-tabs-item.complete {
+    border-left: 10px solid #107c10;
+}
+
+.vertical-tabs-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Nav Bar Styles */
+.top-nav-page-link a:hover {
+    text-decoration: none;
+}

@@ -1,0 +1,4 @@
+﻿Conflict in schema. Key with path '.Id' has different types
+Conflict in schema. Key with path '.Address.City' has different types
+Conflict in schema. Key with path '.Name' has different types
+Conflict in schema. Key with path '.Address' has different types

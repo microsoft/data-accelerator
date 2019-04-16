@@ -1,0 +1,51 @@
+﻿{
+  "name": "${sparkJobName}",
+  "cluster": "${sparkClusterName}",
+  "options": {
+    "name": "${sparkJobName}",
+    "file": "wasbs:///datax/bin/datax-host_2.11-1.0.0-SNAPSHOT.jar",
+    "className": "datax.app.DataXDirect",
+    "args": [
+      "conf=${sparkJobConfigFilePath}",
+      "driverLogLevel=${sparkJobDriverLogLevel}"
+    ],
+    "jars": [
+      "wasbs:///datax/bin/datax-core_2.11-1.0.0-SNAPSHOT.jar",
+      "wasbs:///datax/bin/datax-utility_2.11-1.0.0-SNAPSHOT.jar",
+      "wasbs:///datax/bin/datax-keyvault_2.11-1.0.0-SNAPSHOT-with-dependencies.jar",
+      "wasbs:///datax/bin/applicationinsights-core-2.2.1.jar",
+      "wasbs:///datax/bin/azure-documentdb-1.16.1.jar",
+      "wasbs:///datax/bin/azure-eventhubs-1.2.1.jar",
+      "wasbs:///datax/bin/azure-eventhubs-spark_2.11-2.3.6.jar",
+      "wasbs:///datax/bin/azure-keyvault-webkey-1.1.jar",
+      "wasbs:///datax/bin/java-uuid-generator-3.1.5.jar",
+      "wasbs:///datax/bin/proton-j-0.27.1.jar",
+      "wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar"
+    ],
+    "driverMemory": "6400m",
+    "executorCores": 5,
+    "numExecutors": "${sparkJobNumExecutors}",
+    "driverCores": 2,
+    "executorMemory": "${sparkJobExecutorMemory}",
+    "conf": {
+      "spark.executor.extraJavaOptions": "-verbose:gc -XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintFlagsFinal -XX:+PrintReferenceGC -XX:+PrintAdaptiveSizePolicy -XX:+UnlockDiagnosticVMOptions -XX:+G1SummarizeConcMark -XX:+AlwaysPreTouch -XX:+PrintCodeCache -XX:ReservedCodeCacheSize=240m -XX:+UseCodeCacheFlushing",
+      "spark.yarn.am.attemptFailuresValidityInterval": "1h",
+      "spark.yarn.executor.failuresValidityInterval": "1h",
+      "spark.blacklist.enabled": "true",
+      "spark.driver.userClassPathFirst": true,
+      "spark.executor.userClassPathFirst": true,
+      "spark.speculation": true,
+      "spark.speculation.multiplier": 3,
+      "spark.speculation.quantile": 0.9,
+      "spark.executorEnv.DATAX_DEFAULTVAULTNAME": "${sparkKeyVaultName}",
+      "spark.executorEnv.DATAX_APPINSIGHT_KEY": "${applicationInsightKey}",
+      "spark.executorEnv.DATAX_APPNAME": "${sparkJobName}",
+      "spark.executorEnv.DATAX_LOGLEVEL": "${sparkJobExecutorLogLevel}",
+      "spark.yarn.appMasterEnv.DATAX_DEFAULTVAULTNAME": "dataxsparkkeyvault",
+      "spark.yarn.appMasterEnv.DATAX_APPINSIGHT_KEY": "${applicationInsightKey}",
+      "spark.yarn.appMasterEnv.DATAX_APPNAME": "${sparkJobName}",
+      "spark.yarn.appMasterEnv.DATAX_LOGLEVEL": "${sparkJobDriverLogLevel}"
+    }
+  },
+  "syncResult": null
+}

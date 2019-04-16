@@ -1,0 +1,53 @@
+﻿--DataXQuery--
+  T1 = SELECT
+        *,
+        filterNull(
+            Array(
+                IF(
+                    device.Temperature < 40,
+                    MAP(
+                        'ruleId',
+                        'R60',
+                        'ruleDescription',
+                        'Detects cold condition',
+                        'severity',
+                        'Critical',
+                        'Tag',
+                        'Cold'
+                    ),
+                    NULL
+                )  
+            )
+        ) AS Rules 
+    FROM
+        DataXProcessedInput
+    
+    
+--DataXQuery--
+  sa1_1_1 = SELECT
+        *,
+        'R60' AS ruleId,
+        'Detects cold condition' AS ruleDescription,
+        'Critical' AS severity,
+        'Cold' AS Tag 
+    FROM
+        DataXProcessedInput  
+    WHERE
+        device.Temperature < 40
+    
+--DataXQuery--
+  sa2_1_1 = SELECT
+        * 
+    FROM
+        sa1_1_1
+    
+--DataXQuery--
+  ColdAlert = SELECT
+        DISTINCT DATE_TRUNC('second',
+        current_timestamp()) AS EventTime,
+        'ColdAlert' AS MetricName,
+        0 as Metric,
+        'P3' AS Product,
+        'Detects cold condition' AS Pivot1 
+    FROM
+        sa1_1_1

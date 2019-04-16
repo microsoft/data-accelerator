@@ -1,0 +1,42 @@
+﻿--DataXStates--
+CREATE TABLE iotdevicesample_GarageDoor_accumulated
+    (deviceId long, deviceType string, homeId long, eventTime Timestamp, status long);
+
+--DataXQuery--
+GarageDoorAccumalator = SELECT 
+                            deviceDetails.deviceId,
+                            deviceDetails.deviceType,
+                            deviceDetails.homeId,
+                            deviceDetails.eventTime,
+                            deviceDetails.status
+                        FROM DataXProcessedInput
+                        WHERE deviceDetails.deviceType = 'GarageDoorLock'
+                        UNION ALL
+                        SELECT 
+                            deviceId,
+                            deviceType,
+                            homeId,
+                            eventTime,
+                            status
+                        FROM iotdevicesample_GarageDoor_accumulated
+                        WHERE hour(eventTime) = hour(current_timestamp());
+
+
+--DataXQuery--
+  iotdevice_GarageDoor_accumulated = SELECT
+        deviceId,
+        deviceType,
+        homeId,
+        eventTime,
+        status  
+    FROM
+        GarageDoorAccumalator;
+
+--DataXQuery--
+ House150Data = SELECT COUNT(DISTINCT eventTime) AS totalTime                   
+                FROM iotdevice_GarageDoor_accumulated                  
+                WHERE homeId = 150 AND status=0;
+
+House150GarageTotalTimeOpen = CreateMetric(House150Data, totalTime);
+
+OUTPUT House150GarageTotalTimeOpen TO Metrics;

@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Copyright (c) Microsoft Corporation.  All rights reserved.
+Licensed under the MIT License
+-->
+<outputTemplates>
+  <outputTemplate id="defaultAggOutputTemplate">
+  MAP(
+    $pivotstemplate
+  ) AS pivots,
+  $aggstemplate,
+  Count AS count,
+  MAP(
+    'ruleId', '$ruleId',
+    '$tagname', '$tag',
+    'description', '$ruleDescription',
+    'severity', '$severity'
+  ) AS result</outputTemplate>
+  <outputTemplate id="OT1">
+  Temperature AS temperature,
+  MAP(
+    'ruleId', '$ruleId',
+    '$tagname', '$tag',
+    'description', '$ruleDescription',
+    'severity', '$severity'
+  ) AS result</outputTemplate>
+  <outputTemplate id="OT2">
+  MAP(
+    'DeviceId': DeviceId,
+    'Geo': Geo
+  ) AS pivots,
+  STRUCT(
+    STRUCT(
+  Temperature_AVG AS avg,
+  Temperature_MIN As min,
+  Temperature_MAX AS max
+    ) AS temperature
+  ) AS __aggregates,
+  Count AS count,
+  MAP(
+    'ruleId', '$ruleId',
+    '$tagname', '$tag',
+    'description', '$ruleDescription',
+    'severity', '$severity'
+  ) AS result</outputTemplate>
+</outputTemplates>

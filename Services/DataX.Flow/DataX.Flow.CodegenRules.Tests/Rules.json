@@ -1,0 +1,233 @@
+﻿[
+  {
+    "$ruleId": "R1", // auto-generated
+    "$productId": "P1",
+    "$ruleType": "SimpleRule",
+    "$ruleDescription": "Detects hot condition",
+    "$severity": "Critical",
+    "$condition": "Temperature > 90", // Any valid SQL condition not involving aggregates
+    "$tagname": "Tag",
+    "$tag": "Hot",
+    "$outputTemplate": "OT1", // Optional field. This can be used to shape the output data to the desired schema
+    "$alertsinks": [ "myfilteredCosmosDB", "myAlert", "Metrics" ],
+    "$isAlert": true,
+    "schemaTableName": "DataXProcessedInput"
+  },
+  {
+    "$ruleId": "R2", // auto-generated
+    "$productId": "P1",
+    "$ruleType": "SimpleRule",
+    "$ruleDescription": "Detects cold condition",
+    "$severity": "Critical",
+    "$condition": "Temperature < 40", // Any valid SQL condition not involving aggregates
+    "$tagname": "Tag",
+    "$tag": "Cold",
+    "schemaTableName": "DataXProcessedInput"
+  },
+  {
+    "$ruleId": "R20", // auto-generated
+    "$productId": "P5",
+    "$ruleType": "SimpleRule",
+    "$ruleDescription": "Detects cold condition",
+    "$severity": "Critical",
+    "$condition": "Temperature < 40", // Any valid SQL condition not involving aggregates
+    "$tagname": "Tag",
+    "$tag": "Cold",
+    "schemaTableName": "Foo"
+  },
+  {
+    "$ruleId": "R21", // auto-generated
+    "$productId": "P5",
+    "$ruleType": "SimpleRule",
+    "$ruleDescription": "Detects cold condition",
+    "$severity": "Critical",
+    "$condition": "Temperature < 40", // Any valid SQL condition not involving aggregates
+    "$tagname": "Tag",
+    "$tag": "Cold",
+    "schemaTableName": "Foo",
+    "$alertsinks": [ "myfilteredCosmosDB", "myAlert" ],
+    "$isAlert": true
+  },
+  {
+    "$ruleId": "R3", // auto-generated
+    "$productId": "P1",
+    "$ruleType": "AggregateRule",
+    "$ruleDescription": "Detects hot condition average",
+    "$severity": "Critical",
+    "$aggs": [ "AVG(Temperature)", "MIN(Temperature)", "MAX(Temperature)" ], // Specify all the aggregations that need to be calculated
+    "$condition": "AVG(Temperature) > 90", // Any valid SQL condition not involving aggregates
+    "$pivots": [ "DeviceId", "Geo" ], // Specify all the group by columns
+    "$tagname": "Tag",
+    "$tag": "HotAgg",
+    "$outputTemplate": "OT2", // Optional field. This can be used to shape the output data to the desired schema
+    "$alertsinks": [ "Metrics" ],
+    "$isAlert": true,
+    "schemaTableName": "DataXProcessedInput"
+  },
+  {
+    "$ruleId": "R4", // auto-generated
+    "$productId": "P1",
+    "$ruleType": "AggregateRule",
+    "$ruleDescription": "Detects hot condition average",
+    "$severity": "Critical",
+    "$aggs": [ "AVG(Humidity)", "MIN(Temperature)", "MAX(Temperature)" ], // Specify all the aggregations that need to be calculated
+    "$condition": "AVG(Humidity) > 40 AND MIN(Temperature) > 80", // Any valid SQL condition not involving aggregates
+    "$pivots": [ "DeviceId" ], // Specify all the group by columns
+    "$tagname": "Tag",
+    "$tag": "Anomaly",
+    "schemaTableName": "DataXProcessedInput"
+  },
+  {
+    "$ruleId": "R40", // auto-generated
+    "$productId": "P5",
+    "$ruleType": "AggregateRule",
+    "$ruleDescription": "Detects hot condition average",
+    "$severity": "Critical",
+    "$aggs": [ "AVG(Humidity)", "MIN(Temperature)", "MAX(Temperature)" ], // Specify all the aggregations that need to be calculated
+    "$condition": "AVG(Humidity) > 40 AND MIN(Temperature) > 80", // Any valid SQL condition not involving aggregates
+    "$pivots": [ "DeviceId" ], // Specify all the group by columns
+    "$tagname": "Tag",
+    "$tag": "Anomaly",
+    "schemaTableName": "Foo"
+  },
+  {
+    "$ruleId": "R41", // auto-generated
+    "$productId": "P5",
+    "$ruleType": "AggregateRule",
+    "$ruleDescription": "Detects hot condition average",
+    "$severity": "Critical",
+    "$aggs": [ "AVG(Humidity)", "MIN(Temperature)", "MAX(Temperature)" ], // Specify all the aggregations that need to be calculated
+    "$condition": "AVG(Humidity) > 40 AND MIN(Temperature) > 80", // Any valid SQL condition not involving aggregates
+    "$pivots": [ "DeviceId" ], // Specify all the group by columns
+    "$tagname": "Tag",
+    "$tag": "Anomaly",
+    "schemaTableName": "Foo",
+    "$alertsinks": [ "myfilteredCosmosDB", "myAlert" ],
+    "$isAlert": true
+  },
+  {
+    "$ruleId": "R50", // auto-generated
+    "$productId": "P2",
+    "$ruleType": "AggregateRule",
+    "$ruleDescription": "Detects count of door close",
+    "$severity": "Critical",
+    "$aggs": [ "COUNT(deviceDetails.status)" ], // Specify all the aggregations that need to be calculated
+    "$condition": "COUNT(deviceDetails.status) > 3", // Any valid SQL condition not involving aggregates
+    "$pivots": [ "deviceDetails.homeId" ], // Specify all the group by columns
+    "$tagname": "Tag",
+    "$tag": "CloseCount",
+    "schemaTableName": "DataXProcessedInput",
+    "$alertsinks": [ "myfilteredCosmosDB", "myAlert" ],
+    "$isAlert": true
+  },
+  {
+    "$ruleId": "R60", // auto-generated
+    "$productId": "P3",
+    "$ruleType": "SimpleRule",
+    "$ruleDescription": "Detects cold condition",
+    "$severity": "Critical",
+    "$condition": "device.Temperature < 40", // Any valid SQL condition not involving aggregates
+    "$tagname": "Tag",
+    "$tag": "Cold",
+    "schemaTableName": "DataXProcessedInput",
+    "$alertsinks": [ "myfilteredCosmosDB", "myAlert" ],
+    "$isAlert": true
+  },
+  {
+    "$ruleId": "R70", // auto-generated
+    "$productId": "P4",
+    "$ruleType": "AggregateRule",
+    "$ruleDescription": "Detects count of door close",
+    "$severity": "Critical",
+    "$aggs": [ "COUNT(`deviceDetails.status`)" ], // Specify all the aggregations that need to be calculated
+    "$condition": "COUNT(`deviceDetails.status`) > 3", // Any valid SQL condition not involving aggregates
+    "$pivots": [ "`deviceDetails.homeId`" ], // Specify all the group by columns
+    "$tagname": "Tag",
+    "$tag": "CloseCount",
+    "schemaTableName": "DataXProcessedInput",
+    "$alertsinks": [ "myfilteredCosmosDB", "myAlert" ],
+    "$isAlert": true
+  },
+  {
+    "$ruleId": "R71", // auto-generated
+    "$productId": "P4",
+    "$ruleType": "SimpleRule",
+    "$ruleDescription": "Detects cold condition",
+    "$severity": "Critical",
+    "$condition": "`device.Temperature` < 40", // Any valid SQL condition not involving aggregates
+    "$tagname": "Tag",
+    "$tag": "Cold",
+    "schemaTableName": "DataXProcessedInput",
+    "$alertsinks": [ "myfilteredCosmosDB", "myAlert" ],
+    "$isAlert": true
+  },
+  {
+    "$ruleId": "R80", // auto-generated
+    "$productId": "P6",
+    "$ruleType": "AggregateRule",
+    "$ruleDescription": "Detects count of door close",
+    "$severity": "Critical",
+    "$aggs": [ "COUNT(deviceDetails.status)" ], // Specify all the aggregations that need to be calculated
+    "$condition": "COUNT(deviceDetails.status) > 3 AND deviceDetails.homeId = 150", // Any valid SQL condition not involving aggregates
+    "$pivots": [ "deviceDetails.homeId" ], // Specify all the group by columns
+    "$tagname": "Tag",
+    "$tag": "CloseCount",
+    "schemaTableName": "DataXProcessedInput",
+    "$alertsinks": [ "myfilteredCosmosDB", "myAlert" ],
+    "$isAlert": true
+  },
+  {
+    "$ruleId": "R81", // auto-generated
+    "$productId": "P6.1",
+    "$ruleType": "AggregateRule",
+    "$ruleDescription": "Detects count of door close",
+    "$severity": "Critical",
+    "$aggs": [ "COUNT(`deviceDetails.status`)" ], // Specify all the aggregations that need to be calculated
+    "$condition": "COUNT(`deviceDetails.status`) > 3 AND `deviceDetails.homeId` = 150", // Any valid SQL condition not involving aggregates
+    "$pivots": [ "`deviceDetails.homeId`" ], // Specify all the group by columns
+    "$tagname": "Tag",
+    "$tag": "CloseCount",
+    "schemaTableName": "DataXProcessedInput",
+    "$alertsinks": [ "myfilteredCosmosDB", "myAlert" ],
+    "$isAlert": true
+  },
+  {
+    "$ruleId": "R90", // auto-generated
+    "$productId": "P8",
+    "$ruleType": "AggregateRule",
+    "$ruleDescription": "Detects count of door close",
+    "$severity": "Critical",
+    "$aggs": [ "COUNT(deviceDetails.status)" ], // Specify all the aggregations that need to be calculated
+    "$condition": "COUNT(deviceDetails.status) > 3", // Any valid SQL condition not involving aggregates
+    "$pivots": [], // Specify all the group by columns
+    "$tagname": "Tag",
+    "$tag": "CloseCount",
+    "schemaTableName": "DataXProcessedInput",
+    "$alertsinks": [ "myfilteredCosmosDB", "myAlert" ],
+    "$isAlert": true
+  },
+  {
+    "$ruleId": "R100", // auto-generated
+    "$productId": "iotsample",
+    "$ruleType": "SimpleRule",
+    "$ruleDescription": "DoorLock Close",
+    "$severity": "Critical",
+    "$condition": "deviceDetails.deviceType = 'DoorLock' AND deviceDetails.status = 1", // Any valid SQL condition not involving aggregates
+    "$tagname": "Tag",
+    "$tag": "CLOSE",
+    "schemaTableName": "DataXProcessedInput",
+    "$alertsinks": [ "Metrics" ],
+    "$isAlert": true
+  },
+  {
+    "$ruleId": "R101", // auto-generated
+    "$productId": "iotsample",
+    "$ruleType": "SimpleRule",
+    "$ruleDescription": "DoorLock Open",
+    "$severity": "Critical",
+    "$condition": "deviceDetails.deviceType = 'DoorLock' AND deviceDetails.status = 0 OR deviceDetails.homeId = 150", // Any valid SQL condition not involving aggregates
+    "$tagname": "Tag",
+    "$tag": "OPEN",
+    "schemaTableName": "DataXProcessedInput"
+  }
+]

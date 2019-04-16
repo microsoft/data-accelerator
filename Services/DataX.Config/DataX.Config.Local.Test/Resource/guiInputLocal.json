@@ -1,0 +1,58 @@
+﻿{
+  "name": "localconfiggentest",
+  "displayName": "localconfiggentest",
+  "owner": "data-accelerator@microsoft.com",
+  "input": {
+    "mode": "streaming",
+    "type": "iothub",
+    "properties": {
+      "inputEventhubName": "local",
+      "inputEventhubConnection": "local",
+      "windowDuration": "10",
+      "timestampColumn": "eventTime",
+      "watermarkValue": "10",
+      "watermarkUnit": "second",
+      "maxRate": "100",
+      "inputSchemaFile": "{\"type\": \"struct\",  \"fields\": [    {      \"name\": \"temperature\",      \"type\": \"double\",      \"nullable\": false,      \"metadata\": {\"minValue\":5.0, \"maxValue\":100.0}    },        {      \"name\": \"eventTime\",      \"type\": \"long\",      \"nullable\": false,      \"metadata\": {\"useCurrentTimeMillis\":true}    }  ]}",
+      "showNormalizationSnippet": false,
+      "normalizationSnippet": "Raw.*"
+    },
+    "referenceData": []
+  },
+  "process": {
+    "timestampColumn": "eventTime",
+    "watermark": "10 second",
+    "functions": [],
+    "queries": [
+      "--DataXQuery--\n events = SELECT * \n    FROM \n        DataXProcessedInput;  \n --DataXQuery-- \n maxTemperature =  SELECT \n  MAX(eventTime) AS EventTime,\n 'maxTemperature' AS MetricName, \n       Max(temperature) AS Metric,\n       'localconfiggentest' AS Product,\n        '' AS Pivot1  \n FROM \n        events; \n OUTPUT events TO myLocal; \n OUTPUT maxTemperature TO Metrics;\n"
+    ],
+    "jobconfig": {
+      "jobNumExecutors": "2",
+      "jobExecutorMemory": "2000"
+    }
+  },
+  "outputs": [
+    {
+      "id": "Metrics",
+      "type": "metric",
+      "properties": {},
+      "typeDisplay": "Metrics"
+    },
+    {
+      "id": "myLocal",
+      "type": "local",
+      "properties": {
+        "connectionString": "<ADD LOCAL FILE PATH>",
+        "containerName": "",
+        "blobPrefix": "",
+        "blobPartitionFormat": "yyyy/MM/dd/HH",
+        "format": "json",
+        "compressionType": "none"
+      },
+      "typeDisplay": "Azure Blob"
+    }
+  ],
+  "outputTemplates": [],
+  "rules": [],
+  "subscription": null
+}

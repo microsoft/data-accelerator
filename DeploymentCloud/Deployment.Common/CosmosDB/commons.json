@@ -1,0 +1,486 @@
+[
+	{
+		"name": "defaultFlowConfig",
+    "content": {
+			"name": "###REQUIRED###",
+			"icon": "/img/iot.png",
+			"displayName": "###REQUIRED###",
+			"properties": {
+					"inputEventHubSubscriptionId": "keyvault://${serviceKeyVaultName}/$clientSecretPrefix-subscriptionId",
+					"inputEventHubResourceGroupName": "${eventHubResourceGroupName}"
+			},
+			"commonProcessor": {
+					"sparkJobConfigFolder": "wasbs://flows@${cpConfigFolderBase}/${containerPath}/${name}",
+					"template": {
+							"name": "${name}",
+							"input": {
+									"eventhub": {
+											"connectionString": "${inputEventHubConnectionString}",
+											"consumerGroup": "${inputEventHubConsumerGroup}",
+											"checkpointDir": "${inputEventHubCheckpointDir}",
+											"checkpointInterval": "${inputEventHubCheckpointInterval}",
+											"maxRate": "${inputEventHubMaxRate}",
+											"flushExistingCheckpoints": "${inputEventHubFlushExistingCheckpoints}"
+									},
+									"streaming": {
+											"checkpointDir": "${inputStreamingCheckpointDir}",
+											"intervalInSeconds": "${inputStreamingIntervalInSeconds}"
+									},
+									"blobSchemaFile": "${inputSchemaFilePath}",
+									"referenceData": "${inputReferenceData}"
+							},
+							"process": {
+									"metric": {
+											"eventhub": "keyvault://${sparkKeyVaultName}/${metricEventHubConnectionStringKey}"
+									},
+									"timestampColumn": "${processTimestampColumn}",
+									"watermark": "${processWatermark}",
+									"jarUDAFs": "${processJarUDAFs}",
+									"jarUDFs": "${processJarUDFs}",
+									"azureFunctions": "${processAzureFunctions}",
+									"projections": "${processProjections}",
+									"timeWindows": "${processTimeWindows}",
+									"transform": "${processTransforms}",
+									"appendEventTags": {},
+									"accumulationTables": "${processStateTables}"
+							},
+							"outputs": "${outputs}"
+					},
+					"sparkJobTemplateRef": "DataXDirect",
+					"jobCommonTokens": {
+							"jobName": "${name}",
+							"sparkJobName": "DataXDirect-${name}",
+							"sparkJobDriverLogLevel": "WARN",
+							"sparkJobExecutorLogLevel": "INFO",
+							"sparkJobNumExecutors": "${guiSparkJobNumExecutors}",
+							"sparkJobExecutorMemory": "${guiSparkJobExecutorMemory}",
+							"processedSchemaPath": null
+					},
+					"jobs": [
+							{
+									"partitionJobNumber": "1"
+							}
+					]
+			},
+			"metrics": {
+					"sources": [
+							{
+									"name": "events",
+									"input": {
+											"type": "MetricApi",
+											"metricKeys": [
+													"DATAX-${name}:Input_DataXProcessedInput_Events_Count"
+											]
+									},
+									"output": {
+											"type": "SumWithTimeChart",
+											"data": {
+													"sum": true,
+													"timechart": true,
+													"average": true,
+													"speed": true
+											}
+									}
+							}
+					],
+					"widgets": [
+							{
+									"name": "eventsChart",
+									"displayName": "Events/Second",
+									"data": "events_timechart",
+									"position": "TimeCharts",
+									"type": "StackAreaChart"
+							},
+							{
+									"name": "totalEvents",
+									"displayName": "Events Ingested Today",
+									"data": "events_sum",
+									"formatter": "longint",
+									"type": "SimpleBox",
+									"position": "FirstRow"
+							},
+							{
+									"name": "averageEvents",
+									"displayName": "Avg. Events/Minute",
+									"data": "events_average",
+									"formatter": "longint",
+									"type": "SimpleBox",
+									"position": "FirstRow"
+							}
+					],
+					"initParameters": {
+							"widgetSets": [
+									"direct"
+							],
+							"jobNames": {
+									"type": "getCPSparkJobNames"
+							}
+					}
+			}
+		}
+	},
+	{
+    "name": "DataXDirect",
+    "content": {
+      "name": "${sparkJobName}",
+      "cluster": "$sparkName",
+      "options": {
+        "name": "${sparkJobName}",
+				"file" : "wasbs:///datax/bin/datax-host_2.11-1.0.0-SNAPSHOT.jar",
+				"className" : "datax.app.DirectStreamingApp",
+        "args": [
+          "conf=${sparkJobConfigFilePath}",
+          "driverLogLevel=${sparkJobDriverLogLevel}"
+        ],
+        "jars": [
+								"wasbs:///datax/bin/datax-core_2.11-1.0.0-SNAPSHOT.jar",
+								"wasbs:///datax/bin/datax-utility_2.11-1.0.0-SNAPSHOT.jar",
+								"wasbs:///datax/bin/applicationinsights-core-2.2.1.jar",
+								"wasbs:///datax/bin/azure-documentdb-1.16.1.jar",
+								"wasbs:///datax/bin/azure-eventhubs-1.2.1.jar",
+								"wasbs:///datax/bin/azure-eventhubs-spark_2.11-2.3.6.jar",
+								"wasbs:///datax/bin/azure-keyvault-webkey-1.1.jar",
+								"wasbs:///datax/bin/datax-keyvault_2.11-1.0.0-SNAPSHOT-with-dependencies.jar",
+								"wasbs:///datax/bin/java-uuid-generator-3.1.5.jar",
+								"wasbs:///datax/bin/proton-j-0.27.1.jar",
+								"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar"
+				],
+        "driverMemory": "1024m",
+        "executorCores": 2,
+        "numExecutors": "${sparkJobNumExecutors}",
+        "driverCores": 1,
+        "executorMemory": "${sparkJobExecutorMemory}",
+        "conf": {
+          "spark\uff0eexecutor\uff0eextraJavaOptions": "-verbose:gc -XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintFlagsFinal -XX:+PrintReferenceGC -XX:+PrintAdaptiveSizePolicy -XX:+UnlockDiagnosticVMOptions -XX:+G1SummarizeConcMark -XX:+AlwaysPreTouch -XX:+PrintCodeCache -XX:ReservedCodeCacheSize=240m -XX:+UseCodeCacheFlushing",
+          "spark\uff0eyarn\uff0eam\uff0eattemptFailuresValidityInterval": "1h",
+          "spark\uff0eyarn\uff0eexecutor\uff0efailuresValidityInterval": "1h",
+          "spark\uff0eblacklist\uff0eenabled": "true",
+          "spark\uff0edriver\uff0euserClassPathFirst": true,
+          "spark\uff0eexecutor\uff0euserClassPathFirst": true,
+          "spark\uff0especulation": true,
+          "spark\uff0especulation\uff0emultiplier": 3,
+          "spark\uff0especulation\uff0equantile": 0.9,
+          "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName",
+          "spark\uff0eexecutorEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
+          "spark\uff0eexecutorEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
+	  "spark\uff0eexecutorEnv\uff0eDATAX_LOGLEVEL": "${sparkJobExecutorLogLevel}",
+	  "spark\uff0eexecutorEnv\uff0eDATAX_CHECKPOINTENABLED": "true",
+          "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName", 
+          "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
+          "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
+	  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_LOGLEVEL": "${sparkJobDriverLogLevel}",
+	  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_CHECKPOINTENABLED": "true"
+        }
+      }
+    }
+  },
+	{
+		"name" : "flattener",
+		"content" : {
+			"type" : "object",
+			"namespace" : "datax.job",
+			"fields" : {
+				"name" : "name",
+				"input" : {
+					"type" : "object",
+					"namespace" : "input.default",
+					"fields" : {
+						"blobSchemaFile" : "blobschemafile",
+						"sourceIdRegex" : "sourceidregex",
+						"blobPathRegex" : "blobpathregex",
+						"fileTimeRegex" : "filetimeregex",
+						"fileTimeFormat" : "filetimeformat",
+						"eventhub" : {
+							"type" : "object",
+							"namespace" : "eventhub",
+							"fields" : {
+								"connectionString" : "connectionstring",
+								"consumerGroup" : "consumergroup",
+								"checkpointDir" : "checkpointdir",
+								"checkpointInterval" : "checkpointinterval",
+								"maxRate" : "maxrate",
+								"flushExistingCheckpoints" : "flushexistingcheckpoints"
+							}
+						},
+						"streaming" : {
+							"type" : "object",
+							"namespace" : "streaming",
+							"fields" : {
+								"checkpointDir" : "checkpointdir",
+								"intervalInSeconds" : "intervalinseconds"
+							}
+						},
+						"sources" : {
+							"type" : "map",
+							"namespace" : "source",
+							"fields" : {
+								"target" : "target",
+								"catalogPrefix" : "catalogprefix"
+							}
+						},
+						"referenceData" : {
+							"type" : "array",
+							"namespace" : "referencedata",
+							"element" : {
+								"type" : "scopedObject",
+								"namespaceField" : "name",
+								"fields" : {
+									"path" : "path",
+									"format" : "format",
+									"header" : "header",
+									"delimiter" : "delimiter"
+								}
+							}
+						}
+					}
+				},
+				"process" : {
+					"type" : "object",
+					"namespace" : "process",
+					"fields" : {
+						"metric" : {
+							"type" : "object",
+							"namespace" : "metric",
+							"fields" : {
+								"eventhub" : "eventhub"
+							}
+						},
+						"projections" : {
+							"type" : "stringList",
+							"namespace" : "projection"
+						},
+						"transform" : "transform",
+						"timestampColumn" : "timestampcolumn",
+						"watermark" : "watermark",
+						"timeWindows" : {
+							"type" : "array",
+							"namespace" : "timewindow",
+							"element" : {
+								"type" : "scopedObject",
+								"namespaceField" : "name",
+								"fields" : {
+									"windowDuration" : "windowduration"
+								}
+							}
+						},
+						"jarUDFs" : {
+							"type" : "array",
+							"namespace" : "jar.udf",
+							"element" : {
+								"type" : "scopedObject",
+								"namespaceField" : "name",
+								"fields" : {
+									"class" : "class",
+									"path" : "path",
+									"libs" : {
+										"type" : "stringList",
+										"namespace" : "libs"
+									}
+								}
+							}
+						},
+						"jarUDAFs" : {
+							"type" : "array",
+							"namespace" : "jar.udaf",
+							"element" : {
+								"type" : "scopedObject",
+								"namespaceField" : "name",
+								"fields" : {
+									"class" : "class",
+									"path" : "path",
+									"libs" : {
+										"type" : "stringList",
+										"namespace" : "libs"
+									}
+								}
+							}
+						},
+						"accumulationTables" : {
+							"type" : "array",
+							"namespace" : "statetable",
+							"element" : {
+								"type" : "scopedObject",
+								"namespaceField" : "name",
+								"fields" : {
+									"schema" : "schema",
+									"location" : "location"
+								}
+							}
+						},
+						"azureFunctions" : {
+							"type" : "array",
+							"namespace" : "azurefunction",
+							"element" : {
+								"type" : "scopedObject",
+								"namespaceField" : "name",
+								"fields" : {
+									"serviceEndpoint" : "serviceendpoint",
+									"api" : "api",
+									"code" : "code",
+									"methodType" : "methodtype",
+									"params" : {
+										"type" : "stringList",
+										"namespace" : "params"
+									}
+								}
+							}
+						},
+						"appendEventTags" : {
+							"type" : "mapProps",
+							"namespace" : "appendproperty"
+						}
+					}
+				},
+				"output" : {
+					"type" : "scopedObject",
+					"namespace" : "output",
+					"namespaceField" : "name",
+					"fields" : {
+						"blob" : {
+							"type" : "object",
+							"namespace" : "blob",
+							"fields" : {
+								"groupEvaluation" : "groupevaluation",
+								"compressionType" : {
+									"type" : "excludeDefaultValue",
+									"namespace" : "compressiontype",
+									"defaultValue" : "gzip"
+								},
+								"format" : {
+									"type" : "excludeDefaultValue",
+									"namespace" : "format",
+									"defaultValue" : "json"
+								},
+								"groups" : {
+									"type" : "map",
+									"namespace" : "group",
+									"fields" : {
+										"folder" : "folder"
+									}
+								}
+							}
+						},
+						"eventhub" : {
+							"type" : "object",
+							"namespace" : "eventhub",
+							"fields" : {
+								"connectionStringRef" : "connectionstring",
+								"compressionType" : {
+									"type" : "excludeDefaultValue",
+									"namespace" : "compressiontype",
+									"defaultValue" : "gzip"
+								},
+								"format" : {
+									"type" : "excludeDefaultValue",
+									"namespace" : "format",
+									"defaultValue" : "json"
+								},
+								"appendProperties" : {
+									"type" : "mapProps",
+									"namespace" : "appendproperty"
+								}
+							}
+						},
+						"cosmosdb" : {
+							"type" : "object",
+							"namespace" : "cosmosdb",
+							"fields" : {
+								"connectionStringRef" : "connectionstring",
+								"database" : "database",
+								"collection" : "collection"
+							}
+						},
+						"httpPost" : {
+							"type" : "object",
+							"namespace" : "httppost",
+							"fields" : {
+								"endpoint" : "endpoint",
+								"filter" : "filter",
+								"appendHeaders" : {
+									"type" : "mapProps",
+									"namespace" : "header"
+								}
+							}
+						}
+					}
+				},
+				"outputs" : {
+					"type" : "array",
+					"element" : {
+						"type" : "scopedObject",
+						"namespace" : "output",
+						"namespaceField" : "name",
+						"fields" : {
+							"blob" : {
+								"type" : "object",
+								"namespace" : "blob",
+								"fields" : {
+									"groupEvaluation" : "groupevaluation",
+									"compressionType" : {
+										"type" : "excludeDefaultValue",
+										"namespace" : "compressiontype",
+										"defaultValue" : "gzip"
+									},
+									"format" : {
+										"type" : "excludeDefaultValue",
+										"namespace" : "format",
+										"defaultValue" : "json"
+									},
+									"groups" : {
+										"type" : "map",
+										"namespace" : "group",
+										"fields" : {
+											"folder" : "folder"
+										}
+									}
+								}
+							},
+							"eventhub" : {
+								"type" : "object",
+								"namespace" : "eventhub",
+								"fields" : {
+									"connectionStringRef" : "connectionstring",
+									"compressionType" : {
+										"type" : "excludeDefaultValue",
+										"namespace" : "compressiontype",
+										"defaultValue" : "gzip"
+									},
+									"format" : {
+										"type" : "excludeDefaultValue",
+										"namespace" : "format",
+										"defaultValue" : "json"
+									},
+									"appendProperties" : {
+										"type" : "mapProps",
+										"namespace" : "appendproperty"
+									}
+								}
+							},
+							"cosmosdb" : {
+								"type" : "object",
+								"namespace" : "cosmosdb",
+								"fields" : {
+									"connectionStringRef" : "connectionstring",
+									"database" : "database",
+									"collection" : "collection"
+								}
+							},
+							"httpPost" : {
+								"type" : "object",
+								"namespace" : "httppost",
+								"fields" : {
+									"endpoint" : "endpoint",
+									"filter" : "filter",
+									"appendHeaders" : {
+										"type" : "mapProps",
+										"namespace" : "header"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+]

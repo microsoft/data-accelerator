@@ -1,0 +1,13 @@
+# This is a parameter file for the admin steps script: adminSteps.ps1
+
+# tenantId 
+tenantId=$tenantId
+
+# The application Id of Service AAD app. 
+serviceAppId=$serviceAppId
+
+# The application Id of Client AAD app.
+clientAppId=$clientAppId
+
+# ResourceGroupName to generate resources 
+resourceGroupName=$resourceGroup

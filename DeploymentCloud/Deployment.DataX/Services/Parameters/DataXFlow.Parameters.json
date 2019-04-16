@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "paths": [{
+        "ParameterReference": "appPackageUrl"
+    }],
+    "parameters": {
+		"serviceFabricName": {
+			"value": "$serviceFabricName"
+		},
+        "applicationTypeVersion": {
+            "value": "$version"
+        },
+        "appPackageUrl": {
+            "value": "$appPackageUrl"
+        },
+        "sfPkgName": {
+            "value": "DataXFlow"
+        },
+        "sfAppParameters": {
+            "value": {
+                "ServiceKeyvaultName": "$servicesKVName",
+                "cosmosDBConfigConnectionString": "keyvault://$servicesKVName/$serviceSecretPrefix-configgenconfigs",
+                "cosmosDBConfigDatabaseName": "keyvault://$servicesKVName/$serviceSecretPrefix-configgenconfigsdatabasename",
+                "cosmosDBConfigCollectionName": "configgenConfigs",
+                "AppInsightsIntrumentationKey": "$serviceSecretPrefix-aiInstrumentationKey"
+            }
+        }
+    }
+}

@@ -1,0 +1,109 @@
+﻿--DataXQuery--
+  sa1_1_1 = SELECT
+        *,
+        'R1' AS ruleId,
+        'Detects hot condition' AS ruleDescription,
+        'Critical' AS severity,
+        'Hot' AS Tag 
+    FROM
+        DataXProcessedInput  
+    WHERE
+        Temperature > 90
+    
+--DataXQuery--
+  sa2_1_1 = SELECT
+        Temperature AS temperature,
+        MAP(
+            'ruleId',
+            'R1',
+            'Tag',
+            'Hot',
+            'description',
+            'Detects hot condition',
+            'severity',
+            'Critical'    
+        ) AS result 
+    FROM
+        sa1_1_1
+    
+--DataXQuery--
+  HotAlert = SELECT
+        DISTINCT DATE_TRUNC('second',
+        current_timestamp()) AS EventTime,
+        'HotAlert' AS MetricName,
+        0 as Metric,
+        'P1' AS Product,
+        'Detects hot condition' AS Pivot1 
+    FROM
+        sa1_1_1
+    
+    
+--DataXQuery--
+  aa1_2_1 = SELECT
+        AVG(Temperature) AS Temperature_AVG,
+        MIN(Temperature) AS Temperature_MIN,
+        MAX(Temperature) AS Temperature_MAX,
+        DeviceId,
+        Geo,
+        COUNT(*) AS Count  
+    FROM
+        DataXProcessedInput  
+    GROUP BY
+        DeviceId,
+        Geo
+    
+--DataXQuery--
+  aa2_2_1 = SELECT
+        *,
+        MAP(
+            'ruleId',
+            'R3',
+            'ruleDescription',
+            'Detects hot condition average',
+            'severity',
+            'Critical',
+            'Tag',
+            'HotAgg'
+        ) AS RuleObject 
+    FROM
+        aa1_2_1 
+    WHERE
+        Temperature_AVG > 90
+    
+--DataXQuery--
+  aa3_2_1 = SELECT
+        MAP(
+            'DeviceId': DeviceId,
+            'Geo': Geo    
+        ) AS pivots,
+        STRUCT(
+            STRUCT(
+                Temperature_AVG AS avg,
+                Temperature_MIN As min,
+                Temperature_MAX AS max      
+            ) AS temperature    
+        ) AS __aggregates,
+        Count AS count,
+        MAP(
+            'ruleId',
+            'R3',
+            'Tag',
+            'HotAgg',
+            'description',
+            'Detects hot condition average',
+            'severity',
+            'Critical'    
+        ) AS result 
+    FROM
+        aa2_2_1
+    
+--DataXQuery--
+  HotAggAlert = SELECT
+        DISTINCT DATE_TRUNC('second',
+        current_timestamp()) AS EventTime,
+        'HotAggAlert' AS MetricName,
+        0 as Metric,
+        'P1' AS Product,
+        RuleObject.ruleDescription AS Pivot1 
+    FROM
+        aa2_2_1

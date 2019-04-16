@@ -1,0 +1,50 @@
+﻿{
+  "type": "object",
+  "namespace": "some.root.namespace",
+  "fields": {
+    "firstlevelstring": "firstlevelstring",
+    "firstlevelobject": {
+      "type": "object",
+      "namespace": "firstlevelobject",
+      "fields": {
+        "secondlevelstring": "secondlevelstring"
+      }
+    },
+    "array": {
+      "type": "array",
+      "namespace": "array",
+      "element": {
+        "type": "scopedObject",
+        "namespaceField": "namespace",
+        "fields": {
+          "arrayelement": "arrayelement"
+        }
+      }
+    },
+    "map": {
+      "type": "map",
+      "namespace": "map",
+      "fields": {
+        "mapelement": "mapelement"
+      }
+    },
+    "stringlist": {
+      "type": "stringList",
+      "namespace": "stringlist"
+    },
+    "mapprops": {
+      "type": "mapProps",
+      "namespace": "mapprop"
+    },
+    "withdefaultvalue": {
+      "type": "excludeDefaultValue",
+      "namespace": "withdefaultvalue",
+      "defaultValue": "defaultvalue"
+    },
+    "withoutdefaultvalue": {
+      "type": "excludeDefaultValue",
+      "namespace": "withoutdefaultvalue",
+      "defaultValue": "defaultvalue"
+    }
+  }
+}

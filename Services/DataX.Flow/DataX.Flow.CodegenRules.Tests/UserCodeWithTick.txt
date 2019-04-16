@@ -1,0 +1,5 @@
+﻿T1 = ProcessRules(DataXProcessedInput);
+ProcessAlerts(DataXProcessedInput);
+
+T2 = ProcessAggregateRules(DataXProcessedInput);
+ProcessAggregateAlerts(DataXProcessedInput);

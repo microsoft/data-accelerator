@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>Microsoft.DataX.Spark</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <projectUrl>http://aka.ms/data-accelerator</projectUrl>
+    <license type="expression">MIT</license>
+    <iconUrl>https://raw.githubusercontent.com/wiki/Microsoft/data-accelerator/tutorials/images/roundwhite6464.PNG</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Data Accelerator for Apache Spark simplifies streaming of Big Data using Spark. It is used internally at Microsoft for processing streamed data from multiple products everyday, handling data volumes at Microsoft scale. It offers a no-code experience to build Rules and Alerts, as well as numerous productivity improvements to develop and manage Spark SQL jobs on Azure HDInsights.  This is the package of jar files for Data Processing.</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <tags>DataX.Spark, DataX</tags>
+    <dependencies>
+    </dependencies>
+  </metadata>
+  <files>
+<file src="**\applicationinsights-core-2.2.1.jar" target="lib" />
+<file src="**\azure-documentdb-1.16.1.jar" target="lib" />
+<file src="**\azure-eventhubs-1.2.1.jar" target="lib" />
+<file src="**\azure-eventhubs-spark_2.11-2.3.6.jar" target="lib" />
+<file src="**\azure-keyvault-webkey-1.1.jar" target="lib" />
+<file src="**\datax-core_2.11-1.0.0-SNAPSHOT.jar" target="lib" />
+<file src="**\datax-host_2.11-1.0.0-SNAPSHOT.jar" target="lib" />
+<file src="**\datax-utility_2.11-1.0.0-SNAPSHOT.jar" target="lib" />
+<file src="**\datax-keyvault_2.11-1.0.0-SNAPSHOT-with-dependencies.jar" target="lib" />
+<file src="**\datax-udf-samples_2.11-1.0.0-SNAPSHOT.jar" target="lib" />
+<file src="**\java-uuid-generator-3.1.5.jar" target="lib" />
+<file src="**\proton-j-0.27.1.jar" target="lib" />
+<file src="**\scala-java8-compat_2.11-0.9.0.jar" target="lib" />
+<file src="NOTICE.txt" target="" />
+  </files>
+</package>

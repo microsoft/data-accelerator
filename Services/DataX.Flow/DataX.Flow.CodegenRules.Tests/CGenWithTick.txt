@@ -1,0 +1,188 @@
+﻿--DataXQuery--
+  T1 = SELECT
+        *,
+        filterNull(
+            Array(
+                IF(
+                    `device.Temperature` < 40,
+                    MAP(
+                        'ruleId',
+                        'R71',
+                        'ruleDescription',
+                        'Detects cold condition',
+                        'severity',
+                        'Critical',
+                        'Tag',
+                        'Cold'
+                    ),
+                    NULL
+                )  
+            )
+        ) AS Rules 
+    FROM
+        DataXProcessedInput
+    
+    
+--DataXQuery--
+  sa1_1_1 = SELECT
+        *,
+        'R71' AS ruleId,
+        'Detects cold condition' AS ruleDescription,
+        'Critical' AS severity,
+        'Cold' AS Tag 
+    FROM
+        DataXProcessedInput  
+    WHERE
+        `device.Temperature` < 40
+    
+--DataXQuery--
+  sa2_1_1 = SELECT
+        * 
+    FROM
+        sa1_1_1
+    
+--DataXQuery--
+  ColdAlert = SELECT
+        DISTINCT DATE_TRUNC('second',
+        current_timestamp()) AS EventTime,
+        'ColdAlert' AS MetricName,
+        0 as Metric,
+        'P4' AS Product,
+        'Detects cold condition' AS Pivot1 
+    FROM
+        sa1_1_1
+    
+    
+--DataXQuery--
+   ar1_3_1 = SELECT
+        COUNT(`deviceDetails.status`) AS `deviceDetails.status_COUNT`,
+        `deviceDetails.homeId`,
+        COUNT(*) AS Count   
+    FROM
+        DataXProcessedInput   
+    GROUP BY
+        `deviceDetails.homeId`
+    
+--DataXQuery--
+   ar2_3_1 = SELECT
+        *,
+        IF(
+            `deviceDetails.status_COUNT` > 3,
+            MAP(
+                'ruleId',
+                'R70',
+                'ruleDescription',
+                'Detects count of door close',
+                'severity',
+                'Critical',
+                'Tag',
+                'CloseCount'
+            ),
+            NULL
+        ) AS RuleObject   
+    FROM
+        ar1_3_1
+    
+--DataXQuery--
+   ar3_3_1 = SELECT
+        MAP(
+            '`deviceDetails.homeId`',
+            `deviceDetails.homeId`     
+        ) AS pivots,
+        MAP(
+            '`deviceDetails.status`',
+            MAP(
+                'COUNT',
+                `deviceDetails.status_COUNT`
+            )   
+        ) AS aggs,
+        Count AS count,
+        MAP(
+            'ruleId',
+            'R70',
+            'Tag',
+            'CloseCount',
+            'description',
+            'Detects count of door close',
+            'severity',
+            'Critical'     
+        ) AS result 
+    FROM
+        ar2_3_1
+    
+--DataXQuery--
+  ar4_3 = SELECT
+        * 
+    FROM
+        ar3_3_1    
+--DataXQuery--
+  T2 = SELECT
+            * 
+        FROM
+            ar4_3
+    
+--DataXQuery--
+  aa1_4_1 = SELECT
+        COUNT(`deviceDetails.status`) AS `deviceDetails.status_COUNT`,
+        `deviceDetails.homeId`,
+        COUNT(*) AS Count  
+    FROM
+        DataXProcessedInput  
+    GROUP BY
+        `deviceDetails.homeId`
+    
+--DataXQuery--
+  aa2_4_1 = SELECT
+        *,
+        MAP(
+            'ruleId',
+            'R70',
+            'ruleDescription',
+            'Detects count of door close',
+            'severity',
+            'Critical',
+            'Tag',
+            'CloseCount'
+        ) AS RuleObject 
+    FROM
+        aa1_4_1 
+    WHERE
+        `deviceDetails.status_COUNT` > 3
+    
+--DataXQuery--
+  aa3_4_1 = SELECT
+        MAP(
+            '`deviceDetails.homeId`',
+            `deviceDetails.homeId`    
+        ) AS pivots,
+        MAP(
+            '`deviceDetails.status`',
+            MAP(
+                'COUNT',
+                `deviceDetails.status_COUNT`
+            )  
+        ) AS aggs,
+        Count AS count,
+        MAP(
+            'ruleId',
+            'R70',
+            'Tag',
+            'CloseCount',
+            'description',
+            'Detects count of door close',
+            'severity',
+            'Critical'    
+        ) AS result 
+    FROM
+        aa2_4_1
+    
+--DataXQuery--
+  CloseCountAlert = SELECT
+        DISTINCT DATE_TRUNC('second',
+        current_timestamp()) AS EventTime,
+        'CloseCountAlert' AS MetricName,
+        0 as Metric,
+        'P4' AS Product,
+        RuleObject.ruleDescription AS Pivot1 
+    FROM
+        aa2_4_1

@@ -1,0 +1,31 @@
+[
+  {
+    "Id": "1",
+    "Name": "Foo",
+    "Address": {
+      "City": "Seattle",
+      "Street":  [1, 2]
+    }
+  },
+  {
+    "Id": 2,
+    "Name": "Bar",
+    "Age": 20,
+    "Address": {
+      "City": [ "Seattle", "Chicago" ]
+    }
+  },
+  {
+    "Id": "3",
+    "Name": ["Baz1", "Baz2"],
+    "Address": {
+      "City": "Redmond"
+    }
+  },
+  {
+    "Id": "4",
+    "Name": "FooBaz",
+    "Age": 45,
+    "Address": ["pike", "pine"]
+  }
+]

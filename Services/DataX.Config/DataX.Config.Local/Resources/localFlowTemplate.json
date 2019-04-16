@@ -1,0 +1,117 @@
+﻿{
+  "name": "###REQUIRED###",
+  "icon": "/img/iot.png",
+  "displayName": "###REQUIRED###",
+  "properties": {
+    "k1": "v1"
+  },
+  "commonProcessor": {
+    "sparkJobConfigFolder": "${cpConfigFolderBase}/${name}",
+    "template": {
+      "name": "${name}",
+      "input": {
+        "eventhub": {
+          "connectionString": "${inputEventHubConnectionString}",
+          "consumerGroup": "${inputEventHubConsumerGroup}",
+          "checkpointDir": "${inputEventHubCheckpointDir}",
+          "checkpointInterval": "${inputEventHubCheckpointInterval}",
+          "maxRate": "${inputEventHubMaxRate}",
+          "flushExistingCheckpoints": "${inputEventHubFlushExistingCheckpoints}"
+        },
+        "streaming": {
+          "checkpointDir": "${inputStreamingCheckpointDir}",
+          "intervalInSeconds": "${inputStreamingIntervalInSeconds}"
+        },
+        "blobSchemaFile": "${inputSchemaFilePath}",
+        "referenceData": "${inputReferenceData}"
+      },
+      "process": {
+        "metric": {
+          "httppost": "${localMetricsHttpEndpoint}"
+        },
+        "timestampColumn": "${processTimestampColumn}",
+        "watermark": "${processWatermark}",
+        "jarUDAFs": "${processJarUDAFs}",
+        "jarUDFs": "${processJarUDFs}",
+        "azureFunctions": "${processAzureFunctions}",
+        "projections": "${processProjections}",
+        "timeWindows": "${processTimeWindows}",
+        "transform": "${processTransforms}",
+        "appendEventTags": {},
+        "accumulationTables": "${processStateTables}"
+      },
+      "outputs": "${outputs}"
+    },
+    "sparkJobTemplateRef": "defaultSparkJobTemplate",
+    "jobCommonTokens": {
+      "jobName": "${name}",
+      "sparkJobName": "DataXDirect-${name}",
+      "sparkJobDriverLogLevel": "WARN",
+      "sparkJobExecutorLogLevel": "INFO",
+      "sparkJobNumExecutors": "${guiSparkJobNumExecutors}",
+      "sparkJobExecutorMemory": "${guiSparkJobExecutorMemory}",
+      "processedSchemaPath": null
+    },
+    "jobs": [
+      {
+        "partitionJobNumber": "1"
+      }
+    ]
+  },
+  "metrics": {
+    "sources": [
+      {
+        "name": "events",
+        "input": {
+          "type": "MetricApi",
+          "metricKeys": [
+            "DATAX-${name}:Input_DataXProcessedInput_Events_Count"
+          ]
+        },
+        "output": {
+          "type": "SumWithTimeChart",
+          "data": {
+            "sum": true,
+            "timechart": true,
+            "average": true,
+            "speed": true
+          },
+          "dynamicOffsetInMs": 300000
+        }
+      }
+    ],
+    "widgets": [
+      {
+        "name": "eventsChart",
+        "displayName": "Events/Second",
+        "data": "events_timechart",
+        "position": "TimeCharts",
+        "type": "StackAreaChart"
+      },
+      {
+        "name": "totalEvents",
+        "displayName": "Events Ingested Today",
+        "data": "events_sum",
+        "formatter": "longint",
+        "type": "SimpleBox",
+        "position": "FirstRow"
+      },
+      {
+        "name": "averageEvents",
+        "displayName": "Avg. Events/Minute",
+        "data": "events_average",
+        "formatter": "longint",
+        "type": "SimpleBox",
+        "position": "FirstRow"
+      }
+    ],
+    "initParameters": {
+      "widgetSets": [
+        "direct"
+      ],
+      "jobNames": {
+        "type": "getCPSparkJobNames"
+      }
+    }
+  }
+}

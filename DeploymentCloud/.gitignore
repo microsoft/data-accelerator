@@ -1,0 +1,6 @@
+Deployment.DataX/Outputs/
+Deployment.DataX/Packages/
+Deployment.DataX/Temp/
+Deployment.DataX/adminsteps.parameters.txt
+Deployment.DataX/cachedVariables
+Deployment.Common/Temp/

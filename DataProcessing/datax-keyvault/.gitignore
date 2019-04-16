@@ -1,0 +1,7 @@
+*.class
+*.log
+/.vs
+/.idea
+/target
+/src/main/resources
+*.iml

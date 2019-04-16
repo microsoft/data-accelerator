@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (c) Microsoft Corporation.  All rights reserved.
+Licensed under the MIT License
+-->
+<Application xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="fabric:/DataX.Flow" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <Parameters>
+    <Parameter Name="Flow.LiveDataService_ASPNETCORE_ENVIRONMENT" Value="Development" />
+    <Parameter Name="Flow.LiveDataService_InstanceCount" Value="1" />
+    <Parameter Name="Flow.SchemaInferenceService_ASPNETCORE_ENVIRONMENT" Value="Development" />
+    <Parameter Name="Flow.SchemaInferenceService_InstanceCount" Value="1" />
+    <Parameter Name="Flow.InteractiveQueryService_ASPNETCORE_ENVIRONMENT" Value="Development" />
+    <Parameter Name="Flow.InteractiveQueryService_InstanceCount" Value="1" />
+    <Parameter Name="Flow.Management_ASPNETCORE_ENVIRONMENT" Value="Development" />
+    <Parameter Name="Flow.Management_InstanceCount" Value="1" />
+    <Parameter Name="AzureServicesAuthConnectionString" Value="" />
+    <Parameter Name="ServiceKeyvaultName" Value="" />
+    <Parameter Name="cosmosDBConfigConnectionString" Value="" />
+    <Parameter Name="cosmosDBConfigDatabaseName" Value="" />
+    <Parameter Name="cosmosDBConfigCollectionName" Value="" />
+    <Parameter Name="AppInsightsIntrumentationKey" Value="" />
+    <Parameter Name="MefStorageAccountName" Value="" />
+    <Parameter Name="MefContainerName" Value="" />
+    <Parameter Name="MefBlobDirectory" Value="" />
+  </Parameters>
+</Application>

@@ -1,0 +1,29 @@
+/*
+ *********************************************************************
+ Copyright (c) Microsoft Corporation.  All rights reserved.
+ Licensed under the MIT License
+ *********************************************************************
+*/
+
+.rotate-icon {
+    -webkit-animation: rotation 2s infinite linear;
+    animation: rotation 2s infinite linear;
+}
+
+@-webkit-keyframes rotation {
+    from {
+            -webkit-transform: rotate(0deg);
+    }
+    to {
+            -webkit-transform: rotate(359deg);
+    }
+}
+
+@keyframes rotation {
+    from {
+            -webkit-transform: rotate(0deg);
+    }
+    to {
+            -webkit-transform: rotate(359deg);
+    }
+}

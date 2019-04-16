@@ -1,0 +1,156 @@
+{
+	"rulesCounterRefreshInMinutes": 15,
+	"dataSchema": [
+		{
+			"dataTypeName": "DeviceData",
+			"simulationPeriodInMinute": 1,
+			"numEventsPerBatch": 100,
+			"fields": [
+				{
+					"name": "deviceDetails",
+					"type": "struct",
+					"properties": [
+						{
+							"name": "deviceId",
+							"type": "int",
+							"minRange": 1,
+							"maxRange": 9
+						},
+						{
+							"name": "deviceType",
+							"type": "string",
+							"valueList": [
+								"DoorLock",
+								"Heating",
+								"WindowLock",
+								"GarageDoorLock"
+							]
+						},
+						{
+							"name": "eventTime",
+							"type": "dateTime",
+							"utcAddSeconds": "0",
+							"datetimeStringFormat": "MM/dd/yyyy HH:mm:ss"
+						},
+						{
+							"name": "homeId",
+							"type": "int",
+							"minRange": 1,
+							"maxRange": 100
+						},
+						{
+							"name": "status",
+							"type": "int",
+							"minRange": 0,
+							"maxRange": 1
+						}
+					]
+				}
+			],
+			"rulesData": [
+				{
+					"dataStream": "{\"deviceDetails\":{\"deviceId\":1,\"deviceType\":\"Heating\",\"eventTime\":\"05/16/2017 20:38:22\",\"homeId\":150,\"status\":1}}",
+					"triggerConditions": [	
+						{
+							"parentJsonPropertyPath": "deviceDetails",
+							"propertyName": "status",
+							"propertyType": "int",
+							"castAsString": false,
+							"ruleTriggerValue": 1,
+							"ruleNotTriggerValue": 0,
+							"ruleNotTriggerTimeInMinutes": [
+								7,
+								8,
+								9
+							]
+						},					
+						{
+							"parentJsonPropertyPath": "deviceDetails",
+							"propertyName": "eventTime",
+							"propertyType": "datetime",
+							"utcAddSeconds": "0",
+							"datetimeStringFormat": "MM/dd/yyyy HH:mm:ss"
+						}
+					]
+				},
+				{
+					"dataStream": "{\"deviceDetails\":{\"deviceId\":2,\"deviceType\":\"WindowLock\",\"eventTime\":\"05/16/2017 20:38:22\",\"homeId\":150,\"status\":1}}",
+					"triggerConditions": [
+						{
+							"parentJsonPropertyPath": "deviceDetails",
+							"propertyName": "status",
+							"propertyType": "int",
+							"castAsString": false,
+							"ruleTriggerValue": 0,
+							"ruleNotTriggerValue": 1,
+							"ruleNotTriggerTimeInMinutes": [
+								7,
+								8,
+								9
+							]
+						},
+						{
+							"parentJsonPropertyPath": "deviceDetails",
+							"propertyName": "eventTime",
+							"propertyType": "datetime",
+							"utcAddSeconds": "0",
+							"datetimeStringFormat": "MM/dd/yyyy HH:mm:ss"
+						}
+					]
+				},
+				{
+					"dataStream": "{\"deviceDetails\":{\"deviceId\":3,\"deviceType\":\"DoorLock\",\"eventTime\":\"05/16/2017 20:38:22\",\"homeId\":150,\"status\":1}}",
+					"triggerConditions": [
+						{
+							"parentJsonPropertyPath": "deviceDetails",
+							"propertyName": "status",
+							"propertyType": "int",
+							"castAsString": false,
+							"ruleTriggerValue": 0,
+							"ruleNotTriggerValue": 1,
+							"ruleNotTriggerTimeInMinutes": [
+								1,
+								2,
+								3,
+								7,
+								8,
+								9
+							]
+						},
+						{
+							"parentJsonPropertyPath": "deviceDetails",
+							"propertyName": "eventTime",
+							"propertyType": "datetime",
+							"utcAddSeconds": "0",
+							"datetimeStringFormat": "MM/dd/yyyy HH:mm:ss"
+						}
+					]
+				},
+				{
+					"dataStream": "{\"deviceDetails\":{\"deviceId\":4,\"deviceType\":\"GarageDoorLock\",\"eventTime\":\"05/16/2017 20:38:22\",\"homeId\":150,\"status\":1}}",
+					"triggerConditions": [
+						{
+							"parentJsonPropertyPath": "deviceDetails",
+							"propertyName": "status",
+							"propertyType": "int",
+							"castAsString": false,
+							"ruleTriggerValue": 0,
+							"ruleNotTriggerValue": 1,
+							"ruleNotTriggerTimeInMinutes": [
+								13,
+								14
+							]
+						},
+						{
+							"parentJsonPropertyPath": "deviceDetails",
+							"propertyName": "eventTime",
+							"propertyType": "datetime",
+							"utcAddSeconds": "0",
+							"datetimeStringFormat": "MM/dd/yyyy HH:mm:ss"
+						}
+					]
+				}
+			]
+		}
+	]
+}

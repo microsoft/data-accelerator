@@ -1,0 +1,155 @@
+﻿--DataXQuery--
+  GarageDoorAccumalator = SELECT
+        deviceDetails.deviceId,
+        deviceDetails.deviceType,
+        deviceDetails.homeId,
+        deviceDetails.eventTime,
+        deviceDetails.status                          
+    FROM
+        DataXProcessedInput                          
+    WHERE
+        deviceDetails.deviceType = 'GarageDoorLock'                          
+    UNION
+    ALL                          SELECT
+        deviceId,
+        deviceType,
+        homeId,
+        eventTime,
+        status                          
+    FROM
+        iotdevicesample_GarageDoor_accumulated                          
+    WHERE
+        hour(eventTime) = hour(current_timestamp())
+    
+--DataXQuery--
+    iotdevice_GarageDoor_accumulated = SELECT
+        deviceId,
+        deviceType,
+        homeId,
+        eventTime,
+        status        
+    FROM
+        GarageDoorAccumalator
+    
+--DataXQuery--
+   House150Data = SELECT
+        COUNT(DISTINCT eventTime) AS totalTime                                     
+    FROM
+        iotdevice_GarageDoor_accumulated                                    
+    WHERE
+        homeId = 150 
+        AND status=0
+    
+--DataXQuery--
+ House150GarageTotalTimeOpen = SELECT
+        DISTINCT DATE_TRUNC('second',
+        current_timestamp()) AS EventTime,
+        'House150GarageTotalTimeOpen' AS MetricName,
+        totalTime AS Metric,
+        'P4' AS Product,
+        '' AS Pivot1 
+    FROM
+        House150Data 
+    GROUP BY
+        EventTime,
+        MetricName,
+        Metric,
+        Product,
+        Pivot1
+    
+    
+--DataXQuery--
+  aa1_2_1 = SELECT
+        COUNT(`deviceDetails.status`) AS `deviceDetails.status_COUNT`,
+        `deviceDetails.homeId`,
+        COUNT(*) AS Count  
+    FROM
+        DataXProcessedInput  
+    GROUP BY
+        `deviceDetails.homeId`
+    
+--DataXQuery--
+  aa2_2_1 = SELECT
+        *,
+        MAP(
+            'ruleId',
+            'R70',
+            'ruleDescription',
+            'Detects count of door close',
+            'severity',
+            'Critical',
+            'Tag',
+            'CloseCount'
+        ) AS RuleObject 
+    FROM
+        aa1_2_1 
+    WHERE
+        `deviceDetails.status_COUNT` > 3
+    
+--DataXQuery--
+  aa3_2_1 = SELECT
+        MAP(
+            '`deviceDetails.homeId`',
+            `deviceDetails.homeId`    
+        ) AS pivots,
+        MAP(
+            '`deviceDetails.status`',
+            MAP(
+                'COUNT',
+                `deviceDetails.status_COUNT`
+            )  
+        ) AS aggs,
+        Count AS count,
+        MAP(
+            'ruleId',
+            'R70',
+            'Tag',
+            'CloseCount',
+            'description',
+            'Detects count of door close',
+            'severity',
+            'Critical'    
+        ) AS result 
+    FROM
+        aa2_2_1
+    
+--DataXQuery--
+  CloseCountAlert = SELECT
+        DISTINCT DATE_TRUNC('second',
+        current_timestamp()) AS EventTime,
+        'CloseCountAlert' AS MetricName,
+        0 as Metric,
+        'P4' AS Product,
+        RuleObject.ruleDescription AS Pivot1 
+    FROM
+        aa2_2_1
+    
+    
+--DataXQuery--
+  sa1_1_1 = SELECT
+        *,
+        'R71' AS ruleId,
+        'Detects cold condition' AS ruleDescription,
+        'Critical' AS severity,
+        'Cold' AS Tag 
+    FROM
+        DataXProcessedInput  
+    WHERE
+        `device.Temperature` < 40
+    
+--DataXQuery--
+  sa2_1_1 = SELECT
+        * 
+    FROM
+        sa1_1_1
+    
+--DataXQuery--
+  ColdAlert = SELECT
+        DISTINCT DATE_TRUNC('second',
+        current_timestamp()) AS EventTime,
+        'ColdAlert' AS MetricName,
+        0 as Metric,
+        'P4' AS Product,
+        'Detects cold condition' AS Pivot1 
+    FROM
+        sa1_1_1

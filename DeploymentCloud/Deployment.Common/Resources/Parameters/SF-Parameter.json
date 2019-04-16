@@ -1,0 +1,142 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "clusterLocation": {
+            "value": "$resourceLocationForServiceFabric"
+        },
+        "clusterName": {
+            "value": "$serviceFabricName"
+        },
+        "nt0applicationStartPort": {
+            "value": 20000
+        },
+        "nt0applicationEndPort": {
+            "value": 30000
+        },
+        "nt0ephemeralStartPort": {
+            "value": 49152
+        },
+        "nt0ephemeralEndPort": {
+            "value": 65534
+        },
+        "nt0fabricTcpGatewayPort": {
+            "value": 19000
+        },
+        "nt0fabricHttpGatewayPort": {
+            "value": 19080
+        },
+        "nt0reverseProxyEndpointPort": {
+            "value": 19081
+        },
+        "subnet0Name": {
+            "value": "Subnet-0"
+        },
+        "subnet0Prefix": {
+            "value": "10.0.0.0/24"
+        },
+        "computeLocation": {
+            "value": "$resourceLocationForServiceFabric"
+        },
+        "publicIPAddressName": {
+            "value": "$serviceFabricName-PubIP"
+        },
+        "publicIPAddressType": {
+            "value": "Dynamic"
+        },
+        "vmStorageAccountContainerName": {
+            "value": "vhds"
+        },
+		"adminUserName": {
+			"reference": {
+				"keyVault": {
+				"id": "/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.KeyVault/vaults/$fabricRDPKVName"
+				},
+				"secretName": "sfadminuser"
+			}
+		},
+		"adminPassword": {
+			"reference": {
+				"keyVault": {
+				"id": "/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.KeyVault/vaults/$fabricRDPKVName"
+				},
+				"secretName": "sfadminpassword"
+			}
+		},
+        "virtualNetworkName": {
+            "value": "VNet-$serviceFabricName"
+        },
+        "addressPrefix": {
+            "value": "10.0.0.0/16"
+        },
+        "dnsName": {
+            "value": "$serviceFabricName"
+        },
+        "nicName": {
+            "value": "NIC-$serviceFabricName"
+        },
+        "lbName": {
+            "value": "LB-$serviceFabricName"
+        },
+        "lbIPName": {
+            "value": "LBIP-$serviceFabricName"
+        },
+        "overProvision": {
+            "value": "false"
+        },
+        "vmImagePublisher": {
+            "value": "MicrosoftWindowsServer"
+        },
+        "vmImageOffer": {
+            "value": "WindowsServer"
+        },
+        "vmImageSku": {
+            "value": "2016-Datacenter-with-Containers"
+        },
+        "vmImageVersion": {
+            "value": "latest"
+        },
+        "clusterProtectionLevel": {
+            "value": "EncryptAndSign"
+        },
+        "certificateStoreValue": {
+            "value": "My"
+        },
+        "certificateThumbprint": {
+            "value": "$certPrimaryThumbprint"
+        },
+        "sfKVName": {
+            "value": "$sfKVName"
+        },
+        "certificateUrlValue": {
+            "value": "$certPrimarySecretId"
+        },
+        "reverseProxyCertificateStoreValue": {
+            "value": "My"
+        },
+        "reverseProxyCertificateThumbprint": {
+            "value": "$certReverseProxyThumbprint"
+        },
+        "reverseProxyCertificateUrlValue": {
+            "value": "$certReverseProxySecretId"
+        },
+        "storageAccountType": {
+            "value": "Standard_LRS"
+        },
+        "supportLogStorageAccountType": {
+            "value": "Standard_LRS"
+        },
+        "applicationDiagnosticsStorageAccountType": {
+            "value": "Standard_LRS"
+        },
+        "nt0InstanceCount": {
+            "value": $vmNodeinstanceCount,
+        },
+        "vmNodeType0Name": {
+            "value": "$vmNodeTypeName"
+        },
+        "vmNodeType0Size": {
+            "value": "$vmNodeTypeSize"
+        }
+    }
+}

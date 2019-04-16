@@ -1,0 +1,255 @@
+﻿--DataXQuery--
+   ar1_2_1 = SELECT
+        AVG(Humidity) AS Humidity_AVG,
+        MIN(Temperature) AS Temperature_MIN,
+        MAX(Temperature) AS Temperature_MAX,
+        DeviceId,
+        COUNT(*) AS Count   
+    FROM
+        Foo   
+    GROUP BY
+        DeviceId
+    
+--DataXQuery--
+   ar2_2_1 = SELECT
+        *,
+        IF(
+            Humidity_AVG > 40 
+            AND Temperature_MIN > 80,
+            MAP(
+                'ruleId',
+                'R40',
+                'ruleDescription',
+                'Detects hot condition average',
+                'severity',
+                'Critical',
+                'Tag',
+                'Anomaly'
+            ),
+            NULL
+        ) AS RuleObject   
+    FROM
+        ar1_2_1
+    
+--DataXQuery--
+   ar3_2_1 = SELECT
+        MAP(
+            'DeviceId',
+            DeviceId     
+        ) AS pivots,
+        MAP(
+            'Humidity',
+            MAP(
+                'AVG',
+                Humidity_AVG
+            ),
+            'Temperature',
+            MAP(
+                'MIN',
+                Temperature_MIN,
+                'MAX',
+                Temperature_MAX
+            )   
+        ) AS aggs,
+        Count AS count,
+        MAP(
+            'ruleId',
+            'R40',
+            'Tag',
+            'Anomaly',
+            'description',
+            'Detects hot condition average',
+            'severity',
+            'Critical'     
+        ) AS result 
+    FROM
+        ar2_2_1
+    
+--DataXQuery--
+   ar1_2_2 = SELECT
+        AVG(Humidity) AS Humidity_AVG,
+        MIN(Temperature) AS Temperature_MIN,
+        MAX(Temperature) AS Temperature_MAX,
+        DeviceId,
+        COUNT(*) AS Count   
+    FROM
+        Foo   
+    GROUP BY
+        DeviceId
+    
+--DataXQuery--
+   ar2_2_2 = SELECT
+        *,
+        IF(
+            Humidity_AVG > 40 
+            AND Temperature_MIN > 80,
+            MAP(
+                'ruleId',
+                'R41',
+                'ruleDescription',
+                'Detects hot condition average',
+                'severity',
+                'Critical',
+                'Tag',
+                'Anomaly'
+            ),
+            NULL
+        ) AS RuleObject   
+    FROM
+        ar1_2_2
+    
+--DataXQuery--
+   ar3_2_2 = SELECT
+        MAP(
+            'DeviceId',
+            DeviceId     
+        ) AS pivots,
+        MAP(
+            'Humidity',
+            MAP(
+                'AVG',
+                Humidity_AVG
+            ),
+            'Temperature',
+            MAP(
+                'MIN',
+                Temperature_MIN,
+                'MAX',
+                Temperature_MAX
+            )   
+        ) AS aggs,
+        Count AS count,
+        MAP(
+            'ruleId',
+            'R41',
+            'Tag',
+            'Anomaly',
+            'description',
+            'Detects hot condition average',
+            'severity',
+            'Critical'     
+        ) AS result 
+    FROM
+        ar2_2_2
+    
+--DataXQuery--
+  ar4_2 = SELECT
+        * 
+    FROM
+        ar3_2_1 
+    UNION
+    SELECT
+        * 
+    FROM
+        ar3_2_2    
+--DataXQuery--
+  T1 = SELECT
+            * 
+        FROM
+            ar4_2
+    
+--DataXQuery--
+  sa1_1_1 = SELECT
+        *,
+        'R21' AS ruleId,
+        'Detects cold condition' AS ruleDescription,
+        'Critical' AS severity,
+        'Cold' AS Tag 
+    FROM
+        Foo  
+    WHERE
+        Temperature < 40
+    
+--DataXQuery--
+  sa2_1_1 = SELECT
+        * 
+    FROM
+        sa1_1_1
+    
+--DataXQuery--
+  ColdAlert = SELECT
+        DISTINCT DATE_TRUNC('second',
+        current_timestamp()) AS EventTime,
+        'ColdAlert' AS MetricName,
+        0 as Metric,
+        'P5' AS Product,
+        'Detects cold condition' AS Pivot1 
+    FROM
+        sa1_1_1
+    
+    
+--DataXQuery--
+  aa1_3_1 = SELECT
+        AVG(Humidity) AS Humidity_AVG,
+        MIN(Temperature) AS Temperature_MIN,
+        MAX(Temperature) AS Temperature_MAX,
+        DeviceId,
+        COUNT(*) AS Count  
+    FROM
+        Foo  
+    GROUP BY
+        DeviceId
+    
+--DataXQuery--
+  aa2_3_1 = SELECT
+        *,
+        MAP(
+            'ruleId',
+            'R41',
+            'ruleDescription',
+            'Detects hot condition average',
+            'severity',
+            'Critical',
+            'Tag',
+            'Anomaly'
+        ) AS RuleObject 
+    FROM
+        aa1_3_1 
+    WHERE
+        Humidity_AVG > 40 
+        AND Temperature_MIN > 80
+    
+--DataXQuery--
+  aa3_3_1 = SELECT
+        MAP(
+            'DeviceId',
+            DeviceId    
+        ) AS pivots,
+        MAP(
+            'Humidity',
+            MAP(
+                'AVG',
+                Humidity_AVG
+            ),
+            'Temperature',
+            MAP(
+                'MIN',
+                Temperature_MIN,
+                'MAX',
+                Temperature_MAX
+            )  
+        ) AS aggs,
+        Count AS count,
+        MAP(
+            'ruleId',
+            'R41',
+            'Tag',
+            'Anomaly',
+            'description',
+            'Detects hot condition average',
+            'severity',
+            'Critical'    
+        ) AS result 
+    FROM
+        aa2_3_1
+    
+--DataXQuery--
+  AnomalyAlert = SELECT
+        DISTINCT DATE_TRUNC('second',
+        current_timestamp()) AS EventTime,
+        'AnomalyAlert' AS MetricName,
+        0 as Metric,
+        'P5' AS Product,
+        RuleObject.ruleDescription AS Pivot1 
+    FROM
+        aa2_3_1

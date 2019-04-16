@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>Microsoft.DataX.Flow</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <projectUrl>http://aka.ms/data-accelerator</projectUrl>
+    <license type="expression">MIT</license>
+    <iconUrl>https://raw.githubusercontent.com/wiki/Microsoft/data-accelerator/tutorials/images/roundwhite6464.PNG</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Data Accelerator for Apache Spark simplifies streaming of Big Data using Spark. It is used internally at Microsoft for processing streamed data from multiple products everyday, handling data volumes at Microsoft scale. It offers a no-code experience to build Rules and Alerts, as well as numerous productivity improvements to develop and manage Spark SQL jobs on Azure HDInsights.  This is the package for the Flow service fabric.</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <tags>DataX.Flow, DataX Flow, DataX</tags>
+    <dependencies>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\applicationpackage\*.sfpkg" target="lib" />
+    <file src="..\dlls\DataX.*.dll" target="lib/netcoreapp2.1" />
+    <file src="..\NOTICE.txt" target="" />
+  </files>
+</package>

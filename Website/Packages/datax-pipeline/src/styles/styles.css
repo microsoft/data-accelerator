@@ -1,0 +1,139 @@
+/*
+ *********************************************************************
+ Copyright (c) Microsoft Corporation.  All rights reserved.
+ Licensed under the MIT License
+ *********************************************************************
+*/
+
+/* Button overrides */
+.header-button {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    min-width: 1px !important;
+    background-color: #eaeaea !important;
+}
+
+.header-button:hover {
+    background-color: #dadada !important;
+}
+
+.content-header-button {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    min-width: 1px !important;
+    background-color: #f4f4f4 !important;
+}
+
+.content-header-button:hover {
+    background-color: #eaeaea !important;
+}
+
+.content-header-button .ms-Button-menuIcon {
+    margin-left: 10px !important;
+}
+
+.rule-settings-delete-button {
+    padding-left: 5px !important;
+    padding-right: 0 !important;
+    min-width: 1px !important;
+    background-color: transparent !important;
+}
+
+.rule-settings-delete-button:hover {
+    background-color: #deecf9 !important;
+}
+
+.rule-settings-button {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    min-width: 1px !important;
+    background-color: transparent !important;
+}
+
+.rule-settings-button:hover {
+    background-color: #deecf9 !important;
+}
+
+/* Office UI Fabric Modal overrides */
+.ms-modal-container {
+    height: 300px;
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Text Box overrides */
+.info-settings-textbox {
+    width: 400px;
+    min-width: 200px;
+}
+
+/* Slider overrides */
+.info-settings-slider {
+    width: 440px;
+    min-width: 200px;
+}
+
+/* Toggle overrides */
+.query-settings .ms-Toggle {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* JSON Editor Styles */
+.editor-container > div {
+    flex: 1;
+    overflow-y: hidden;
+}
+
+.jsoneditor {
+    border: 1px solid #c8c8c8 !important;
+}
+
+.jsoneditor-menu {
+    background-color: #c8c8c8 !important;
+    border-bottom-color: #b7b7b7 !important;
+}
+
+/* Splitter styles */
+.splitter-layout {
+    position: relative !important;
+}
+
+.layout-pane-primary {
+    overflow: hidden !important;
+}
+
+.layout-pane {
+    overflow: hidden !important;
+}
+
+.layout-splitter {
+    width: 3px !important;
+}
+
+.layout-splitter:hover {
+    background-color: #666666 !important;
+}
+
+/* Query Pane styles */
+.query-pane-button {
+    height: 27px !important;
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+    min-width: 1px !important;
+  }
+
+.ms-IconExample:hover {
+    cursor: pointer !important;
+}
+
+.query-pane-TextField{
+    height: 27px !important;
+    width: 50px !important;
+}
+
+.query-pane-TextField .ms-TextField-fieldGroup {
+    height: 27px !important;
+}

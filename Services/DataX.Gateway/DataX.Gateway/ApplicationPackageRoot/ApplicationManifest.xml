@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (c) Microsoft Corporation.  All rights reserved.
+Licensed under the MIT License
+-->
+<ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="DataX.GatewayType" ApplicationTypeVersion="1.0.4" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <Parameters>
+    <Parameter Name="Auth_MinReplicaSetSize" DefaultValue="2" />
+    <Parameter Name="Auth_PartitionCount" DefaultValue="1" />
+    <Parameter Name="Auth_TargetReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="Api_InstanceCount" DefaultValue="-1" />
+    <Parameter Name="SSL_Cert_Thumbprint" DefaultValue="" />
+    <Parameter Name="ClientId" DefaultValue="" />
+    <Parameter Name="Audience" DefaultValue="" />
+    <Parameter Name="ReverseProxySslThumbprint" DefaultValue="" />
+    <Parameter Name="AllowedUserRoles" DefaultValue="" />
+    <Parameter Name="AzureServicesAuthConnectionString" DefaultValue="" />
+    <Parameter Name="Tenant" DefaultValue="" />
+    <Parameter Name="ServiceKeyvaultName" DefaultValue="" />
+    <Parameter Name="AppInsightsIntrumentationKey" DefaultValue="" />
+    <Parameter Name="EnableUserInfoLogging" DefaultValue="" />
+  </Parameters>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="DataX.Gateway.ApiPkg" ServiceManifestVersion="1.0.4" />
+    <ConfigOverrides>
+      <ConfigOverride Name="Config">
+        <Settings>
+          <Section Name="AuthConfig">
+            <Parameter Name="Audience" Value="[Audience]" />
+            <Parameter Name="Tenant" Value="[Tenant]" />
+          </Section>
+          <Section Name="SslCertsConfig">
+            <Parameter Name="ReverseProxySslThumbprint" Value="[ReverseProxySslThumbprint]" />
+          </Section>
+          <Section Name="RolesConfig">
+            <Parameter Name="AllowedUserRoles" Value="[AllowedUserRoles]" />
+          </Section>
+          <Section Name="ServiceEnvironment">
+            <Parameter Name="ServiceKeyvaultName" Value="[ServiceKeyvaultName]" />
+            <Parameter Name="AppInsightsIntrumentationKey" Value="[AppInsightsIntrumentationKey]" />
+            <Parameter Name="EnableUserInfoLogging" Value="[EnableUserInfoLogging]" />
+          </Section>
+        </Settings>
+      </ConfigOverride>
+    </ConfigOverrides>
+    <EnvironmentOverrides CodePackageRef="code">
+      <EnvironmentVariable Name="AzureServicesAuthConnectionString" Value="[AzureServicesAuthConnectionString]" />
+    </EnvironmentOverrides>
+    <Policies>
+      <EndpointBindingPolicy EndpointRef="GatewayEndpoint" CertificateRef="GatewayCert" />
+    </Policies>
+  </ServiceManifestImport>
+  <DefaultServices>
+    <Service Name="Api">
+      <StatelessService ServiceTypeName="ApiType" InstanceCount="[Api_InstanceCount]">
+        <SingletonPartition />
+      </StatelessService>
+    </Service>
+  </DefaultServices>
+  <Certificates>
+    <EndpointCertificate X509FindValue="[SSL_Cert_Thumbprint]" Name="GatewayCert" />
+  </Certificates>
+</ApplicationManifest>

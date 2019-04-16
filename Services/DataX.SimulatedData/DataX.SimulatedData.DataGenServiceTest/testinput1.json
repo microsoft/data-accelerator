@@ -1,0 +1,159 @@
+﻿{
+  "rulesCounterRefreshInMinutes": 3,
+  "dataSchema": [
+    {
+      "dataTypeName": "sensordata",
+      "simulationPeriodInMinute": 1,
+      "numEventsPerBatch": 3000,
+      "fields": [
+        {
+          "name": "msgschema",
+          "type": "struct",
+          "properties": [
+            {
+              "name": "msgversion",
+              "type": "int",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "name": "sensordetails",
+          "type": "struct",
+          "properties": [
+            {
+              "name": "timestampnano",
+              "type": "double",
+              "minRange": 10000000000,
+              "maxRange": 20000000000
+            },
+            {
+              "name": "timestamp",
+              "type": "dateTime",
+              "utcAddSeconds": "0",
+              "datetimeStringFormat": "MM/dd/yyyy HH:mm:ss"
+            },
+            {
+              "name": "deviceindex",
+              "type": "int",
+              "minRange": 2,
+              "maxRange": 9
+            },
+            {
+              "name": "sensor1",
+              "type": "double",
+              "minRange": 0,
+              "maxRange": 2.0
+            },
+            {
+              "name": "sensor2",
+              "type": "double",
+              "minRange": -2.0,
+              "maxRange": 2.0
+            },
+            {
+              "name": "sensor3",
+              "type": "double",
+              "minRange": -2.0,
+              "maxRange": 2.0
+            },
+            {
+              "name": "sensor4",
+              "type": "double",
+              "minRange": -2.0,
+              "maxRange": 2.0
+            },
+            {
+              "name": "sensor5",
+              "type": "double",
+              "minRange": -2.0,
+              "maxRange": 2.0
+            },
+            {
+              "name": "sensor6",
+              "type": "double",
+              "minRange": 32.0,
+              "maxRange": 35.0
+            },
+            {
+              "name": "sensor7",
+              "type": "double",
+              "minRange": 32.0,
+              "maxRange": 35.0
+            },
+            {
+              "name": "sensor8",
+              "type": "double",
+              "minRange": 32.0,
+              "maxRange": 35.0
+            },
+            {
+              "name": "sensor9",
+              "type": "double",
+              "minRange": 32.0,
+              "maxRange": 35.0
+            },
+            {
+              "name": "sensor10",
+              "type": "double",
+              "minRange": 0,
+              "maxRange": 1.0
+            },
+            {
+              "name": "sensor11",
+              "type": "double",
+              "minRange": 0,
+              "maxRange": 1.0
+            },
+            {
+              "name": "sensor12",
+              "type": "double",
+              "minRange": 0.0,
+              "maxRange": 1.0
+            },
+            {
+              "name": "sensor13",
+              "type": "int",
+              "minRange": 0,
+              "maxRange": 11000
+            },
+            {
+              "name": "location",
+              "type": "string",
+              "valueList": [
+                "usa"
+              ]
+            }
+          ]
+        }
+      ],
+      "rulesData": [
+        {
+          "dataStream": "{\"msgschema\":{\"msgversion\":1},\"sensordetails\":{\"timestampnano\":10000000001,\"timestamp\":\"05/16/2018 20:38:17\",\"deviceindex\":1,\"sensor1\":0.2,\"sensor2\":0.2,\"sensor3\":0.3,\"sensor4\":0.4,\"sensor5\":0.2,\"sensor6\":33,\"sensor7\":33,\"sensor8\":32,\"sensor9\":32,\"sensor10\":0.88,\"sensor111\":0.0,\"sensor12\":0.0,\"sensor13\":11000,\"location\":\"monaco\"}}",
+          "triggerConditions": [
+            {
+              "parentJsonPropertyPath": "sensordetails",
+              "propertyName": "sensor10",
+              "propertyType": "double",
+              "castAsString": true,
+              "ruleTriggerMinRange": 0.6,
+              "ruleTriggerMaxRange": 1.0,
+              "ruleNotTriggerMinRange": 0.0,
+              "ruleNotTriggerMaxRange": 0.4,
+              "ruleNotTriggerTimeInMinutes": [
+                2
+              ]
+            },
+            {
+              "parentJsonPropertyPath": "sensordetails",
+              "propertyName": "timestamp",
+              "propertyType": "datetime",
+              "utcAddSeconds": "-5",
+              "datetimeStringFormat": "MM/dd/yyyy HH:mm:ss"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

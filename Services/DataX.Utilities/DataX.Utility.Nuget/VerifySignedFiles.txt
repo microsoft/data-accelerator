@@ -1,0 +1,2 @@
+*.dll, some dlls are not supposed to be signed. Ignore them
+*.xml, Ignore xml

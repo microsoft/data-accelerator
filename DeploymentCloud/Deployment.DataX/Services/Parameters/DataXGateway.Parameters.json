@@ -1,0 +1,37 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "paths": [{
+        "ParameterReference": "appPackageUrl"
+    }],
+    "parameters": {
+		"serviceFabricName": {
+			"value": "$serviceFabricName"
+		},
+        "applicationTypeVersion": {
+            "value": "$version"
+        },
+        "appPackageUrl": {
+            "value": "$appPackageUrl"
+        },
+        "sfPkgName": {
+            "value": "DataXGateway"
+        },
+        "sfAppParameters": {
+            "value": {
+                "Api_InstanceCount": "5",
+                "Auth_PartitionCount": "1",
+                "Auth_TargetReplicaSetSize": "3",
+                "Auth_MinReplicaSetSize": "2",
+                "SSL_Cert_Thumbprint": "$sslcertThumbprint",
+                "ClientId": "$configgenClientId",
+                "Audience": "https://$configgenTenantId/$serviceAppName",
+                "ReverseProxySslThumbprint": "$certReverseProxyThumbprint",
+                "AllowedUserRoles": "$readerRole,$writerRole",
+				"Tenant": "$configgenTenantId",
+				"ServiceKeyvaultName": "$servicesKVName",
+				"AppInsightsIntrumentationKey": "$serviceSecretPrefix-aiInstrumentationKey"
+            }
+        }
+    }
+}

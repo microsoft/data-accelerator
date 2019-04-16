@@ -1,0 +1,10 @@
+[Unit]
+Description=hdinsight msiserver app
+
+[Service]
+Type=idle
+
+ExecStart=/usr/bin/python /usr/hdinsight/msiserver.py &
+
+[Install]
+WantedBy=multi-user.target

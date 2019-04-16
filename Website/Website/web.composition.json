@@ -1,0 +1,197 @@
+{
+  "client": {
+    "displayName": "Data Accelerator",
+    "emailUrl": "mailto:data-accelerator@microsoft.com",
+    "bugUrl": "https://aka.ms/data-accelerator-bug",
+    "pages": [
+      {
+        "key": "home",
+        "enable": true,
+        "blankLoadingPage": true,
+        "externalUrl": null,
+        "title": "Home",
+        "routePath": "/home",
+        "supportSubRoute": false,
+        "packageName": "datax-home",
+        "componentName": "HomePage",
+        "componentProps": {}
+      },
+      {
+        "key": "flow-list",
+        "enable": true,
+        "externalUrl": null,
+        "title": "Flows",
+        "routePath": "/config",
+        "supportSubRoute": true,
+        "packageName": "datax-pipeline",
+        "componentName": "FlowListPanel",
+        "componentProps": {
+          "newItemPath": "/config/new",
+          "editItemPath": "/config/edit"
+        }
+      },
+      {
+        "key": "flow-new",
+        "enable": true,
+        "externalUrl": null,
+        "title": "Flows",
+        "routePath": "/config/new",
+        "supportSubRoute": false,
+        "packageName": "datax-pipeline",
+        "componentName": "FlowDefinitionPanel",
+        "componentProps": {
+          "returnPath": "/config"
+        }
+      },
+      {
+        "key": "flow-edit",
+        "enable": true,
+        "externalUrl": null,
+        "title": "Flows",
+        "routePath": "/config/edit/:id",
+        "supportSubRoute": false,
+        "packageName": "datax-pipeline",
+        "componentName": "FlowDefinitionPanel",
+        "componentProps": {
+          "returnPath": "/config"
+        }
+      },
+      {
+        "key": "metrics-list",
+        "enable": true,
+        "blankLoadingPage": true,
+        "externalUrl": null,
+        "title": "Metrics",
+        "routePath": "/dashboard",
+        "supportSubRoute": true,
+        "packageName": "datax-metrics",
+        "componentName": "MetricExplorer",
+        "componentProps": {
+          "alwaysRefresh": true,
+          "showAll": false
+        }
+      },
+      {
+        "key": "metrics-by-name",
+        "enable": true,
+        "blankLoadingPage": true,
+        "externalUrl": null,
+        "title": "Metrics",
+        "routePath": "/dashboard/:name",
+        "supportSubRoute": false,
+        "packageName": "datax-metrics",
+        "componentName": "MetricExplorer",
+        "componentProps": {
+          "alwaysRefresh": false,
+          "showAll": false
+        }
+      },
+      {
+        "key": "jobs",
+        "enable": true,
+        "externalUrl": null,
+        "title": "Jobs",
+        "routePath": "/jobs",
+        "supportSubRoute": true,
+        "packageName": "datax-jobs",
+        "componentName": "SparkJobs",
+        "componentProps": {}
+      }
+    ]
+  },
+  "localServices": {
+    "Flow.ManagementService": "process.env.DATAXDEV_FLOW_MANAGEMENT_LOCAL_SERVICE",
+    "Flow.InteractiveQueryService": "process.env.DATAXDEV_INTERACTIVE_QUERY_LOCAL_SERVICE",
+    "Flow.SchemaInferenceService": "process.env.DATAXDEV_SCHEMA_INFERENCE_LOCAL_SERVICE",
+    "Flow.LiveDataService": "process.env.DATAXDEV_LIVE_DATA_LOCAL_SERVICE"
+  },
+  "api": {
+    "DataXWriter": [
+      "^WriterRole$",
+      "^DataX.Flow\/Flow.ManagementService\/flow\/get$",
+      "^DataX.Flow\/Flow.ManagementService\/flow\/getall$",
+      "^DataX.Flow\/Flow.ManagementService\/flow\/getall\/min$",
+      "^DataX.Flow\/Flow.ManagementService\/job\/getall$",
+      "^DataX.Flow\/Flow.ManagementService\/job\/getbynames$",
+      "^DataX.Flow\/Flow.ManagementService\/flow\/save$",
+      "^DataX.Flow\/Flow.ManagementService\/flow\/delete$",
+      "^DataX.Flow\/Flow.ManagementService\/flow\/generateconfigs$",
+      "^DataX.Flow\/Flow.ManagementService\/flow\/startjobs$",
+      "^DataX.Flow\/Flow.ManagementService\/flow\/stopjobs$",
+      "^DataX.Flow\/Flow.ManagementService\/flow\/restartjobs$",
+      "^DataX.Flow\/Flow.ManagementService\/job\/syncall$",
+      "^DataX.Flow\/Flow.ManagementService\/job\/syncbynames$",
+      "^DataX.Flow\/Flow.ManagementService\/job\/start$",
+      "^DataX.Flow\/Flow.ManagementService\/job\/stop$",
+      "^DataX.Flow\/Flow.ManagementService\/job\/restart$",
+      "^DataX.Flow\/Flow.ManagementService\/userqueries\/schema$",
+      "^DataX.Flow\/Flow.ManagementService\/userqueries\/codegen$",
+      "^DataX.Flow\/Flow.ManagementService\/codegen$",
+      "^DataX.Flow\/Flow.InteractiveQueryService\/kernel$",
+      "^DataX.Flow\/Flow.InteractiveQueryService\/kernel\/refresh$",
+      "^DataX.Flow\/Flow.InteractiveQueryService\/kernel\/deleteList$",
+      "^DataX.Flow\/Flow.InteractiveQueryService\/kernel\/delete$",
+      "^DataX.Flow\/Flow.InteractiveQueryService\/kernels\/delete$",
+      "^DataX.Flow\/Flow.InteractiveQueryService\/kernel\/sampleinputfromquery$",
+      "^DataX.Flow\/Flow.InteractiveQueryService\/kernel\/executequery$",
+      "^DataX.Flow\/Flow.LiveDataService\/inputdata\/refreshsampleandkernel$",
+      "^DataX.Flow\/Flow.SchemaInferenceService\/inputdata\/inferschema$",
+      "^DataX.Flow\/Flow.SchemaInferenceService\/inputdata\/refreshsample$",
+      "^DataX.Flow\/Flow.InteractiveQueryService\/kernels\/deleteall$",
+      "^\/api\/metrics\/get.*$",
+      "^\/api\/commonsetting\/.*$"
+    ],
+    "DataXReader": [
+      "^DataX.Flow\/Flow.ManagementService\/flow\/get$",
+      "^DataX.Flow\/Flow.ManagementService\/flow\/getall$",
+      "^DataX.Flow\/Flow.ManagementService\/flow\/getall\/min$",
+      "^DataX.Flow\/Flow.ManagementService\/job\/getall$",
+      "^DataX.Flow\/Flow.ManagementService\/job\/getbynames$",
+      "^DataX.Flow\/Flow.ManagementService\/job\/syncbynames$",
+      "^\/api\/metrics\/get.*$"
+    ]
+  },
+  "functionsEnabled": {
+    "enabledForWriter": [
+      "newFlowButtonEnabled",
+      "saveFlowButtonEnabled",
+      "deleteFlowButtonEnabled",
+      "getInputSchemaButtonEnabled",
+      "outputSideToolBarEnabled",
+      "executeQueryButtonEnabled",
+      "resampleButtonEnabled",
+      "refreshKernelsButtonEnabled",
+      "deleteAllKernelsEnabled",
+      "flowNameTextboxEnabled",
+      "inputModeDropdownEnabled",
+      "inputTypeDropdownEnabled",
+      "inputEventHubEnabled",
+      "inputEventHubConnectionStringEnabled",
+      "inputWindowDurationTextboxEnabled",
+      "inputMaxRateTextboxEnabled",
+      "inputTimestampColumnEnabled",
+      "inputWatermarkEnabled",
+      "inputSchemaEditorEnabled",
+      "inputNormalizationEditorEnabled",
+      "addRuleButtonEnabled",
+      "deleteRuleButtonEnabled",
+      "previewQueryButtonEnabled",
+      "queryEditorEnabled",
+      "addReferenceDataButtonEnabled",
+      "deleteReferenceDataButtonEnabled",
+      "addFunctionButtonEnabled",
+      "deleteFunctionButtonEnabled",
+      "addOutputSinkButtonEnabled",
+      "deleteOutputSinkButtonEnabled",
+      "scaleNumExecutorsSliderEnabled",
+      "scaleExecutorMemorySliderEnabled",
+      "jobActionsEnabled"
+    ],
+    "disabledForLocalOneBox": [
+      "outputSideToolBarEnabled",
+      "resampleButtonEnabled",
+      "refreshKernelsButtonEnabled",
+      "deleteAllKernelsEnabled"
+    ]
+  }
+}

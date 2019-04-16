@@ -1,0 +1,90 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"default_resource_location": {
+			"value": "$resourceLocation"
+		},
+		"tenantId": {
+			"value": "$tenantId"
+		},
+		"userId": {
+			"value": "$userId"
+		},
+		"resource_location_microsoft_insights": {
+			"value": "$resourceLocationForMicrosoftInsights"
+		},		
+		"resource_location_microsoft_servicefabric": {
+			"value": "$resourceLocationForServiceFabric"
+		},		
+		"sites_web_name": {
+			"value": "$websiteName"
+		},
+		"vaults_sparkKV_name": {
+			"value": "$sparkKVName"
+		},
+		"vaults_servicesKV_name": {
+			"value": "$servicesKVName"
+		},
+		"vaults_sparkRDPKV_name": {
+			"value": "$sparkRDPKVName"
+		},
+		"vaults_fabricRDPKV_name": {
+			"value": "$fabricRDPKVName"
+		},
+        "sourceVaultValue": {
+            "value": "$sfKVName"
+        },
+		"redis_name": {
+			"value": "$redisName"
+		},
+		"redis_sku_name": {
+			"value": "$redisSkuName"
+		},
+		"redis_sku_family": {
+			"value": "$redisSkuFamily"
+		},
+		"redis_sku_capacity": {
+			"value": $redisSkuCapacity
+		},
+		"components_appInsights_name": {
+			"value": "$appInsightsName"
+		},
+		"config_web_name": {
+			"value": "web"
+		},
+		"serverfarms_app_service_plan_name": {
+			"value": "app-service-plan$name"
+		},
+		"databaseAccounts_dbname_name": {
+			"value": "$docDBName"
+		},
+		"storageAccounts_configs_name": {
+			"value": "$configBlobAccountName"
+		},
+		"namespaces_metricseventhub_name": {
+			"value": "$eventHubNamespaceName"
+		},
+		"hostNameBindings_web.azurewebsites.net_name": {
+			"value": "$websiteName.azurewebsites.net"
+		},
+		"eventhubs_metricseventhub_name": {
+			"value": "metricseventhub"
+		},
+		"AuthorizationRules_Listen_name": {
+			"value": "listen"
+		},
+		"consumergroups_metrics-ingestor_name": {
+			"value": "metrics-ingestor"
+		},
+		"authorizationRules_send_name": {
+			"value": "send"
+		},
+		"clientSecretPrefix": {
+			"value": "$clientSecretPrefix"
+		},
+		"certType": {
+			"value": "$certtype"
+		}
+	}
+}

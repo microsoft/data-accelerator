@@ -1,0 +1,52 @@
+﻿[
+  {
+    "$ruleId": "R1", 
+    "$productId": "P1",
+    "$ruleType": "SimpleRule",
+    "$ruleDescription": "Detects hot condition",
+    "$severity": "Critical",
+    "$condition": "Temperature > 90", 
+    "$tagname": "Tag",
+    "$tag": "Hot",
+    "$outputTemplate": "OT1", 
+    "$alertsinks": [ "myfilteredCosmosDB", "myAlert" ],
+    "$isAlert": true
+  },
+  {
+    "$ruleId": "R2", 
+    "$productId": "P1",
+    "$ruleType": "SimpleRule",
+    "$ruleDescription": "Detects hot condition",
+    "$severity": "Critical",
+    "$condition": "Temperature < 40", 
+    "$tagname": "Tag",
+    "$tag": "Cold"
+  },
+  {
+    "$ruleId": "R3", 
+    "$productId": "P1",
+    "$ruleType": "AggregateRule",
+    "$ruleDescription": "Detects hot condition average",
+    "$severity": "Critical",
+    "$aggs": [ "AVG(Temperature)", "MIN(Temperature)", "MAX(Temperature)" ], 
+    "$condition": "AVG(Temperature) > 90", 
+    "$pivots": [ "DeviceId", "Geo" ], 
+    "$tagname": "Tag",
+    "$tag": "Hot",
+    "$outputTemplate": "OT2", 
+    "$alertsinks": [ "myfilteredCosmosDB", "myAlert" ],
+    "$isAlert": true
+  },
+  {
+    "$ruleId": "R4", 
+    "$productId": "P1",
+    "$ruleType": "AggregateRule",
+    "$ruleDescription": "Detects hot condition average",
+    "$severity": "Critical",
+    "$aggs": [ "AVG(Humidity)", "MIN(Temperature)", "MAX(Temperature)" ], 
+    "$condition": "AVG(Humidity) > 40 AND MIN(Temperature) > 80", 
+    "$pivots": [ "DeviceId" ], 
+    "$tagname": "Tag",
+    "$tag": "Anomaly"
+  }
+]

@@ -1,0 +1,1 @@
+You can find the query under \flows\<id> in CosmosDB for the .json file
