@@ -1,4 +1,4 @@
-### Data Accelerator for Apache Spark - Open Source
+### Data Accelerator for Apache Spark
 [Data Accelerator](https://github.com/Microsoft/data-accelerator) for Apache Spark simplifies streaming of Big Data using Spark. It is used internally at Microsoft for processing streamed data from multiple products everyday, handling data volumes at Microsoft scale. It offers a no-code experience to build Rules and Alerts, as well as numerous productivity improvements to develop and manage Spark SQL jobs on Azure HDInsights.   
 <p align="center"><img style="float: center;" width="90%" src="https://github.com/Microsoft/data-accelerator/wiki/tutorials/images/readme3.PNG"></p>
 
@@ -13,7 +13,7 @@ To deploy to Azure, you can use the ARM template; see instructions [deploy to Az
 The [`data-accelerator`](https://github.com/Microsoft/data-accelerator/) repository contains everything needed to set up an end-to-end data pipeline.  There are many ways you can participate in the project:
  - [Submit bugs and requests](https://github.com/Microsoft/data-accelerator/issues)
  - [Review code changes](https://github.com/microsoft/data-accelerator/pulls)
- - [Review documentation](wiki) and make updates ranging from typos to new content.
+ - [Review documentation](https://github.com/Microsoft/data-accelerator/wiki) and make updates ranging from typos to new content.
 
 # Getting Started
 To unleash the full power Data Accelerator, [deploy to Azure](https://github.com/Microsoft/data-accelerator/wiki/Cloud-deployment) and check [cloud mode tutorials](https://github.com/Microsoft/data-accelerator/wiki/Tutorials#cloud-mode). 
