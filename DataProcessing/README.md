@@ -19,7 +19,7 @@ Common classes and singleton helps used across projects
 
 # Properties
 
-Some basic rules:
+Some basic rules :
 * Property names are akin to a full JSON path to locate a leaf in the JSON object
 * The root namespace is **datax.job**
 * Property names are all lowercase for known fields from the JSON config object, except cases from Map and Array
