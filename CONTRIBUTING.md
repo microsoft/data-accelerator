@@ -10,7 +10,7 @@
  * Please see [these instructions](https://github.com/Microsoft/data-accelerator/wiki/Local-Cloud-Debugging) on how to build and debug various components of Data Accelerator. 
 
 ## Create a change
-The development workflow, including debugging and running tests
+The development workflow, including debugging and running tests.
 
 ## Coding Guidelines
  * The services use .editorconfig files to maintain coding guidelines.  See [editorconfig](Services/.editorconfig) 
