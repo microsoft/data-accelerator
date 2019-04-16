@@ -8,6 +8,9 @@ Interface and classes definition for contracts of the Data Accelerator Engine
 ## Host
 Spark-specific app jar for Data Accelerator
 
+## Keyvault
+Classes for keyvault access
+
 ## Samples
 Examples for UDFs and UDAFs in Scala
 
