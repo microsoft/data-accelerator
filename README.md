@@ -16,8 +16,8 @@ The [`data-accelerator`](https://github.com/Microsoft/data-accelerator/) reposit
  - [Review documentation](wiki) and make updates ranging from typos to new content.
 
 # Getting Started
-To unleash the full power Data Accelerator, [deploy to Azure](Cloud-deployment) and check the tutorials for [cloud mode](https://github.com/Microsoft/data-accelerator/wiki/Tutorials#cloud-mode). 
-We have also enabled a "hello world" experience that you try out locally by running docker container. When running locally there are no dependencies on Azure, however the functionality is very limited and only there to give you a very cursory overview of Data Accelerator. To run Data Accelerator locally, follow [these instructions](https://github.com/Microsoft/data-accelerator/wiki/Local-mode-with-Docker) and then check out the tutorials of [local mode](https://github.com/Microsoft/data-accelerator/wiki/Tutorials#local-mode).<br/>
+To unleash the full power Data Accelerator, [deploy to Azure](Cloud-deployment) and check [cloud mode tutorials](https://github.com/Microsoft/data-accelerator/wiki/Tutorials#cloud-mode). 
+We have also enabled a "hello world" experience that you try out locally by running docker container. When running locally there are no dependencies on Azure, however the functionality is very limited and only there to give you a very cursory overview of Data Accelerator. To run Data Accelerator locally, follow [these instructions](https://github.com/Microsoft/data-accelerator/wiki/Local-mode-with-Docker) and then check out the [local mode tutorials](https://github.com/Microsoft/data-accelerator/wiki/Tutorials#local-mode).<br/>
 
 Data Accelerator for Spark runs on the following:
  - HDInsights with Spark 2.3
