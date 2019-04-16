@@ -359,7 +359,7 @@ function Prepare-Packages([string]$packageFilePath) {
     $allPackages = Get-ChildItem -Path $packageFilePath -Include *.sfpkg -File -Recurse
     foreach ($package in $allPackages) {
         $parentFolderName = ''
-        if ($package.FullName -match '(Deployment.DataX\\Packages\\)(.*)(\\Microsoft)')
+        if ($package.FullName -match '(Deployment.DataX\\Packages\\)(.*)(\\Microsoft.DataX)')
         {
             $parentFolderName = $Matches[2]
         } else {
@@ -394,7 +394,7 @@ function Fix-ApplicationTypeVersion([string] $parametersPath, [string] $packages
 
     foreach($parameterFile in $allParameters) {
         $paramJsonFile = Get-Content($parameterFile.fullname) | ConvertFrom-Json
-        $packageName = $paramJsonFile.parameters.sfPkgName.value
+        $packageName = "Microsoft" + $paramJsonFile.parameters.sfPkgName.value
 
         $archivePaths = Get-ChildItem -Path $packagesPath -Filter "$packageName.zip" -File -Recurse
         
