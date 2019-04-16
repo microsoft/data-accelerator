@@ -1,6 +1,6 @@
 # Website
 
-This is the DataX Portal 
+This is the DataX Portal.
 
 # Packages
 
