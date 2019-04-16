@@ -1,0 +1,17 @@
+﻿{
+    "name": "test",
+    "displayName": "testDisplayName",
+    "dynamic": {
+        "foo": "bar",
+        "bar": []
+    },
+    "generalObject": {
+        "foo": "bar"
+    },
+    "map": {
+        "A.B": "",
+        "c-d": {
+            "e": 1
+        }
+    }
+}

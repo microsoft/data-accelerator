@@ -1,0 +1,772 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"default_resource_location": {
+			"type": "string"
+		},
+		"tenantId": {
+			"type": "String"
+		},
+		"userId": {
+			"type": "String"
+		},
+		"resource_location_microsoft_insights": {
+			"type": "string"
+		},		
+		"resource_location_microsoft_servicefabric": {
+			"type": "string"
+		},		
+		"sites_web_name": {
+			"type": "String"
+		},
+		"vaults_sparkKV_name": {
+			"type": "String"
+		},
+		"vaults_servicesKV_name": {
+			"type": "String"
+		},
+		"vaults_sparkRDPKV_name": {
+			"type": "String"
+		},
+		"vaults_fabricRDPKV_name": {
+			"type": "String"
+		},
+        "sourceVaultValue": {
+            "type": "string"
+        },
+		"redis_name": {
+			"type": "String"
+		},
+		"redis_sku_name": {
+			"type": "String"
+		},
+		"redis_sku_family": {
+			"type": "String"
+		},
+		"redis_sku_capacity": {
+			"type": "int"
+		},
+		"components_appInsights_name": {
+			"type": "String"
+		},
+		"config_web_name": {
+			"type": "String"
+		},
+		"serverfarms_app_service_plan_name": {
+			"type": "String"
+		},
+		"databaseAccounts_dbname_name": {
+			"type": "String"
+		},
+		"storageAccounts_configs_name": {
+			"type": "String"
+		},
+		"namespaces_metricseventhub_name": {
+			"type": "String"
+		},
+		"hostNameBindings_web.azurewebsites.net_name": {
+			"type": "String"
+		},
+		"eventhubs_metricseventhub_name": {
+			"type": "String"
+		},
+		"AuthorizationRules_Listen_name": {
+			"type": "String"
+		},
+		"consumergroups_metrics-ingestor_name": {
+			"type": "String"
+		},
+		"authorizationRules_send_name": {
+			"type": "String"
+		},
+		"clientSecretPrefix": {
+			"type": "String"
+		},
+		"certType": {
+			"type": "String"
+		}
+	},
+	"variables": {
+	},
+	"resources": [
+		{
+			"type": "Microsoft.Cache/Redis",
+			"name": "[parameters('redis_name')]",
+			"apiVersion": "2017-10-01",
+			"location": "[parameters('default_resource_location')]",
+			"tags": {},
+			"scale": null,
+			"properties": {
+                "sku": {
+                    "name": "[parameters('redis_sku_name')]",
+                    "family": "[parameters('redis_sku_family')]",
+                    "capacity": "[parameters('redis_sku_capacity')]"
+                },
+                "redisConfiguration": {},
+                "enableNonSslPort": false
+			},
+			"dependsOn": []
+		},
+		{
+			"type": "Microsoft.DocumentDB/databaseAccounts",
+			"kind": "MongoDB",
+			"name": "[parameters('databaseAccounts_dbname_name')]",
+			"apiVersion": "2015-04-08",
+			"location": "[parameters('default_resource_location')]",
+			"tags": {
+				"defaultExperience": "MongoDB"
+			},
+			"scale": null,
+			"properties": {
+				"ipRangeFilter": "",
+				"enableAutomaticFailover": false,
+				"enableMultipleWriteLocations": true,
+				"isVirtualNetworkFilterEnabled": false,
+				"virtualNetworkRules": [],
+				"databaseAccountOfferType": "Standard",
+				"consistencyPolicy": {
+					"defaultConsistencyLevel": "Session",
+					"maxIntervalInSeconds": 5,
+					"maxStalenessPrefix": 100
+				},
+				"capabilities": [],
+				"locations": [
+					{
+						"locationName": "[parameters('default_resource_location')]",
+						"failoverPriority": 0
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"type": "Microsoft.EventHub/namespaces",
+			"sku": {
+				"name": "Standard",
+				"tier": "Standard",
+				"capacity": 1
+			},
+			"name": "[parameters('namespaces_metricseventhub_name')]",
+			"apiVersion": "2017-04-01",
+			"location": "[parameters('default_resource_location')]",
+			"tags": {},
+			"scale": null,
+			"properties": {
+				"isAutoInflateEnabled": true,
+				"maximumThroughputUnits": 1
+			},
+			"dependsOn": []
+		},
+		{
+			"type": "microsoft.insights/components",
+			"kind": "other",
+			"name": "[parameters('components_appInsights_name')]",
+			"apiVersion": "2015-05-01",
+			"location": "[parameters('resource_location_microsoft_insights')]",
+			"tags": {},
+			"scale": null,
+			"properties": {
+				"Application_Type": "other",
+				"Flow_Type": "Redfield",
+				"Request_Source": "IbizaAIExtension",
+				"HockeyAppId": null,
+				"SamplingPercentage": null
+			},
+			"dependsOn": []
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults",
+			"name": "[parameters('vaults_fabricRDPKV_name')]",
+			"apiVersion": "2016-10-01",
+			"location": "[parameters('default_resource_location')]",
+			"tags": {},
+			"scale": null,
+			"properties": {
+				"sku": {
+					"family": "A",
+					"name": "Standard"
+				},
+				"tenantId": "[parameters('tenantId')]",
+				"accessPolicies": [
+					{
+						"tenantId": "[parameters('tenantId')]",
+                        "objectId": "[parameters('userId')]",
+                        "permissions": {
+                            "keys": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore"
+                            ],
+                            "secrets": [
+                                "Get",
+                                "List",
+                                "Set",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore"
+                            ],
+                            "certificates": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore",
+                                "ManageContacts",
+                                "ManageIssuers",
+                                "GetIssuers",
+                                "ListIssuers",
+                                "SetIssuers",
+                                "DeleteIssuers"
+                            ]
+                        }
+                    }
+				],
+				"enabledForDeployment": false,
+				"enabledForDiskEncryption": false,
+				"enabledForTemplateDeployment": true
+			},
+			"dependsOn": []
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults",
+			"name": "[parameters('vaults_servicesKV_name')]",
+			"apiVersion": "2016-10-01",
+			"location": "[parameters('default_resource_location')]",
+			"tags": {},
+			"scale": null,
+			"properties": {
+				"sku": {
+					"family": "A",
+					"name": "Standard"
+				},
+				"tenantId": "[parameters('tenantId')]",
+				"accessPolicies": [
+					{
+						"tenantId": "[parameters('tenantId')]",
+                        "objectId": "[parameters('userId')]",
+                        "permissions": {
+                            "keys": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore"
+                            ],
+                            "secrets": [
+                                "Get",
+                                "List",
+                                "Set",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore"
+                            ],
+                            "certificates": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore",
+                                "ManageContacts",
+                                "ManageIssuers",
+                                "GetIssuers",
+                                "ListIssuers",
+                                "SetIssuers",
+                                "DeleteIssuers"
+                            ]
+                        }
+                    }
+				],
+				"enabledForDeployment": false,
+				"enabledForDiskEncryption": false,
+				"enabledForTemplateDeployment": false
+			},
+			"dependsOn": []
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults",
+			"name": "[parameters('vaults_sparkKV_name')]",
+			"apiVersion": "2016-10-01",
+			"location": "[parameters('default_resource_location')]",
+			"tags": {},
+			"scale": null,
+			"properties": {
+				"sku": {
+					"family": "A",
+					"name": "Standard"
+				},
+				"tenantId": "[parameters('tenantId')]",
+				"accessPolicies": [
+					{
+						"tenantId": "[parameters('tenantId')]",
+                        "objectId": "[parameters('userId')]",
+                        "permissions": {
+                            "keys": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore"
+                            ],
+                            "secrets": [
+                                "Get",
+                                "List",
+                                "Set",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore"
+                            ],
+                            "certificates": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore",
+                                "ManageContacts",
+                                "ManageIssuers",
+                                "GetIssuers",
+                                "ListIssuers",
+                                "SetIssuers",
+                                "DeleteIssuers"
+                            ]
+                        }
+                    }
+				],
+				"enabledForDeployment": false,
+				"enabledForDiskEncryption": false,
+				"enabledForTemplateDeployment": false
+			},
+			"dependsOn": []
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults",
+			"name": "[parameters('vaults_sparkRDPKV_name')]",
+			"apiVersion": "2016-10-01",
+			"location": "[parameters('default_resource_location')]",
+			"tags": {},
+			"scale": null,
+			"properties": {
+				"sku": {
+					"family": "A",
+					"name": "Standard"
+				},
+				"tenantId": "[parameters('tenantId')]",
+				"accessPolicies": [
+					{
+						"tenantId": "[parameters('tenantId')]",
+                        "objectId": "[parameters('userId')]",
+                        "permissions": {
+                            "keys": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore"
+                            ],
+                            "secrets": [
+                                "Get",
+                                "List",
+                                "Set",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore"
+                            ],
+                            "certificates": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore",
+                                "ManageContacts",
+                                "ManageIssuers",
+                                "GetIssuers",
+                                "ListIssuers",
+                                "SetIssuers",
+                                "DeleteIssuers"
+                            ]
+                        }
+                    }
+				],
+				"enabledForDeployment": false,
+				"enabledForDiskEncryption": false,
+				"enabledForTemplateDeployment": true
+			},
+			"dependsOn": []
+		},
+		{
+            "type": "Microsoft.KeyVault/vaults",
+            "name": "[parameters('sourceVaultValue')]",
+            "apiVersion": "2016-10-01",
+			"location": "[parameters('resource_location_microsoft_servicefabric')]",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "sku": {
+                    "family": "A",
+                    "name": "Standard"
+                },
+				"tenantId": "[parameters('tenantId')]",
+                "accessPolicies": [
+                    {
+						"tenantId": "[parameters('tenantId')]",
+                        "objectId": "[parameters('userId')]",
+                        "permissions": {
+                            "keys": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore"
+                            ],
+                            "secrets": [
+                                "Get",
+                                "List",
+                                "Set",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore"
+                            ],
+                            "certificates": [
+                                "Get",
+                                "List",
+                                "Update",
+                                "Create",
+                                "Import",
+                                "Delete",
+                                "Recover",
+                                "Backup",
+                                "Restore",
+                                "ManageContacts",
+                                "ManageIssuers",
+                                "GetIssuers",
+                                "ListIssuers",
+                                "SetIssuers",
+                                "DeleteIssuers"
+                            ]
+                        }
+                    }
+                ],
+                "enabledForDeployment": true,
+                "enabledForDiskEncryption": false,
+                "enabledForTemplateDeployment": true
+            },
+            "dependsOn": []
+        },
+		{
+			"type": "Microsoft.Web/serverfarms",
+			"sku": {
+				"name": "S1",
+				"tier": "Standard",
+				"size": "S1",
+				"family": "S",
+				"capacity": 1
+			},
+			"kind": "app",
+			"name": "[parameters('serverfarms_app_service_plan_name')]",
+			"apiVersion": "2016-09-01",
+			"location": "[parameters('default_resource_location')]",
+			"scale": null,
+			"properties": {
+				"name": "[parameters('serverfarms_app_service_plan_name')]",
+				"workerTierName": null,
+				"adminSiteName": null,
+				"hostingEnvironmentProfile": null,
+				"perSiteScaling": false,
+				"reserved": false,
+				"targetWorkerCount": 0,
+				"targetWorkerSizeId": 0
+			},
+			"dependsOn": []
+		},
+		{
+			"type": "Microsoft.Web/sites",
+			"kind": "app",
+			"name": "[parameters('sites_web_name')]",
+			"apiVersion": "2016-08-01",
+			"location": "[parameters('default_resource_location')]",
+			"identity": {
+                "type": "SystemAssigned"
+            },
+			"scale": null,
+			"properties": {               
+				 "siteConfig": {
+					"appSettings": [
+						{
+							"name": "NODE_ENV",
+							"value": "production"
+						},
+						{
+							"name": "DATAX_KEYVAULT_NAME",
+							"value": "[parameters('vaults_servicesKV_name')]"
+						},
+						{
+							"name": "DATAX_KEYVAULT_SECRET_PREFIX",
+							"value": "[concat(parameters('clientSecretPrefix'),'-')]"
+						},
+						{
+							"name": "WEBSITE_NODE_DEFAULT_VERSION",
+							"value": "6.9.1"
+						},
+						{
+							"name": "DATAXDEV_CERTTYPE",
+							"value": "[parameters('certType')]"
+						}
+					]
+				},
+
+				"enabled": true,
+				"hostNameSslStates": [
+					{
+						"name": "[concat(parameters('sites_web_name'),'.azurewebsites.net')]",
+						"sslState": "Disabled",
+						"virtualIP": null,
+						"thumbprint": null,
+						"toUpdate": null,
+						"hostType": "Standard"
+					},
+					{
+						"name": "[concat(parameters('sites_web_name'),'.scm.azurewebsites.net')]",
+						"sslState": "Disabled",
+						"virtualIP": null,
+						"thumbprint": null,
+						"toUpdate": null,
+						"hostType": "Repository"
+					}
+				],
+				"serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_app_service_plan_name'))]",
+				"reserved": false,
+				"scmSiteAlsoStopped": false,
+				"hostingEnvironmentProfile": null,
+				"clientAffinityEnabled": true,
+				"clientCertEnabled": false,
+				"hostNamesDisabled": false,
+				"containerSize": 0,
+				"dailyMemoryTimeQuota": 0,
+				"cloningInfo": null,
+				"httpsOnly": true
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_app_service_plan_name'))]"
+			]
+		},
+		{
+			"type": "Microsoft.EventHub/namespaces/AuthorizationRules",
+			"name": "[concat(parameters('namespaces_metricseventhub_name'), '/', parameters('AuthorizationRules_Listen_name'))]",
+			"apiVersion": "2017-04-01",
+			"location": "[parameters('default_resource_location')]",
+			"scale": null,
+			"properties": {
+				"rights": [
+					"Listen"
+				]
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.EventHub/namespaces', parameters('namespaces_metricseventhub_name'))]"
+			]
+		},
+		{
+			"type": "Microsoft.EventHub/namespaces/eventhubs",
+			"name": "[concat(parameters('namespaces_metricseventhub_name'), '/', parameters('eventhubs_metricseventhub_name'))]",
+			"apiVersion": "2017-04-01",
+			"location": "[parameters('default_resource_location')]",
+			"scale": null,
+			"properties": {
+				"messageRetentionInDays": 1,
+				"partitionCount": 2,
+				"status": "Active"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.EventHub/namespaces', parameters('namespaces_metricseventhub_name'))]"
+			]
+		},
+		{
+			"type": "Microsoft.EventHub/namespaces/eventhubs/authorizationRules",
+			"name": "[concat(parameters('namespaces_metricseventhub_name'), '/', parameters('eventhubs_metricseventhub_name'), '/', parameters('authorizationRules_send_name'))]",
+			"apiVersion": "2017-04-01",
+			"location": "[parameters('default_resource_location')]",
+			"scale": null,
+			"properties": {
+				"rights": [
+					"Send"
+				]
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.EventHub/namespaces', parameters('namespaces_metricseventhub_name'))]",
+				"[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('namespaces_metricseventhub_name'), parameters('eventhubs_metricseventhub_name'))]"
+			]
+		},
+		{
+			"type": "Microsoft.EventHub/namespaces/eventhubs/consumergroups",
+			"name": "[concat(parameters('namespaces_metricseventhub_name'), '/', parameters('eventhubs_metricseventhub_name'), '/', parameters('consumergroups_metrics-ingestor_name'))]",
+			"apiVersion": "2017-04-01",
+			"location": "[parameters('default_resource_location')]",
+			"scale": null,
+			"properties": {},
+			"dependsOn": [
+				"[resourceId('Microsoft.EventHub/namespaces', parameters('namespaces_metricseventhub_name'))]",
+				"[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('namespaces_metricseventhub_name'), parameters('eventhubs_metricseventhub_name'))]"
+			]
+		},
+		{
+			"type": "Microsoft.Web/sites/config",
+			"name": "[concat(parameters('sites_web_name'), '/', parameters('config_web_name'))]",
+			"apiVersion": "2016-08-01",
+			"location": "[parameters('default_resource_location')]",
+			"scale": null,
+			"properties": {
+				"numberOfWorkers": 1,
+				"defaultDocuments": [
+					"index.html"
+				],
+				"netFrameworkVersion": "v4.0",
+				"phpVersion": "5.6",
+				"pythonVersion": "",
+				"nodeVersion": "",
+				"linuxFxVersion": "",
+				"windowsFxVersion": null,
+				"requestTracingEnabled": false,
+				"remoteDebuggingEnabled": false,
+				"remoteDebuggingVersion": null,
+				"httpLoggingEnabled": false,
+				"logsDirectorySizeLimit": 35,
+				"detailedErrorLoggingEnabled": false,
+				"appSettings": null,
+				"azureStorageAccounts": {},
+				"metadata": null,
+				"connectionStrings": null,
+				"machineKey": null,
+				"handlerMappings": null,
+				"documentRoot": null,
+				"scmType": "None",
+				"use32BitWorkerProcess": true,
+				"webSocketsEnabled": false,
+				"alwaysOn": false,
+				"javaVersion": null,
+				"javaContainer": null,
+				"javaContainerVersion": null,
+				"appCommandLine": "",
+				"managedPipelineMode": "Integrated",
+				"virtualApplications": [
+					{
+						"virtualPath": "/",
+						"physicalPath": "site\\wwwroot",
+						"preloadEnabled": false,
+						"virtualDirectories": null
+					}
+				],
+				"winAuthAdminState": 0,
+				"winAuthTenantState": 0,
+				"customAppPoolIdentityAdminState": false,
+				"customAppPoolIdentityTenantState": false,
+				"loadBalancing": "LeastRequests",
+				"routingRules": [],
+				"experiments": {
+					"rampUpRules": []
+				},
+				"limits": null,
+				"autoHealEnabled": false,
+				"autoHealRules": null,
+				"tracingOptions": null,
+				"vnetName": "",
+				"siteAuthEnabled": false,
+				"siteAuthSettings": {
+					"enabled": null,
+					"unauthenticatedClientAction": null,
+					"tokenStoreEnabled": null,
+					"allowedExternalRedirectUrls": null,
+					"defaultProvider": null,
+					"clientId": null,
+					"clientSecret": null,
+					"issuer": null,
+					"allowedAudiences": null,
+					"additionalLoginParams": null,
+					"isAadAutoProvisioned": false,
+					"googleClientId": null,
+					"googleClientSecret": null,
+					"googleOAuthScopes": null,
+					"facebookAppId": null,
+					"facebookAppSecret": null,
+					"facebookOAuthScopes": null,
+					"twitterConsumerKey": null,
+					"twitterConsumerSecret": null,
+					"microsoftAccountClientId": null,
+					"microsoftAccountClientSecret": null,
+					"microsoftAccountOAuthScopes": null
+				},
+				"cors": null,
+				"push": null,
+				"apiDefinition": null,
+				"autoSwapSlotName": null,
+				"localMySqlEnabled": false,
+				"managedServiceIdentityId": 162,
+				"xManagedServiceIdentityId": null,
+				"ipSecurityRestrictions": null,
+				"http20Enabled": false,
+				"minTlsVersion": "1.2",
+				"ftpsState": "AllAllowed",
+				"reservedInstanceCount": 0
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/sites', parameters('sites_web_name'))]"
+			]
+		},
+		{
+			"type": "Microsoft.Web/sites/hostNameBindings",
+			"name": "[concat(parameters('sites_web_name'), '/', parameters('hostNameBindings_web.azurewebsites.net_name'))]",
+			"apiVersion": "2016-08-01",
+			"location": "[parameters('default_resource_location')]",
+			"scale": null,
+			"properties": {
+				"siteName": "[parameters('sites_web_name')]",
+				"domainId": null,
+				"hostNameType": "Verified"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/sites', parameters('sites_web_name'))]"
+			]
+		}
+	]
+}

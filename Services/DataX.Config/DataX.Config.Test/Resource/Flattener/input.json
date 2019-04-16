@@ -1,0 +1,31 @@
+﻿{
+  "firstlevelstring": "firstlevelstringvalue",
+  "firstlevelobject": {
+    "secondlevelstring": "secondlevelstringvalue"
+  },
+  "array": [
+    {
+      "namespace": "element1",
+      "arrayelement": "arrayelement1value"
+    },
+    {
+      "namespace": "element2",
+      "arrayelement": "arrayelement2value"
+    }
+  ],
+  "map": {
+    "mapelement1": {
+      "mapelement": "element1value"
+    },
+    "mapelement2": {
+      "mapelement": "element2value"
+    }
+  },
+  "stringlist": [ "stringlistvalue1", "stringlistvalue2" ],
+  "mapprops": {
+    "prop1": "prop1value",
+    "prop2": "prop2value"
+  },
+  "withdefaultvalue": "defaultvalue",
+  "withoutdefaultvalue": "non-defaultvalue"
+}

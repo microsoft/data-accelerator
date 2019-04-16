@@ -1,0 +1,2 @@
+﻿T1 = ProcessRules(DataXProcessedInput);
+ProcessAlerts(DataXProcessedInput);

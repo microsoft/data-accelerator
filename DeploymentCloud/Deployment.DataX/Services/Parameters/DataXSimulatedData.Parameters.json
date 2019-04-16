@@ -1,0 +1,32 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "paths": [{
+        "ParameterReference": "appPackageUrl"
+    }],
+    "parameters": {
+		"serviceFabricName": {
+			"value": "$serviceFabricName"
+		},
+        "applicationTypeVersion": {
+            "value": "$version"
+        },
+        "appPackageUrl": {
+            "value": "$appPackageUrl"
+        },
+        "sfPkgName": {
+            "value": "DataXSimulatedData"
+        },
+        "sfAppParameters": {
+            "value": {
+                "KeyVaultName": "$servicesKVName",
+				"IotDeviceConnectionStringKeyVaultKeyName": "datagen-iotHubConnectionString",
+				"EventhubConnectionStringKeyVaultKeyName": "",
+				"DataSchemaStorageAccountName": "$sparkBlobAccountName",
+				"DataSchemaStorageAccountKeyValueKeyVaultKeyName": "datagen-storageaccountAccesskey",
+				"DataSchemaStorageContainerName": "samples",
+				"DataSchemaPathWithinContainer": "iotdevice\\iotsample.json"
+            }
+        }
+    }
+}

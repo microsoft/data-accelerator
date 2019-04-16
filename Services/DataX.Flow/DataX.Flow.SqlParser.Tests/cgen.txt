@@ -1,0 +1,76 @@
+﻿--DataXQuery--
+  T1 = SELECT
+        *,
+        filterNull(
+            Array(
+                IF(
+                    temperature > 70,
+                    MAP(
+                        'ruleId',
+                        'd7d7f857-0843-4f0d-8fe1-da077b20279d',
+                        'ruleDescription',
+                        'hot',
+                        'severity',
+                        'Critical',
+                        'Tag',
+                        'hot'
+                    ),
+                    NULL
+                ),
+                IF(
+                    temperature < 30,
+                    MAP(
+                        'ruleId',
+                        'a2859f49-9981-4b15-91f4-b3f2714427ad',
+                        'ruleDescription',
+                        'cold',
+                        'severity',
+                        'Critical',
+                        'Tag',
+                        'cold'
+                    ),
+                    NULL
+                ),
+                IF(
+                    = ,
+                    MAP(
+                        'ruleId',
+                        'c37d19ca-8ad7-4dcd-9b39-163de913cd93',
+                        'ruleDescription',
+                        '',
+                        'severity',
+                        'Critical',
+                        'Tag',
+                        ''
+                    ),
+                    NULL
+                )  
+            )
+        ) AS Rules 
+    FROM
+        DataXProcessedInput
+    
+    
+--DataXQuery--
+  T2 = SELECT
+        *,
+        42 AS AnswerToLife2       
+    FROM
+        DataXProcessedInput_50seconds       
+    
+--DataXQuery--
+  Temp =   SELECT
+        COUNT(*) AS Count  
+    FROM
+        DataXProcessedInput  
+    UNION
+    ALL  SELECT
+        *  
+    FROM
+        EventCount
+    
+--DataXQuery--
+  T3 = SELECT
+        *  
+    FROM
+        DataXProcessedInput_40seconds

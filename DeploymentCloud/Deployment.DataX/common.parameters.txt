@@ -1,0 +1,175 @@
+# This is a parameter file for the deployment scripts: deployResources.ps1, deployApps.ps1 and deploySample.ps1
+
+# The tenant directoryId you want to sign in
+# You can get this from Azure portal through Azure Active Directory -> Properties -> Directory Id
+tenantId=
+
+# The subscription id where the template will be deployed
+subscriptionId=
+
+# Name for Service AAD app. This application Id will be used as the Service Fabric ResourceId. 
+# Please specify here if you want to use a custom name.
+# Optional. Default value is "serviceapp-<product name>"
+# serviceAppName=
+
+# Name for Client AAD app. This application Id will be used for the web app.
+# Please specify here if you want to use a custom name.
+# Optional. Default value is "clientapp-<product name>"
+# clientAppName=
+
+# ResourceGroupName to generate resources 
+resourceGroupName=DataX
+
+# ProductName to create resources. All resource names will be based on this
+# ProductName must be 1-35 characters. Letters and numbers only
+# If ProductName is empty, a new name will be generated
+productName=
+
+# y if you want to randomize the productname, n otherwise
+# A deterministic name based on productName will be generated
+randomizeProductName=y
+
+# Location for the resourceGroup
+resourceGroupLocation=westus2
+
+# Location for MicrosoftInsights resource which is not available for some locations
+# Available values: "EastUS", "SouthCentralUS", "NorthEurope", "WestEurope", "SoutheastAsia", "WestUS2", "CanadaCentral", "CentralIndia"
+resourceLocationForMicrosoftInsights=westus2
+
+# Location for Service Fabric resource
+resourceLocationForServiceFabric=westus2
+
+# y if you want the script to create selfsigned certs, n otherwise
+# if this is n, the script will load the existing certs. Please make sure you provide the password to import the certs 
+generateNewSelfSignedCerts=y
+
+# Password to import / export certs
+# If you want to use the existing certs, please provide the password you used to generate the certs. 
+certPassword=
+
+# y if you use the selfsigned certs, n otherwise
+useSelfSignedCerts=y
+
+# Path to the main (primary) cert. Only a pfx is supported 
+# mainCert=
+
+# Path to the reverse proxy cert. Only a pfx is supported
+# reverseProxyCert=
+
+# Path to the SSL cert. Only a pfx is supported
+# sslCert=
+
+# Role Names
+# Writer can manage flows
+# Reader can view flows
+readerRole=DataXReader
+writerRole=DataXWriter
+
+# Admin password for Spark
+# This password must be 6-72 characters long and must contain at least one digit, one upper case letter and one lower case letter
+# If password is empty, a new password will be generated
+sparkPassword=
+
+# RDP/SSH password for Spark
+# This password must be 6-72 characters long and must contain at least one digit, one upper case letter and one lower case letter
+# If password is empty, a new password will be generated
+sparkSshPassword=
+
+# Password for Service fabric
+# If password is empty, a new password will be generated
+sfPassword=
+
+# VM size for Service Fabric resource
+# For details, please refer to https://azure.microsoft.com/en-us/pricing/details/service-fabric/
+# Default value is Standard_D2_v2
+vmNodeTypeSize=Standard_D2_v2
+
+# VM node count for Service Fabric resource
+# Default value is 5
+vmNodeinstanceCount=5
+
+# VM size for Spark HeadNode
+# Default value is Standard_D3_V2
+# For details, please refer to https://azure.microsoft.com/en-us/pricing/details/hdinsight/
+vmSizeSparkHeadnode=Standard_D3_V2
+
+# Min InstanceCount for Spark HeadNode
+# Default value is 1
+minInstanceCountSparkHeadnode=1
+
+# Target InstanceCount for Spark HeadNode
+# Default value is 2
+targetInstanceCountSparkHeadnode=2
+
+# VM size for Spark WorkerNode
+# Default value is Standard_D3_V2
+# For details, please refer to https://azure.microsoft.com/en-us/pricing/details/hdinsight/
+vmSizeSparkWorkernode=Standard_D3_V2
+
+# Target InstanceCount for Spark WorkerNode
+# Default value is 3
+targetInstanceCountSparkWorkernode=3
+
+# Redis Cache Size
+# Default value is Basic_C_0
+# For details, please refer to https://azure.microsoft.com/en-us/pricing/details/cache/
+redisCacheSize=Basic_C_0
+
+# Mark y to the scripts that you want to run, n otherwise 
+deployResources=y
+deployApps=y
+deploySample=y
+
+# For deployResources script, you can also specify what you want to run by marking y to the each item below: 
+# resourceCreation, sparkCreation, serviceFabricCreation, setupSecrets, setupCosmosDB, setupKVAccess
+# y if you want to deploy all resouces except Spark and Service Fabric, n otherwise
+resourceCreation=y
+
+# y if you want to deploy Spark cluster, n otherwise
+sparkCreation=y
+
+# y if you want to deploy Service Fabric cluster, n otherwise
+serviceFabricCreation=y
+
+# y if you want to set up secrets, n otherwise
+setupSecrets=y
+
+# y if you want to set up CosmosDB, n otherwise 
+setupCosmosDB=y
+
+# y if you want to set up KV Access, n otherwise
+setupKVAccess=y
+
+# Path to deployment common files 
+# For deployment, please make sure three folders (Blob, CosmosDB and Scripts) and all necessary files are ready
+deploymentCommonPath=..\Deployment.Common
+
+# Path to deployment app 
+deploymentAppPath=..\Deployment.DataX
+
+# Prefix for secret names in KeyVault
+# Note that "-" will be appended to the prefix. e.g. "configgen-"
+serviceSecretPrefix=configgen
+clientSecretPrefix=web
+
+# FeedUrl for the nuget packages
+feedUrl=https://api.nuget.org/v3/index.json
+
+# Service Fabric Cluster Name. Optional. 
+# Please specify here if you want to use a custom name.
+# Default value is "<product name>-sf"
+# serviceFabricClusterName=
+
+# Spark Cluster Name. Optional. 
+# Please specify here if you want to use a custom name.
+# Default value is "<product name>"
+# sparkClusterName=
+
+# Please specify if you want to use the particular package builds
+# The latest bits will be installed if you don't specify anything
+# MicrosoftDataXFlow=
+# MicrosoftDataXGateway=
+# MicrosoftDataXMetrics=
+# MicrosoftDataxWeb=
+# MicrosoftDataxSpark=
+# MicrosoftDataXSimulatedData=

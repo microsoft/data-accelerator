@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Copyright (c) Microsoft Corporation.  All rights reserved.
+Licensed under the MIT License
+-->
+<outputTemplates>
+  <outputTemplate id="defaultAggOutputTemplate">
+  MAP(
+    $pivotstemplate
+  ) AS pivots,
+  $aggstemplate,
+  Count AS count,
+  MAP(
+    'ruleId', '$ruleId',
+    '$tagname', '$tag',
+    'description', '$ruleDescription',
+    'severity', '$severity'
+  ) AS result</outputTemplate>
+</outputTemplates>

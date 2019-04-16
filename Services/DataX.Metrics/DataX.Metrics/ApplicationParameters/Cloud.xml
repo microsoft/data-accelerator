@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (c) Microsoft Corporation.  All rights reserved.
+Licensed under the MIT License
+-->
+<Application xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="fabric:/DataX.Metrics" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <Parameters>
+    <Parameter Name="DataX.Metrics.Ingestor_ASPNETCORE_ENVIRONMENT" Value="" />
+    <Parameter Name="DataX.Metrics.Ingestor_PartitionCount" Value="1" />
+    <Parameter Name="DataX.Metrics.Ingestor_MinReplicaSetSize" Value="3" />
+    <Parameter Name="DataX.Metrics.Ingestor_TargetReplicaSetSize" Value="3" />
+    <Parameter Name="AzureServicesAuthConnectionString" Value="" />
+    <Parameter Name="ServiceKeyvaultName" Value="" />
+    <Parameter Name="EventHubName" Value="" />
+    <Parameter Name="ConsumerGroupName" Value="" />
+    <Parameter Name="EventhubNamespaceConnectionstring" Value="" />
+    <Parameter Name="StorageAccountConnectionstring" Value="" />
+    <Parameter Name="RedisCacheConnectionstring" Value="" />
+    <Parameter Name="AppInsightsIntrumentationKey" Value="" />
+  </Parameters>
+</Application>

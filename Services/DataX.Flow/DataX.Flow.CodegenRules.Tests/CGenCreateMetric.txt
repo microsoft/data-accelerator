@@ -1,0 +1,24 @@
+﻿--DataXQuery--
+  T1 = Select
+        COUNT(deviceDetails.deviceId) AS deviceCount      
+    FROM
+        DataXProcessedInput      
+    WHERE
+        deviceDetails.homeId=150
+    
+--DataXQuery--
+ DeviceCount = SELECT
+        DISTINCT DATE_TRUNC('second',
+        current_timestamp()) AS EventTime,
+        'DeviceCount' AS MetricName,
+        deviceCount AS Metric,
+        'P7' AS Product,
+        '' AS Pivot1 
+    FROM
+        T1 
+    GROUP BY
+        EventTime,
+        MetricName,
+        Metric,
+        Product,
+        Pivot1

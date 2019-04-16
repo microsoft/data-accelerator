@@ -1,0 +1,2 @@
+﻿stringToTimestamp(Raw.deviceDetails.eventTime) AS eventTimeStamp
+Raw.*

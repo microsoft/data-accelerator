@@ -1,0 +1,51 @@
+﻿[
+  {
+    "name": "VS",
+    "date": "12/2/2018",
+    "isMS": true,
+    "isMS2": "true",
+    "isdouble": 1.02,
+    "isdouble2": "1.02",
+    "isInt": 3,
+    "isInt2": "3",
+    "myArray": [ "foo", "bar" ],
+    "properties": {
+      "sku": "enterprise",
+      "isInternal": false
+    }
+  },
+  {
+    "name": "VSCode",
+    "date": "10/2/2018",
+    "count": 4,
+    "properties": {
+      "sku": "enterprise",
+      "isInternal": true,
+      "branch": "dev15",
+      "measures": {
+        "perf": 4,
+        "reliability": "3"
+      }
+    },
+    "myComplexArray": [
+      {
+        "color": "red",
+        "index": 3
+      },
+      {
+        "color": "blue",
+        "index": 5
+      }
+    ],
+    "myNestedComplexArray": [
+      {
+        "levels": [ 2, 3, 4 ],
+        "game": "soccer"
+      },
+      {
+        "levels": [ 5, 6, 7 ],
+        "game":  "football"
+      }
+    ]
+  }
+]

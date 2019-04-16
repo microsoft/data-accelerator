@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\DataX.Flow\Flow.ManagementService\Controllers\FlowManagementController.cs" Link="Controllers\FlowManagementController.cs" />
+    <Compile Include="..\..\..\DataX.Flow\Flow.ManagementService\ServiceCollectionExtensions.cs" Link="ServiceCollectionExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\DataX.Config\DataX.Config.Local\DataX.Config.Local.csproj" />
+    <ProjectReference Include="..\..\..\DataX.Config\DataX.Config\DataX.Config.csproj" />
+    <ProjectReference Include="..\..\..\DataX.Contract\DataX.Contract.csproj" />
+    <ProjectReference Include="..\..\..\DataX.Flow\DataX.Flow.SqlParser\DataX.Flow.SqlParser.csproj" />
+    <ProjectReference Include="..\..\..\DataX.Utilities\DataX.Utilities.Web\DataX.Utilities.Web.csproj" />
+  </ItemGroup>
+
+</Project>

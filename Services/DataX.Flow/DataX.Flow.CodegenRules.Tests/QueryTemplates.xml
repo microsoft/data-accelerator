@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Copyright (c) Microsoft Corporation.  All rights reserved.
+Licensed under the MIT License
+-->
+<queries>
+  <query type="SimpleRule">
+--DataXQuery--
+$return = SELECT *, $arrayConditions AS Rules FROM DataXProcessedInput;
+  </query>
+  <query type="SimpleAlert">
+--DataXQuery--
+sa1_$ruleCounter = SELECT *, '$ruleId' AS ruleId, '$ruleDescription' AS ruleDescription, '$severity' AS severity, '$tag' AS Tag FROM DataXProcessedInput
+WHERE $condition;
+    
+--DataXQuery--
+sa2_$ruleCounter = ApplyTemplate(sa1_$ruleCounter, $outputTemplate); 
+
+--DataXQuery--
+$tagAlert = SELECT DISTINCT DATE_TRUNC('second', current_timestamp()) AS EventTime, '$tagAlert' AS MetricName, 0 as Metric,  '$productId' AS Product, '$ruleDescription' AS Pivot1 FROM sa1_$ruleCounter;
+
+OUTPUT sa2_$ruleCounter TO $alertsinks;
+OUTPUT $tagAlert TO Metrics;
+  </query>
+  <query type="AggregateRule">
+--DataXQuery--
+ar1_$ruleCounter = SELECT $aggs, $pivots, COUNT(*) AS Count
+FROM DataXProcessedInput
+GROUP BY $pivots;
+
+--DataXQuery--
+ar2_$ruleCounter = SELECT *, IF($condition,$ruleObject,NULL) AS RuleObject
+FROM ar1_$ruleCounter;
+
+--DataXQuery--
+ar3_$ruleCounter = ApplyTemplate(ar2_$ruleCounter, defaultAggOutputTemplate);
+  </query>
+  <query type="AggregateAlert">
+--DataXQuery--
+aa1_$ruleCounter = SELECT $aggs, $pivots, COUNT(*) AS Count
+FROM DataXProcessedInput
+GROUP BY $pivots;
+
+--DataXQuery--
+aa2_$ruleCounter = SELECT *, $ruleObject AS RuleObject FROM aa1_$ruleCounter WHERE $condition;
+
+--DataXQuery--
+aa3_$ruleCounter = ApplyTemplate(aa2_$ruleCounter, $outputTemplate);
+
+--DataXQuery--
+$tagAlert = SELECT DISTINCT DATE_TRUNC('second', current_timestamp()) AS EventTime, '$tagAlert' AS MetricName, 0 as Metric, '$productId' AS Product, RuleObject.ruleDescription AS Pivot1 FROM aa2_$ruleCounter;
+
+OUTPUT aa3_$ruleCounter TO $alertsinks;
+OUTPUT $tagAlert TO Metrics;
+  </query>
+</queries>

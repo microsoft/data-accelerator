@@ -1,0 +1,1 @@
+﻿T1 = ProcessRules(Bar);

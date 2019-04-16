@@ -1,0 +1,32 @@
+﻿{
+  "name": "${jobName}",
+  "cluster": "${sparkClusterName}",
+  "options": {
+    "name": "${sparkJobName}",
+    "file": "${localRoot}/bin/datax-host_2.11-1.0.0.jar",
+    "className": "datax.app.DataXDirectLocal",
+    "args": [
+      "conf=${sparkJobConfigFilePath}",
+      "driverLogLevel=${sparkJobDriverLogLevel}"
+    ],
+    "jars": [
+      "${localRoot}/bin/datax-core.jar",
+      "${localRoot}/bin/datax-utility_2.11-1.0.0.jar",
+      "${localRoot}/bin/applicationinsights-core-2.1.1.jar",
+      "${localRoot}/bin/azure-eventhubs-1.2.1.jar",
+      "${localRoot}/bin/azure-eventhubs-spark_2.11-2.3.6.jar",
+      "${localRoot}/bin/hdinsight-keyvault-authenticator-1.0.7-with-dependencies.jar",
+      "${localRoot}/bin/proton-j-0.27.1.jar"
+
+    ],
+    "driverMemory": "6400m",
+    "executorCores": 5,
+    "numExecutors": "${sparkJobNumExecutors}",
+    "driverCores": 2,
+    "executorMemory": "${sparkJobExecutorMemory}",
+    "conf": {
+    }
+  },
+  "state": "Idle",
+  "batch": null
+}

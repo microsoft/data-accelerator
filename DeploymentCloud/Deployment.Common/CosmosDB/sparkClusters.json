@@ -1,0 +1,6 @@
+[
+  {
+    "name": "$sparkName",
+    "connectionString": "keyvault://$servicesKVName/$serviceSecretPrefix-livyconnectionstring-$sparkName"
+  }
+]

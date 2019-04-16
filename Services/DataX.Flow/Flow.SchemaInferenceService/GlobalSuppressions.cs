@@ -1,0 +1,10 @@
+﻿
+// This file is used by Code Analysis to maintain SuppressMessage 
+// attributes that are applied to this project.
+// Project-level suppressions either have no target or are given 
+// a specific target and scoped to a namespace, type, member, etc.
+
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Build", "CA2007:Do not directly await a Task without calling ConfigureAwait", Justification = "Critical issues only", Scope = "member", Target = "~M:Flow.SchemaInferenceService.Controllers.SchemaInferenceController.GetInputSchema(Newtonsoft.Json.Linq.JObject)~System.Threading.Tasks.Task{DataX.Contract.ApiResult}")]
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Build", "CA2007:Do not directly await a Task without calling ConfigureAwait", Justification = "Critical issues only", Scope = "member", Target = "~M:Flow.SchemaInferenceService.Controllers.SchemaInferenceController.RefreshSample(Newtonsoft.Json.Linq.JObject)~System.Threading.Tasks.Task{DataX.Contract.ApiResult}")]
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Build", "CA1305:The behavior of 'string.Format(string, params object[])' could vary based on the current user's locale settings. Replace this call in 'ServiceEventSource.Message(string, params object[])' with a call to 'string.Format(IFormatProvider, string, params object[])'.", Justification = "Critical issues only", Scope = "member", Target = "~M:Flow.SchemaInferenceService.ServiceEventSource.Message(System.String,System.Object[])")]
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Build", "CA1305:The behavior of 'string.Format(string, params object[])' could vary based on the current user's locale settings. Replace this call in 'ServiceEventSource.ServiceMessage(ServiceContext, string, params object[])' with a call to 'string.Format(IFormatProvider, string, params object[])'.", Justification = "Critical issues only", Scope = "member", Target = "~M:Flow.SchemaInferenceService.ServiceEventSource.ServiceMessage(System.Fabric.ServiceContext,System.String,System.Object[])")]

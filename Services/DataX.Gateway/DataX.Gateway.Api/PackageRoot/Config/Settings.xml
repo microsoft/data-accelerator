@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Copyright (c) Microsoft Corporation.  All rights reserved.
+Licensed under the MIT License
+-->
+<Settings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <!-- Add your custom configuration sections and parameters here -->
+  
+  <Section Name="AuthConfig">
+    <Parameter Name="Audience" Value="" MustOverride="true"/>
+    <Parameter Name="Tenant" Value="" MustOverride="true"/>
+  </Section>  
+  <Section Name="SslCertsConfig">
+    <Parameter Name="ReverseProxySslThumbprint" Value="" MustOverride="true"/>
+  </Section>
+  <Section Name="RolesConfig">
+    <Parameter Name="AllowedUserRoles" Value="" MustOverride="true"/>
+  </Section>
+  <Section Name="ServiceEnvironment">
+    <Parameter Name="ServiceKeyvaultName" Value="" MustOverride="true"/>
+    <Parameter Name="AppInsightsIntrumentationKey" Value="" MustOverride="true" />
+    <Parameter Name="EnableUserInfoLogging" Value=""  MustOverride="true"/>
+  </Section>  
+</Settings>

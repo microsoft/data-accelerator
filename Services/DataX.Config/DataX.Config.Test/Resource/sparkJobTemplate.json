@@ -1,0 +1,9 @@
+﻿{
+  "name": "${jobName}",
+  "cluster": "test",
+  "options": {
+  },
+  "batch": null,
+  "state": "Idle",
+  "note": null
+}

@@ -1,0 +1,9 @@
+﻿--DataXQuery--
+T1 = Select COUNT(deviceDetails.deviceId) AS deviceCount
+    FROM DataXProcessedInput
+    WHERE deviceDetails.homeId=150;
+
+
+DeviceCount = CreateMetric(T1, deviceCount);
+
+OUTPUT DeviceCount To Metrics;

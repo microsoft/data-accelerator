@@ -1,0 +1,28 @@
+﻿--DataXStates--
+CREATE TABLE EventCount (Count: INT);
+
+T1 = ProcessRules(DataXProcessedInput);
+T2 = ProcessAggregateRules(DataXProcessedInput);
+
+ProcessAlerts(DataXProcessedInput);
+ProcessAggregateAlerts(DataXProcessedInput);
+
+--DataXQuery--
+T3 = SELECT *, 42 AS AnswerToLife2
+     FROM DataXProcessedInput
+     TIMEWINDOW('50 seconds');
+
+
+--DataXQuery--
+Temp = 
+SELECT COUNT(*) AS Count
+FROM DataXProcessedInput
+UNION ALL
+SELECT *
+FROM EventCount;
+
+--DataXQuery--
+T4 = SELECT *
+FROM DataXProcessedInput
+TIMEWINDOW('40 seconds');
+

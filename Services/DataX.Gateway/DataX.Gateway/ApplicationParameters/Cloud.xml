@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (c) Microsoft Corporation.  All rights reserved.
+Licensed under the MIT License
+-->
+<Application xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="fabric:/DataX.Gateway" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <Parameters>
+    <Parameter Name="Auth_PartitionCount" Value="1" />
+    <Parameter Name="Auth_MinReplicaSetSize" Value="2" />
+    <Parameter Name="Auth_TargetReplicaSetSize" Value="3" />
+    <Parameter Name="Api_InstanceCount" Value="-1" />
+    <Parameter Name="SSL_Cert_Thumbprint" Value="" />
+    <Parameter Name="ClientId" Value="" />
+    <Parameter Name="Audience" Value="" />
+    <Parameter Name="ReverseProxySslThumbprint" Value="" />
+    <Parameter Name="AllowedUserRoles" Value="" />
+    <Parameter Name="AzureServicesAuthConnectionString" Value="" />
+    <Parameter Name="Tenant" Value="" />
+    <Parameter Name="ServiceKeyvaultName" Value="" />
+    <Parameter Name="AppInsightsIntrumentationKey" Value="" />
+    <Parameter Name="EnableUserInfoLogging" Value="" />
+  </Parameters>
+</Application>
