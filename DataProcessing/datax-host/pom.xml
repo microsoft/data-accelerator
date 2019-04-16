@@ -65,7 +65,7 @@ SOFTWARE
   <repositories>
     <repository>
       <id>data-accelerator-mvn-repo</id>
-      <url>https://raw.github.com/Microsoft/data-accelerator/tree/mvn-repo/</url>
+      <url>https://raw.github.com/Microsoft/data-accelerator/mvn-repo/</url>
       <snapshots>
         <enabled>true</enabled>
         <updatePolicy>always</updatePolicy>
