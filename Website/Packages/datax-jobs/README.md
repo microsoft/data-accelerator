@@ -1,4 +1,4 @@
-# NPM Package: datax-jobs
+# datax-jobs
 
 ### Quick start to developing this package
 

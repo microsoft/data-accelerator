@@ -1,4 +1,4 @@
-# NPM Package: datax-home
+# datax-home
 
 ### Quick start to developing this package
 

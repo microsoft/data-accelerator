@@ -1,4 +1,4 @@
-# NPM Package: datax-common
+# datax-common
 
 ### Quick start to developing this package
 

@@ -1,4 +1,4 @@
-# NPM Package: datax-metrics
+# datax-metrics
 
 ### Quick start to developing this package
 

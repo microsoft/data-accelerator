@@ -1,4 +1,4 @@
-# NPM Package: datax-pipeline
+# datax-pipeline
 
 
 ### Quick start to developing this package
