@@ -2,7 +2,7 @@ FROM microsoft/dotnet:2.2-aspnetcore-runtime
 
 WORKDIR /app/aspnetcore
 
-COPY "finalrun.sh" "devices.csv" "local.db" "./" 
+COPY "finalrun.sh" "devices.csv" "./" 
 
 ENV NODE_VERSION="8.9.4"  NODE_DOWNLOAD_SHA="21fb4690e349f82d708ae766def01d7fec1b085ce1f5ab30d9bda8ee126ca8fc" \
     DATAX_ENABLE_ONEBOX="true"  DATAX_ONEBOX_ROOT="./datax"  NPM_CONFIG_LOGLEVEL="info" \
@@ -41,6 +41,7 @@ RUN curl -sL --retry 3 \
 
 ADD "FlowManagement.tar" "deployment.tar"  "./"
 ADD   "datax.tar"  "./datax/bin"
+COPY "sample/*.json"  "./samples/" 
 RUN npm install
 
 EXPOSE 2020
