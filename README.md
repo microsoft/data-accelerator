@@ -1,5 +1,6 @@
 ### Data Accelerator for Apache Spark
-[Data Accelerator](https://github.com/Microsoft/data-accelerator) for Apache Spark simplifies streaming of Big Data using Spark. It is used internally at Microsoft for processing streamed data from multiple products everyday, handling data volumes at Microsoft scale. It offers a no-code experience to build Rules and Alerts, as well as numerous productivity improvements to develop and manage Spark SQL jobs on Azure HDInsights.   
+[Data Accelerator](https://github.com/Microsoft/data-accelerator) for Apache Spark democratizes streaming big data using Spark by offering several key features such as a no-code experience to set up a data pipeline as well as fast dev-test loop for creating complex logic.  Our team has been using the project for two years within Microsoft for processing streamed data across many internal deployments handling data volumes at Microsoft scale. It offers an easy to use platform to learn and evaluate streaming needs and requirements.  We are thrilled to share this project with the wider community as open source!
+
 <p align="center"><img style="float: center;" width="90%" src="https://github.com/Microsoft/data-accelerator/wiki/tutorials/images/readme3.PNG"></p>
 
 [Data Accelerator](https://github.com/Microsoft/data-accelerator) offers three level of experiences:
