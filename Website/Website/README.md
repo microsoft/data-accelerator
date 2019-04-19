@@ -1,4 +1,4 @@
-# Website: DataX Website
+# Data Accelerator Website
 
 ### Environment Setup
 1. Install NodeJs from http://nodejs.org, version 10.6.0 or later
