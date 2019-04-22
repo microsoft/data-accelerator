@@ -9,11 +9,13 @@ const webComposition = require('./web.composition.json');
  */
 function initializeLocalServices() {
     let localServices = {};
-    Object.keys(webComposition.localServices).forEach(key => {
-        // Set local services to null if the corresponding 'use local service' environment variables is not defined.
-        // If defined then keep track its assigned 'http://localhost:port#' URL which is used to target locally hosted services.
-        localServices[key] = process.env[webComposition.localServices[key]];
-    });
+    if (webComposition.localServices) {
+        Object.keys(webComposition.localServices).forEach(key => {
+            // Set local services to null if the corresponding 'use local service' environment variables is not defined.
+            // If defined then keep track its assigned 'http://localhost:port#' URL which is used to target locally hosted services.
+            localServices[key] = process.env[webComposition.localServices[key]];
+        });
+    }
     return localServices;
 }
 
