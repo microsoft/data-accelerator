@@ -122,6 +122,10 @@ deploySample=y
 
 # For deployResources script, you can also specify what you want to run by marking y to the each item below: 
 # resourceCreation, sparkCreation, serviceFabricCreation, setupSecrets, setupCosmosDB, setupKVAccess
+
+# y if you want to check and install the required powershell modules, n otherwise
+installModules=y
+
 # y if you want to deploy all resouces except Spark and Service Fabric, n otherwise
 resourceCreation=y
 
