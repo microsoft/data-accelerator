@@ -54,6 +54,10 @@
 
     [ValidateSet("y", "n")]
     [string]
+    $installModules,
+
+    [ValidateSet("y", "n")]
+    [string]
     $resourceCreation,
 
     [ValidateSet("y", "n")]
@@ -123,7 +127,7 @@ function Install-Modules {
         
     $moduleInstalled = $false
     $modules.Keys | foreach {
-            if (!(Get-installedModule -name $_ -requiredversion $modules.Item($_) -ErrorAction SilentlyContinue )) {
+            if (!(Get-installedModule -name $_ -MinimumVersion $modules.Item($_) -ErrorAction SilentlyContinue )) {
     
                 Write-Host "Install Module: " $_
                 $moduleInstalled = $true
@@ -718,7 +722,9 @@ Push-Location $PSScriptRoot
 
 Write-Host -ForegroundColor Green "Total estimated time to complete: 2 to 4 hours"
 
-Install-Modules
+if ($installModules -eq  'y') {
+    Install-Modules
+}
 
 Check-FilePath
 
