@@ -12,12 +12,12 @@ function initializeLocalServices() {
     Object.keys(webComposition.localServices).forEach(key => {
         // Set local services to null if the corresponding 'use local service' environment variables is not defined.
         // If defined then keep track its assigned 'http://localhost:port#' URL which is used to target locally hosted services.
-        localServices[key] = eval(webComposition.localServices[key]) ? eval(webComposition.localServices[key]) : null;
+        localServices[key] = process.env[webComposition.localServices[key]];
     });
     return localServices;
 }
 
-module.exports = (function () {
+module.exports = (function() {
     var envName = process.env.NODE_ENV || 'dev';
     var keyVaultName = process.env.DATAX_KEYVAULT_NAME;
     var keyVaultSecretNamePrefix =

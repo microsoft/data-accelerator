@@ -100,10 +100,10 @@
     ]
   },
   "localServices": {
-    "Flow.ManagementService": "process.env.DATAXDEV_FLOW_MANAGEMENT_LOCAL_SERVICE",
-    "Flow.InteractiveQueryService": "process.env.DATAXDEV_INTERACTIVE_QUERY_LOCAL_SERVICE",
-    "Flow.SchemaInferenceService": "process.env.DATAXDEV_SCHEMA_INFERENCE_LOCAL_SERVICE",
-    "Flow.LiveDataService": "process.env.DATAXDEV_LIVE_DATA_LOCAL_SERVICE"
+    "Flow.ManagementService": "DATAXDEV_FLOW_MANAGEMENT_LOCAL_SERVICE",
+    "Flow.InteractiveQueryService": "DATAXDEV_INTERACTIVE_QUERY_LOCAL_SERVICE",
+    "Flow.SchemaInferenceService": "DATAXDEV_SCHEMA_INFERENCE_LOCAL_SERVICE",
+    "Flow.LiveDataService": "DATAXDEV_LIVE_DATA_LOCAL_SERVICE"
   },
   "api": {
     "DataXWriter": [
