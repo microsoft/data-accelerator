@@ -346,7 +346,7 @@ function Install-Packages([system.collections.generic.dictionary[string,string]]
             ..\Deployment.Common\nuget\nuget.exe install $_ -version $version -PreRelease -Source $source -OutputDirectory $path | Out-Null
         }
         else {
-            ..\Deployment.Common\nuget\nuget.exe install $_  -PreRelease -Source $source -OutputDirectory $path | Out-Null
+            ..\Deployment.Common\nuget\nuget.exe install $_ -Source $source -OutputDirectory $path | Out-Null
         }
     }
 }

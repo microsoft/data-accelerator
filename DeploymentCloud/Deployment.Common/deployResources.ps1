@@ -268,7 +268,6 @@ function Add-UserAppRole([string]$AppName) {
     catch {}
 }
 
-# Replace token in template
 # Set secret to AAD app
 function Set-AzureAADAppSecret([string]$AppName) {
     $app = Get-AzureRmADApplication -DisplayName $AppName
@@ -283,6 +282,18 @@ function Set-AzureAADAppSecret([string]$AppName) {
     $keyValue
 }
 
+# Set credential to AAD app
+function Set-AzureAADAppCert([string]$AppName) {
+    $app = Get-AzureRmADApplication -DisplayName $AppName
+    if ($app)
+    {
+        $cer = $certPrimary.Certificate
+        $certValue = [System.Convert]::ToBase64String($cer.GetRawCertData())
+
+        az ad app credential reset --append --id $app.ApplicationId --cert $certValue
+    }
+}
+
 # Set secret to AAD app
 function Generate-AADApplication([string]$appName, [string]$websiteName) {
     $app = Get-AzureRmADApplication -DisplayName $appName
@@ -293,11 +304,14 @@ function Generate-AADApplication([string]$appName, [string]$websiteName) {
         }
         else {
             $app = New-AzureRmADApplication  -DisplayName $appName -IdentifierUris "https://$tenantName/$appName" 
-            
-            $cer = $certPrimary.Certificate
-            $certValue = [System.Convert]::ToBase64String($cer.GetRawCertData())
-    
-            New-AzureRmADAppCredential -ApplicationId $app.ApplicationId -CertValue $certValue -StartDate $cer.NotBefore -EndDate $cer.NotAfter
+        }
+    }
+
+    if ($app)
+    {
+        $urls = $app.IdentifierUris
+        if ($urls.Count -eq 0) {
+            Set-AzureRmADApplication -ObjectId $app.ObjectId -IdentifierUris "https://$tenantName/$appName"  -ErrorAction SilentlyContinue        
         }
     }
     
@@ -534,7 +548,7 @@ function Setup-Secrets {
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $tValue
 
     $secretName = $prefix + "serviceResourceId"
-    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value "https://$tenantName/$serviceAppName"
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $azureADApplicationConfiggenResourceId
 
     $secretName = $prefix + "mongoDbUrl"    
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value "test"
@@ -813,8 +827,12 @@ $azureADApplicationConfiggen = Generate-AADApplication -appName $serviceAppName
 $azureADApplicationApplicationId = $azureADApplication.ApplicationId.Guid
 $azureADApplicationConfiggenApplicationId = $azureADApplicationConfiggen.ApplicationId.Guid
 
+$azureADApplicationConfiggenResourceId = $azureADApplicationConfiggen.IdentifierUris[0]
+
 $azureADAppSecret = Set-AzureAADAppSecret -AppName $clientAppName
 $azureADAppSecretConfiggen = Set-AzureAADAppSecret -AppName $serviceAppName
+
+Set-AzureAADAppCert -AppName $serviceAppName
 
 $azureADAppSecretValue = $azureADAppSecret.Value 
 $azureADAppSecretConfiggenValue = $azureADAppSecretConfiggen.Value
