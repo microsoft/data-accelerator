@@ -46,7 +46,7 @@ If you are interested in fixing issues and contributing to the code base, we wou
 * Request new features on [GitHub](https://github.com/Microsoft/data-accelerator/blob/master/CONTRIBUTING.md)
 * Open a new issue on [GitHub](https://github.com/Microsoft/data-accelerator/issues)
 * Ask a question on [Stack Overflow](https://stackoverflow.com/questions/tagged/data-accelerator)
-* Contact us: (data-accelerator@microsoft.com)
+* Contact us: data-accelerator@microsoft.com
 * Check out the [contributing page](CONTRIBUTING.md) to see the best places to log issues and start discussions.
 
 Please also see our [Code of Conduct](CODE_OF_CONDUCT.md).
