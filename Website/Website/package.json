@@ -67,7 +67,7 @@
     "datax-home": "1.1.1",
     "datax-jobs": "1.1.1",
     "datax-metrics": "1.1.1",
-    "datax-pipeline": "1.2.1",
+    "datax-pipeline": "1.2.2",
     "office-ui-fabric-react": "6.111.2",
     "promise-polyfill": "8.1.0",
     "prop-types": "15.6.2",
