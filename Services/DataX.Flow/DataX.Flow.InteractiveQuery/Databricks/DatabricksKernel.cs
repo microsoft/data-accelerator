@@ -45,7 +45,7 @@ namespace DataX.Flow.InteractiveQuery.Databricks
         public string ExecuteCode(string code)
         {
             // Call service
-            HttpClient client = GetHttpClient();
+            HttpClient client = DatabricksUtility.GetHttpClient(_token);
             var nvc = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("command", code)
@@ -55,33 +55,20 @@ namespace DataX.Flow.InteractiveQuery.Databricks
             var response = client.SendAsync(request).Result;
             var responseString = response.Content.ReadAsStringAsync().Result;
             string commandId = JsonConvert.DeserializeObject<ExecuteCodeDBKernelResponse>(responseString).Id;
-            client.Dispose();
 
             // Now get the result output
-            HttpClient client2 = GetHttpClient();
             CommandResponse result = null;
             string status = "Running";
             do
             {
-                var response2 = client2.GetAsync($"{_baseUrl}/api/1.2/commands/status?clusterId={_clusterId}&contextId={Id}&commandId={commandId}").Result;
+                var response2 = client.GetAsync($"{_baseUrl}/api/1.2/commands/status?clusterId={_clusterId}&contextId={Id}&commandId={commandId}").Result;
                 var responsestring2 = response2.Content.ReadAsStringAsync().Result;
                 result = JsonConvert.DeserializeObject<CommandResponse>(responsestring2);
                 status = result.Status;
             } while (status == "Running");
-            client2.Dispose();
+            client.Dispose();
 
             return JsonConvert.SerializeObject(result.Results);
-        }
-
-        /// <summary>
-        /// Creates HttpClient with the right headers
-        /// </summary>
-        /// <returns></returns>
-        private HttpClient GetHttpClient()
-        {
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
-            return client;
         }
 
     }

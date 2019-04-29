@@ -48,7 +48,7 @@ namespace DataX.Flow.InteractiveQuery.Databricks
                 InitializeClusterId();
                 
                 // Call service
-                HttpClient client = GetHttpClient();
+                HttpClient client = DatabricksUtility.GetHttpClient(_token);
                 var nvc = new List<KeyValuePair<string, string>>();
                 var url = $"{_baseUrl}/api/1.2/contexts/create?language=scala&clusterId={_clusterId}";
                 var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = new FormUrlEncodedContent(nvc) };
@@ -82,7 +82,7 @@ namespace DataX.Flow.InteractiveQuery.Databricks
                 var content = new StringContent(body);
 
                 // Application killed by user.
-                HttpClient client = GetHttpClient();
+                HttpClient client = DatabricksUtility.GetHttpClient(_token);
                 var response = await client.PostAsync($"{_baseUrl}/api/1.2/contexts/destroy", content);
                 responseString = await response.Content.ReadAsStringAsync();
                 string id = JsonConvert.DeserializeObject<DeleteDBKernelResponse>(responseString).Id;
@@ -113,17 +113,6 @@ namespace DataX.Flow.InteractiveQuery.Databricks
         }
 
         /// <summary>
-        /// Create new HttpClient with the right headers
-        /// </summary>
-        /// <returns>HttpClient for communicating with Databricks cluster</returns>
-        private HttpClient GetHttpClient()
-        {
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
-            return client;
-        }
-
-        /// <summary>
         /// Initialized the cluster Id given the Spark cluster name
         /// </summary>
         private void InitializeClusterId()
@@ -133,7 +122,7 @@ namespace DataX.Flow.InteractiveQuery.Databricks
                 return;
             }
 
-            HttpClient client = GetHttpClient();
+            HttpClient client = DatabricksUtility.GetHttpClient(_token);
             var response = client.GetAsync($"{_baseUrl}/api/2.0/clusters/list").Result;
             var responseString = response.Content.ReadAsStringAsync().Result;
             SparkClustersObject sparkClustersObject = JsonConvert.DeserializeObject<SparkClustersObject>(responseString);
@@ -190,5 +179,19 @@ namespace DataX.Flow.InteractiveQuery.Databricks
     {
         [JsonProperty("id")]
         public string Id { get; set; }
+    }
+
+    public class DatabricksUtility
+    {
+        /// <summary>
+        /// Creates HttpClient with the right headers
+        /// </summary>
+        /// <returns></returns>
+        public static HttpClient GetHttpClient(string token)
+        {
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            return client;
+        }
     }
 }
