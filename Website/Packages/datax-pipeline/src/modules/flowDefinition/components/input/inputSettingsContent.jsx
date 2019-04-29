@@ -193,7 +193,7 @@ export default class InputSettingsContent extends React.Component {
         if (this.props.input.type === Models.inputTypeEnum.local) {
             return null;
         } else {
-            const label = this.props.input.type === Models.inputTypeEnum.events ? 'Connection String' : 'Event Hub-Compatible Endpoint';
+            const label = this.props.input.type === Models.inputTypeEnum.iothub ? 'Event Hub-Compatible Endpoint' : 'Connection String';
             return (
                 <div style={sectionStyle}>
                     <TextField
