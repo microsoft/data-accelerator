@@ -146,8 +146,15 @@ namespace Flow.Management
                     {
                         await blob.DownloadToStreamAsync(strm);
                         byte[] asseblyBytes = strm.ToArray();
-                        var assembly = Assembly.Load(asseblyBytes);
-                        additionalAssemblies = additionalAssemblies.Append(assembly);
+                        try
+                        {
+                            var assembly = Assembly.Load(asseblyBytes);
+                            additionalAssemblies = additionalAssemblies.Append(assembly);
+                        }
+                        catch(BadImageFormatException)
+                        {
+                            // do nothing and skip the assembly to load as it might be the native assemblies    
+                        }
                     }
                 }
             }
