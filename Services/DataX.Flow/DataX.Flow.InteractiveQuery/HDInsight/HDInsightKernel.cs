@@ -14,11 +14,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DataX.Flow.InteractiveQuery
+namespace DataX.Flow.InteractiveQuery.HDInsight
 {
-    public sealed class Kernel : IDisposable
+    /// <summary>
+    /// Implementation of IKernel for HDInsight stack
+    /// </summary>
+    public sealed class HDInsightKernel : IDisposable, IKernel
     {
-        public readonly string Id;
         public WebSocket Socket;
         private readonly byte[] _shellBuffer, _iopubBuffer;
         private readonly List<byte> _shellRead, _iopubRead;
@@ -29,7 +31,7 @@ namespace DataX.Flow.InteractiveQuery
         private readonly Dictionary<string, string> _headers;
         private readonly Dictionary<Guid, Action<Dictionary<string, object>>> _handlers = new Dictionary<Guid, Action<Dictionary<string, object>>>();
 
-        public Kernel(string id, string basePath, Dictionary<string, string> cookies = null, X509Certificate2Collection certificates = null, WebSocket socket = null, Dictionary<string, string> headers = null)
+        public HDInsightKernel(string id, string basePath, Dictionary<string, string> cookies = null, X509Certificate2Collection certificates = null, WebSocket socket = null, Dictionary<string, string> headers = null)
         {
             Id = id;
             _basePath = basePath;
@@ -52,9 +54,9 @@ namespace DataX.Flow.InteractiveQuery
             );
         }
 
-        public Kernel ReplaceSocket(WebSocket socket)
+        public HDInsightKernel ReplaceSocket(WebSocket socket)
         {
-            return new Kernel(
+            return new HDInsightKernel(
                 Id,
                 _basePath,
                 _cookies,
@@ -62,6 +64,8 @@ namespace DataX.Flow.InteractiveQuery
                 socket
             );
         }
+
+        public string Id { get; }
 
         private ClientWebSocket ConnectWebSocket(string target)
         {
@@ -212,6 +216,11 @@ namespace DataX.Flow.InteractiveQuery
         }
 
         private const int _ExecuteCodeTimeout = 300000;
+
+        public string ExecuteCode(string code)
+        {
+            return ExecuteCode(code, _ExecuteCodeTimeout, true);
+        }
 
         public string ExecuteCode(string code, int timeout = _ExecuteCodeTimeout, bool waitForOutput = true)
         {
