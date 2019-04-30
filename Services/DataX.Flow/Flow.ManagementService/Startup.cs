@@ -138,8 +138,8 @@ namespace Flow.Management
 
             var dlls = blobStorage.GetCloudBlockBlobs(mefContainerName, mefBlobDirectory);
 
-            // Configure and create a logger instance to add it to MEF container           
-            var logger = _loggerFactory.CreateLogger<RuntimeConfigGeneration>();
+            // Configure and create a logger instance to add it to MEF container
+            var logger = _loggerFactory.CreateLogger<Startup>();
 
             foreach (var blob in dlls)
             {
