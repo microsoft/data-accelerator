@@ -26,9 +26,13 @@ namespace Flow.Management
     /// </summary>
     internal sealed class FlowManagementService : StatelessService
     {
-        public FlowManagementService(StatelessServiceContext context)
+        private readonly IWebHostBuilder _webHostBuilder;
+
+        public FlowManagementService(StatelessServiceContext context, IWebHostBuilder webHostBuilder)
             : base(context)
-        { }
+        {
+            _webHostBuilder = webHostBuilder;
+        }
 
         /// <summary>
         /// Optional override to create listeners (like tcp, http) for this service instance.
@@ -43,15 +47,13 @@ namespace Flow.Management
                     {
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
 
-                        return new WebHostBuilder()
-                                    .UseKestrel()
+
+
+                        return _webHostBuilder
                                     .ConfigureServices(
                                         services => services
                                             .AddSingleton<StatelessServiceContext>(serviceContext)
                                              )
-                                    .UseContentRoot(Directory.GetCurrentDirectory())
-                                    .UseStartup<Startup>()
-                                    
                                     .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
                                     .UseUrls(url)
                                     .Build();

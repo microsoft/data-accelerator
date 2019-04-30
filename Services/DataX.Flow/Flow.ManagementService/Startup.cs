@@ -5,8 +5,10 @@
 using DataX.Config;
 using DataX.Config.ConfigurationProviders;
 using DataX.Config.PublicService;
+using DataX.Config.ServiceFabric.Extensions.Configuration;
 using DataX.Config.Storage;
 using DataX.ServiceHost.ServiceFabric;
+using DataX.ServiceHost.Settings;
 using DataX.Utilities.Blob;
 using DataX.Utilities.Telemetry;
 using Microsoft.AspNetCore.Builder;
@@ -28,7 +30,7 @@ namespace Flow.Management
     {
         private readonly ILoggerFactory _loggerFactory;
         public IConfiguration Configuration { get; }
-        private string _serviceKeyVaultName;
+        private readonly DataXSettings _dataXSettings = new DataXSettings();
 
         public Startup(IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
@@ -36,9 +38,12 @@ namespace Flow.Management
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddServiceFabricSettings("Config")
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
+
+            Configuration.GetSection("DataX:ServiceEnvironment").Bind(_dataXSettings);
 
             _loggerFactory = loggerFactory;
         }        
@@ -47,7 +52,6 @@ namespace Flow.Management
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-            _serviceKeyVaultName = ServiceFabricUtil.GetServiceKeyVaultName().Result.ToString();
             StartUpUtil.ConfigureServices(services);
 
             // Configure and create a logger instance to add it to MEF container           
@@ -111,28 +115,25 @@ namespace Flow.Management
         // Get the required settings to bootstrap the config gen
         private void InitConfigSettings()
         {
-            var cosmosDBConfigConnectionString = ServiceFabricUtil.GetServiceFabricConfigSetting("cosmosDBConfigConnectionString").Result.ToString();
-            var cosmosDBConfigDatabaseName = ServiceFabricUtil.GetServiceFabricConfigSetting("cosmosDBConfigDatabaseName").Result.ToString();
-            var cosmosDBConfigCollectionName = ServiceFabricUtil.GetServiceFabricConfigSetting("cosmosDBConfigCollectionName").Result.ToString();
-
-            InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_ConnectionString, cosmosDBConfigConnectionString);
-            InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_DatabaseName, cosmosDBConfigDatabaseName);
-            InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_CollectionName, cosmosDBConfigCollectionName);
-            InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ServiceKeyVaultName, _serviceKeyVaultName);
+            InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_ConnectionString, _dataXSettings.CosmosDBConfigConnectionString);
+            InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_DatabaseName, _dataXSettings.CosmosDBConfigDatabaseName);
+            InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_CollectionName, _dataXSettings.CosmosDBConfigCollectionName);
+            InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ServiceKeyVaultName, _dataXSettings.ServiceKeyVaultName);
         }
 
         // Get additional assemblies from azure storage
         private async Task<IEnumerable<Assembly>> GetDependencyAssembliesFromStorageAsync()
         {
             IEnumerable<Assembly> additionalAssemblies = new List<Assembly>();
-            var mefStorageAccountName = ServiceFabricUtil.GetServiceFabricConfigSetting("MefStorageAccountName").Result.ToString();
-            var mefContainerName = ServiceFabricUtil.GetServiceFabricConfigSetting("MefContainerName").Result.ToString();
+            var mefStorageAccountName = _dataXSettings.MefStorageAccountName;
+            var mefContainerName = _dataXSettings.MefContainerName;
+
             if (string.IsNullOrEmpty(mefStorageAccountName) || string.IsNullOrEmpty(mefContainerName))
             {
                 return additionalAssemblies;
             }
-            
-            var mefBlobDirectory = ServiceFabricUtil.GetServiceFabricConfigSetting("MefBlobDirectory").Result.ToString();
+
+            var mefBlobDirectory = _dataXSettings.MefBlobDirectory;
 
             BlobStorageMSI blobStorage = new BlobStorageMSI(mefStorageAccountName);
 
