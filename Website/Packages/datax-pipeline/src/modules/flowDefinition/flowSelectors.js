@@ -201,7 +201,7 @@ function validateInput(input) {
     validations.push(input && input.properties);
 
     if (input.mode === Models.inputModeEnum.streaming) {
-        if (input.type === Models.inputTypeEnum.events || input.type === Models.inputTypeEnum.eventforkafka) {
+        if (input.type === Models.inputTypeEnum.events || input.type === Models.inputTypeEnum.kafkaeventhub) {
             validations.push(input.properties.inputEventhubConnection.trim() !== '');
             validations.push(Helpers.isValidNumberAboveZero(input.properties.windowDuration));
             validations.push(
