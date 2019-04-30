@@ -156,7 +156,7 @@ namespace Flow.Management
                         }
                         catch(BadImageFormatException be)
                         {
-                            // do nothing and skip the assembly to load as it might be a native assembly
+                            // Do nothing and skip the assembly to load as it might be a native assembly
                             logger.LogError(be, "Unable to load Assembly: {0} from the StorageAccount", blob.Name);
                         }
                     }
