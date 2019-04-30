@@ -43,10 +43,10 @@ namespace DataX.Flow.Common.Models
         public string InputResourceGroup;
 
         [JsonProperty("eventhubName")]
-        public string EventhubName;
+        public List<string> EventhubNames;
 
-        [JsonProperty("isIotHub")]
-        public bool IsIotHub;
+        [JsonProperty("inputType")]
+        public string InputType; // "Event", "Iothub", "KafkaEventhub", "Kafka"
 
         [JsonProperty("seconds")]
         public int Seconds;

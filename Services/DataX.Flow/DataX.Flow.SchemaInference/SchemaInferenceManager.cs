@@ -10,6 +10,7 @@ using DataX.Flow.Common.Models;
 using DataX.Utilities.EventHub;
 using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace DataX.Flow.SchemaInference
 {
@@ -41,9 +42,10 @@ namespace DataX.Flow.SchemaInference
 
             var connectionString = Helper.GetSecretFromKeyvaultIfNeeded(diag.EventhubConnectionString);
 
-            if (!diag.IsIotHub)
+            if (diag.InputType=="Event")
             {
-                diag.EventhubName = Helper.ParseEventHub(connectionString);
+                string ehName = Helper.ParseEventHub(connectionString);
+                diag.EventhubNames = new List<string>() { ehName };
             }
 
             string eventHubNamespace = Helper.ParseEventHubNamespace(connectionString);
@@ -59,16 +61,19 @@ namespace DataX.Flow.SchemaInference
                 var inputResourceGroup = string.IsNullOrEmpty(diag.InputResourceGroup) ? _engineEnvironment.EngineFlowConfig.EventHubResourceGroupName : Helper.GetSecretFromKeyvaultIfNeeded(diag.InputResourceGroup);
 
                 // Create consumer group if it doesn't exist
-                var result = EventHub.CreateConsumerGroup(inputSubscriptionId, _engineEnvironment.EngineFlowConfig.ServiceKeyVaultName, inputResourceGroup, _engineEnvironment.EngineFlowConfig.EventHubResourceGroupLocation, eventHubNamespace, diag.EventhubName, _engineEnvironment.EngineFlowConfig.ConsumerGroup, diag.IsIotHub, _engineEnvironment.EngineFlowConfig.ConfiggenClientId, _engineEnvironment.EngineFlowConfig.ConfiggenTenantId, _engineEnvironment.EngineFlowConfig.ConfiggenSecretPrefix);
-                if (result.Error.HasValue && result.Error.Value)
+                foreach (string ehName in diag.EventhubNames)
                 {
-                    _logger.LogError(result.Message);
-                    return ApiResult.CreateError(result.Message);
+                    var result = EventHub.CreateConsumerGroup(inputSubscriptionId, _engineEnvironment.EngineFlowConfig.ServiceKeyVaultName, inputResourceGroup, _engineEnvironment.EngineFlowConfig.EventHubResourceGroupLocation, eventHubNamespace, ehName, _engineEnvironment.EngineFlowConfig.ConsumerGroup, diag.InputType, _engineEnvironment.EngineFlowConfig.ConfiggenClientId, _engineEnvironment.EngineFlowConfig.ConfiggenTenantId, _engineEnvironment.EngineFlowConfig.ConfiggenSecretPrefix);
+                    if (result.Error.HasValue && result.Error.Value)
+                    {
+                        _logger.LogError(result.Message);
+                        return ApiResult.CreateError(result.Message);
+                    }
                 }
             }
 
             // Sample events and generate schema
-            SchemaGenerator sg = new SchemaGenerator(diag.EventhubName, _engineEnvironment.EngineFlowConfig.ConsumerGroup, connectionString, _engineEnvironment.OpsBlobConnectionString, checkPointContainerName, _engineEnvironment.EngineFlowConfig.OpsBlobDirectory, _logger);
+            SchemaGenerator sg = new SchemaGenerator(diag.EventhubNames, _engineEnvironment.EngineFlowConfig.ConsumerGroup, connectionString, _engineEnvironment.OpsBlobConnectionString, checkPointContainerName, _engineEnvironment.EngineFlowConfig.OpsBlobDirectory, diag.InputType, _logger);
             SchemaResult schema = await sg.GetSchemaAsync(_engineEnvironment.OpsBlobConnectionString, OpsSamplePath, diag.UserName, diag.Name, diag.Seconds);
                 
                 return ApiResult.CreateSuccess(JObject.FromObject(schema));
@@ -85,9 +90,10 @@ namespace DataX.Flow.SchemaInference
 
             var connectionString = Helper.GetSecretFromKeyvaultIfNeeded(diag.EventhubConnectionString);
 
-            if (!diag.IsIotHub)
+            if (diag.InputType == "Event")
             {
-                diag.EventhubName = Helper.ParseEventHub(connectionString);
+                string ehName = Helper.ParseEventHub(connectionString);
+                diag.EventhubNames = new List<string>() { ehName };
             }
 
             string eventHubNamespace = Helper.ParseEventHubNamespace(connectionString);
@@ -100,11 +106,14 @@ namespace DataX.Flow.SchemaInference
                 var inputResourceGroup = string.IsNullOrEmpty(diag.InputResourceGroup) ? _engineEnvironment.EngineFlowConfig.EventHubResourceGroupName : Helper.GetSecretFromKeyvaultIfNeeded(diag.InputResourceGroup);
 
                 // Create consumer group if it doesn't exist
-                var result = EventHub.CreateConsumerGroup(inputSubscriptionId, _engineEnvironment.EngineFlowConfig.ServiceKeyVaultName, inputResourceGroup, _engineEnvironment.EngineFlowConfig.EventHubResourceGroupLocation, eventHubNamespace, diag.EventhubName, _engineEnvironment.EngineFlowConfig.ConsumerGroup, diag.IsIotHub, _engineEnvironment.EngineFlowConfig.ConfiggenClientId, _engineEnvironment.EngineFlowConfig.ConfiggenTenantId, _engineEnvironment.EngineFlowConfig.ConfiggenSecretPrefix);
-                if (result.Error.HasValue && result.Error.Value)
+                foreach (string ehName in diag.EventhubNames)
                 {
-                    _logger.LogError(result.Message);
-                    return ApiResult.CreateError(result.Message);
+                    var result = EventHub.CreateConsumerGroup(inputSubscriptionId, _engineEnvironment.EngineFlowConfig.ServiceKeyVaultName, inputResourceGroup, _engineEnvironment.EngineFlowConfig.EventHubResourceGroupLocation, eventHubNamespace, ehName, _engineEnvironment.EngineFlowConfig.ConsumerGroup, diag.InputType, _engineEnvironment.EngineFlowConfig.ConfiggenClientId, _engineEnvironment.EngineFlowConfig.ConfiggenTenantId, _engineEnvironment.EngineFlowConfig.ConfiggenSecretPrefix);
+                    if (result.Error.HasValue && result.Error.Value)
+                    {
+                        _logger.LogError(result.Message);
+                        return ApiResult.CreateError(result.Message);
+                    }
                 }
             }
 
@@ -117,7 +126,7 @@ namespace DataX.Flow.SchemaInference
             var checkPointContainerName = $"{_engineEnvironment.CheckPointContainerNameHelper(diag.Name)}-checkpoints";
 
             // Sample events and refresh sample
-            SchemaGenerator sg = new SchemaGenerator(diag.EventhubName, _engineEnvironment.EngineFlowConfig.ConsumerGroup, connectionString, _engineEnvironment.OpsBlobConnectionString, checkPointContainerName, _engineEnvironment.EngineFlowConfig.OpsBlobDirectory, _logger);
+            SchemaGenerator sg = new SchemaGenerator(diag.EventhubNames, _engineEnvironment.EngineFlowConfig.ConsumerGroup, connectionString, _engineEnvironment.OpsBlobConnectionString, checkPointContainerName, _engineEnvironment.EngineFlowConfig.OpsBlobDirectory, diag.InputType, _logger);
             await sg.RefreshSample(_engineEnvironment.OpsBlobConnectionString, OpsSamplePath, diag.UserName, diag.Name, diag.Seconds);
             _logger.LogInformation("Refresh Sample worked!");
             return ApiResult.CreateSuccess("success");
