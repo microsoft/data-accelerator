@@ -138,6 +138,9 @@ namespace Flow.Management
 
             var dlls = blobStorage.GetCloudBlockBlobs(mefContainerName, mefBlobDirectory);
 
+            // Configure and create a logger instance to add it to MEF container           
+            var logger = _loggerFactory.CreateLogger<RuntimeConfigGeneration>();
+
             foreach (var blob in dlls)
             {
                 if (blob.Name.EndsWith(".dll"))
@@ -151,9 +154,10 @@ namespace Flow.Management
                             var assembly = Assembly.Load(asseblyBytes);
                             additionalAssemblies = additionalAssemblies.Append(assembly);
                         }
-                        catch(BadImageFormatException)
+                        catch(BadImageFormatException be)
                         {
-                            // do nothing and skip the assembly to load as it might be the native assemblies    
+                            // do nothing and skip the assembly to load as it might be a native assembly
+                            logger.LogError(be, "Unable to load Assembly: {0} from the StorageAccount", blob.Name);
                         }
                     }
                 }
