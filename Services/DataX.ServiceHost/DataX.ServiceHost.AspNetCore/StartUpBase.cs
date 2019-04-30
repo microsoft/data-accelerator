@@ -30,7 +30,7 @@ namespace DataX.ServiceHost.AspNetCore
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-            StartUpUtil.ConfigureServices(services);            
+            StartUpUtil.ConfigureServices(services, Configuration);            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -52,7 +52,7 @@ namespace Flow.Management
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-            StartUpUtil.ConfigureServices(services);
+            StartUpUtil.ConfigureServices(services, Configuration);
 
             // Configure and create a logger instance to add it to MEF container           
             var logger = _loggerFactory.CreateLogger<RuntimeConfigGeneration>();

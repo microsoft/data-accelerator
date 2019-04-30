@@ -17,7 +17,7 @@ namespace DataX.Utilities.Telemetry
 {
     public static class StartUpUtil
     {
-        public static void ConfigureServices(IServiceCollection services)
+        public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
             services.AddSingleton<ITelemetryInitializer, OperationParentIdTelemetryInitializer>();
             services.AddApplicationInsightsTelemetry(new ApplicationInsightsServiceOptions()
