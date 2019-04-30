@@ -10,13 +10,18 @@ namespace DataX.Config.ServiceFabric.Extensions.Configuration
 
     public static class ServiceFabricConfigurationBuilderExtensions
     {
-        public static IConfigurationBuilder AddInMemoryCollection(this IConfigurationBuilder configurationBuilder, string packageName)
+        public static IConfigurationBuilder AddServiceFabricSettings(this IConfigurationBuilder configurationBuilder, string packageName)
         {
             if (configurationBuilder == null)
             {
                 throw new ArgumentNullException("configurationBuilder");
             }
-            configurationBuilder.Add(new ServiceFabricConfigurationSource(packageName));
+
+            if (Environment.GetEnvironmentVariable("Fabric_ApplicationName") != null)
+            {
+                configurationBuilder.Add(new ServiceFabricConfigurationSource(packageName));
+            }
+
             return configurationBuilder;
         }
     }
