@@ -41,6 +41,7 @@ namespace Flow.Management
                     var webHost = WebHostBuilder.Build();
 
                     webHost.Start();
+                    webHost.WaitForShutdown();
                 }
             }
             catch (Exception e)
