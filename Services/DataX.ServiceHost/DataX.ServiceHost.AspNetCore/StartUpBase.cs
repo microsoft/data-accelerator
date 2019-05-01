@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using DataX.ServiceHost.ServiceFabric.Extensions.Configuration;
 using DataX.Utilities.Telemetry;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -20,7 +21,8 @@ namespace DataX.ServiceHost.AspNetCore
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();            
+                .AddServiceFabricSettings("Config")
+                .AddEnvironmentVariables();
 
             Configuration = builder.Build();
         }
