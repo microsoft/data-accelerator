@@ -22,7 +22,7 @@
       "launchBrowser": true,
       "launchUrl": "api/flow/getall",
       "environmentVariables": {
-        "AzureServicesAuthConnectionString": "RunAs=CurrentUser",
+        "AzureServicesAuthConnectionString": "RunAs=Developer; DeveloperTool=VisualStudio",
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "http://localhost:5000"
