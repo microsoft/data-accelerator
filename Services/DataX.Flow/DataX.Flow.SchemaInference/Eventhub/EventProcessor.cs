@@ -14,7 +14,7 @@ using System.Timers;
 using System.Threading;
 using Newtonsoft.Json;
 
-namespace DataX.Flow.SchemaInference
+namespace DataX.Flow.SchemaInference.Eventhub
 {
     public class EventProcessor : IEventProcessor
     {

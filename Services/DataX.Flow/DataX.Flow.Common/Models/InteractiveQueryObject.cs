@@ -56,5 +56,11 @@ namespace DataX.Flow.Common.Models
 
         [JsonProperty("functions")]
         public List<FunctionObject> Functions;
+
+        [JsonProperty("brokerlist")]
+        public string BrokerList;
+
+        [JsonProperty("cacertlocation")]
+        public string CacertLocation;
     }
 }

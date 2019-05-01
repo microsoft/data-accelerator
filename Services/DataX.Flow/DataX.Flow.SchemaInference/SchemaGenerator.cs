@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using DataX.Flow.SchemaInference.Eventhub;
+using DataX.Flow.SchemaInference.Kafka;
 
 namespace DataX.Flow.SchemaInference
 {
@@ -25,13 +27,17 @@ namespace DataX.Flow.SchemaInference
         /// <summary>
         /// Schema Generator constructor called for generating schema
         /// </summary>
-        /// <param name="eventhubNames">List of eventhubNames or Topics (for Kafka)</param>
+        /// <param name="brokerList">BrokerList for Kafka</param>
+        /// <param name="connectionString">connectionString of Messagebus</param>
+        /// <param name="hubNames">List of eventhubNames or Topics (for Kafka)</param>
+        /// <param name="cacertLocation">Needed to read from Kafka</param>
         /// <param name="consumerGroup">consumerGroup</param>
-        /// <param name="eventhubConnectionString">eventhubConnectionString</param>
         /// <param name="storageConnectionString">storageConnectionString</param>
         /// <param name="checkpointContainerName">checkpointContainerName</param>
+        /// <param name="blobDirectory">Destination for where samples are stored</param>
+        /// <param name="inputType">Type of MessageBus</param>
         /// <param name="logger">logger for Telemetry</param>
-        public SchemaGenerator(List<string> eventhubNames, string consumerGroup, string eventhubConnectionString, string storageConnectionString, string checkpointContainerName, string blobDirectory, string inputType, ILogger logger)
+        public SchemaGenerator(string brokerList, string connectionString, List<string>hubNames, string cacertLocation, string consumerGroup, string storageConnectionString, string checkpointContainerName, string blobDirectory, string inputType, ILogger logger)
         {
             _logger = logger;
             _blobDirectory = blobDirectory;
@@ -39,11 +45,11 @@ namespace DataX.Flow.SchemaInference
 
             if(inputType.Contains("Kafka"))
             {
-                // TODO
+                _messageBus = new KafkaMessageBus(brokerList, connectionString, hubNames, cacertLocation, consumerGroup, inputType, logger);
             }
             else
             {
-                _messageBus = new EventhubMessageBus(eventhubNames, consumerGroup, eventhubConnectionString, storageConnectionString, checkpointContainerName, inputType, logger);
+                _messageBus = new EventhubMessageBus(hubNames[0], consumerGroup, connectionString, storageConnectionString, checkpointContainerName, inputType, logger);
             }
             BlobHelper.DeleteAllBlobsInAContainer(storageConnectionString, checkpointContainerName, blobDirectory).Wait();
         }

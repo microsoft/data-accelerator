@@ -6,29 +6,29 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DataX.Flow.SchemaInference
+namespace DataX.Flow.SchemaInference.Eventhub
 {
     public class EventhubMessageBus : IMessageBus
     {
         private readonly EventProcessorHost _eventProcessorHost = null;
-        private readonly List<string> _eventhubNames = null;
+        private readonly string _eventhubName = null;
         private readonly string _eventhubConnectionString = null;
         private readonly string _checkpointContainerName = "";
         private readonly string _storageConnectionString = "";
         private readonly string _inputType = "";
         private readonly ILogger _logger;
 
-        public EventhubMessageBus(List<string> eventhubNames, string consumerGroup, string eventhubConnectionString, string storageConnectionString, string checkpointContainerName, string inputType, ILogger logger)
+        public EventhubMessageBus(string eventhubName, string consumerGroup, string eventhubConnectionString, string storageConnectionString, string checkpointContainerName, string inputType, ILogger logger)
         {
             _logger = logger;
-            _eventhubNames = eventhubNames;
+            _eventhubName = eventhubName;
             _eventhubConnectionString = eventhubConnectionString;
             _storageConnectionString = storageConnectionString;
             _checkpointContainerName = checkpointContainerName;
             _inputType = inputType;
 
 
-            _eventProcessorHost = new EventProcessorHost(eventhubNames[0], consumerGroup, eventhubConnectionString, storageConnectionString, checkpointContainerName);
+            _eventProcessorHost = new EventProcessorHost(eventhubName, consumerGroup, eventhubConnectionString, storageConnectionString, checkpointContainerName);
         }
 
         /// <summary>
