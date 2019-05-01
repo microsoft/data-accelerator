@@ -119,6 +119,7 @@ namespace Flow.Management
             InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_DatabaseName, _dataXSettings.CosmosDBConfigDatabaseName);
             InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_CollectionName, _dataXSettings.CosmosDBConfigCollectionName);
             InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ServiceKeyVaultName, _dataXSettings.ServiceKeyVaultName);
+            InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_EnableOneBox, _dataXSettings.EnableOneBox.ToString());
         }
 
         // Get additional assemblies from azure storage
