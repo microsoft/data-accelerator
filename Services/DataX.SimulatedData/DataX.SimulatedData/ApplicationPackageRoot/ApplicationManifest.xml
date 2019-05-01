@@ -9,6 +9,9 @@ Licensed under the MIT License
     <Parameter Name="KeyVaultName" DefaultValue="" />
     <Parameter Name="IotDeviceConnectionStringKeyVaultKeyName" DefaultValue="" />
     <Parameter Name="EventhubConnectionStringKeyVaultKeyName" DefaultValue="" />
+    <Parameter Name="KafkaConnectionStringKeyVaultKeyName" DefaultValue="" />
+    <Parameter Name="KafkaBroker" DefaultValue="" />
+    <Parameter Name="KafkaTopics" DefaultValue="" />
     <Parameter Name="DataSchemaStorageAccountName" DefaultValue="" />
     <Parameter Name="DataSchemaStorageAccountKeyValueKeyVaultKeyName" DefaultValue="" />
     <Parameter Name="DataSchemaStorageContainerName" DefaultValue="" />
@@ -27,6 +30,9 @@ Licensed under the MIT License
             <Parameter Name="KeyVaultName" Value="[KeyVaultName]" />
             <Parameter Name="IotDeviceConnectionStringKeyVaultKeyName" Value="[IotDeviceConnectionStringKeyVaultKeyName]" />
             <Parameter Name="EventhubConnectionStringKeyVaultKeyName" Value="[EventhubConnectionStringKeyVaultKeyName]" />
+            <Parameter Name="KafkaConnectionStringKeyVaultKeyName" Value="[KafkaConnectionStringKeyVaultKeyName]" />
+            <Parameter Name="KafkaBroker" Value="[KafkaBroker]" />
+            <Parameter Name="KafkaTopics" Value="[KafkaTopics]" />
             <Parameter Name="DataSchemaStorageAccountName" Value="[DataSchemaStorageAccountName]" />
             <Parameter Name="DataSchemaStorageAccountKeyValueKeyVaultKeyName" Value="[DataSchemaStorageAccountKeyValueKeyVaultKeyName]" />
             <Parameter Name="DataSchemaStorageContainerName" Value="[DataSchemaStorageContainerName]" />
