@@ -20,6 +20,7 @@ import datax.telemetry.{AppInsightLogger, MetricLoggerFactory}
 import datax.utility._
 import datax.handler._
 import datax.sql.TransformSQLParser
+import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.log4j.LogManager
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
@@ -563,7 +564,30 @@ object CommonProcessorFactory {
         batchLog.warn(s"End batch ${batchTime}, output partition time:${outputPartitionTime}, namespace:${namespace}")
 
         metrics ++ result
-      } // end of processPaths
+      }, // end of processPaths
+      /*
+      process a batch of ConsumerRecords from kafka
+     */
+      processConsumerRecord = (rdd: RDD[ConsumerRecord[String,String]], batchTime: Timestamp, batchInterval: Duration, outputPartitionTime: Timestamp) =>{
+        processDataset(rdd
+          .map(d=>{
+            val value = d.value()
+            if(value==null) throw new EngineException(s"null bytes from ConsumerRecord")
+            (
+              value,
+              Map.empty[String, String],// Properties
+              Map.empty[String, String], // SystemProperties
+              FileInternal())
+          })
+          .toDF(
+            ColumnName.RawObjectColumn,
+            "Properties",
+            "SystemProperties",
+            ColumnName.InternalColumnFileInfo
+          ), batchTime, batchInterval, outputPartitionTime, null, "")
+      } // end of proessConsumerRecord
     ) // end of CommonProcessor
   } // end of init
+
+
 } // end of CommonProcessorFactory

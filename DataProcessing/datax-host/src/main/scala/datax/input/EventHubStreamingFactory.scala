@@ -16,7 +16,7 @@ import org.apache.spark.eventhubs.rdd.HasOffsetRanges
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.{StreamingContext, Time}
 
-object DStreamingEventHubFactory extends  StreamingFactory[EventData]{
+object EventHubStreamingFactory extends  StreamingFactory[EventData]{
 
   private def getEventHubConf(eventhubInput:InputEventHubConf) = {
     val logger = LogManager.getLogger("EventHubConfBuilder")
@@ -80,8 +80,6 @@ object DStreamingEventHubFactory extends  StreamingFactory[EventData]{
 
     val checkpointIntervalInMilliseconds = eventhubInput.checkpointInterval.toLong*1000
     EventHubsUtils.createDirectStream(streamingContext, ehConf)
-      //.persist()
-      //.window(org.apache.spark.streaming.Duration.10))
       .foreachRDD((rdd, time)=>{
       AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/streaming/batch/begin", Map("batchTime"->time.toString), null)
       val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges

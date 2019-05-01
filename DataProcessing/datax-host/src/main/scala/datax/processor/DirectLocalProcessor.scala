@@ -14,7 +14,7 @@ import scala.concurrent.duration.Duration
 
 // Data processor for processing events in OneBox mode where job running is running locally
 class DirectLocalProcessor(processEventData: (RDD[EventData], Timestamp, Duration, Timestamp) => Map[String, Double])
-  extends EventHubStreamingProcessor{
+  extends StreamingProcessor[EventData]{
   override val process = (rdd: RDD[EventData], batchTime: Timestamp, batchInterval: Duration) => {
     val outputPartitionTime =DateTimeUtil.getCurrentTime()
     processEventData(rdd, batchTime, batchInterval, outputPartitionTime)
