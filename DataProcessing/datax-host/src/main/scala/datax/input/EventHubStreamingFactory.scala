@@ -1,7 +1,3 @@
-// *********************************************************************
-// Copyright (c) Microsoft Corporation.  All rights reserved.
-// Licensed under the MIT License
-// *********************************************************************
 package datax.input
 
 import java.sql.Timestamp
@@ -9,11 +5,8 @@ import java.time.Instant
 
 import com.microsoft.azure.eventhubs.EventData
 import datax.checkpoint.EventhubCheckpointer
-import datax.config.UnifiedConfig
 import datax.constants.ProductConstant
 import datax.exception.EngineException
-import datax.input.EventHubInputSetting.InputEventHubConf
-import datax.processor.EventHubStreamingProcessor
 import datax.securedsetting.KeyVaultClient
 import datax.telemetry.AppInsightLogger
 import datax.utility.DateTimeUtil
@@ -23,8 +16,9 @@ import org.apache.spark.eventhubs.rdd.HasOffsetRanges
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.{StreamingContext, Time}
 
-object EventHubStreamingFactory {
-  def getEventHubConf(eventhubInput:InputEventHubConf) = {
+object DStreamingEventHubFactory extends  StreamingFactory[EventData]{
+
+  private def getEventHubConf(eventhubInput:InputEventHubConf) = {
     val logger = LogManager.getLogger("EventHubConfBuilder")
 
     val connectionString = KeyVaultClient.resolveSecretIfAny(eventhubInput.connectionString)
@@ -69,16 +63,17 @@ object EventHubStreamingFactory {
   }
 
   def getStream(streamingContext: StreamingContext,
-                              eventhubInput:InputEventHubConf,
-                              foreachRDDHandler: (RDD[EventData], Time)=>Unit
-                             ) ={
+                inputConf:InputConf,
+                foreachRDDHandler: (RDD[EventData], Time)=>Unit
+               ) ={
     ///////////////////////////////////////////////////////////////
     //Create direct stream from EventHub
     ///////////////////////////////////////////////////////////////
     val preparationLogger = LogManager.getLogger("PrepareEventHubDirectStream")
+    val eventhubInput =inputConf.asInstanceOf[InputEventHubConf]
     val checkpointDir = eventhubInput.checkpointDir
     val ehConf = getEventHubConf(eventhubInput)
-    if(eventhubInput.flushExistingCheckpoints.getOrElse(false))
+    if(inputConf.flushExistingCheckpoints.getOrElse(false))
       preparationLogger.warn("Flush the existing checkpoints according to configuration")
     else
       EventhubCheckpointer.applyCheckpointsIfExists(ehConf, checkpointDir)
@@ -117,19 +112,5 @@ object EventHubStreamingFactory {
 
       AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/streaming/batch/end", Map("batchTime"->time.toString), null)
     })
-  }
-
-  @volatile private var instance: EventHubStreamingProcessor = null
-  def getOrCreateProcessor(config: UnifiedConfig,
-                                      generator: UnifiedConfig =>EventHubStreamingProcessor) = {
-    if (instance == null) {
-      synchronized {
-        if (instance == null) {
-          instance = generator(config)
-        }
-      }
-    }
-
-    instance
   }
 }
