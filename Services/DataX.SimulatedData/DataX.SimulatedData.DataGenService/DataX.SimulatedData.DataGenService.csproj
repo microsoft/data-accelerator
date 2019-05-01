@@ -52,10 +52,4 @@
     </FilesToSign>
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="cacert.pem">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

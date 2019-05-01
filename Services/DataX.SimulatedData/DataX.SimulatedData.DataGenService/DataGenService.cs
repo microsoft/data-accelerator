@@ -21,6 +21,8 @@ using Newtonsoft.Json.Linq;
 using DataX.SimulatedData.DataGenService.Model;
 using DataX.Utilities.KeyVault;
 using Confluent.Kafka;
+using System.Text.RegularExpressions;
+using System.Net;
 
 namespace DataX.SimulatedData.DataGenService
 {
@@ -67,10 +69,17 @@ namespace DataX.SimulatedData.DataGenService
 
             KafkaConnection kafkaConn = new KafkaConnection
             {
-                Broker = inputConfig.Parameters["KafkaBroker"].Value,
                 Topics = (inputConfig.Parameters["KafkaTopics"].Value.Length > 0) ? Array.ConvertAll(inputConfig.Parameters["KafkaTopics"].Value.Split(','), p => p.Trim()).ToList() : new List<string>(),
                 ConnectionString = (inputConfig.Parameters["KafkaConnectionStringKeyVaultKeyName"].Value.Length > 0) ? await keyManager.GetSecretStringAsync(keyVaultName, inputConfig.Parameters["KafkaConnectionStringKeyVaultKeyName"].Value) : ""
             };
+
+            if (!string.IsNullOrEmpty(kafkaConn.ConnectionString))
+            {
+                Regex regex = new Regex(@"sb?://([\w\d\.]+).*");
+                kafkaConn.Broker = regex.Match(kafkaConn.ConnectionString).Groups[1].Value + ":9093";
+                WebClient webClient = new WebClient();
+                webClient.DownloadFile("https://curl.haxx.se/ca/cacert.pem", @".\cacert.pem");
+            }
 
             var dataSchemaFileContent = await GetDataSchemaAndRules(dataSchemaStorageAccountName, dataSchemaStorageAccountKeyValue, dataSchemaStorageContainerName, dataSchemaPathWithinContainer);
 
@@ -270,7 +279,7 @@ namespace DataX.SimulatedData.DataGenService
                 SaslMechanism = SaslMechanism.Plain,
                 SaslUsername = "$ConnectionString",
                 SaslPassword = kafkaConn.ConnectionString,
-                SslCaLocation = ".\\cacert.pem"
+                SslCaLocation = @".\cacert.pem"
             };
 
             using (var producer = new ProducerBuilder<string, string>(config).Build())

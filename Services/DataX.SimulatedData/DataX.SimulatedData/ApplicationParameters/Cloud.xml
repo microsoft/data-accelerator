@@ -10,7 +10,6 @@ Licensed under the MIT License
     <Parameter Name="IotDeviceConnectionStringKeyVaultKeyName" Value="" />
     <Parameter Name="EventhubConnectionStringKeyVaultKeyName" Value="" />
     <Parameter Name="KafkaConnectionStringKeyVaultKeyName" Value="" />
-    <Parameter Name="KafkaBroker" Value="" />
     <Parameter Name="KafkaTopics" Value="" />
     <Parameter Name="DataSchemaStorageAccountName" Value="" />
     <Parameter Name="DataSchemaStorageAccountKeyValueKeyVaultKeyName" Value="" />
