@@ -3,7 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 
-namespace DataX.Config.ServiceFabric.Extensions.Configuration
+namespace DataX.ServiceHost.ServiceFabric.Extensions.Configuration
 {
     using Microsoft.Extensions.Configuration;
     using System;
@@ -14,7 +14,7 @@ namespace DataX.Config.ServiceFabric.Extensions.Configuration
         {
             if (configurationBuilder == null)
             {
-                throw new ArgumentNullException("configurationBuilder");
+                throw new ArgumentNullException(nameof(configurationBuilder));
             }
 
             if (Environment.GetEnvironmentVariable("Fabric_ApplicationName") != null)

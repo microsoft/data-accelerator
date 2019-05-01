@@ -3,7 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 
-namespace DataX.Config.ServiceFabric
+namespace DataX.ServiceHost.ServiceFabric
 {
     using Microsoft.Extensions.Configuration.Memory;
     using System.Collections.Generic;

@@ -5,7 +5,7 @@
 using DataX.Config;
 using DataX.Config.ConfigurationProviders;
 using DataX.Config.PublicService;
-using DataX.Config.ServiceFabric.Extensions.Configuration;
+using DataX.ServiceHost.ServiceFabric.Extensions.Configuration;
 using DataX.Config.Storage;
 using DataX.ServiceHost.ServiceFabric;
 using DataX.ServiceHost.Settings;
@@ -43,7 +43,7 @@ namespace Flow.Management
 
             Configuration = builder.Build();
 
-            Configuration.GetSection("DataX:ServiceEnvironment").Bind(_dataXSettings);
+            Configuration.GetSection(DataXSettingsConstants.ServiceEnvironment).Bind(_dataXSettings);
 
             _loggerFactory = loggerFactory;
         }        

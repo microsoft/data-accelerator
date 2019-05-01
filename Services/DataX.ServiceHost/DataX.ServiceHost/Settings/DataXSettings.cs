@@ -23,6 +23,7 @@ namespace DataX.ServiceHost.Settings
         public string ConfigFolderContainerPath { get; set; }
         public string ConfigFolderHost { get; set; }
         public string MetricsHttpEndpoint { get; set; }
+        public string AppInsightsIntrumentationKeySecretName { get; set; } = Guid.Empty;
 
         public string MefStorageAccountName { get; set; }
         public string MefContainerName { get; set; }
