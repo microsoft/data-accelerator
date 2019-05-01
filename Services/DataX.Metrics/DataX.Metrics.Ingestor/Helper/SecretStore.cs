@@ -21,7 +21,7 @@ namespace DataX.Metrics.Ingestor.Helper
 
         private SecretsStore()
         {
-            _keyVaultName = (string)ServiceFabricUtil.GetServiceKeyVaultName().Result;
+            _keyVaultName = ServiceFabricUtil.GetServiceKeyVaultName().Result?.ToString();
         }
 
         public static SecretsStore Instance => _LazyInstance.Value;
