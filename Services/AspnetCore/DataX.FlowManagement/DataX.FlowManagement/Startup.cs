@@ -51,7 +51,7 @@ namespace DataX.FlowManagement
 
             // Export the Config dependencies
             Type[] exportTypes = new Type[] { typeof(FlowOperation), typeof(RuntimeConfigGeneration), typeof(JobOperation) };
-            services.AddMefExportsFromAssemblies(ServiceLifetime.Scoped, GetOneBoxModeDependencyAssemblies(), exportTypes, new object[] { });
+            services.AddMefExportsFromAssemblies(ServiceLifetime.Scoped, GetOneBoxModeDependencyAssemblies(), exportTypes, new object[] { }, true);
             var result = InitTemplatesForLocal(services);
             Ensure.IsSuccessResult(result);
         }

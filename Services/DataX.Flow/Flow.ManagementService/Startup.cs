@@ -48,8 +48,8 @@ namespace Flow.Management
             Configuration.GetSection(DataXSettingsConstants.ServiceEnvironment).Bind(_dataXSettings);
 
             _loggerFactory = loggerFactory;
-        }        
-      
+        }
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -65,13 +65,13 @@ namespace Flow.Management
             // Export the Config dependencies
             Type[] exportTypes = new Type[] { typeof(FlowOperation), typeof(RuntimeConfigGeneration), typeof(JobOperation) };
 
-            IEnumerable<Assembly> cloudModeDependencyAssemblies = GetCloudModeDependencyAssemblies();
+            IEnumerable<Assembly> dependencyAssemblies = _dataXSettings.EnableOneBox ? OneBoxModeDependencyAssemblies : CloudModeDependencyAssemblies;
             IEnumerable<Assembly> additionalAssemblies = GetDependencyAssembliesFromStorageAsync().Result;
 
-            var allAssemblies = cloudModeDependencyAssemblies.Union(additionalAssemblies);
+            var allAssemblies = dependencyAssemblies.Union(additionalAssemblies);
 
-            services.AddMefExportsFromAssemblies(ServiceLifetime.Scoped, allAssemblies, exportTypes, new object[] { logger });            
-        }      
+            services.AddMefExportsFromAssemblies(ServiceLifetime.Scoped, allAssemblies, exportTypes, new object[] { logger }, _dataXSettings.EnableOneBox);
+        }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
@@ -94,9 +94,8 @@ namespace Flow.Management
 
         // Get all the dependencies needed to fulfill the ConfigGen
         // requirements for cloud mode
-        private IList<Assembly> GetCloudModeDependencyAssemblies()
-        {
-            return new List<Assembly>()
+        private IList<Assembly> CloudModeDependencyAssemblies
+            => new List<Assembly>()
                 {
                     typeof(DataX.Config.ConfigGenConfiguration).Assembly,
                     typeof(DataX.Config.ConfigurationProviders.CosmosDbConfigurationProvider).Assembly,
@@ -105,14 +104,15 @@ namespace Flow.Management
                     typeof(DataX.Config.LivyClient.LivyClientFactory).Assembly,
                     typeof(DataX.Config.Input.EventHub.Processor.CreateEventHubConsumerGroup).Assembly
                 };
-        }
 
         // Get all the dependencies needed to fulfill the ConfigGen
         // requirements for oneBox mode
-        private IList<Assembly> GetOneBoxModeDependencyAssemblies()
-        {
-            throw new NotImplementedException();
-        }
+        private IList<Assembly> OneBoxModeDependencyAssemblies
+            => new List<Assembly>()
+                {
+                    typeof(DataX.Config.ConfigGenConfiguration).Assembly,
+                    typeof(DataX.Config.Local.LocalDesignTimeStorage).Assembly
+                };
 
         // Get the required settings to bootstrap the config gen
         private void InitConfigSettings()
@@ -140,7 +140,7 @@ namespace Flow.Management
                 InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ConfigFolderHost, new System.Uri(Environment.CurrentDirectory).AbsoluteUri);
                 InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_LocalMetricsHttpEndpoint, metricsHttpEndpoint);
             }
-            
+
         }
 
         // Get additional assemblies from azure storage
