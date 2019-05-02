@@ -28,6 +28,8 @@ namespace Flow.Management
 {
     public class Startup
     {
+        private const string _MetricsHttpEndpointRelativeUri = "/api/data/upload";
+
         private readonly ILoggerFactory _loggerFactory;
         public IConfiguration Configuration { get; }
         private readonly DataXSettings _dataXSettings = new DataXSettings();
@@ -38,7 +40,7 @@ namespace Flow.Management
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddServiceFabricSettings("Config")
+                .AddServiceFabricSettings("Config", "DataX")
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
@@ -115,11 +117,30 @@ namespace Flow.Management
         // Get the required settings to bootstrap the config gen
         private void InitConfigSettings()
         {
-            InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_ConnectionString, _dataXSettings.CosmosDBConfigConnectionString);
-            InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_DatabaseName, _dataXSettings.CosmosDBConfigDatabaseName);
-            InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_CollectionName, _dataXSettings.CosmosDBConfigCollectionName);
-            InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ServiceKeyVaultName, _dataXSettings.ServiceKeyVaultName);
             InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_EnableOneBox, _dataXSettings.EnableOneBox.ToString());
+
+            if (!_dataXSettings.EnableOneBox)
+            {
+                InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_ConnectionString, _dataXSettings.CosmosDBConfigConnectionString);
+                InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_DatabaseName, _dataXSettings.CosmosDBConfigDatabaseName);
+                InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_CollectionName, _dataXSettings.CosmosDBConfigCollectionName);
+                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ServiceKeyVaultName, _dataXSettings.ServiceKeyVaultName);
+            }
+            else
+            {
+                // Local settings
+                var metricsHttpEndpoint = _dataXSettings.MetricsHttpEndpoint.TrimEnd('/') + _MetricsHttpEndpointRelativeUri;
+                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_LocalRoot, _dataXSettings.LocalRoot);
+                InitialConfiguration.Set(DataX.Config.Local.LocalSparkClient.ConfigSettingName_SparkHomeFolder, _dataXSettings.SparkHome);
+                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ClusterName, "localCluster");
+                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ServiceKeyVaultName, "local");
+                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_RuntimeKeyVaultName, "local");
+                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_MetricEventHubConnectionKey, "local");
+                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ConfigFolderContainerPath, "");
+                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ConfigFolderHost, new System.Uri(Environment.CurrentDirectory).AbsoluteUri);
+                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_LocalMetricsHttpEndpoint, metricsHttpEndpoint);
+            }
+            
         }
 
         // Get additional assemblies from azure storage

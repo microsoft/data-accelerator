@@ -10,7 +10,12 @@ namespace DataX.ServiceHost.ServiceFabric.Extensions.Configuration
 
     public static class ServiceFabricConfigurationBuilderExtensions
     {
-        public static IConfigurationBuilder AddServiceFabricSettings(this IConfigurationBuilder configurationBuilder, string packageName)
+        /// <summary>
+        /// Adds the specified service fabric settings to the configuration builder. If service fabric is not detected, nothing is added.
+        /// </summary>
+        /// <param name="packageName">The configuration package object name</param>
+        /// <param name="configPrefix">An optional prefix to add to the configurations added to the builder. e.g. "MySettings:"</param>
+        public static IConfigurationBuilder AddServiceFabricSettings(this IConfigurationBuilder configurationBuilder, string packageName, string configPrefix = "")
         {
             if (configurationBuilder == null)
             {
@@ -19,7 +24,7 @@ namespace DataX.ServiceHost.ServiceFabric.Extensions.Configuration
 
             if (Environment.GetEnvironmentVariable("Fabric_ApplicationName") != null)
             {
-                configurationBuilder.Add(new ServiceFabricConfigurationSource(packageName));
+                configurationBuilder.Add(new ServiceFabricConfigurationSource(packageName, configPrefix));
             }
 
             return configurationBuilder;

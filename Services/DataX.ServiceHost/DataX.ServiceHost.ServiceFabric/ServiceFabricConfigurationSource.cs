@@ -11,8 +11,12 @@ namespace DataX.ServiceHost.ServiceFabric
 
     public class ServiceFabricConfigurationSource : MemoryConfigurationSource
     {
-        public ServiceFabricConfigurationSource(string packageName)
+        private readonly string _configPrefix;
+
+        public ServiceFabricConfigurationSource(string packageName, string configPrefix)
         {
+            _configPrefix = configPrefix.EndsWith(":") ? configPrefix : configPrefix + ":";
+
             var package = FabricRuntime.GetActivationContext().GetConfigurationPackageObject(packageName);
 
             this.InitialData = GetFlatConfig(package);
@@ -25,7 +29,7 @@ namespace DataX.ServiceHost.ServiceFabric
             {
                 foreach (var parameter in section.Parameters)
                 {
-                    flatConfig[$"{section.Name}:{parameter.Name}"] = parameter.Value;
+                    flatConfig[$"{_configPrefix}{section.Name}:{parameter.Name}"] = parameter.Value;
                 }
             }
 

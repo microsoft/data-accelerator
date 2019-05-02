@@ -21,7 +21,7 @@ namespace DataX.ServiceHost.AspNetCore
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddServiceFabricSettings("Config")
+                .AddServiceFabricSettings("Config", "DataX")
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
