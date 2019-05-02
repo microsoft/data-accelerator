@@ -20,6 +20,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using DataX.SimulatedData.DataGenService.Model;
 using DataX.Utilities.KeyVault;
+using Confluent.Kafka;
+using System.Text.RegularExpressions;
+using System.Net;
 
 namespace DataX.SimulatedData.DataGenService
 {
@@ -64,6 +67,20 @@ namespace DataX.SimulatedData.DataGenService
             string dataSchemaStorageContainerName = inputConfig.Parameters["DataSchemaStorageContainerName"].Value;
             string dataSchemaPathWithinContainer = inputConfig.Parameters["DataSchemaPathWithinContainer"].Value;
 
+            KafkaConnection kafkaConn = new KafkaConnection
+            {
+                Topics = (inputConfig.Parameters["KafkaTopics"].Value.Length > 0) ? Array.ConvertAll(inputConfig.Parameters["KafkaTopics"].Value.Split(','), p => p.Trim()).ToList() : new List<string>(),
+                ConnectionString = (inputConfig.Parameters["KafkaConnectionStringKeyVaultKeyName"].Value.Length > 0) ? await keyManager.GetSecretStringAsync(keyVaultName, inputConfig.Parameters["KafkaConnectionStringKeyVaultKeyName"].Value) : ""
+            };
+
+            if (!string.IsNullOrEmpty(kafkaConn.ConnectionString))
+            {
+                Regex regex = new Regex(@"sb?://([\w\d\.]+).*");
+                kafkaConn.BootstrapServers = regex.Match(kafkaConn.ConnectionString).Groups[1].Value + ":9093";
+                WebClient webClient = new WebClient();
+                webClient.DownloadFile("https://curl.haxx.se/ca/cacert.pem", @".\cacert.pem");
+            }
+
             var dataSchemaFileContent = await GetDataSchemaAndRules(dataSchemaStorageAccountName, dataSchemaStorageAccountKeyValue, dataSchemaStorageContainerName, dataSchemaPathWithinContainer);
 
             Stopwatch stopwatchDelay = new Stopwatch();
@@ -102,7 +119,7 @@ namespace DataX.SimulatedData.DataGenService
 
                 if (dataStreams.Count > 0)
                 {
-                    await SendData(ehConnectionString, iotDeviceConnectionString, dataStreams);
+                    await SendData(dataStreams, ehConnectionString, iotDeviceConnectionString, kafkaConn);
                 }
 
                 _counter++;
@@ -130,15 +147,16 @@ namespace DataX.SimulatedData.DataGenService
         /// <summary>
         /// Send data to the Inputs i.e. Event hub and/or IoTHub
         /// </summary>
+        /// <param name="dataStreams">Data to send</param>
         /// <param name="ehConnectionString">Cxn string to an EventHub to send data to; skip sending if lenght is 0</param>
         /// <param name="iotHubDeviceConnectionString">Cxn string to an IoT to send data to; skip sending if lenght is 0</param>
-        /// <param name="dataStreams">Data to send</param>
+        /// <param name="kafkaConn">Cxn data to kafka</param>
         /// <returns></returns>
-        private async Task SendData(string ehConnectionString, string iotHubDeviceConnectionString, List<JObject> dataStreams)
+        private async Task SendData(List<JObject> dataStreams, string ehConnectionString, string iotHubDeviceConnectionString, KafkaConnection kafkaConn)
         {
-            if (ehConnectionString.Length == 0 && iotHubDeviceConnectionString.Length == 0)
+            if (ehConnectionString.Length == 0 && iotHubDeviceConnectionString.Length == 0 && kafkaConn.ConnectionString.Length == 0)
             {
-                throw new Exception("No output specificied; an EventHub and/or an IoT hub needs to be specific.");
+                throw new Exception("No output specificied; an EventHub and/or an IoT hub and/or Kafka needs to be specific.");
             }
 
             List<Task> tasks = new List<Task>();
@@ -151,6 +169,11 @@ namespace DataX.SimulatedData.DataGenService
             {
                 Task sendToIoTTask = Task.Run(() => SendToIotHubBatch(iotHubDeviceConnectionString, dataStreams));
                 tasks.Add(sendToIoTTask);
+            }
+            if (kafkaConn.ConnectionString.Length > 0)
+            {
+                Task sendToKafkaTask = Task.Run(() => SendToKafka(kafkaConn, dataStreams));
+                tasks.Add(sendToKafkaTask);
             }
             await Task.WhenAll(tasks);
         }
@@ -238,6 +261,49 @@ namespace DataX.SimulatedData.DataGenService
             foreach (var deviceClient in iotDevices)
             {
                 await deviceClient.CloseAsync();
+            }
+        }
+
+        /// <summary>
+        /// Send data to Kakfa 
+        /// </summary>
+        /// <param name="kafkaConn"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public async Task SendToKafka(KafkaConnection kafkaConn, List<JObject> data)
+        {
+            var config = new ProducerConfig
+            {
+                BootstrapServers = kafkaConn.BootstrapServers,
+                SecurityProtocol = SecurityProtocol.SaslSsl,
+                SaslMechanism = SaslMechanism.Plain,
+                SaslUsername = "$ConnectionString",
+                SaslPassword = kafkaConn.ConnectionString,
+                SslCaLocation = @".\cacert.pem"
+            };
+
+            using (var producer = new ProducerBuilder<string, string>(config).Build())
+            {
+                List<Task> tasks = new List<Task>();
+                int numberOfParallelTasks = 10;
+                Random random = new Random();
+                foreach (var deviceData in data)
+                {
+                    var msg = deviceData.ToString(Formatting.None);
+                    if(tasks.Count >= numberOfParallelTasks)
+                    {
+                        await Task.WhenAll(tasks);
+                        tasks.Clear();
+                        Task sendToKafka = Task.Run(() => producer.ProduceAsync(kafkaConn.Topics[random.Next(kafkaConn.Topics.Count)], new Message<string, string> { Key = null, Value = msg }));
+                        tasks.Add(sendToKafka);
+                    }
+                    else
+                    {
+                        Task sendToKafka = Task.Run(() => producer.ProduceAsync(kafkaConn.Topics[random.Next(kafkaConn.Topics.Count)], new Message<string, string> { Key = null, Value = msg }));
+                        tasks.Add(sendToKafka);
+                    }
+                }
+                await Task.WhenAll(tasks);
             }
         }
     }
