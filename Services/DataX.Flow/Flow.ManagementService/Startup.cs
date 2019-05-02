@@ -24,6 +24,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using DataX.Config.Local;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Flow.Management
 {
@@ -55,6 +57,24 @@ namespace Flow.Management
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            var bearerOptions = new JwtBearerOptions();
+
+            Configuration.GetSection("JwtBearerOptions").Bind(bearerOptions);
+
+            services
+                .AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.Audience = bearerOptions.Audience;
+                    options.Authority = bearerOptions.Authority;
+                });
+
             StartUpUtil.ConfigureServices(services, Configuration);
 
             // Initialize the settings by getting the values from settings file
@@ -85,6 +105,8 @@ namespace Flow.Management
                 context.Response.Headers.Add("X-Content-Type-Options", new string[] { "nosniff" });
                 await next();
             });
+
+            app.UseAuthentication();
 
             // Configure logger that will be injected into the controller
             app.UseMvc();

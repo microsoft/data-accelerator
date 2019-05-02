@@ -17,10 +17,12 @@ using System.Threading.Tasks;
 using System.Linq;
 using DataX.Utilities.Web;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Flow.Management.Controllers
 {
     [Route("api")]
+    [Authorize]
     public partial class FlowManagementController : Controller
     {
         private readonly ILogger<FlowManagementController> _logger;
