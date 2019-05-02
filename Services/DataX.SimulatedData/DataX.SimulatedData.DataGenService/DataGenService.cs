@@ -76,7 +76,7 @@ namespace DataX.SimulatedData.DataGenService
             if (!string.IsNullOrEmpty(kafkaConn.ConnectionString))
             {
                 Regex regex = new Regex(@"sb?://([\w\d\.]+).*");
-                kafkaConn.Broker = regex.Match(kafkaConn.ConnectionString).Groups[1].Value + ":9093";
+                kafkaConn.BootstrapServers = regex.Match(kafkaConn.ConnectionString).Groups[1].Value + ":9093";
                 WebClient webClient = new WebClient();
                 webClient.DownloadFile("https://curl.haxx.se/ca/cacert.pem", @".\cacert.pem");
             }
@@ -274,7 +274,7 @@ namespace DataX.SimulatedData.DataGenService
         {
             var config = new ProducerConfig
             {
-                BootstrapServers = kafkaConn.Broker,
+                BootstrapServers = kafkaConn.BootstrapServers,
                 SecurityProtocol = SecurityProtocol.SaslSsl,
                 SaslMechanism = SaslMechanism.Plain,
                 SaslUsername = "$ConnectionString",
