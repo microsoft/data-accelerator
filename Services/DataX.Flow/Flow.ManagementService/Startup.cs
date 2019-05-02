@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using DataX.Config.Local;
 
 namespace Flow.Management
 {
@@ -56,9 +57,6 @@ namespace Flow.Management
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             StartUpUtil.ConfigureServices(services, Configuration);
 
-            // Configure and create a logger instance to add it to MEF container           
-            var logger = _loggerFactory.CreateLogger<RuntimeConfigGeneration>();
-
             // Initialize the settings by getting the values from settings file
             InitConfigSettings();
 
@@ -70,7 +68,7 @@ namespace Flow.Management
 
             var allAssemblies = dependencyAssemblies.Union(additionalAssemblies);
 
-            services.AddMefExportsFromAssemblies(ServiceLifetime.Scoped, allAssemblies, exportTypes, new object[] { logger }, _dataXSettings.EnableOneBox);
+            services.AddMefExportsFromAssemblies(ServiceLifetime.Scoped, allAssemblies, exportTypes, null, _loggerFactory, _dataXSettings.EnableOneBox);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
