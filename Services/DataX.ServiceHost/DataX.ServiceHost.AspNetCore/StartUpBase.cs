@@ -3,6 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 using DataX.ServiceHost.ServiceFabric.Extensions.Configuration;
+using DataX.ServiceHost.Settings;
 using DataX.Utilities.Telemetry;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -21,7 +22,7 @@ namespace DataX.ServiceHost.AspNetCore
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddServiceFabricSettings("Config", "DataX")
+                .AddServiceFabricSettings("Config", DataXSettingsConstants.DataX)
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
