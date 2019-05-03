@@ -38,7 +38,7 @@ namespace DataX.Config.ConfigGeneration.Processor
         {
             var flowConfig = flowToDeploy.Config;
 
-            var defaultConfig = await FlowData.GetDefaultConfig(flowToDeploy.Tokens);
+            var defaultConfig = await FlowData.GetDefaultConfig(flowConfig.GetGuiConfig().Input.InputType, flowToDeploy.Tokens);
             if (defaultConfig == null)
             {
                 return "defaultConfig is null, skipped";

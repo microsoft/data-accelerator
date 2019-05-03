@@ -14,7 +14,7 @@ using System.Timers;
 using System.Threading;
 using Newtonsoft.Json;
 
-namespace DataX.Flow.SchemaInference
+namespace DataX.Flow.SchemaInference.Eventhub
 {
     public class EventProcessor : IEventProcessor
     {
@@ -51,7 +51,7 @@ namespace DataX.Flow.SchemaInference
                     Raw = data
                 };
 
-                if (eventData.Properties!=null && eventData.Properties.Count>=0)
+                if (eventData.Properties != null && eventData.Properties.Count >= 0)
                 {
                     foreach (string key in eventData.Properties.Keys)
                     {

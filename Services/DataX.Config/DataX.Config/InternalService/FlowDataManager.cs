@@ -20,6 +20,7 @@ namespace DataX.Config
     {
         public const string DataCollectionName = "flows";
         public const string CommonDataName_DefaultFlowConfig = "defaultFlowConfig";
+        public const string CommonDataName_KafkaFlowConfig = "kafkaFlowConfig";
 
         [ImportingConstructor]
         public FlowDataManager(ConfigGenConfiguration configuration, IDesignTimeConfigStorage storage, ICommonDataManager commonsData)
@@ -33,16 +34,28 @@ namespace DataX.Config
         private ConfigGenConfiguration Configuration { get; }
         private ICommonDataManager CommonsData { get; }
 
+        private string GetFlowConfigName(string type)
+        {
+            if (!string.IsNullOrEmpty(type) && (type == Constants.InputType_Kafka || type == Constants.InputType_KafkaEventHub))
+            {
+                return CommonDataName_KafkaFlowConfig;
+            }
+
+            return CommonDataName_DefaultFlowConfig;
+        }
+
         public async Task<FlowConfig> GetByName(string flowName)
         {
             var json = await this.Storage.GetByName(flowName, DataCollectionName);
             return FlowConfig.From(json);
         }
 
-        public async Task<FlowConfig> GetDefaultConfig(TokenDictionary tokens = null)
+        public async Task<FlowConfig> GetDefaultConfig(string inputType = null, TokenDictionary tokens = null)
         {
-            var config = await CommonsData.GetByName(CommonDataName_DefaultFlowConfig);
-            if(tokens != null)
+            var flowConfigName = this.GetFlowConfigName(inputType);
+            var config = await CommonsData.GetByName(flowConfigName);
+
+            if (tokens != null)
             {
                 config = tokens.Resolve(config);
             }
@@ -81,6 +94,12 @@ namespace DataX.Config
         public Task<Result> UpdateGuiForFlow(string name, JToken gui)
         {
             return this.Storage.UpdatePartialByName(gui?.ToString(), FlowConfig.JsonFieldName_Gui, name, DataCollectionName);
+        }
+        
+        public Task<Result> UpdateCommonProcessorForFlow(string name, FlowCommonProcessor commonProcessor)
+        {
+            var json = JsonConvert.SerializeObject(commonProcessor);
+            return this.Storage.UpdatePartialByName(json, "commonProcessor", name, DataCollectionName);
         }
 
         public async Task<FlowConfig[]> GetAll()

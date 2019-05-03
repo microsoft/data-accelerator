@@ -38,7 +38,7 @@ namespace DataX.Config.InternalService
 
         public async Task<FlowConfig> Build(FlowGuiConfig inputGuiConfig)
         {
-            var defaultConfig = await FlowData.GetDefaultConfig();
+            var defaultConfig = await FlowData.GetDefaultConfig(inputGuiConfig.Input.InputType);
             var config = defaultConfig ?? FlowConfig.From(JsonConfig.CreateEmpty());
 
             // Set the flowName. This will be the case for new flow creation

@@ -30,5 +30,10 @@ namespace DataX.Config.ConfigDataModel
         public const string TokenName_SparkJobName = "sparkJobName";
 
         public const string ConfigProcessorResultStatus_Completed = "done";
+
+        public const string InputType_Kafka = "kafka";
+        public const string InputType_IoTHub = "iothub";
+        public const string InputType_EventHub = "events";
+        public const string InputType_KafkaEventHub = "kafkaeventhub";
     }
 }
