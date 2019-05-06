@@ -1,71 +1,90 @@
 package datax.app
 
 import org.apache.kafka.clients.producer._
-import org.apache.kafka.clients.admin.AdminClient
-import org.apache.kafka.clients.admin.DescribeTopicsResult
-import org.apache.kafka.clients.admin.KafkaAdminClient
-import org.apache.kafka.clients.CommonClientConfigs
-import org.apache.kafka.clients.admin.TopicDescription
-import java.util.Collection
-import java.util.concurrent.ExecutionException
-import java.util.Properties
-import java.util.Random
-import java.io.IOException
-import scala.collection.JavaConversions._
+import java.util.{Properties}
+
+import datax.fs.HadoopClient
+import datax.host.SparkSessionSingleton
+import datax.input.DataGenerator
+import datax.securedsetting.KeyVaultClient
+import org.apache.log4j.LogManager
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.types.DataType
 
 object KafkaProducer {
-  def main(inputArguments: Array[String]): Unit = {
-    val brokers: String =
-      "wn0-dxtest.yjzseuk1sqnu3bncdldk5etavb.jx.internal.cloudapp.net:9092,wn1-dxtest.yjzseuk1sqnu3bncdldk5etavb.jx.internal.cloudapp.net:9092"
-    // Set properties used to configure the producer
-    val properties: Properties = new Properties()
-    // Set the brokers (bootstrap servers)
-    properties.setProperty("bootstrap.servers", brokers)
-   // properties.setProperty("acks", "all")
-   // properties.setProperty("linger.ms", "1")
-  //  properties.setProperty("max.block.ms", "5000")
+  def main(args: Array[String]): Unit = {
 
+    val logger = LogManager.getLogger("KafkaProducer")
 
-    // Set how to serialize key/value pairs
-    properties.setProperty(
-      "key.serializer",
-      "org.apache.kafka.common.serialization.LongSerializer")
-    properties.setProperty(
-      "value.serializer",
-      "org.apache.kafka.common.serialization.StringSerializer")
-    val producer: KafkaProducer[Long, String] =
-      new KafkaProducer[Long, String](properties)
-    val r: Random = new Random()
-    while (true) {
-      for (i <- 0.until(10)) {
-        val time: Long = System.currentTimeMillis()
-        println(
-          "Test Data #" + i + " from thread #" + Thread.currentThread().getId)
-        val msg: String =
-          "{\"temperature\":%d,\"eventTime\":%d}".format(
-            r.nextLong(),
-            time)
-        val record: ProducerRecord[Long, String] =
-          new ProducerRecord[Long, String]("topic1", time, msg)
-        producer.send(record)
-        try Thread.sleep(1000)
-        catch {
-          case ex: InterruptedException => Thread.currentThread().interrupt()
-
-        }
-      }
-      println(
-        "Finished sending messages from thread #" + Thread
-          .currentThread()
-          .getId +
-          "!")
-      try Thread.sleep(1000)
-      catch {
-        case ex: InterruptedException => Thread.currentThread().interrupt()
-
-      }
+    if (args.length < 3){
+      logger.warn("Usage: kafkaproducer.jar <schemaFile> <topicNames> <brokerhosts>")
+      return
     }
 
+    // Init spark to make yarn happy
+    val sparkConf = new SparkConf()
+    val spark = SparkSessionSingleton.getInstance(sparkConf)
+
+    // Get input args
+    val schemaFile = args(0)
+    val topicsArg = args(1)
+    val brokers = args(2)
+
+    val inputSchema = loadSchema(schemaFile)
+    logger.warn("Schema =" + inputSchema.prettyJson)
+
+    // Set properties used to configure the producer
+    val properties: Properties = new Properties()
+    properties.setProperty("bootstrap.servers", brokers)
+    // Set how to serialize key/value pairs
+    properties.setProperty("key.serializer", "org.apache.kafka.common.serialization.LongSerializer")
+    properties.setProperty("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
+
+    val topics = topicsArg.split(",")
+    logger.warn("topics="+topics.mkString(","))
+    val producer: KafkaProducer[Long, String] = new KafkaProducer[Long, String](properties)
+
+    while (true) {
+
+      logger.warn("Produce Data # from thread #" + Thread.currentThread().getId)
+      for (i <- 0.until(10)) {
+        val time: Long = System.currentTimeMillis()
+
+        val msg = DataGenerator.getRandomJson(inputSchema)
+
+        if(i==1) {
+          logger.warn("msg="+msg)
+        }
+
+        try {
+          topics.foreach(topic=> {
+            val record: ProducerRecord[Long, String] = new ProducerRecord[Long, String](topic, time, msg) //topic1
+            producer.send(record)
+          })
+        }
+        catch {
+          case e: Exception => logger.warn(s"send failed: ${e.getMessage}")
+        }
+      }
+
+      try {
+        Thread.sleep(1000)
+      }
+      catch {
+        case e: InterruptedException => Thread.currentThread().interrupt()
+      }
+    }
+    logger.warn("Finished sending messages from thread #" + Thread.currentThread().getId + "!")
+    try Thread.sleep(1000)
+    catch {
+      case ex: InterruptedException => Thread.currentThread().interrupt()
+    }
   }
 
+
+  def loadSchema(file:String)={
+    val filePath = KeyVaultClient.resolveSecretIfAny(file)
+    val schemaJsonString = HadoopClient.readHdfsFile(filePath).mkString("")
+    DataType.fromJson(schemaJsonString)
+  }
 }
