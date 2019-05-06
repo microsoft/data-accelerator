@@ -93,6 +93,7 @@ object CommonProcessorFactory {
       df = if(preProjection==null)df else preProjection(df)
       val preservedColumns = df.schema.fieldNames.filter(_.startsWith(ColumnName.InternalColumnPrefix))
       df = df.withColumn(ColumnName.PropertiesColumn, buildPropertiesUdf(col(ColumnName.InternalColumnFileInfo), lit(batchTime)))
+
       for(step <- 0 until projections.length)
         df = df.selectExpr(projections(step)++preservedColumns: _*)
 
@@ -136,9 +137,17 @@ object CommonProcessorFactory {
       tableNames(DatasetName.DataStreamProjection) = initTableName
       dataframes += initTableName -> projectedDf
 
-      // store the data frames that we should unpersist after one iteration
+            // store the data frames that we should unpersist after one iteration
       val dataFramesToUncache = new ListBuffer[DataFrame]
       transformLogger.warn("Persisting the current projected dataframe")
+      try {
+        val record = projectedDf.toJSON.first()
+        transformLogger.warn("#########################################record="+record)
+      } catch {
+
+          case e: Exception =>transformLogger.warn(e.getMessage)
+      }
+
       projectedDf.persist()
       dataFramesToUncache += projectedDf
 
@@ -569,14 +578,32 @@ object CommonProcessorFactory {
       process a batch of ConsumerRecords from kafka
      */
       processConsumerRecord = (rdd: RDD[ConsumerRecord[String,String]], batchTime: Timestamp, batchInterval: Duration, outputPartitionTime: Timestamp) =>{
+        var loggedRecord=false
         processDataset(rdd
           .map(d=>{
             val value = d.value()
+            if(loggedRecord) {
+              val processConsumerRecord = LogManager.getLogger(s"processConsumerRecord")
+              processConsumerRecord.warn("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$consumerRecord=" + value)
+              loggedRecord=true
+            }
+
             if(value==null) throw new EngineException(s"null bytes from ConsumerRecord")
+            //Capture key if present. Key can be null.
+            val key = if(d.key!=null) Some("key"->d.key.toString) else None
+
             (
               value,
               Map.empty[String, String],// Properties
-              Map.empty[String, String], // SystemProperties
+              Map[String, String](
+                "offset"->d.offset().toString,
+                "partition"->d.partition().toString,
+                "serializedKeySize"->d.serializedKeySize().toString,
+                "serializedValueSize"->d.serializedValueSize().toString,
+                "timestamp"->d.timestamp().toString,
+                "timestampType"->d.timestampType().toString,
+                "topic"->d.topic()
+              ) ++ key,
               FileInternal())
           })
           .toDF(

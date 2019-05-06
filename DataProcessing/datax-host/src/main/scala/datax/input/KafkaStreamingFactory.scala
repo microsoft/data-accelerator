@@ -22,21 +22,26 @@ object KafkaStreamingFactory extends  StreamingFactory[ConsumerRecord[String,Str
 
     val groupId = kafkaInput.groupId
     logger.warn("kafka group.id=" + groupId)
-    logger.warn("sasl config:"+kafkaInput.saslConfig);
 
-    val kafkaParams = Map[String, Object](
+   var kafkaParams = Map[String, Object](
       "bootstrap.servers" -> kafkaInput.bootStrapServers,
       "key.deserializer" -> classOf[StringDeserializer],
       "value.deserializer" -> classOf[StringDeserializer],
       "group.id" -> groupId,
       "auto.offset.reset" -> kafkaInput.autoOffsetReset,
-      "heartbeat.interval.ms"->kafkaInput.heartBeatInterval,
-      "session.timeout.ms"->kafkaInput.sessionTimeout,
-      "fetch.max.wait.ms"->kafkaInput.fetchMaxWait,
-      "security.protocol"->kafkaInput.securityProtocol,
-      "sasl.mechanism"->kafkaInput.saslMechanism,
-      "sasl.jaas.config"->kafkaInput.saslConfig
-    )
+      "heartbeat.interval.ms" -> kafkaInput.heartBeatInterval,
+      "session.timeout.ms" -> kafkaInput.sessionTimeout,
+      "fetch.max.wait.ms" -> kafkaInput.fetchMaxWait
+   )
+
+    // EventHub for Kafka needs few additional params
+    if(kafkaInput.isEventHubKafka) {
+      kafkaParams += (
+        "security.protocol" -> kafkaInput.securityProtocol,
+        "sasl.mechanism" -> kafkaInput.saslMechanism,
+        "sasl.jaas.config" -> kafkaInput.saslConfig
+      )
+    }
 
     //TODO: enable checkpoint
 
@@ -56,8 +61,8 @@ object KafkaStreamingFactory extends  StreamingFactory[ConsumerRecord[String,Str
     if(kafkaInput.flushExistingCheckpoints.getOrElse(false))
       preparationLogger.warn("Flush the existing checkpoints according to configuration")
 
-    val topics=Array(kafkaInput.topics)
-
+    val topics=kafkaInput.topics.split(",")
+    preparationLogger.warn("Topics:" + topics.mkString(","))
     KafkaUtils.createDirectStream[String, String](
       streamingContext,
       PreferConsistent,

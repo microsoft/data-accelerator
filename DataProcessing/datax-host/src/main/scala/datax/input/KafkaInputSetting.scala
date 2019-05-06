@@ -14,6 +14,7 @@ case class InputKafkaConf(connectionString: String,
                           bootStrapServers: String,
                           groupId: String,
                           topics: String,
+                          isEventHubKafka:Boolean,
                           saslConfig:String,
                           autoOffsetReset: String,
                           sessionTimeout: String,
@@ -70,8 +71,9 @@ object KafkaInputSetting extends InputSetting[InputKafkaConf] {
       throw new EngineException(errMsg)
     }
 
+    val isEHKafka = isEventHubConnection(connectionStr.get)
     var eh_sasl:String = null
-    if(isEventHubConnection(connectionStr.get)) {
+    if(isEHKafka) {
         eh_sasl = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"" + connectionStr.get +"\";"
     }
 
@@ -83,6 +85,7 @@ object KafkaInputSetting extends InputSetting[InputKafkaConf] {
           bootStrapServers = getBootstrapServers(connectionString),
           groupId = dict.getString(SettingGroupId),
           topics = dict.getString(SettingTopics),
+          isEventHubKafka=isEHKafka,
           saslConfig = eh_sasl,
           autoOffsetReset = dict.getOrElse(SettingAutoOffsetReset,"latest"),
           sessionTimeout = dict.getOrElse(SettingSessionTimeout, defaultSessionTimeoutMs.toString()),
