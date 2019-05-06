@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace Flow.Management.Controllers
 {
     [Route("api")]
-    [Authorize]
+    [Authorize(Roles = "DataXWriter,DataXReader")]
     public partial class FlowManagementController : Controller
     {
         private readonly ILogger<FlowManagementController> _logger;
