@@ -5,6 +5,7 @@
 using DataX.Config;
 using DataX.Config.ConfigurationProviders;
 using DataX.Config.PublicService;
+using DataX.ServiceHost.AspNetCore.Authorization.Extensions;
 using DataX.ServiceHost.ServiceFabric.Extensions.Configuration;
 using DataX.Config.Storage;
 using DataX.ServiceHost.ServiceFabric;
@@ -63,6 +64,8 @@ namespace Flow.Management
             Configuration.GetSection("JwtBearerOptions").Bind(bearerOptions);
 
             services
+                .AddSingleton(_dataXSettings)
+                .AddDataXAuthorization()
                 .AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
