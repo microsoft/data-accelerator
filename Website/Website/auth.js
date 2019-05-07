@@ -46,10 +46,10 @@ function preparePassport(conf) {
     const identityMetadata = `https://login.microsoftonline.com/${tenantName}/v2.0/.well-known/openid-configuration`;
     let authenticatedUserTokens = [];
 
-    passport.serializeUser(function(user, done) {
+    passport.serializeUser(function (user, done) {
         done(null, user);
     });
-    passport.deserializeUser(function(user, done) {
+    passport.deserializeUser(function (user, done) {
         done(null, user);
     });
 
@@ -88,6 +88,7 @@ function initialize(host) {
     const subscriptionId = env.subscriptionId;
     const authContext = new AuthenticationContext(`https://login.microsoftonline.com/${tenantName}`);
     const serviceClusterUrl = env.serviceClusterUrl;
+    const reroutedServices = JSON.parse(process.env.REROUTED_SERVICES ? process.env.REROUTED_SERVICES : null);
 
     function resourceToResourceId(resource) {
         if (resource === 'service') {
@@ -207,6 +208,8 @@ function initialize(host) {
         let url;
         if (env.localServices[query.service]) {
             url = `${env.localServices[query.service]}/api/${query.api}`;
+        } else if (reroutedServices[query.service]) {
+            url = `${reroutedServices[query.service]}/${query.api}`;
         } else {
             url = `${serviceClusterUrl}/api/${query.application}/${query.service}/${query.api}`;
         }
@@ -289,7 +292,7 @@ function ensureAuthenticated(req, res, next) {
 const logoutUrl = 'https://login.windows.net/common/oauth2/logout';
 
 // this function assume that you already did app.use(bodyParser.urlencoded({ extended : true }));
-exports.initialize = function(host) {
+exports.initialize = function (host) {
     const telemetryClient = host.telemetryClient;
     const app = host.app;
     const query = initialize(host);
@@ -297,7 +300,7 @@ exports.initialize = function(host) {
 
     // Send mock role info in OneBox mode
     if (host.conf.env.enableLocalOneBox) {
-        app.get('/api/functionenabled', function(req, res) {
+        app.get('/api/functionenabled', function (req, res) {
             res.type('application/json').send(functionEnabled(Object.keys(webComposition.api), host.conf.env.enableLocalOneBox));
         });
     } else {
@@ -310,7 +313,7 @@ exports.initialize = function(host) {
             failWithError: true
         };
         app.get('/login', passport.authenticate('azuread-openidconnect', loginOptions));
-        app.post('/authReturn', passport.authenticate('azuread-openidconnect', loginOptions), function(req, res) {
+        app.post('/authReturn', passport.authenticate('azuread-openidconnect', loginOptions), function (req, res) {
             if (req.session) {
                 res.redirect(req.session.returnTo || '/');
                 delete req.session.returnTo;
@@ -320,7 +323,7 @@ exports.initialize = function(host) {
         });
 
         app.all('*', ensureAuthenticated);
-        app.get('/logout', function(req, res) {
+        app.get('/logout', function (req, res) {
             req.logout();
             res.redirect(logoutUrl);
         });
@@ -342,12 +345,12 @@ exports.initialize = function(host) {
         app.use(csrf());
 
         // Get user info and pass CSRF token back to client
-        app.get('/api/user', function(req, res) {
+        app.get('/api/user', function (req, res) {
             res.cookie('csrfToken', req.csrfToken());
             res.type('application/json').send({ id: req.user.email, name: req.user.displayName });
         });
 
-        app.get('/api/functionenabled', function(req, res) {
+        app.get('/api/functionenabled', function (req, res) {
             res.type('application/json').send(functionEnabled(req.user._json.roles, host.conf.env.enableLocalOneBox));
         });
 
@@ -412,15 +415,15 @@ function functionEnabled(roles, enableLocalOneBox) {
     let supportedFunctionalities = {};
     let isWriter =
         roles &&
-        roles.some(r =>
-            webComposition.api[r] !== undefined ? webComposition.api[r].some(s => new RegExp(s, 'i').test('WriterRole')) : false
-        )
+            roles.some(r =>
+                webComposition.api[r] !== undefined ? webComposition.api[r].some(s => new RegExp(s, 'i').test('WriterRole')) : false
+            )
             ? true
             : false;
 
     // Enable/disable features based on user role and local vs cloud mode.
     // Some of the features disabled in local mode is because they are not implemented yet.
-    webComposition.functionsEnabled.enabledForWriter.forEach(function(functionalityName) {
+    webComposition.functionsEnabled.enabledForWriter.forEach(function (functionalityName) {
         supportedFunctionalities[functionalityName] = enableLocalOneBox
             ? webComposition.functionsEnabled.disabledForLocalOneBox.includes(functionalityName)
                 ? isWriter && !enableLocalOneBox
