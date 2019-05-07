@@ -51,13 +51,7 @@
                 Settings = _settings
             };
 
-
-            if (!_settings.EnableOneBox)
-            {
-                policy.RequireAuthenticatedUser();
-            }
-
-
+            policy.RequireAuthenticatedUser();
             policy.AddRequirements(requirement);
             _configurePolicy?.Invoke(policy);
 
