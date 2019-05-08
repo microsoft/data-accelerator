@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using DataX.ServiceHost;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.ServiceFabric.Services.Runtime;
 using System;
@@ -21,7 +22,7 @@ namespace Flow.Management
         {
             try
             {
-                if(Environment.GetEnvironmentVariable("Fabric_ApplicationName") != null)
+                if(HostUtil.InServiceFabric)
                 {
                     // The ServiceManifest.XML file defines one or more service type names.
                     // Registering a service maps a service type name to a .NET type.

@@ -27,7 +27,7 @@ namespace Flow.Management.Controllers
     public partial class FlowManagementController : Controller
     {
         private readonly ILogger<FlowManagementController> _logger;
-        private FlowOperation _flowOperation;
+        private readonly FlowOperation _flowOperation;
         private JobOperation _jobOperation;
         private RuntimeConfigGeneration _runtimeConfigGenerator;
         private bool _isLocal = false;

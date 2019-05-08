@@ -8,6 +8,9 @@ namespace DataX.ServiceHost.Settings
 
     public class DataXSettings
     {
+        // The flat settings should be better split into other settings classes
+        // For now, to keep compatibility with ServiceFabric AppManifest, this is flat
+
         public string CosmosDBConfigConnectionString { get; set; }
         public string CosmosDBConfigDatabaseName { get; set; }
         public string CosmosDBConfigCollectionName { get; set; }

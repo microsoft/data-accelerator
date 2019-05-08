@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\DataX.Contract\DataX.Contract.csproj" />
+    <ProjectReference Include="..\DataX.ServiceHost\DataX.ServiceHost.csproj" />
   </ItemGroup>
 
   <ItemGroup>

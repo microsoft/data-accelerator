@@ -22,7 +22,7 @@ namespace DataX.ServiceHost.ServiceFabric.Extensions.Configuration
                 throw new ArgumentNullException(nameof(configurationBuilder));
             }
 
-            if (Environment.GetEnvironmentVariable("Fabric_ApplicationName") != null)
+            if (HostUtil.InServiceFabric)
             {
                 configurationBuilder.Add(new ServiceFabricConfigurationSource(packageName, configPrefix));
             }
