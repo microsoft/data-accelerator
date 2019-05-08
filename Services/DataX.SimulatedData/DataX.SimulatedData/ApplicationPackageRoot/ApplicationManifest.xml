@@ -11,6 +11,8 @@ Licensed under the MIT License
     <Parameter Name="EventhubConnectionStringKeyVaultKeyName" DefaultValue="" />
     <Parameter Name="KafkaConnectionStringKeyVaultKeyName" DefaultValue="" />
     <Parameter Name="KafkaTopics" DefaultValue="" />
+    <Parameter Name="KafkaHDInsightBrokersKeyVaultKeyName" DefaultValue="" />
+    <Parameter Name="KafkaHDInsightTopics" DefaultValue="" />
     <Parameter Name="DataSchemaStorageAccountName" DefaultValue="" />
     <Parameter Name="DataSchemaStorageAccountKeyValueKeyVaultKeyName" DefaultValue="" />
     <Parameter Name="DataSchemaStorageContainerName" DefaultValue="" />
@@ -31,6 +33,8 @@ Licensed under the MIT License
             <Parameter Name="EventhubConnectionStringKeyVaultKeyName" Value="[EventhubConnectionStringKeyVaultKeyName]" />
             <Parameter Name="KafkaConnectionStringKeyVaultKeyName" Value="[KafkaConnectionStringKeyVaultKeyName]" />
             <Parameter Name="KafkaTopics" Value="[KafkaTopics]" />
+            <Parameter Name="KafkaHDInsightBrokersKeyVaultKeyName" Value="[KafkaHDInsightBrokersKeyVaultKeyName]" />
+            <Parameter Name="KafkaHDInsightTopics" Value="[KafkaHDInsightTopics]" />
             <Parameter Name="DataSchemaStorageAccountName" Value="[DataSchemaStorageAccountName]" />
             <Parameter Name="DataSchemaStorageAccountKeyValueKeyVaultKeyName" Value="[DataSchemaStorageAccountKeyValueKeyVaultKeyName]" />
             <Parameter Name="DataSchemaStorageContainerName" Value="[DataSchemaStorageContainerName]" />

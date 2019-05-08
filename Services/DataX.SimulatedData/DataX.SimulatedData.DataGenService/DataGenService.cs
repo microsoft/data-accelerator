@@ -67,16 +67,22 @@ namespace DataX.SimulatedData.DataGenService
             string dataSchemaStorageContainerName = inputConfig.Parameters["DataSchemaStorageContainerName"].Value;
             string dataSchemaPathWithinContainer = inputConfig.Parameters["DataSchemaPathWithinContainer"].Value;
 
-            KafkaConnection kafkaConn = new KafkaConnection
+            KafkaConnection kafkaEnabledEventHubConn = new KafkaConnection
             {
                 Topics = (inputConfig.Parameters["KafkaTopics"].Value.Length > 0) ? Array.ConvertAll(inputConfig.Parameters["KafkaTopics"].Value.Split(','), p => p.Trim()).ToList() : new List<string>(),
                 ConnectionString = (inputConfig.Parameters["KafkaConnectionStringKeyVaultKeyName"].Value.Length > 0) ? await keyManager.GetSecretStringAsync(keyVaultName, inputConfig.Parameters["KafkaConnectionStringKeyVaultKeyName"].Value) : ""
             };
 
-            if (!string.IsNullOrEmpty(kafkaConn.ConnectionString))
+            KafkaConnection kafkaHDInsightConn = new KafkaConnection
+            {
+                Topics = (inputConfig.Parameters["KafkaHDInsightTopics"].Value.Length > 0) ? Array.ConvertAll(inputConfig.Parameters["KafkaHDInsightTopics"].Value.Split(','), p => p.Trim()).ToList() : new List<string>(),
+                BootstrapServers = (inputConfig.Parameters["KafkaHDInsightBrokersKeyVaultKeyName"].Value.Length > 0) ? await keyManager.GetSecretStringAsync(keyVaultName, inputConfig.Parameters["KafkaHDInsightBrokersKeyVaultKeyName"].Value) : ""
+            };
+
+            if (!string.IsNullOrEmpty(kafkaEnabledEventHubConn.ConnectionString))
             {
                 Regex regex = new Regex(@"sb?://([\w\d\.]+).*");
-                kafkaConn.BootstrapServers = regex.Match(kafkaConn.ConnectionString).Groups[1].Value + ":9093";
+                kafkaEnabledEventHubConn.BootstrapServers = regex.Match(kafkaEnabledEventHubConn.ConnectionString).Groups[1].Value + ":9093";
                 WebClient webClient = new WebClient();
                 webClient.DownloadFile("https://curl.haxx.se/ca/cacert.pem", @".\cacert.pem");
             }
@@ -119,7 +125,7 @@ namespace DataX.SimulatedData.DataGenService
 
                 if (dataStreams.Count > 0)
                 {
-                    await SendData(dataStreams, ehConnectionString, iotDeviceConnectionString, kafkaConn);
+                    await SendData(dataStreams, ehConnectionString, iotDeviceConnectionString, kafkaEnabledEventHubConn, kafkaHDInsightConn);
                 }
 
                 _counter++;
@@ -150,11 +156,12 @@ namespace DataX.SimulatedData.DataGenService
         /// <param name="dataStreams">Data to send</param>
         /// <param name="ehConnectionString">Cxn string to an EventHub to send data to; skip sending if lenght is 0</param>
         /// <param name="iotHubDeviceConnectionString">Cxn string to an IoT to send data to; skip sending if lenght is 0</param>
-        /// <param name="kafkaConn">Cxn data to kafka</param>
+        /// <param name="kafkaEnabledEventHubConn">Cxn data to kafka</param>
+        /// <param name="kafkaHDInsightConn">Cxn data to kafka HDInsight</param>
         /// <returns></returns>
-        private async Task SendData(List<JObject> dataStreams, string ehConnectionString, string iotHubDeviceConnectionString, KafkaConnection kafkaConn)
+        private async Task SendData(List<JObject> dataStreams, string ehConnectionString, string iotHubDeviceConnectionString, KafkaConnection kafkaEnabledEventHubConn, KafkaConnection kafkaHDInsightConn)
         {
-            if (ehConnectionString.Length == 0 && iotHubDeviceConnectionString.Length == 0 && kafkaConn.ConnectionString.Length == 0)
+            if (ehConnectionString.Length == 0 && iotHubDeviceConnectionString.Length == 0 && kafkaEnabledEventHubConn.ConnectionString.Length == 0 && kafkaHDInsightConn.BootstrapServers.Length == 0)
             {
                 throw new Exception("No output specificied; an EventHub and/or an IoT hub and/or Kafka needs to be specific.");
             }
@@ -170,10 +177,15 @@ namespace DataX.SimulatedData.DataGenService
                 Task sendToIoTTask = Task.Run(() => SendToIotHubBatch(iotHubDeviceConnectionString, dataStreams));
                 tasks.Add(sendToIoTTask);
             }
-            if (kafkaConn.ConnectionString.Length > 0)
+            if (kafkaEnabledEventHubConn.ConnectionString.Length > 0)
             {
-                Task sendToKafkaTask = Task.Run(() => SendToKafka(kafkaConn, dataStreams));
+                Task sendToKafkaTask = Task.Run(() => SendToKafkaEnabledEventHub(kafkaEnabledEventHubConn, dataStreams));
                 tasks.Add(sendToKafkaTask);
+            }
+            if (kafkaHDInsightConn.BootstrapServers.Length > 0)
+            {
+                Task sendToKafkaHDInsightTask = Task.Run(() => SendToKafkaHDInsight(kafkaHDInsightConn, dataStreams));
+                tasks.Add(sendToKafkaHDInsightTask);
             }
             await Task.WhenAll(tasks);
         }
@@ -265,20 +277,20 @@ namespace DataX.SimulatedData.DataGenService
         }
 
         /// <summary>
-        /// Send data to Kakfa 
+        /// Send data to Kakfa enabled Eventhub
         /// </summary>
-        /// <param name="kafkaConn"></param>
+        /// <param name="kafkaEnabledEventHubConn"></param>
         /// <param name="data"></param>
         /// <returns></returns>
-        public async Task SendToKafka(KafkaConnection kafkaConn, List<JObject> data)
+        public async Task SendToKafkaEnabledEventHub(KafkaConnection kafkaEnabledEventHubConn, List<JObject> data)
         {
             var config = new ProducerConfig
             {
-                BootstrapServers = kafkaConn.BootstrapServers,
+                BootstrapServers = kafkaEnabledEventHubConn.BootstrapServers,
                 SecurityProtocol = SecurityProtocol.SaslSsl,
                 SaslMechanism = SaslMechanism.Plain,
                 SaslUsername = "$ConnectionString",
-                SaslPassword = kafkaConn.ConnectionString,
+                SaslPassword = kafkaEnabledEventHubConn.ConnectionString,
                 SslCaLocation = @".\cacert.pem"
             };
 
@@ -294,16 +306,61 @@ namespace DataX.SimulatedData.DataGenService
                     {
                         await Task.WhenAll(tasks);
                         tasks.Clear();
-                        Task sendToKafka = Task.Run(() => producer.ProduceAsync(kafkaConn.Topics[random.Next(kafkaConn.Topics.Count)], new Message<string, string> { Key = null, Value = msg }));
+                        Task sendToKafka = Task.Run(() => producer.ProduceAsync(kafkaEnabledEventHubConn.Topics[random.Next(kafkaEnabledEventHubConn.Topics.Count)], new Message<string, string> { Key = null, Value = msg }));
                         tasks.Add(sendToKafka);
                     }
                     else
                     {
-                        Task sendToKafka = Task.Run(() => producer.ProduceAsync(kafkaConn.Topics[random.Next(kafkaConn.Topics.Count)], new Message<string, string> { Key = null, Value = msg }));
+                        Task sendToKafka = Task.Run(() => producer.ProduceAsync(kafkaEnabledEventHubConn.Topics[random.Next(kafkaEnabledEventHubConn.Topics.Count)], new Message<string, string> { Key = null, Value = msg }));
                         tasks.Add(sendToKafka);
                     }
                 }
                 await Task.WhenAll(tasks);
+            }
+        }
+
+        /// <summary>
+        /// Send data to Kakfa HDInsight
+        /// </summary>
+        /// <param name="kafkaHDInsightConn"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public async Task SendToKafkaHDInsight(KafkaConnection kafkaHDInsightConn, List<JObject> data)
+        {
+            var config = new ProducerConfig
+            {
+                BootstrapServers = kafkaHDInsightConn.BootstrapServers
+            };
+
+            try
+            {
+                using (var producer = new ProducerBuilder<string, string>(config).Build())
+                {
+                    List<Task> tasks = new List<Task>();
+                    int numberOfParallelTasks = 10;
+                    Random random = new Random();
+                    foreach (var deviceData in data)
+                    {
+                        var msg = deviceData.ToString(Formatting.None);
+                        if (tasks.Count >= numberOfParallelTasks)
+                        {
+                            await Task.WhenAll(tasks);
+                            tasks.Clear();
+                            Task sendToKafka = Task.Run(() => producer.ProduceAsync(kafkaHDInsightConn.Topics[random.Next(kafkaHDInsightConn.Topics.Count)], new Message<string, string> { Key = null, Value = msg }));
+                            tasks.Add(sendToKafka);
+                        }
+                        else
+                        {
+                            Task sendToKafka = Task.Run(() => producer.ProduceAsync(kafkaHDInsightConn.Topics[random.Next(kafkaHDInsightConn.Topics.Count)], new Message<string, string> { Key = null, Value = msg }));
+                            tasks.Add(sendToKafka);
+                        }
+                    }
+                    await Task.WhenAll(tasks);
+                }
+            }
+            catch
+            {
+                throw;
             }
         }
     }

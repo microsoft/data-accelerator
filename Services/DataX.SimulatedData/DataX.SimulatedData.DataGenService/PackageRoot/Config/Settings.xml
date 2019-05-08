@@ -11,6 +11,8 @@ Licensed under the MIT License
     <Parameter Name="EventhubConnectionStringKeyVaultKeyName" Value="" MustOverride="true"/>
     <Parameter Name="KafkaConnectionStringKeyVaultKeyName" Value="" MustOverride="true"/>
     <Parameter Name="KafkaTopics" Value="" MustOverride="true"/>
+    <Parameter Name="KafkaHDInsightBrokersKeyVaultKeyName" Value="" MustOverride="true"/>
+    <Parameter Name="KafkaHDInsightTopics" Value="" MustOverride="true"/>
     <Parameter Name="DataSchemaStorageAccountName" Value="" MustOverride="true"/>
     <Parameter Name="DataSchemaStorageAccountKeyValueKeyVaultKeyName" Value="" MustOverride="true"/>
     <Parameter Name="DataSchemaStorageContainerName" Value="" MustOverride="true"/>
