@@ -1,4 +1,8 @@
-﻿using DataX.Flow.Common;
+﻿// *********************************************************************
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License
+// *********************************************************************
+using DataX.Flow.Common;
 using DataX.Flow.Common.Models;
 using System;
 using System.Collections.Generic;

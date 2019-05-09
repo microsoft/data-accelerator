@@ -135,7 +135,7 @@ namespace DataX.Flow.DeleteHelper
 
             // ResourceCreation is one of the environment variables.
             // If you don't want to create resource, you can set this to false.
-            if (_engineEnvironment.ResourceCreation)
+            if (_engineEnvironment.ResourceCreation && diag.InputType != Constants.InputType_Kafka)
             {
                 var inputSubscriptionId = string.IsNullOrEmpty(diag.InputSubscriptionId) ? Helper.GetSecretFromKeyvaultIfNeeded(_engineEnvironment.EngineFlowConfig.SubscriptionId) : Helper.GetSecretFromKeyvaultIfNeeded(diag.InputSubscriptionId);
                 var inputResourceGroup = string.IsNullOrEmpty(diag.InputResourceGroup) ? _engineEnvironment.EngineFlowConfig.EventHubResourceGroupName : Helper.GetSecretFromKeyvaultIfNeeded(diag.InputResourceGroup);

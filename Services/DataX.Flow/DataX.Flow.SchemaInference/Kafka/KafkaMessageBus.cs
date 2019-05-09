@@ -3,6 +3,8 @@
 // Licensed under the MIT License
 // *********************************************************************
 using Confluent.Kafka;
+using DataX.Config;
+using DataX.Config.ConfigDataModel;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -60,16 +62,19 @@ namespace DataX.Flow.SchemaInference.Kafka
                 BootstrapServers = _brokerList,
                 GroupId = _consumerGroup,
                 EnableAutoCommit = false,
-                StatisticsIntervalMs = 5000,
                 SessionTimeoutMs = 6000,
-                AutoOffsetReset = AutoOffsetReset.Earliest,
-                EnablePartitionEof = true,
-                SecurityProtocol = SecurityProtocol.SaslSsl,
-                SaslMechanism = SaslMechanism.Plain,
-                SaslUsername = "$ConnectionString",
-                SaslPassword = _connectionString,
-                SslCaLocation = _cacertLocation,
+                AutoOffsetReset = AutoOffsetReset.Earliest
             };
+
+            // Set the authentication for EventHub Kafka
+            if (_inputType == Constants.InputType_KafkaEventHub)
+            {
+                config.SecurityProtocol = SecurityProtocol.SaslSsl;
+                config.SaslMechanism = SaslMechanism.Plain;
+                config.SaslUsername = "$ConnectionString";
+                config.SaslPassword = _connectionString;
+                config.SslCaLocation = _cacertLocation;
+            }
 
             StartTimer(seconds);
 
@@ -109,8 +114,9 @@ namespace DataX.Flow.SchemaInference.Kafka
                             // Get raw data
                             EventRaw er = new EventRaw
                             {
-                                Raw = consumeResult.Value
-                            };
+                                Raw = consumeResult.Value,
+                                Properties = new Dictionary<string, string>() { { "HeadersCount", consumeResult.Headers.Count.ToString() } },
+                        };
 
                             // Set properties (using the Headers)
                             if (consumeResult.Headers != null && consumeResult.Headers.Count > 0)
@@ -125,8 +131,8 @@ namespace DataX.Flow.SchemaInference.Kafka
 
                             // Set the SystemProperties
                             er.SystemProperties.Add("Topic", consumeResult.Topic);
-                            er.SystemProperties.Add("Partition", consumeResult.Partition.ToString());
-                            er.SystemProperties.Add("Offset", consumeResult.Offset.ToString());
+                            er.SystemProperties.Add("Partition", consumeResult.Partition.Value.ToString());
+                            er.SystemProperties.Add("Offset", consumeResult.Offset.Value.ToString());
                             er.SystemProperties.Add("UtcDateTime", consumeResult.Timestamp.UtcDateTime.ToString());
                             er.SystemProperties.Add("UnixTimestampMs", consumeResult.Timestamp.UnixTimestampMs.ToString());
 

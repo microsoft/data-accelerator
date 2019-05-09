@@ -50,7 +50,18 @@ namespace DataX.Config
             return FlowConfig.From(json);
         }
 
-        public async Task<FlowConfig> GetDefaultConfig(string inputType = null, TokenDictionary tokens = null)
+        public async Task<FlowConfig> GetDefaultConfig(TokenDictionary tokens = null)
+        {
+            var config = await CommonsData.GetByName(CommonDataName_DefaultFlowConfig);
+            if (tokens != null)
+            {
+                config = tokens.Resolve(config);
+            }
+
+            return FlowConfig.From(config);
+        }
+
+        public async Task<FlowConfig> GetFlowConfigByInputType(string inputType, TokenDictionary tokens = null)
         {
             var flowConfigName = this.GetFlowConfigName(inputType);
             var config = await CommonsData.GetByName(flowConfigName);
