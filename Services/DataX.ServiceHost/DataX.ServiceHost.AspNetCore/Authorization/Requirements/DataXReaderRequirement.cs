@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using DataX.ServiceHost.Settings;
-using DataX.Utilities.Web;
-using Microsoft.AspNetCore.Authorization;
-
-namespace DataX.ServiceHost.AspNetCore.Authorization.Requirements
+﻿namespace DataX.ServiceHost.AspNetCore.Authorization.Requirements
 {
+    using DataX.ServiceHost.Settings;
+    using DataX.Utilities.Web;
+    using Microsoft.AspNetCore.Authorization;
+
     internal class DataXReaderRequirement : DataXWriterRequirement
     {
         public DataXReaderRequirement() { }

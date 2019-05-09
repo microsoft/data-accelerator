@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using DataX.Config.Local;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using DataX.ServiceHost.ServiceFabric.Authorization;
 
 namespace Flow.Management
 {
@@ -65,7 +66,7 @@ namespace Flow.Management
 
             services
                 .AddSingleton(_dataXSettings)
-                .AddDataXAuthorization()
+                .AddDataXAuthorization(DataXDefaultGatewayPolicy.ConfigurePolicy)
                 .AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

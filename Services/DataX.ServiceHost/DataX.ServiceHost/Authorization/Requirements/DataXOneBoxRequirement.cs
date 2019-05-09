@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DataX.ServiceHost.AspNetCore.Authorization.Requirements
+namespace DataX.ServiceHost.Authorization.Requirements
 {
-    internal class DataXOneBoxRequirement : DataXAuthRequirement
+    public class DataXOneBoxRequirement : DataXAuthRequirement
     {
         public DataXOneBoxRequirement() { }
 

@@ -52,7 +52,7 @@ namespace Flow.Management.Controllers
         {
             try
             {
-                //RolesCheck.EnsureWriter(Request, _isLocal);
+                RolesCheck.EnsureWriter(Request, _isLocal);
                 Ensure.NotNull(config, "config");
 
                 var inputJson = JsonConfig.From(config.ToString());
@@ -84,7 +84,7 @@ namespace Flow.Management.Controllers
         {
             try
             {
-                //RolesCheck.EnsureWriter(Request, _isLocal);
+                RolesCheck.EnsureWriter(Request, _isLocal);
                 Ensure.NotNull(flowName, "flowName");
 
                 var result = await this._runtimeConfigGenerator.GenerateRuntimeConfigs(flowName);
