@@ -5,9 +5,8 @@
     using System.Threading.Tasks;
 
     /// <summary>
-    /// A for assertion requirements. We're extending this so that we can easily identify the DataX requirement instance
+    /// For assertion requirements. We're extending this so that we can easily identify the DataX requirement instance
     /// when adding in policy requirements. This lets us prevent duplication of requirements and handlers.
-    /// This is made internal as using it outside of this context may cause configuration issues if used improperly.
     /// </summary>
     public abstract class DataXAuthRequirement : IAuthorizationHandler, IAuthorizationRequirement
     {

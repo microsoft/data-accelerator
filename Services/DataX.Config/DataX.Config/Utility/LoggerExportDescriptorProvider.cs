@@ -12,7 +12,8 @@ using System.Reflection;
 namespace DataX.Config.Utility
 {
     /// <summary>
-    /// Custom export descriptor provider class to add existing instances to MEF container
+    /// Using a LoggerFactory, dynamically creates Logger<T> to resolve for MEF
+    /// Falls back to InstanceExportDescriptorProvider implementation if not a Logger
     /// </summary>
     public class LoggerExportDescriptorProvider : InstanceExportDescriptorProvider
     {
