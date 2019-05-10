@@ -46,7 +46,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                 foreach (var func in functions.Where(f => f.Type == FunctionTypeName))
                 {
                     var code = func.Properties?.Code;
-                    if (code != null && !KeyVaultUri.IsSecretUri(code))
+                    if (!string.IsNullOrEmpty(code) && !KeyVaultUri.IsSecretUri(code))
                     {
                         var secretName = $"{guiConfig.Name}-azurefunc";
                         var secretUri = await KeyVaultClient.SaveSecretAsync(
@@ -84,7 +84,6 @@ namespace DataX.Config.ConfigGeneration.Processor
             {
                 var properties = f.Properties;
                 Ensure.NotNull(properties, $"guiConfig.process.functions['{f.Id}'].properties");
-                Ensure.NotNull(properties.Name, $"guiConfig.process.functions['{f.Id}'].properties.name");
                 Ensure.NotNull(properties.ServiceEndpoint, $"guiConfig.process.functions['{f.Id}'].properties.serviceEndpoint");
                 Ensure.NotNull(properties.Api, $"guiConfig.process.functions['{f.Id}'].properties.api");
                 Ensure.NotNull(properties.Code, $"guiConfig.process.functions['{f.Id}'].properties.code");
@@ -92,7 +91,7 @@ namespace DataX.Config.ConfigGeneration.Processor
 
                 return new AzureFunctionSpec()
                 {
-                    Name = properties.Name,
+                    Name = f.Id,
                     ServiceEndpoint = properties.ServiceEndpoint,
                     Api = properties.Api,
                     Code = properties.Code,
