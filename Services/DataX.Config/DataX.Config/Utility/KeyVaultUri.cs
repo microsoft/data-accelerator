@@ -11,7 +11,7 @@ namespace DataX.Config.Utility
 {
    public static class KeyVaultUri
     {
-        private static Regex _Reg = new Regex(@"^((keyvault:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
+        private static Regex _Reg = new Regex(@"^(keyvault:\/\/)+([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
 
         public static string ComposeUri(string keyvaultName, string secretName)
         {
