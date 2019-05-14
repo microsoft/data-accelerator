@@ -8,11 +8,13 @@ using DataX.Utilities.Blob;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using DataX.Flow.SchemaInference.Eventhub;
 using DataX.Flow.SchemaInference.Kafka;
 using DataX.Config.ConfigDataModel;
-using System.Net;
+using DataX.Utilities.KeyVault;
+using DataX.ServiceHost.ServiceFabric;
 
 namespace DataX.Flow.SchemaInference
 {
@@ -24,7 +26,6 @@ namespace DataX.Flow.SchemaInference
         private IMessageBus _messageBus = null;
         private ILogger _logger;
         private const string _certLocation = @".\cacert.pem";
-        private const string _certSource = "https://curl.haxx.se/ca/cacert.pem";
 
         /// <summary>
         /// Schema Generator constructor called for generating schema
@@ -46,8 +47,10 @@ namespace DataX.Flow.SchemaInference
 
             if (!File.Exists(_certLocation))
             {
+                var certSource = KeyVault.GetSecretFromKeyvault(ServiceFabricUtil.GetServiceFabricConfigSetting("CACertificateLocation").Result.ToString());
+
                 WebClient webClient = new WebClient();
-                webClient.DownloadFile(_certSource, _certLocation);
+                webClient.DownloadFile(certSource, _certLocation);
             }
 
             if (inputType == Constants.InputType_Kafka || inputType == Constants.InputType_KafkaEventHub)

@@ -19,6 +19,7 @@ Licensed under the MIT License
     <Parameter Name="cosmosDBConfigDatabaseName" DefaultValue="" />
     <Parameter Name="cosmosDBConfigCollectionName" DefaultValue="" />
     <Parameter Name="AppInsightsIntrumentationKey" DefaultValue="" />
+    <Parameter Name="CACertificateLocation" DefaultValue="" />
     <Parameter Name="MefStorageAccountName" DefaultValue="" />
     <Parameter Name="MefContainerName" DefaultValue="" />
     <Parameter Name="MefBlobDirectory" DefaultValue="" />
@@ -57,6 +58,7 @@ Licensed under the MIT License
             <Parameter Name="cosmosDBConfigDatabaseName" Value="[cosmosDBConfigDatabaseName]" />
             <Parameter Name="cosmosDBConfigCollectionName" Value="[cosmosDBConfigCollectionName]" />
             <Parameter Name="AppInsightsIntrumentationKey" Value="[AppInsightsIntrumentationKey]" />
+            <Parameter Name="CACertificateLocation" Value="[CACertificateLocation]" />
           </Section>
         </Settings>
       </ConfigOverride>
