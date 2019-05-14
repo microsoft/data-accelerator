@@ -1,4 +1,4 @@
-// *********************************************************************
+﻿// *********************************************************************
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
@@ -17,6 +17,8 @@ namespace DataX.SimulatedData.DataGenService.Model
         public int rulesCounterRefreshInMinutes { get; set; }
         //List of DataObjects 
         public List<DataObject> dataSchema { get; set; }
+        //Counter for managing Rules data. Note: Donot include in schema file
+        public int currentCounter { get; set; }
     }
     public class DataObject
     {
@@ -27,19 +29,9 @@ namespace DataX.SimulatedData.DataGenService.Model
         //Number of events to simulate in each batch
         public int numEventsPerBatch { get; set; }
         //List of fields in each simulated DataObject
-        public List<Field> fields { get; set; }
+        public List<Properties> fields { get; set; }
         //List of RulesData to simulate in each batch
         public List<RulesData> rulesData { get; set; }
-    }
-
-    public class Field
-    {
-        //Name of the field
-        public string name { get; set; }
-        //Datatype of field
-        public string type { get; set; }
-        //List of properties in a field
-        public List<Properties> properties { get; set; }
     }
 
     public class Properties
