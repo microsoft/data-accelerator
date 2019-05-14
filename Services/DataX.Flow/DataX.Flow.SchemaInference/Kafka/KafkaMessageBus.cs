@@ -63,7 +63,7 @@ namespace DataX.Flow.SchemaInference.Kafka
                 GroupId = _consumerGroup,
                 EnableAutoCommit = false,
                 SessionTimeoutMs = 6000,
-                AutoOffsetReset = AutoOffsetReset.Earliest
+                AutoOffsetReset = AutoOffsetReset.Latest
             };
 
             // Set the authentication for EventHub Kafka
