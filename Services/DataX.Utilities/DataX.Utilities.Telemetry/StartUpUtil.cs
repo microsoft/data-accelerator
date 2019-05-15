@@ -60,12 +60,12 @@ namespace DataX.Utilities.Telemetry
 
         private static string GetInstrumentationKey(DataXSettings settings)
         {
-            var secretName = settings?.AppInsightsIntrumentationKeySecretName;
+            var secretName = settings?.AppInsightsIntrumentationKey;
             var vaultName = settings.ServiceKeyVaultName;
 
             return string.IsNullOrWhiteSpace(secretName) || string.IsNullOrWhiteSpace(vaultName)
                 ? Guid.Empty.ToString()
-                : KeyVault.KeyVault.GetSecretFromKeyvault(settings.ServiceKeyVaultName, settings.AppInsightsIntrumentationKeySecretName);
+                : KeyVault.KeyVault.GetSecretFromKeyvault(settings.ServiceKeyVaultName, settings.AppInsightsIntrumentationKey);
         }
     }
 }
