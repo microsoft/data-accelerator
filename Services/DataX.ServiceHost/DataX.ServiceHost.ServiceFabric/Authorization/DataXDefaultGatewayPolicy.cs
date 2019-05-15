@@ -1,11 +1,11 @@
 ﻿namespace DataX.ServiceHost.ServiceFabric.Authorization
 {
-    using DataX.ServiceHost.Authorization.Requirements;
+    using DataX.ServiceHost.Authorization;
     using DataX.ServiceHost.Settings;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Authorization.Infrastructure;
     using System.Linq;
-    public class DataXDefaultGatewayPolicy : DataXOneBoxRequirement
+    public class DataXDefaultGatewayPolicy : DataXAuthRequirement
     {
         private DataXDefaultGatewayPolicy() { }
 
@@ -15,7 +15,7 @@
             if(HostUtil.InServiceFabric)
             {
                 // Allow anonymous calls; RoleCheck will handle the checking in the controller
-                builder.Requirements = builder.Requirements.Where(r => !(r is DenyAnonymousAuthorizationRequirement)).ToList();
+                builder.Requirements = builder.Requirements.Where(r => !(r is DenyAnonymousAuthorizationRequirement || r is DataXAuthRequirement)).ToList();
 
                 // Ensure the OneBox check
                 builder.AddRequirements(new DataXDefaultGatewayPolicy());
@@ -24,7 +24,8 @@
 
         protected override bool IsAuthorized(AuthorizationHandlerContext context, DataXSettings settings)
         {
-            return base.IsAuthorized(context, settings);
+            // If OneBox, no auth. If in SF, no auth (handled in Gateway). True in both scenarios, so returning true.
+            return true;
         }
     }
 }
