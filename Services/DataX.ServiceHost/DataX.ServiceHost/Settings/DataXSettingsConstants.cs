@@ -4,6 +4,9 @@ using System.Text;
 
 namespace DataX.ServiceHost.Settings
 {
+    /// <summary>
+    /// Constants used with <see cref="DataXSettings"/>
+    /// </summary>
     public static class DataXSettingsConstants
     {
         public const string DataX = nameof(DataX);

@@ -9,6 +9,7 @@ namespace DataX.ServiceHost.ServiceFabric
     using System.Collections.Generic;
     using System.Fabric;
 
+    /// <inheritdoc />
     public class ServiceFabricConfigurationSource : MemoryConfigurationSource
     {
         private readonly string _configPrefix;
@@ -22,6 +23,11 @@ namespace DataX.ServiceHost.ServiceFabric
             this.InitialData = GetFlatConfig(package);
         }
 
+        /// <summary>
+        /// Creates a flat configuration compatible with IConfiguration from ServiceFabric's ConfigurationPackage
+        /// </summary>
+        /// <param name="package">The ConfigurationPackage to flatten</param>
+        /// <returns>A KeyValuePair IEnumerable to be used for <see cref="MemoryConfigurationSource.InitialData"/></returns>
         private IEnumerable<KeyValuePair<string,string>> GetFlatConfig(ConfigurationPackage package)
         {
             var flatConfig = new Dictionary<string, string>();

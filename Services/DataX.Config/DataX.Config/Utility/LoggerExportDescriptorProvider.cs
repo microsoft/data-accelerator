@@ -35,6 +35,7 @@ namespace DataX.Config.Utility
             _loggerFactory = loggerFactory;
         }
 
+        ///<inheritdoc />
         public override IEnumerable<ExportDescriptorPromise> GetExportDescriptors(CompositionContract contract, DependencyAccessor descriptorAccessor)
         {
             if (_loggerFactory != null && _ILoggerType.IsAssignableFrom(contract.ContractType))

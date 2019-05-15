@@ -5,10 +5,16 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Authorization.Infrastructure;
     using System.Linq;
+
+    /// <inheritdoc />
     public class DataXDefaultGatewayPolicy : DataXAuthRequirement
     {
         private DataXDefaultGatewayPolicy() { }
 
+        /// <summary>
+        /// Configures the default, recommended policy for running in ServiceFabric behind Gateway
+        /// </summary>
+        /// <param name="builder">The AuthorizationPolicyBuilder to modify</param>
         public static void ConfigurePolicy(AuthorizationPolicyBuilder builder)
         {
             // ServiceFabric setup is the only setup with the Gateway
@@ -22,6 +28,7 @@
             }
         }
 
+        /// <inheritdoc />
         protected override bool IsAuthorized(AuthorizationHandlerContext context, DataXSettings settings)
         {
             // If OneBox, no auth. If in SF, no auth (handled in Gateway). True in both scenarios, so returning true.

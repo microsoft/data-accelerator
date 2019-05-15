@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace DataX.ServiceHost.AspNetCore.Authorization
 {
+    /// <inheritdoc />
     public abstract class DataXAuthorizeAttribute : AuthorizeAttribute
     {
         public DataXAuthorizeAttribute()

@@ -6,6 +6,9 @@ namespace DataX.ServiceHost.Settings
     using System.Collections.Generic;
     using System.Text;
 
+    /// <summary>
+    /// Used to hold basic settings for DataX.
+    /// </summary>
     public class DataXSettings
     {
         // The flat settings should be better split into other settings classes

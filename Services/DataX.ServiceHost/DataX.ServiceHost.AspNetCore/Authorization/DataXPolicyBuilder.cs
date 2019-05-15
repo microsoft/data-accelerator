@@ -6,7 +6,9 @@
     using System;
     using System.Linq;
 
-    // This class is meant to simplify the syntax for adding requirements for policies
+    /// <summary>
+    /// This class is meant to simplify the syntax for adding requirements for policies
+    /// </summary>
     internal class DataXPolicyBuilder
     {
         private readonly AuthorizationOptions _options;

@@ -12,11 +12,22 @@ namespace DataX.ServiceHost.AspNetCore.Authorization.Extensions
 {
     public static class DataXAuthorizationExtensions
     {
+        /// <summary>
+        /// Adds DataX default authentication to the given service collection.
+        /// </summary>
+        /// <param name="services">The service collection to add to</param>
+        /// <returns>The modified service collection</returns>
         public static IServiceCollection AddDataXAuthorization(this IServiceCollection services)
         {
             return services.AddDataXAuthorization(null);
         }
 
+        /// <summary>
+        /// Adds DataX default authentication to the given service collection.
+        /// </summary>
+        /// <param name="services">The service collection to add to</param>
+        /// <param name="configurePolicy">An action to configure supplement policy configuration</param>
+        /// <returns>The modified service collection</returns>
         public static IServiceCollection AddDataXAuthorization(this IServiceCollection services, Action<AuthorizationPolicyBuilder> configurePolicy)
         {
             var settings = services.BuildServiceProvider().GetService<DataXSettings>();

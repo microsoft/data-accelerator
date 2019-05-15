@@ -5,6 +5,9 @@ using System.Text;
 
 namespace DataX.ServiceHost.AspNetCore.Authorization
 {
+    /// <summary>
+    /// Constants used in DataX auth scenarios
+    /// </summary>
     public static class DataXAuthConstants
     {
         public const string PolicyPrefix = "DataXAuth_";

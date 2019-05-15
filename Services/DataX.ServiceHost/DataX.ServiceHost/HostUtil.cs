@@ -6,6 +6,9 @@ namespace DataX.ServiceHost
 {
     public static class HostUtil
     {
+        /// <summary>
+        /// Returns true if Fabric_ApplicationName environment variable is not null, otherwise false if it is null.
+        /// </summary>
         public static bool InServiceFabric => Environment.GetEnvironmentVariable("Fabric_ApplicationName") != null;
     }
 }

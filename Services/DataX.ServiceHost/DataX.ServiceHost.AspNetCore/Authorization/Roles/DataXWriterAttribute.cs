@@ -4,6 +4,7 @@ using System.Text;
 
 namespace DataX.ServiceHost.AspNetCore.Authorization.Roles
 {
+    /// <inheritdoc />
     public class DataXWriterAttribute : DataXAuthorizeAttribute
     {
         public DataXWriterAttribute()

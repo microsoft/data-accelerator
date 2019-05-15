@@ -19,6 +19,7 @@
             Settings = settings;
         }
 
+        /// <inheritdoc />
         public Task HandleAsync(AuthorizationHandlerContext context)
         {
             if(IsAuthorized(context, Settings))
@@ -29,6 +30,12 @@
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Given the auth context and settings, determines if a request is authorized.
+        /// </summary>
+        /// <param name="context">Provided AuthorizationHandlerContext</param>
+        /// <param name="settings">Provided DataXSettings</param>
+        /// <returns>True if determined to be authorized, else false.</returns>
         protected abstract bool IsAuthorized(AuthorizationHandlerContext context, DataXSettings settings);
     }
 }
