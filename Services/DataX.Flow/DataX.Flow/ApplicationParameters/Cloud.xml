@@ -18,5 +18,6 @@ Licensed under the MIT License
     <Parameter Name="MefStorageAccountName" Value="" />
     <Parameter Name="MefContainerName" Value="" />
     <Parameter Name="MefBlobDirectory" Value="" />
+    <Parameter Name="EnableOneBox" Value="" />
   </Parameters>
 </Application>
