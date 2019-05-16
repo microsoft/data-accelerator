@@ -254,7 +254,7 @@ SOFTWARE
               <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory>
               <branch>refs/heads/mvn-repo</branch>
               <includes>
-                <include>**/datax-utility_2.3_2.11-1.1.0-SNAPSHOT.jar</include>
+                <include>**/*</include>
               </includes>
               <repositoryName>data-accelerator</repositoryName>
               <repositoryOwner>Microsoft</repositoryOwner>
