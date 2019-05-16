@@ -50,8 +50,8 @@ SOFTWARE
   </scm>
 
   <groupId>com.microsoft.datax</groupId>
-  <artifactId>datax-core_2.11</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <artifactId>datax-core_2.3_2.11</artifactId>
+  <version>1.1.0-SNAPSHOT</version>
   <name>Data Accelerator Core</name>
   <description>This package contains the core module of Data Accelerator functionality.</description>
   <url>https://github.com/Microsoft/data-accelerator</url>
@@ -216,7 +216,7 @@ SOFTWARE
               <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory>
               <branch>refs/heads/mvn-repo</branch>
               <includes>
-                <include>**/datax-core_2.11-1.0.0-SNAPSHOT.jar</include>
+                <include>**/*</include>
               </includes>
               <repositoryName>data-accelerator</repositoryName>
               <repositoryOwner>Microsoft</repositoryOwner>
