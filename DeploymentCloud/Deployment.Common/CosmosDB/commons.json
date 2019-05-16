@@ -126,21 +126,21 @@
       "cluster": "$sparkName",
       "options": {
         "name": "${sparkJobName}",
-				"file" : "wasbs:///datax/bin/datax-host_2.11-1.0.0.jar",
+				"file" : "wasbs:///datax/bin/datax-host_2.3_2.11-1.1.0-SNAPSHOT.jar",
 				"className" : "datax.app.DirectStreamingApp",
         "args": [
           "conf=${sparkJobConfigFilePath}",
           "driverLogLevel=${sparkJobDriverLogLevel}"
         ],
         "jars": [
-								"wasbs:///datax/bin/datax-core_2.11-1.0.0.jar",
-								"wasbs:///datax/bin/datax-utility_2.11-1.0.0.jar",
+								"wasbs:///datax/bin/datax-core_2.3_2.11-1.1.0-SNAPSHOT.jar",
+								"wasbs:///datax/bin/datax-utility_2.3_2.11-1.1.0-SNAPSHOT.jar",
 								"wasbs:///datax/bin/applicationinsights-core-2.2.1.jar",
 								"wasbs:///datax/bin/azure-documentdb-1.16.1.jar",
 								"wasbs:///datax/bin/azure-eventhubs-1.2.1.jar",
 								"wasbs:///datax/bin/azure-eventhubs-spark_2.11-2.3.6.jar",
 								"wasbs:///datax/bin/azure-keyvault-webkey-1.1.jar",
-								"wasbs:///datax/bin/datax-keyvault_2.11-1.0.0-with-dependencies.jar",
+								"wasbs:///datax/bin/datax-keyvault_2.3_2.11-1.1.0-SNAPSHOT-with-dependencies.jar",
 								"wasbs:///datax/bin/java-uuid-generator-3.1.5.jar",
 								"wasbs:///datax/bin/proton-j-0.27.1.jar",
 								"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar"

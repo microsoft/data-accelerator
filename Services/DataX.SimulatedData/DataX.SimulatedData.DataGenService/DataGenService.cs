@@ -31,8 +31,6 @@ namespace DataX.SimulatedData.DataGenService
     /// </summary>
     internal sealed class DataGenService : StatelessService
     {
-        private static int _counter = 1;
-
         public DataGenService(StatelessServiceContext context)
             : base(context)
         { }
@@ -65,7 +63,7 @@ namespace DataX.SimulatedData.DataGenService
             string dataSchemaStorageAccountName = inputConfig.Parameters["DataSchemaStorageAccountName"].Value;
             string dataSchemaStorageAccountKeyValue = (dataSchemaStorageAccountKeyValueKeyVaultKeyName.Length > 0) ? await keyManager.GetSecretStringAsync(keyVaultName, dataSchemaStorageAccountKeyValueKeyVaultKeyName) : "";
             string dataSchemaStorageContainerName = inputConfig.Parameters["DataSchemaStorageContainerName"].Value;
-            string dataSchemaPathWithinContainer = inputConfig.Parameters["DataSchemaPathWithinContainer"].Value;
+            List<string> dataSchemaPathsWithinContainer = Array.ConvertAll(inputConfig.Parameters["DataSchemaPathWithinContainer"].Value.Split(','), p => p.Trim()).ToList();
 
             KafkaConnection kafkaEnabledEventHubConn = new KafkaConnection
             {
@@ -87,7 +85,13 @@ namespace DataX.SimulatedData.DataGenService
                 webClient.DownloadFile("https://curl.haxx.se/ca/cacert.pem", @".\cacert.pem");
             }
 
-            var dataSchemaFileContent = await GetDataSchemaAndRules(dataSchemaStorageAccountName, dataSchemaStorageAccountKeyValue, dataSchemaStorageContainerName, dataSchemaPathWithinContainer);
+            List<DataSchema> dataSchemaList = new List<DataSchema>();
+            foreach(var dataSchemaPathWithinContainer in dataSchemaPathsWithinContainer)
+            {
+                var dataSchemaFileContent = await GetDataSchemaAndRules(dataSchemaStorageAccountName, dataSchemaStorageAccountKeyValue, dataSchemaStorageContainerName, dataSchemaPathWithinContainer);
+                dataSchemaFileContent.currentCounter = 1;
+                dataSchemaList.Add(dataSchemaFileContent);
+            }
 
             Stopwatch stopwatchDelay = new Stopwatch();
             Stopwatch stopwatchThreshold = new Stopwatch();
@@ -102,33 +106,37 @@ namespace DataX.SimulatedData.DataGenService
                 {
                     stopwatchThreshold.Restart();
                 }
-                if (_counter >= dataSchemaFileContent.rulesCounterRefreshInMinutes)
-                {
-                    _counter = 1;
-                }
 
-                List<JObject> dataStreams = new List<JObject>();
-                foreach (var ds in dataSchemaFileContent.dataSchema)
+                foreach(var dataSchemaFileContent in dataSchemaList)
                 {
-                    if (stopwatchThreshold.Elapsed.Minutes % ds.simulationPeriodInMinute == 0)
+                    if (dataSchemaFileContent.currentCounter >= dataSchemaFileContent.rulesCounterRefreshInMinutes)
                     {
-                        //generate random data
-                        dataGenInstance.GenerateRandomData(dataStreams, ds);
+                        dataSchemaFileContent.currentCounter = 1;
+                    }
 
-                        //generate rules triggering data only for the 0th node in SF to avoid data duplication
-                        if ((ds.rulesData != null) && (this.Context.NodeContext.NodeName.Substring(this.Context.NodeContext.NodeName.Length - 1) == "0"))
+                    List<JObject> dataStreams = new List<JObject>();
+                    foreach (var ds in dataSchemaFileContent.dataSchema)
+                    {
+                        if (stopwatchThreshold.Elapsed.Minutes % ds.simulationPeriodInMinute == 0)
                         {
-                            dataGenInstance.GenerateDataRules(dataStreams, ds, _counter);
+                            //generate random data
+                            dataGenInstance.GenerateRandomData(dataStreams, ds);
+
+                            //generate rules triggering data only for the 0th node in SF to avoid data duplication
+                            if ((ds.rulesData != null) && (this.Context.NodeContext.NodeName.Substring(this.Context.NodeContext.NodeName.Length - 1) == "0"))
+                            {
+                                dataGenInstance.GenerateDataRules(dataStreams, ds, dataSchemaFileContent.currentCounter);
+                            }
                         }
                     }
+
+                    if (dataStreams.Count > 0)
+                    {
+                        await SendData(dataStreams, ehConnectionString, iotDeviceConnectionString, kafkaEnabledEventHubConn, kafkaHDInsightConn);
+                    }
+                    dataSchemaFileContent.currentCounter++;
                 }
 
-                if (dataStreams.Count > 0)
-                {
-                    await SendData(dataStreams, ehConnectionString, iotDeviceConnectionString, kafkaEnabledEventHubConn, kafkaHDInsightConn);
-                }
-
-                _counter++;
                 var setDelay = ((60 - stopwatchDelay.Elapsed.TotalSeconds) > 0) ? (60 - stopwatchDelay.Elapsed.TotalSeconds) : 1;
                 await Task.Delay(TimeSpan.FromSeconds(setDelay), cancellationToken);
             }

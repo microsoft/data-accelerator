@@ -21,9 +21,9 @@
     "sparkKeyVaultName" : "$sparkKVName",
     "jobURLBase": "$sparkName",
     "binaryName" : [
-      "datax/bin/datax-utility_2.11-1.0.0.jar",
-      "datax/bin/datax-host_2.11-1.0.0.jar",
-      "datax/bin/datax-core_2.11-1.0.0.jar"
+      "datax/bin/datax-utility_2.3_2.11-1.1.0-SNAPSHOT.jar",
+      "datax/bin/datax-host_2.3_2.11-1.1.0-SNAPSHOT.jar",
+      "datax/bin/datax-core_2.3_2.11-1.1.0-SNAPSHOT.jar"
     ],
     "configgenClientId" : "$configgenClientId",
     "configgenTenantId" : "$configgenTenantId",
