@@ -40,16 +40,18 @@ class AzureFunctionCaller {
   // Make a request to the AzureFunction based on the method type
   def call(host: String, api: String, code: String, methodType:String, params: Map[String, String]):String = {
 
+    val baseUrl = if(host.endsWith("/")) host.dropRight(1) else host
+
     if (methodType == "get") {
       val query = getQueryParams(code, params)
-      val request = new HttpGet(s"https://$host.azurewebsites.net/api/$api/$query")
+      val request = new HttpGet(s"$baseUrl/api/$api/$query")
       request.addHeader("Content-Type", "application/json")
       callWithRetries(request, 5)
     }
     else if (methodType == "post") {
       // For POST, params is passed as msg body, hence send only code if available
       val query = getQueryParams(code, Map.empty[String,String])
-      val request = new HttpPost(s"https://$host.azurewebsites.net/api/$api/$query")
+      val request = new HttpPost(s"$baseUrl/api/$api/$query")
       request.addHeader("Content-Type", "application/json")
       val data = JSONObject(params).toString()
       request.setEntity(new StringEntity(data))
