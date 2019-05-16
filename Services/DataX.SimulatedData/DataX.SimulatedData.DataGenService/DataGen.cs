@@ -1,4 +1,4 @@
-// *********************************************************************
+﻿// *********************************************************************
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
@@ -63,9 +63,14 @@ namespace DataX.SimulatedData.DataGenService
                     if (field.type.ToLower() == "struct")
                     {
                         propertyString = GeneratePropertyString(field.properties);
+                        string fieldString = $"\"{field.name}\":{{{propertyString}}}";
+                        fieldStrings.Add(fieldString);
                     }
-                    string fieldString = $"\"{field.name}\":{{{propertyString}}}";
-                    fieldStrings.Add(fieldString);
+                    else
+                    {
+                        propertyString = GeneratePropertyString(field, true);
+                        fieldStrings.Add(propertyString);
+                    }
                 }
 
                 bool isFirstFieldString = true;
@@ -105,122 +110,135 @@ namespace DataX.SimulatedData.DataGenService
         /// Generate JSON properties
         /// </summary>
         /// <param name="properties"></param>
+        /// <param name="isFirstProperty"></param>
         /// <returns></returns>
-        public string GeneratePropertyString(List<Properties> properties)
+        public string GeneratePropertyString(Properties property, bool isFirstProperty)
         {
             string result = "";
             string propertyName = "";
-            bool isFirstProperty = true;
             try
             {
-                foreach (var property in properties)
+                propertyName = property.name;
+                if (property.type.ToLower() != "struct")
                 {
-                    propertyName = property.name;
-                    if (property.type.ToLower() != "struct")
+                    if (!string.IsNullOrEmpty(property.value))
                     {
-                        if (!string.IsNullOrEmpty(property.value))
+                        if (property.type.ToLower() == "long" || property.type.ToLower() == "int" || property.type.ToLower() == "double")
                         {
-                            if (property.type.ToLower() == "long" || property.type.ToLower() == "int" || property.type.ToLower() == "double")
-                            {
-                                result += (isFirstProperty) ? ($"\"{property.name}\":{property.value}")
-                                    : ($",\"{property.name}\":{property.value}");
-                            }
-                            else if (property.type.ToLower() == "string")
-                            {
-                                result += (isFirstProperty) ? ($"\"{property.name}\":\"{property.value}\"")
-                                    : ($",\"{property.name}\":\"{property.value}\"");
-                            }
+                            result += (isFirstProperty) ? ($"\"{property.name}\":{property.value}")
+                                : ($",\"{property.name}\":{property.value}");
                         }
-                        else if (!string.IsNullOrEmpty(property.minRange) && !string.IsNullOrEmpty(property.maxRange))
+                        else if (property.type.ToLower() == "string")
                         {
-                            if (!property.castAsString)
+                            result += (isFirstProperty) ? ($"\"{property.name}\":\"{property.value}\"")
+                                : ($",\"{property.name}\":\"{property.value}\"");
+                        }
+                    }
+                    else if (!string.IsNullOrEmpty(property.minRange) && !string.IsNullOrEmpty(property.maxRange))
+                    {
+                        if (!property.castAsString)
+                        {
+                            if (property.type.ToLower() == "array")
                             {
-                                if (property.type.ToLower() == "array")
+                                //add first number
+                                result += (isFirstProperty) ? ($"\"{property.name}\":[") : ($",\"{property.name}\":[");
+                                if (property.length > 0)
                                 {
-                                    //add first number
-                                    result += (isFirstProperty) ? ($"\"{property.name}\":[") : ($",\"{property.name}\":[");
-                                    if (property.length > 0)
-                                    {
-                                        result += GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange));
-                                    }
-                                    //add rest of array
-                                    for (int i = 0; i < property.length - 1; i++)
-                                    {
-                                        result += "," + GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange));
-                                    }
-                                    //close array
-                                    result += "]";
+                                    result += GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange));
                                 }
-                                else if (property.type.ToLower() == "long" || property.type.ToLower() == "int")
+                                //add rest of array
+                                for (int i = 0; i < property.length - 1; i++)
                                 {
-                                    result += (isFirstProperty) ? ($"\"{property.name}\":{GetRandomInt(int.Parse(property.minRange), int.Parse(property.maxRange))}")
-                                                                    : ($",\"{property.name}\":{GetRandomInt(int.Parse(property.minRange), int.Parse(property.maxRange))}");
+                                    result += "," + GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange));
                                 }
-                                else if (property.type.ToLower() == "decimal" || property.type.ToLower() == "double")
-                                {
-                                    result += (isFirstProperty) ? ($"\"{property.name}\":{GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange))}")
-                                                                    : ($",\"{property.name}\":{GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange))}");
-                                }
-                                else
-                                {
-                                    throw new Exception("Unknown type of data being requested");
-                                }
+                                //close array
+                                result += "]";
+                            }
+                            else if (property.type.ToLower() == "long" || property.type.ToLower() == "int")
+                            {
+                                result += (isFirstProperty) ? ($"\"{property.name}\":{GetRandomInt(int.Parse(property.minRange), int.Parse(property.maxRange))}")
+                                                                : ($",\"{property.name}\":{GetRandomInt(int.Parse(property.minRange), int.Parse(property.maxRange))}");
+                            }
+                            else if (property.type.ToLower() == "decimal" || property.type.ToLower() == "double")
+                            {
+                                result += (isFirstProperty) ? ($"\"{property.name}\":{GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange))}")
+                                                                : ($",\"{property.name}\":{GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange))}");
                             }
                             else
                             {
-                                if (property.type.ToLower() == "array")
-                                {
-                                    //add first number
-                                    result += (isFirstProperty) ? ($"\"{property.name}\":[") : ($",\"{property.name}\":[");
-                                    if (property.length > 0)
-                                    {
-                                        result += "\"" + GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange)) + "\"";
-                                    }
-                                    //add rest of array
-                                    for (int i = 0; i < property.length - 1; i++)
-                                    {
-                                        result += "," + "\"" + GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange)) + "\"";
-                                    }
-                                    //close array
-                                    result += "]";
-                                }
-                                else if (property.type.ToLower() == "long" || property.type.ToLower() == "int")
-                                {
-                                    result += (isFirstProperty) ? ($"\"{property.name}\":\"{GetRandomInt(int.Parse(property.minRange), int.Parse(property.maxRange))}\"")
-                                                                    : ($",\"{property.name}\":\"{GetRandomInt(int.Parse(property.minRange), int.Parse(property.maxRange))}\"");
-                                }
-                                else if (property.type.ToLower() == "decimal" || property.type.ToLower() == "double")
-                                {
-                                    result += (isFirstProperty) ? ($"\"{property.name}\":\"{GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange))}\"")
-                                                                    : ($",\"{property.name}\":\"{GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange))}\"");
-                                }
-                                else
-                                {
-                                    throw new Exception("Unknown type of data being requested");
-                                }
+                                throw new Exception("Unknown type of data being requested");
                             }
                         }
-                        else if (property.type.ToLower() == "datetime")
+                        else
                         {
-                            result += (isFirstProperty) ? ($"\"{property.name}\":\"{DateTime.UtcNow.AddSeconds(property.utcAddSeconds).ToString(property.datetimeStringFormat)}\"")
-                                : ($",\"{property.name}\":\"{DateTime.UtcNow.AddSeconds(property.utcAddSeconds).ToString(property.datetimeStringFormat)}\"");
-                        }
-                        else if (property.valueList != null)
-                        {
-                            result += (isFirstProperty) ? ($"\"{property.name}\":\"{property.valueList[GetRandomInt(0, property.valueList.Count)]}\"")
-                                : ($",\"{property.name}\":\"{property.valueList[GetRandomInt(0, property.valueList.Count)]}\"");
+                            if (property.type.ToLower() == "array")
+                            {
+                                //add first number
+                                result += (isFirstProperty) ? ($"\"{property.name}\":[") : ($",\"{property.name}\":[");
+                                if (property.length > 0)
+                                {
+                                    result += "\"" + GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange)) + "\"";
+                                }
+                                //add rest of array
+                                for (int i = 0; i < property.length - 1; i++)
+                                {
+                                    result += "," + "\"" + GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange)) + "\"";
+                                }
+                                //close array
+                                result += "]";
+                            }
+                            else if (property.type.ToLower() == "long" || property.type.ToLower() == "int")
+                            {
+                                result += (isFirstProperty) ? ($"\"{property.name}\":\"{GetRandomInt(int.Parse(property.minRange), int.Parse(property.maxRange))}\"")
+                                                                : ($",\"{property.name}\":\"{GetRandomInt(int.Parse(property.minRange), int.Parse(property.maxRange))}\"");
+                            }
+                            else if (property.type.ToLower() == "decimal" || property.type.ToLower() == "double")
+                            {
+                                result += (isFirstProperty) ? ($"\"{property.name}\":\"{GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange))}\"")
+                                                                : ($",\"{property.name}\":\"{GetRandomDouble(double.Parse(property.minRange), double.Parse(property.maxRange))}\"");
+                            }
+                            else
+                            {
+                                throw new Exception("Unknown type of data being requested");
+                            }
                         }
                     }
-                    else
+                    else if (property.type.ToLower() == "datetime")
                     {
-                        result += (isFirstProperty) ? ($"\"{property.name}\":{{{GeneratePropertyString(property.properties)}}}") : ($",\"{property.name}\":{{{GeneratePropertyString(property.properties)}}}");
+                        result += (isFirstProperty) ? ($"\"{property.name}\":\"{DateTime.UtcNow.AddSeconds(property.utcAddSeconds).ToString(property.datetimeStringFormat)}\"")
+                            : ($",\"{property.name}\":\"{DateTime.UtcNow.AddSeconds(property.utcAddSeconds).ToString(property.datetimeStringFormat)}\"");
                     }
-                    isFirstProperty = false;
+                    else if (property.valueList != null)
+                    {
+                        result += (isFirstProperty) ? ($"\"{property.name}\":\"{property.valueList[GetRandomInt(0, property.valueList.Count)]}\"")
+                            : ($",\"{property.name}\":\"{property.valueList[GetRandomInt(0, property.valueList.Count)]}\"");
+                    }
+                }
+                else
+                {
+                    result += (isFirstProperty) ? ($"\"{property.name}\":{{{GeneratePropertyString(property.properties)}}}") : ($",\"{property.name}\":{{{GeneratePropertyString(property.properties)}}}");
                 }
             }
             catch (Exception e)
             {
                 throw new Exception(e.Message + " on " + propertyName);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Generate JSON properties
+        /// </summary>
+        /// <param name="properties"></param>
+        /// <returns></returns>
+        public string GeneratePropertyString(List<Properties> properties)
+        {
+            string result = "";
+            bool isFirstProperty = true;
+            foreach (var property in properties)
+            {
+                result += GeneratePropertyString(property, isFirstProperty);
+                isFirstProperty = false;
             }
             return result;
         }
