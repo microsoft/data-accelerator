@@ -15,7 +15,7 @@ namespace DataX.Config.Utility
     /// Using a LoggerFactory, dynamically creates Logger<T> to resolve for MEF
     /// Falls back to InstanceExportDescriptorProvider implementation if not a Logger
     /// </summary>
-    public class LoggerExportDescriptorProvider : InstanceExportDescriptorProvider
+    public class LoggerAndInstanceExportDescriptorProvider : InstanceExportDescriptorProvider
     {
         private static readonly Type _ILoggerType = typeof(ILogger);
 
@@ -28,7 +28,7 @@ namespace DataX.Config.Utility
         private readonly ILoggerFactory _loggerFactory;
         private readonly bool _hasInstances;
 
-        public LoggerExportDescriptorProvider(object[] instances, ILoggerFactory loggerFactory)
+        public LoggerAndInstanceExportDescriptorProvider(object[] instances, ILoggerFactory loggerFactory)
             : base(instances)
         {
             _hasInstances = instances?.Length > 0;
