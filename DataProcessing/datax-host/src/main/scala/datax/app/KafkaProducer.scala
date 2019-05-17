@@ -1,3 +1,7 @@
+// *********************************************************************
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License
+// *********************************************************************
 package datax.app
 
 import org.apache.kafka.clients.producer._
