@@ -1,0 +1,7 @@
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzureIdentityBinding
+metadata:
+  name: managed-service-identity-binding
+spec:
+  AzureIdentity: managed-service-identity
+  Selector: managed-service-identity
