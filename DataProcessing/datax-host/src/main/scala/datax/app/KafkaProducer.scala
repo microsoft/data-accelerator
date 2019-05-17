@@ -17,7 +17,7 @@ object KafkaProducer {
     val logger = LogManager.getLogger("KafkaProducer")
 
     if (args.length < 3){
-      logger.warn("Usage: kafkaproducer.jar <schemaFile> <topicNames> <brokerhosts>")
+      logger.warn("Usage: mvn exec:java -Dexec.mainClass=\"KafkaProducer\" <schemaFile> <comma separated topicNames> <comma separated brokerhosts>")
       return
     }
 

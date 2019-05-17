@@ -43,7 +43,7 @@ object KafkaStreamingFactory extends  StreamingFactory[ConsumerRecord[String,Str
       )
     }
 
-    //TODO: enable checkpoint
+    //TODO: enable external store based checkpoint
 
     kafkaParams
   }

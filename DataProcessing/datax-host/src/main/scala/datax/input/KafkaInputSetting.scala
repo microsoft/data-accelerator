@@ -38,7 +38,7 @@ object KafkaInputSetting extends InputSetting[InputKafkaConf] {
   val SettingAutoOffsetReset = "autooffsetreset"
   val SettingRequestTimeout = "requesttimeout"
   val SettingSessionTimeout = "sessiontimeout"
-  val SettingHeartbeatInterval = "heartbeatinterval" // should be 1/3 of session timeout
+  val SettingHeartbeatInterval = "heartbeatinterval" 
   val SettingSecurityProtocol = "securityprotocol"
   val SettingSaslMechanism = "saslmechanism"
   val SettingSaslJaasConfig = "sasljaasconfig"
