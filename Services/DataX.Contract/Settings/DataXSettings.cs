@@ -1,11 +1,5 @@
-﻿
-
-namespace DataX.ServiceHost.Settings
+﻿namespace DataX.Contract.Settings
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-
     /// <summary>
     /// Used to hold basic settings for DataX.
     /// </summary>

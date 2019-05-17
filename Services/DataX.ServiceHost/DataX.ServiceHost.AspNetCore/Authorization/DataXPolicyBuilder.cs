@@ -1,7 +1,7 @@
 ﻿namespace DataX.ServiceHost.AspNetCore.Authorization
 {
     using DataX.ServiceHost.Authorization;
-    using DataX.ServiceHost.Settings;
+    using DataX.Contract.Settings;
     using Microsoft.AspNetCore.Authorization;
     using System;
     using System.Linq;

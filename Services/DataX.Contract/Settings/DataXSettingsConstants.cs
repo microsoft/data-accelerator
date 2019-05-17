@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DataX.ServiceHost.Settings
+﻿namespace DataX.Contract.Settings
 {
     /// <summary>
     /// Constants used with <see cref="DataXSettings"/>

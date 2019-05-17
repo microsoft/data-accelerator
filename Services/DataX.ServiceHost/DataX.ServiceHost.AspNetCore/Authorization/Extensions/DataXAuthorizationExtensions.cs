@@ -1,4 +1,4 @@
-﻿using DataX.ServiceHost.Settings;
+﻿using DataX.Contract.Settings;
 using DataX.Utilities.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;

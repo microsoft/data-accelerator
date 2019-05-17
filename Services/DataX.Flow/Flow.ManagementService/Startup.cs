@@ -9,7 +9,6 @@ using DataX.ServiceHost.AspNetCore.Authorization.Extensions;
 using DataX.ServiceHost.ServiceFabric.Extensions.Configuration;
 using DataX.Config.Storage;
 using DataX.ServiceHost.ServiceFabric;
-using DataX.ServiceHost.Settings;
 using DataX.Utilities.Blob;
 using DataX.Utilities.Telemetry;
 using Microsoft.AspNetCore.Builder;
@@ -28,6 +27,7 @@ using DataX.Config.Local;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using DataX.ServiceHost.ServiceFabric.Authorization;
+using DataX.Contract.Settings;
 
 namespace Flow.Management
 {
@@ -41,6 +41,7 @@ namespace Flow.Management
 
         public Startup(IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            // TODO: tylake - Not needed
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -48,36 +49,43 @@ namespace Flow.Management
                 .AddServiceFabricSettings("Config", DataXSettingsConstants.DataX)
                 .AddEnvironmentVariables();
 
+            // TODO: tylake - Not needed
             Configuration = builder.Build();
 
+            // TODO: tylake - Not needed
             Configuration.GetSection(DataXSettingsConstants.ServiceEnvironment).Bind(_dataXSettings);
 
+            // TODO: tylake - Not needed
             _loggerFactory = loggerFactory;
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+                                // TODO: tylake - Not needed
+            services.AddMvc();//.SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
+            // TODO: tylake - Not needed
             var bearerOptions = new JwtBearerOptions();
 
+            // TODO: tylake - Not needed
             Configuration.GetSection("JwtBearerOptions").Bind(bearerOptions);
 
             services
                 .AddSingleton(_dataXSettings)
-                .AddDataXAuthorization(DataXDefaultGatewayPolicy.ConfigurePolicy)
-                .AddAuthentication(options =>
-                {
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(options =>
-                {
-                    options.Audience = bearerOptions.Audience;
-                    options.Authority = bearerOptions.Authority;
-                });
+                .AddDataXAuthorization(DataXDefaultGatewayPolicy.ConfigurePolicy);
+            // TODO: tylake - Not needed
+            //.AddAuthentication(options =>
+            //{
+            //    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            //    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            //    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            //})
+            //.AddJwtBearer(options =>
+            //{
+            //    options.Audience = bearerOptions.Audience;
+            //    options.Authority = bearerOptions.Authority;
+            //});
 
             StartUpUtil.ConfigureServices(services, Configuration);
 
@@ -110,7 +118,7 @@ namespace Flow.Management
                 await next();
             });
 
-            app.UseAuthentication();
+            //app.UseAuthentication();
 
             // Configure logger that will be injected into the controller
             app.UseMvc();
