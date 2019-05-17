@@ -18,7 +18,7 @@ import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
 import org.apache.spark.streaming.kafka010.KafkaUtils
 import org.apache.spark.streaming.kafka010.LocationStrategies.PreferConsistent
 
-
+// Factory object that generates the DStream from Kafka input and invokes processor
 object KafkaStreamingFactory extends  StreamingFactory[ConsumerRecord[String,String]]{
 
   private def getKafkaConf(kafkaInput:InputKafkaConf) = {

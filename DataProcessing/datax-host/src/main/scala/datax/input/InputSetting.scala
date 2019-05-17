@@ -6,6 +6,7 @@ package datax.input
 
 import datax.config.{SettingDictionary}
 
+// Interfaces for input config that all input handlers need to implement
 trait InputConf {
   val connectionString: String
   val flushExistingCheckpoints: Option[Boolean]

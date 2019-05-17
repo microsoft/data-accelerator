@@ -15,13 +15,14 @@ import org.apache.log4j.LogManager
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.types.DataType
 
+// Utility object which produces simulated data to kafka based in input schema
 object KafkaProducer {
   def main(args: Array[String]): Unit = {
 
     val logger = LogManager.getLogger("KafkaProducer")
 
     if (args.length < 3){
-      logger.warn("Usage: mvn exec:java -Dexec.mainClass=\"KafkaProducer\" <schemaFile> <comma separated topicNames> <comma separated brokerhosts>")
+      logger.warn("Usage: mvn exec:java -Dexec.mainClass=\"datax.app.KafkaProducer\" <schemaFile> <comma separated topicNames> <comma separated brokerhosts>")
       return
     }
 

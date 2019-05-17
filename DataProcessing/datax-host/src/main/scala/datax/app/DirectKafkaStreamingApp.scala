@@ -9,6 +9,7 @@ import datax.input._
 import datax.processor.CommonProcessorFactory
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
+// Main entry point class for processing data from Kafka input
 object DirectKafkaStreamingApp {
   def main(inputArguments: Array[String]): Unit = {
     new StreamingHost[ConsumerRecord[String,String]]().runStreamingApp(

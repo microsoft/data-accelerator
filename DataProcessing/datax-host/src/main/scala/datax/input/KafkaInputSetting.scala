@@ -10,6 +10,7 @@ import datax.exception.EngineException
 import datax.securedsetting.KeyVaultClient
 import org.apache.log4j.LogManager
 
+// Class to hold kafka config items
 case class InputKafkaConf(connectionString: String,
                           bootStrapServers: String,
                           groupId: String,
@@ -38,7 +39,7 @@ object KafkaInputSetting extends InputSetting[InputKafkaConf] {
   val SettingAutoOffsetReset = "autooffsetreset"
   val SettingRequestTimeout = "requesttimeout"
   val SettingSessionTimeout = "sessiontimeout"
-  val SettingHeartbeatInterval = "heartbeatinterval" 
+  val SettingHeartbeatInterval = "heartbeatinterval"
   val SettingSecurityProtocol = "securityprotocol"
   val SettingSaslMechanism = "saslmechanism"
   val SettingSaslJaasConfig = "sasljaasconfig"

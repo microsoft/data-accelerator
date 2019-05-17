@@ -9,6 +9,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.concurrent.duration.Duration
 
+// Interface for DStream processor
 trait StreamingProcessor[T] {
   val process: (RDD[T], Timestamp, Duration) => Map[String, Double]
 }

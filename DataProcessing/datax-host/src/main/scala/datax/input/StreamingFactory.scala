@@ -9,7 +9,8 @@ import datax.processor.{StreamingProcessor}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.{StreamingContext, Time}
 
-
+// Abstract factory class for creating DStream and invoking its processor.
+// All DStream generators (based in input) derive from this class
 abstract class StreamingFactory[T] {
 
   def getStream(streamingContext: StreamingContext,
