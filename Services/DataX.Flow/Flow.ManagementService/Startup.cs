@@ -87,11 +87,13 @@ namespace Flow.Management
             //    options.Authority = bearerOptions.Authority;
             //});
 
+            // TODO: tylake - Not needed
             StartUpUtil.ConfigureServices(services, Configuration);
 
             // Initialize the settings by getting the values from settings file
             InitConfigSettings();
 
+            // TODO: tylake - Flow Management exclusive
             // Export the Config dependencies
             Type[] exportTypes = new Type[] { typeof(FlowOperation), typeof(RuntimeConfigGeneration), typeof(JobOperation) };
 
@@ -106,11 +108,13 @@ namespace Flow.Management
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            // TODO: tylake - Not needed
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
+            // TODO: tylake - Common
             // Set content-type options header to honor the server's mimetype
             app.Use(async (context, next) =>
             {
@@ -118,8 +122,10 @@ namespace Flow.Management
                 await next();
             });
 
+            // TODO: tylake - Not needed
             //app.UseAuthentication();
 
+            // TODO: tylake - Not needed
             // Configure logger that will be injected into the controller
             app.UseMvc();
         }

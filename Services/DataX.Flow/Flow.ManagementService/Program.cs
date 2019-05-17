@@ -2,8 +2,16 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using DataX.Contract.Settings;
 using DataX.ServiceHost;
+using DataX.ServiceHost.ServiceFabric.Extensions.Configuration;
+using DataX.Utilities.Telemetry;
+using Flow.ManagementService;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.ServiceFabric.Services.Runtime;
 using System;
 using System.Diagnostics;
@@ -22,7 +30,7 @@ namespace Flow.Management
         {
             try
             {
-                if(HostUtil.InServiceFabric)
+                if (HostUtil.InServiceFabric)
                 {
                     // The ServiceManifest.XML file defines one or more service type names.
                     // Registering a service maps a service type name to a .NET type.
@@ -52,10 +60,56 @@ namespace Flow.Management
             }
         }
 
+        // Methods below are used for standalone deployment and is considered the default setup
+
         private static IWebHostBuilder WebHostBuilder
             => new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>();
+                    .UseKestrel()
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .ConfigureAppConfiguration(ConfigureAppConfiguration)
+                    .ConfigureServices(ConfigureServices)
+                    .UseStartup<FlowManagementServiceStartup>();
+
+        private static void ConfigureAppConfiguration(WebHostBuilderContext context, IConfigurationBuilder builder)
+        {
+            var env = context.HostingEnvironment;
+
+            builder = builder
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddServiceFabricSettings("Config", DataXSettingsConstants.DataX)
+                .AddEnvironmentVariables();
+        }
+
+        private static void ConfigureServices(IServiceCollection services)
+        {
+            var config = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
+
+            var settings = config.GetSection(DataXSettingsConstants.ServiceEnvironment).Get<DataXSettings>();
+
+            services.AddSingleton(settings);
+
+            // Configures AppInsights logging
+            StartUpUtil.ConfigureServices(services, config);
+
+            // Adds JWT Auth
+            var bearerOptions = new JwtBearerOptions();
+
+            config.GetSection("JwtBearerOptions").Bind(bearerOptions);
+
+            services
+            .AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.Audience = bearerOptions.Audience;
+                options.Authority = bearerOptions.Authority;
+            });
+        }
     }
 }
