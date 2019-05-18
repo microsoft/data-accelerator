@@ -50,7 +50,8 @@ export default class AzureFunctionSettings extends React.Component {
                     <TextField
                         className="ms-font-m info-settings-textbox"
                         spellCheck={false}
-                        label="Service Endpoint"
+                        label="Base URL"
+                        placeholder="e.g. https://<function_app_name>.azurewebsites.net"
                         value={this.props.functionItem.properties.serviceEndpoint}
                         onChange={(event, value) => this.props.onUpdateAzureFunctionServiceEndpoint(value)}
                     />
@@ -61,7 +62,7 @@ export default class AzureFunctionSettings extends React.Component {
                         className="ms-font-m info-settings-textbox"
                         spellCheck={false}
                         label="API"
-                        placeholder="The URI that triggers this function"
+                        placeholder="e.g. <api_name>"
                         value={this.props.functionItem.properties.api}
                         onChange={(event, value) => this.props.onUpdateAzureFunctionApi(value)}
                     />
@@ -73,6 +74,7 @@ export default class AzureFunctionSettings extends React.Component {
                         className="ms-font-m info-settings-textbox"
                         spellCheck={false}
                         label="Function Key"
+                        placeholder="optional but recommended"
                         value={this.props.functionItem.properties.code}
                         onChange={(event, value) => this.props.onUpdateAzureFunctionCode(value)}
                     />
