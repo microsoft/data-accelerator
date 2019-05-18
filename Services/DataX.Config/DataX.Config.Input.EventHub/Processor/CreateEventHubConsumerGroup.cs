@@ -115,7 +115,7 @@ namespace DataX.Config.Input.EventHub.Processor
 
             // Create consumer group only if the resource creation flag is set. This is to support scenario where EventHub
             // is in a different subscription than where services are deployed
-            if (Configuration[Constants.ConfigSettingName_ResourceCreation].ToLower(CultureInfo.InvariantCulture) == "true")
+            if (Configuration[Constants.ConfigSettingName_ResourceCreation].ToLower(CultureInfo.InvariantCulture) == "true" && (inputType == Constants.InputType_EventHub || inputType == Constants.InputType_IoTHub))
             {
                 var serviceKeyVaultName = Configuration[Constants.ConfigSettingName_ServiceKeyVaultName];
                 Ensure.NotNull(serviceKeyVaultName, "serviceKeyVaultName");
@@ -126,49 +126,46 @@ namespace DataX.Config.Input.EventHub.Processor
                 var inputSubscriptionId = string.IsNullOrEmpty(config?.Properties?.InputSubscriptionId) ? await KeyVaultClient.ResolveSecretUriAsync(flowToDeploy.GetTokenString(TokenName_InputEventHubSubscriptionId)) : await KeyVaultClient.ResolveSecretUriAsync(config?.Properties?.InputSubscriptionId);
                 var inputResourceGroupName = string.IsNullOrEmpty(config?.Properties?.InputResourceGroup) ? flowToDeploy.GetTokenString(TokenName_InputEventHubResourceGroupName) : await KeyVaultClient.ResolveSecretUriAsync(config?.Properties?.InputResourceGroup);
 
-                if (inputType != Constants.InputType_Kafka)
+                Result result = null;
+                switch (inputType)
                 {
-                    Result result = null;
-                    switch (inputType)
-                    {
-                        case Constants.InputType_EventHub:
-                        case Constants.InputType_KafkaEventHub:
-                            //Check for required parameters
-                            if (string.IsNullOrEmpty(hubInfo.Namespace) || string.IsNullOrEmpty(hubInfo.Name))
-                            {
-                                throw new ConfigGenerationException("Could not parse Event Hub connection string; please check input.");
-                            }
-                            result = await EventHubUtil.CreateEventHubConsumerGroups(
-                                                            clientId: clientId,
-                                                            tenantId: tenantId,
-                                                            secretKey: resolvedSecretKey,
-                                                            subscriptionId: inputSubscriptionId,
-                                                            resourceGroupName: inputResourceGroupName,
-                                                            hubNamespace: hubInfo.Namespace,
-                                                            hubNames: hubInfo.Name,
-                                                            consumerGroupName: consumerGroupName);
-                            break;
-                        case Constants.InputType_IoTHub:
-                            //Check for required parameters
-                            if (string.IsNullOrEmpty(hubInfo.Name))
-                            {
-                                throw new ConfigGenerationException("Could not parse IoT Hub connection string; please check input.");
-                            }
-                            result = await EventHubUtil.CreateIotHubConsumerGroup(
-                                                            clientId: clientId,
-                                                            tenantId: tenantId,
-                                                            secretKey: resolvedSecretKey,
-                                                            subscriptionId: inputSubscriptionId,
-                                                            resourceGroupName: inputResourceGroupName,
-                                                            hubName: hubInfo.Name,
-                                                            consumerGroupName: consumerGroupName);
-                            break;
-                        default:
-                            throw new ConfigGenerationException($"unexpected inputtype '{inputType}'.");
-                    }
-
-                    Ensure.IsSuccessResult(result);
+                    case Constants.InputType_EventHub:
+                    case Constants.InputType_KafkaEventHub:
+                        //Check for required parameters
+                        if (string.IsNullOrEmpty(hubInfo.Namespace) || string.IsNullOrEmpty(hubInfo.Name))
+                        {
+                            throw new ConfigGenerationException("Could not parse Event Hub connection string; please check input.");
+                        }
+                        result = await EventHubUtil.CreateEventHubConsumerGroups(
+                                                        clientId: clientId,
+                                                        tenantId: tenantId,
+                                                        secretKey: resolvedSecretKey,
+                                                        subscriptionId: inputSubscriptionId,
+                                                        resourceGroupName: inputResourceGroupName,
+                                                        hubNamespace: hubInfo.Namespace,
+                                                        hubNames: hubInfo.Name,
+                                                        consumerGroupName: consumerGroupName);
+                        break;
+                    case Constants.InputType_IoTHub:
+                        //Check for required parameters
+                        if (string.IsNullOrEmpty(hubInfo.Name))
+                        {
+                            throw new ConfigGenerationException("Could not parse IoT Hub connection string; please check input.");
+                        }
+                        result = await EventHubUtil.CreateIotHubConsumerGroup(
+                                                        clientId: clientId,
+                                                        tenantId: tenantId,
+                                                        secretKey: resolvedSecretKey,
+                                                        subscriptionId: inputSubscriptionId,
+                                                        resourceGroupName: inputResourceGroupName,
+                                                        hubName: hubInfo.Name,
+                                                        consumerGroupName: consumerGroupName);
+                        break;
+                    default:
+                        throw new ConfigGenerationException($"unexpected inputtype '{inputType}'.");
                 }
+
+                Ensure.IsSuccessResult(result);
             }
 
             flowToDeploy.SetStringToken(TokenName_InputEventHubConsumerGroup, consumerGroupName);

@@ -5,10 +5,14 @@
 using Confluent.Kafka;
 using DataX.Config;
 using DataX.Config.ConfigDataModel;
+using DataX.ServiceHost.ServiceFabric;
+using DataX.Utilities.KeyVault;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
@@ -20,21 +24,26 @@ namespace DataX.Flow.SchemaInference.Kafka
         private readonly string _brokerList = string.Empty;
         private readonly string _connectionString = null;
         private readonly List<string> _topics = null;
-        private readonly string _cacertLocation = string.Empty;
+        private readonly string _cacertLocation = @".\cacert.pem";
         private readonly string _consumerGroup = string.Empty;
         private readonly string _inputType = string.Empty;
         private readonly ILogger _logger;
         private bool _timeout = false;
         private Timer _timer;
 
-
-        //public KafkaMessageBus(List<string> eventhubNames, string consumerGroup, string eventhubConnectionString, string inputType, ILogger logger)
-        public KafkaMessageBus(string brokerList, string connectionString, List<string> topics, string cacertLocation, string consumerGroup, string inputType, ILogger logger)
+        public KafkaMessageBus(string brokerList, string connectionString, List<string> topics, string consumerGroup, string inputType, ILogger logger)
         {
+            if (!File.Exists(_cacertLocation))
+            {
+                var certSource = KeyVault.GetSecretFromKeyvault(ServiceFabricUtil.GetServiceFabricConfigSetting("CACertificateLocation").Result.ToString());
+
+                WebClient webClient = new WebClient();
+                webClient.DownloadFile(certSource, _cacertLocation);
+            }
+
             _brokerList = brokerList;
             _connectionString = connectionString;
             _topics = topics;
-            _cacertLocation = cacertLocation;
             _consumerGroup = consumerGroup;
             _inputType = inputType;
             _logger = logger;

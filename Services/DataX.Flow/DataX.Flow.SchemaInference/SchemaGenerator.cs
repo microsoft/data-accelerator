@@ -2,19 +2,16 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
-using Microsoft.Extensions.Logging;
-using DataX.Flow.Common;
-using DataX.Utilities.Blob;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Threading.Tasks;
+using DataX.Config.ConfigDataModel;
+using DataX.Flow.Common;
 using DataX.Flow.SchemaInference.Eventhub;
 using DataX.Flow.SchemaInference.Kafka;
-using DataX.Config.ConfigDataModel;
-using DataX.Utilities.KeyVault;
-using DataX.ServiceHost.ServiceFabric;
+using DataX.Utilities.Blob;
+using Microsoft.Extensions.Logging;
 
 namespace DataX.Flow.SchemaInference
 {
@@ -25,7 +22,6 @@ namespace DataX.Flow.SchemaInference
         private readonly string _checkpointContainerName = "";
         private IMessageBus _messageBus = null;
         private ILogger _logger;
-        private const string _certLocation = @".\cacert.pem";
 
         /// <summary>
         /// Schema Generator constructor called for generating schema
@@ -45,17 +41,9 @@ namespace DataX.Flow.SchemaInference
             _blobDirectory = blobDirectory;
             _checkpointContainerName = checkpointContainerName;
 
-            if (!File.Exists(_certLocation))
-            {
-                var certSource = KeyVault.GetSecretFromKeyvault(ServiceFabricUtil.GetServiceFabricConfigSetting("CACertificateLocation").Result.ToString());
-
-                WebClient webClient = new WebClient();
-                webClient.DownloadFile(certSource, _certLocation);
-            }
-
             if (inputType == Constants.InputType_Kafka || inputType == Constants.InputType_KafkaEventHub)
             {
-                _messageBus = new KafkaMessageBus(brokerList, connectionString, hubNames, _certLocation, consumerGroup, inputType, logger);
+                _messageBus = new KafkaMessageBus(brokerList, connectionString, hubNames, consumerGroup, inputType, logger);
             }
             else
             {

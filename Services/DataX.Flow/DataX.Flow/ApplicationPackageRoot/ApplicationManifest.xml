@@ -38,6 +38,7 @@ Licensed under the MIT License
             <Parameter Name="cosmosDBConfigDatabaseName" Value="[cosmosDBConfigDatabaseName]" />
             <Parameter Name="cosmosDBConfigCollectionName" Value="[cosmosDBConfigCollectionName]" />
             <Parameter Name="AppInsightsIntrumentationKey" Value="[AppInsightsIntrumentationKey]" />
+            <Parameter Name="CACertificateLocation" Value="[CACertificateLocation]" />
           </Section>
         </Settings>
       </ConfigOverride>
