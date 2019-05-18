@@ -6,6 +6,7 @@ using DataX.Contract.Exception;
 using DataX.Utilities.KeyVault;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -124,6 +125,45 @@ namespace DataX.Flow.Common
             }
 
             return null;            
+        }
+
+        /// <summary>
+        /// Get BootstrapServers from connection string
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <returns>bootstrapservers</returns>
+        public static string TryGetBootstrapServers(string connectionString)
+        {
+            var bootstrapServers = connectionString;
+
+            if (connectionString.StartsWith("Endpoint=sb", StringComparison.OrdinalIgnoreCase))
+            {
+                Regex reg = new Regex(@"sb?:\/\/([\w\d\.]+).*", RegexOptions.IgnoreCase);
+                var m = reg.Match(connectionString);
+
+                if (m != null && m.Success)
+                {
+                    bootstrapServers = m.Groups[1].Value + ":9093";
+                }
+            }
+
+            return bootstrapServers;
+        }
+
+        /// <summary>
+        /// Parses and generate a string array from a raw eventhub name string
+        /// </summary>
+        /// <param name="eventHubNames"></param>
+        /// <returns>string array of eventhub names</returns>
+        public static List<string> ParseEventHubNames(string eventHubNames)
+        {
+            if (string.IsNullOrWhiteSpace(eventHubNames))
+            {
+                return new List<string>();
+            }
+
+            var names = eventHubNames.Split(',').Select(s => s.Trim()).ToList();
+            return names;
         }
 
         /// <summary>

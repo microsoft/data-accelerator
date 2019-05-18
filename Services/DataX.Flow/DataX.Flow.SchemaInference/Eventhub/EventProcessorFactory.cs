@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DataX.Flow.SchemaInference
+namespace DataX.Flow.SchemaInference.Eventhub
 {
     /// <summary>
     /// Factory class to enable dependency injection for <see cref="EventHubReaderDispatcher"/>.

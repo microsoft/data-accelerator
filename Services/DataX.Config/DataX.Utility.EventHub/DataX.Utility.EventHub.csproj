@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\DataX.Contract\DataX.Contract.csproj" />
+    <ProjectReference Include="..\..\DataX.Flow\DataX.Flow.Common\DataX.Flow.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
