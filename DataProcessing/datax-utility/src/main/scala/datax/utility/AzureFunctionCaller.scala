@@ -53,12 +53,15 @@ class AzureFunctionCaller {
       val query = getQueryParams(code, Map.empty[String,String])
       val request = new HttpPost(s"$baseUrl/api/$api/$query")
       request.addHeader("Content-Type", "application/json")
-      val data = JSONObject(params).toString()
-      request.setEntity(new StringEntity(data))
+      if(params != null) {
+        // Filter out any null values in the params map
+        val data = JSONObject(params.filter(_._2 != null)).toString()
+        request.setEntity(new StringEntity(data))
+      }
       callWithRetries(request, 5)
     }
     else {
-      throw new Exception(s"AzureFuction method type $methodType not supported")
+      throw new Exception(s"AzureFunction method type $methodType not supported")
     }
   }
 
