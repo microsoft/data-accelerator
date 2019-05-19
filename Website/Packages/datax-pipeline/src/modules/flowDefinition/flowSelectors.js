@@ -302,7 +302,6 @@ function isFunctionSettingsComplete(functionItem) {
         case Models.functionTypeEnum.azureFunction:
             validations.push(functionItem.properties.serviceEndpoint && functionItem.properties.serviceEndpoint.trim() !== '');
             validations.push(functionItem.properties.api && functionItem.properties.api.trim() !== '');
-            validations.push(functionItem.properties.code && functionItem.properties.code.trim() !== '');
             validations.push(functionItem.properties.methodType && functionItem.properties.methodType.trim() !== '');
 
             if (functionItem.properties.params && functionItem.properties.params.length > 0) {
