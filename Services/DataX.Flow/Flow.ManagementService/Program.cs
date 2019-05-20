@@ -68,7 +68,7 @@ namespace Flow.Management
                     .UseContentRoot(Directory.GetCurrentDirectory())
                     .ConfigureAppConfiguration(ConfigureAppConfiguration)
                     .ConfigureServices(ConfigureServices)
-                    .UseStartup<FlowManagementServiceStartup>();
+                    .Configure(Configure);
 
         private static void ConfigureAppConfiguration(WebHostBuilderContext context, IConfigurationBuilder builder)
         {
@@ -86,6 +86,7 @@ namespace Flow.Management
         {
             var config = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
 
+            // Add DataX settings to be picked up automatically
             var settings = config.GetSection(DataXSettingsConstants.ServiceEnvironment).Get<DataXSettings>();
 
             services.AddSingleton(settings);
@@ -110,6 +111,24 @@ namespace Flow.Management
                 options.Audience = bearerOptions.Audience;
                 options.Authority = bearerOptions.Authority;
             });
+
+            var startup = new FlowManagementServiceStartup();
+            startup.ConfigureServices(services);
+
+            // Add the FlowManagement Startup to be called _along with_ using Configure in the WebHostBuilder
+            services.AddTransient<IStartupFilter>(_=>startup);
+        }
+
+        private static void Configure(IApplicationBuilder app)
+        {
+            var env = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+
+            app.UseMvc();
         }
     }
 }

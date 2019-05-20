@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DataX.Contract.Settings;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 
 namespace DataX.ServiceHost.AspNetCore.Startup
 {
@@ -30,17 +32,17 @@ namespace DataX.ServiceHost.AspNetCore.Startup
         /// <inheritdoc />
         public virtual void ConfigureServices(IServiceCollection services)
         {
-            if(Settings == null)
+            if (Settings == null)
             {
                 var provider = services.BuildServiceProvider();
                 Settings = provider.GetService<DataXSettings>();
 
                 // Let's look for the default settings
-                if(Settings == null)
+                if (Settings == null)
                 {
                     Settings = provider.GetService<IConfiguration>()?.GetSection(DataXSettingsConstants.ServiceEnvironment).Get<DataXSettings>();
 
-                    if(Settings != null)
+                    if (Settings != null)
                     {
                         services.TryAddSingleton(Settings);
                     }
@@ -73,13 +75,15 @@ namespace DataX.ServiceHost.AspNetCore.Startup
                 context.Response.Headers.Add("X-Content-Type-Options", new string[] { "nosniff" });
                 await next();
             });
+        }
 
-            if (env.IsDevelopment())
+        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+        {
+            return app =>
             {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseMvc();
+                Configure(app);
+                next(app);
+            };
         }
     }
 }

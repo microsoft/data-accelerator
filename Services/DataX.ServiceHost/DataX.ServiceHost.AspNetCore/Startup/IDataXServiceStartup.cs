@@ -1,12 +1,13 @@
 ﻿namespace DataX.ServiceHost.AspNetCore.Startup
 {
     using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>
     /// Provides a common interface for DataX startup classes to use for instantiation in ASP.NET Core
     /// </summary>
-    public interface IDataXServiceStartup
+    public interface IDataXServiceStartup : IStartupFilter
     {
         // These methods follow IStartup's interface,
         // but it's not extended as we don't want autoload from default WebHost builder
