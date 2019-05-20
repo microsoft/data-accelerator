@@ -2,22 +2,15 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
-using DataX.Contract.Settings;
 using DataX.ServiceHost;
-using DataX.ServiceHost.ServiceFabric.Extensions.Configuration;
-using DataX.Utilities.Telemetry;
+using DataX.ServiceHost.AspNetCore.Extensions;
 using Flow.ManagementService;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.ServiceFabric.Services.Runtime;
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Flow.Management
 {
@@ -60,75 +53,12 @@ namespace Flow.Management
             }
         }
 
-        // Methods below are used for standalone deployment and is considered the default setup
-
+        /// <summary>
+        /// Create a new WebHostBuilder with DataX default configuration that allows this to be run standalone
+        /// </summary>
         private static IWebHostBuilder WebHostBuilder
             => new WebHostBuilder()
-                    .UseKestrel()
-                    .UseContentRoot(Directory.GetCurrentDirectory())
-                    .ConfigureAppConfiguration(ConfigureAppConfiguration)
-                    .ConfigureServices(ConfigureServices)
-                    .Configure(Configure);
-
-        private static void ConfigureAppConfiguration(WebHostBuilderContext context, IConfigurationBuilder builder)
-        {
-            var env = context.HostingEnvironment;
-
-            builder = builder
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddServiceFabricSettings("Config", DataXSettingsConstants.DataX)
-                .AddEnvironmentVariables();
-        }
-
-        private static void ConfigureServices(IServiceCollection services)
-        {
-            var config = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
-
-            // Add DataX settings to be picked up automatically
-            var settings = config.GetSection(DataXSettingsConstants.ServiceEnvironment).Get<DataXSettings>();
-
-            services.AddSingleton(settings);
-
-            // Configures AppInsights logging
-            StartUpUtil.ConfigureServices(services, config);
-
-            // Adds JWT Auth
-            var bearerOptions = new JwtBearerOptions();
-
-            config.GetSection("JwtBearerOptions").Bind(bearerOptions);
-
-            services
-            .AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.Audience = bearerOptions.Audience;
-                options.Authority = bearerOptions.Authority;
-            });
-
-            var startup = new FlowManagementServiceStartup();
-            startup.ConfigureServices(services);
-
-            // Add the FlowManagement Startup to be called _along with_ using Configure in the WebHostBuilder
-            services.AddTransient<IStartupFilter>(_=>startup);
-        }
-
-        private static void Configure(IApplicationBuilder app)
-        {
-            var env = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
-
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseMvc();
-        }
+                    .UseDataXDefaultConfiguration<FlowManagementServiceStartup>()
+                    .Configure(app => app.UseDataXApplicationDefaults());
     }
 }
