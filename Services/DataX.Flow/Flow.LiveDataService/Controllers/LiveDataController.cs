@@ -9,10 +9,12 @@ using DataX.Contract;
 using System;
 using System.Threading.Tasks;
 using DataX.Utilities.Web;
+using DataX.ServiceHost.AspNetCore.Authorization.Roles;
 
 namespace Flow.LiveDataService.Controllers
 {
     [Route("api")]
+    [DataXWriter]
     public class LiveDataController : Controller
     {
         private readonly ILogger<LiveDataController> _logger;

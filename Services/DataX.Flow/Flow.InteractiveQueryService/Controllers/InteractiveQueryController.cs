@@ -11,12 +11,14 @@ using DataX.Flow.InteractiveQuery;
 using System;
 using System.Threading.Tasks;
 using DataX.Utilities.Web;
+using DataX.ServiceHost.AspNetCore.Authorization.Roles;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Flow.InteractiveQueryService.Controllers
 {
     [Route("api")]
+    [DataXWriter]
     public class InteractiveQueryController : Controller
     {
         private readonly ILogger<InteractiveQueryController> _logger;
@@ -24,6 +26,7 @@ namespace Flow.InteractiveQueryService.Controllers
         {
             _logger = logger;
         }
+
         [HttpPost]
         [Route("kernel")] // diag
         public async Task<ApiResult> CreateAndInitializeKernel([FromBody]JObject jObject)
