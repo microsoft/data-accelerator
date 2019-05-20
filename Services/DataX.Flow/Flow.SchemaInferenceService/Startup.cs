@@ -6,12 +6,15 @@ namespace Flow.SchemaInferenceService
 {
     using Microsoft.AspNetCore.Hosting;
     using DataX.ServiceHost.AspNetCore;
+    using DataX.ServiceHost.AspNetCore.Startup;
+    using DataX.Contract.Settings;
 
-    public class Startup : StartUpBase
+    public class FlowSchemaInferenceServiceStartup : DataXServiceStartup
     {
-        public Startup(IHostingEnvironment env) : base(env)
-        {
-        }
+        public FlowSchemaInferenceServiceStartup() { }
+
+        public FlowSchemaInferenceServiceStartup(DataXSettings settings)
+            : base(settings) { }
     }
 }
 

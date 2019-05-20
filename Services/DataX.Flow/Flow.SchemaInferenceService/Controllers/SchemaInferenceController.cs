@@ -10,10 +10,12 @@ using DataX.Flow.SchemaInference;
 using System;
 using System.Threading.Tasks;
 using DataX.Utilities.Web;
+using DataX.ServiceHost.AspNetCore.Authorization.Roles;
 
 namespace Flow.SchemaInferenceService.Controllers
 {
     [Route("api")]
+    [DataXWriter]
     public class SchemaInferenceController : Controller
     {
         private readonly ILogger<SchemaInferenceController> _logger;
