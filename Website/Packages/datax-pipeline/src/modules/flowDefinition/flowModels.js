@@ -9,6 +9,8 @@ export const inputModeEnum = {
 export const inputTypeEnum = {
     events: 'events',
     iothub: 'iothub',
+    kafka: 'kafka',
+    kafkaeventhub: 'kafkaeventhub',
     local: 'local'
 };
 
@@ -122,6 +124,16 @@ export const inputTypes = [
     {
         key: inputTypeEnum.iothub,
         name: 'IoT Hub',
+        disabled: false
+    },
+    {
+        key: inputTypeEnum.kafka,
+        name: 'Kafka',
+        disabled: false
+    },
+    {
+        key: inputTypeEnum.kafkaeventhub,
+        name: 'Kafka (Event Hub)',
         disabled: false
     },
     {

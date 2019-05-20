@@ -1,4 +1,9 @@
 ### Data Accelerator for Apache Spark
+
+|Flow| [![Build status](https://dev.azure.com/ms/data-accelerator/_apis/build/status/DataX.Flow?branchName=master)](https://dev.azure.com/ms/data-accelerator/_build/latest?definitionId=112&branchName=master) |Gateway| [![Build status](https://dev.azure.com/ms/data-accelerator/_apis/build/status/DataX.Gateway?branchName=master)](https://dev.azure.com/ms/data-accelerator/_build/latest?definitionId=113&branchName=master) |DataProcessing| [![Build status](https://dev.azure.com/ms/data-accelerator/_apis/build/status/DataX.Spark?branchName=master)](https://dev.azure.com/ms/data-accelerator/_build/latest?definitionId=116&branchName=master) |
+|:---:|:-----:|:-----:|:-----:|:-----:|:-----:|
+|**Metrics**| [![Build status](https://dev.azure.com/ms/data-accelerator/_apis/build/status/DataX.Metrics?branchName=master)](https://dev.azure.com/ms/data-accelerator/_build/latest?definitionId=114&branchName=master) |**SimulatedData**| [![Build status](https://dev.azure.com/ms/data-accelerator/_apis/build/status/DataX.SimulatedData?branchName=master)](https://dev.azure.com/ms/data-accelerator/_build/latest?definitionId=115&branchName=master) |**Website**| [![Build status](https://dev.azure.com/ms/data-accelerator/_apis/build/status/DataX.Web?branchName=master)](https://dev.azure.com/ms/data-accelerator/_build/latest?definitionId=117&branchName=master) |
+
 [Data Accelerator](https://github.com/Microsoft/data-accelerator) for Apache Spark democratizes streaming big data using Spark by offering several key features such as a no-code experience to set up a data pipeline as well as fast dev-test loop for creating complex logic.  Our team has been using the project for two years within Microsoft for processing streamed data across many internal deployments handling data volumes at Microsoft scale. It offers an easy to use platform to learn and evaluate streaming needs and requirements.  We are thrilled to share this project with the wider community as open source!
 
 <p align="center"><img style="float: center;" width="90%" src="https://github.com/Microsoft/data-accelerator/wiki/tutorials/images/readme3.PNG"></p>
@@ -9,7 +14,7 @@
  - The third enables integrating custom code written in Scala or via Azure functions.
 
 You can get started locally for Windows, macOs and Linux following [these instructions](https://github.com/Microsoft/data-accelerator/wiki/Local-mode-with-Docker)  <br/>
-To deploy to Azure, you can use the ARM template; see instructions [deploy to Azure](Cloud-deployment).<br/>
+To deploy to Azure, you can use the ARM template; see instructions [deploy to Azure](https://github.com/Microsoft/data-accelerator/wiki/Cloud-deployment).<br/>
 
 The [`data-accelerator`](https://github.com/Microsoft/data-accelerator/) repository contains everything needed to set up an end-to-end data pipeline.  There are many ways you can participate in the project:
  - [Submit bugs and requests](https://github.com/Microsoft/data-accelerator/issues)
@@ -41,6 +46,7 @@ If you are interested in fixing issues and contributing to the code base, we wou
 * Request new features on [GitHub](https://github.com/Microsoft/data-accelerator/blob/master/CONTRIBUTING.md)
 * Open a new issue on [GitHub](https://github.com/Microsoft/data-accelerator/issues)
 * Ask a question on [Stack Overflow](https://stackoverflow.com/questions/tagged/data-accelerator)
+* Contact us: data-accelerator@microsoft.com
 * Check out the [contributing page](CONTRIBUTING.md) to see the best places to log issues and start discussions.
 
 Please also see our [Code of Conduct](CODE_OF_CONDUCT.md).

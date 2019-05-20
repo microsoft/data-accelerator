@@ -1,0 +1,8 @@
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzureIdentity
+metadata:
+  name: managed-service-identity
+spec:
+  type: 0
+  ResourceID: /subscriptions/{SubscriptionId}/resourceGroups/{ResourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{ManagedIdentityName}
+  ClientID: {ClientId}
