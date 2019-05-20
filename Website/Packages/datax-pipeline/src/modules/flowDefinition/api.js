@@ -23,8 +23,8 @@ export const deleteFlow = flow =>
         eventhubConnectionString: flow.input.properties.inputEventhubConnection,
         inputSubscriptionId: flow.input.properties.inputSubscriptionId,
         inputResourceGroup: flow.input.properties.inputResourceGroup,
-        eventHubName: flow.input.properties.inputEventhubName,
-        isIotHub: flow.input.type === Models.inputTypeEnum.iothub
+        eventHubNames: flow.input.properties.inputEventhubName,
+        inputType: flow.input.type,
     });
 
 export const getTableSchemas = flow =>
@@ -97,8 +97,8 @@ export const getInputSchema = flow =>
         eventhubConnectionString: flow.input.properties.inputEventhubConnection,
         inputSubscriptionId: flow.input.properties.inputSubscriptionId,
         inputResourceGroup: flow.input.properties.inputResourceGroup,
-        eventHubName: flow.input.properties.inputEventhubName,
-        isIotHub: flow.input.type === Models.inputTypeEnum.iothub,
+        eventHubNames: flow.input.properties.inputEventhubName,
+        inputType: flow.input.type,
         seconds: flow.samplingInputDuration
     });
 
@@ -119,8 +119,8 @@ export const resampleInput = (flow, kernelId) =>
             eventhubConnectionString: flow.input.properties.inputEventhubConnection,
             inputSubscriptionId: flow.input.properties.inputSubscriptionId,
             inputResourceGroup: flow.input.properties.inputResourceGroup,
-            eventHubName: flow.input.properties.inputEventhubName,
-            isIotHub: flow.input.type === Models.inputTypeEnum.iothub,
+            eventHubNames: flow.input.properties.inputEventhubName,
+            inputType: flow.input.type,
             seconds: flow.resamplingInputDuration
         }
     );

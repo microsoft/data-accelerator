@@ -14,7 +14,7 @@
  - The third enables integrating custom code written in Scala or via Azure functions.
 
 You can get started locally for Windows, macOs and Linux following [these instructions](https://github.com/Microsoft/data-accelerator/wiki/Local-mode-with-Docker)  <br/>
-To deploy to Azure, you can use the ARM template; see instructions [deploy to Azure](Cloud-deployment).<br/>
+To deploy to Azure, you can use the ARM template; see instructions [deploy to Azure](https://github.com/Microsoft/data-accelerator/wiki/Cloud-deployment).<br/>
 
 The [`data-accelerator`](https://github.com/Microsoft/data-accelerator/) repository contains everything needed to set up an end-to-end data pipeline.  There are many ways you can participate in the project:
  - [Submit bugs and requests](https://github.com/Microsoft/data-accelerator/issues)

@@ -50,8 +50,8 @@ SOFTWARE
     </scm>
 
     <groupId>com.microsoft.datax</groupId>
-    <artifactId>datax-utility_2.11</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <artifactId>datax-utility_2.3_2.11</artifactId>
+    <version>1.1.0-SNAPSHOT</version>
 
     <properties>
         <spark.version>2.3.0</spark.version>
@@ -119,8 +119,8 @@ SOFTWARE
         </dependency>
         <dependency>
             <groupId>com.microsoft.datax</groupId>
-            <artifactId>datax-core_2.11</artifactId>
-            <version>1.0.0</version>
+            <artifactId>datax-core_2.3_2.11</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
@@ -129,8 +129,8 @@ SOFTWARE
         </dependency>
         <dependency>
             <groupId>com.microsoft.datax</groupId>
-            <artifactId>datax-keyvault_2.11</artifactId>
-            <version>1.0.0</version>
+            <artifactId>datax-keyvault_2.3_2.11</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
@@ -254,7 +254,7 @@ SOFTWARE
               <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory>
               <branch>refs/heads/mvn-repo</branch>
               <includes>
-                <include>**/datax-utility_2.11-1.0.0-SNAPSHOT.jar</include>
+                <include>**/*</include>
               </includes>
               <repositoryName>data-accelerator</repositoryName>
               <repositoryOwner>Microsoft</repositoryOwner>
