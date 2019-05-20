@@ -6,12 +6,14 @@ namespace Flow.LiveDataService
 {
     using Microsoft.AspNetCore.Hosting;
     using DataX.ServiceHost.AspNetCore;
+    using DataX.ServiceHost.AspNetCore.Startup;
+    using DataX.Contract.Settings;
 
-    public class Startup : StartUpBase
+    public class FlowLiveDataServiceStartup : DataXServiceStartup
     {
-        public Startup(IHostingEnvironment env) : base(env)
-        {
-        }
+        public FlowLiveDataServiceStartup() { }
+        public FlowLiveDataServiceStartup(DataXSettings settings)
+            : base(settings) { }
     }
 }
 

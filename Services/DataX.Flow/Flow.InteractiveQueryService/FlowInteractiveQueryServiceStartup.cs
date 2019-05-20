@@ -6,12 +6,15 @@ namespace Flow.InteractiveQueryService
 {
     using Microsoft.AspNetCore.Hosting;
     using DataX.ServiceHost.AspNetCore;
+    using DataX.ServiceHost.AspNetCore.Startup;
+    using DataX.Contract.Settings;
 
-    public class Startup : StartUpBase
+    public class FlowInteractiveQueryServiceStartup : DataXServiceStartup
     {
-        public Startup(IHostingEnvironment env) : base(env)
-        {
-        }
+        public FlowInteractiveQueryServiceStartup() { }
+
+        public FlowInteractiveQueryServiceStartup(DataXSettings settings)
+            : base(settings) { }
     }
 }
 
