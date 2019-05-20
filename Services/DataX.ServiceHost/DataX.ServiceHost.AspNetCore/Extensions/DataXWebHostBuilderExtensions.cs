@@ -1,21 +1,22 @@
-﻿using DataX.Contract.Settings;
-using DataX.ServiceHost.AspNetCore.Startup;
-using DataX.ServiceHost.ServiceFabric.Extensions.Configuration;
-using DataX.Utilities.Telemetry;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
-namespace DataX.ServiceHost.AspNetCore.Extensions
+﻿namespace DataX.ServiceHost.AspNetCore.Extensions
 {
+    using DataX.Contract.Settings;
+    using DataX.ServiceHost.AspNetCore.Startup;
+    using DataX.ServiceHost.ServiceFabric.Extensions.Configuration;
+    using DataX.Utilities.Telemetry;
+    using Microsoft.AspNetCore.Authentication.JwtBearer;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using System.IO;
+
     public static class DataXWebHostBuilderExtensions
     {
+        /// <summary>
+        /// Configures the WebHostBuilder with DataX defaults.
+        /// </summary>
+        /// <param name="hostBuilder">The host builder to be configured</param>
+        /// <returns>The configured host builder</returns>
         public static IWebHostBuilder UseDataXDefaultConfiguration(this IWebHostBuilder hostBuilder)
         {
             return hostBuilder
@@ -25,6 +26,13 @@ namespace DataX.ServiceHost.AspNetCore.Extensions
                     .UseDataXDefaultConfigureServices();
         }
 
+        /// <summary>
+        /// Configures the WebHostBuilder with DataX defaults and a DataX startup filter.
+        /// </summary>
+        /// <typeparam name="TStartup">DataX concrete startup filter type inheriting from <see cref="DataXServiceStartup"/></typeparam>
+        /// <param name="hostBuilder">The host builder to be configured</param>
+        /// <param name="startup">Optional startup instance to be used.</param>
+        /// <returns>The configured host builder</returns>
         public static IWebHostBuilder UseDataXDefaultConfiguration<TStartup>(this IWebHostBuilder hostBuilder, TStartup startup = null)
             where TStartup : DataXServiceStartup, new()
         {
@@ -33,6 +41,11 @@ namespace DataX.ServiceHost.AspNetCore.Extensions
                     .UseDataXStartup(startup);
         }
 
+        /// <summary>
+        /// Configures the WebHostBuilder with the DataX default IConfigurationBuilder settings.
+        /// </summary>
+        /// <param name="hostBuilder">The host builder to be configured</param>
+        /// <returns>The configured host builder</returns>
         public static IWebHostBuilder UseDataXDefaultAppConfiguration(this IWebHostBuilder hostBuilder)
         {
             void ConfigureAppConfiguration(WebHostBuilderContext context, IConfigurationBuilder builder)
@@ -50,6 +63,11 @@ namespace DataX.ServiceHost.AspNetCore.Extensions
             return hostBuilder.ConfigureAppConfiguration(ConfigureAppConfiguration);
         }
 
+        /// <summary>
+        /// Configures the WebHostBuilder with the DataX default services.
+        /// </summary>
+        /// <param name="hostBuilder">The host builder to be configured</param>
+        /// <returns>The configured host builder</returns>
         public static IWebHostBuilder UseDataXDefaultConfigureServices(this IWebHostBuilder hostBuilder)
         {
             void ConfigureServices(IServiceCollection services)
@@ -86,6 +104,13 @@ namespace DataX.ServiceHost.AspNetCore.Extensions
             return hostBuilder.ConfigureServices(ConfigureServices);
         }
 
+        /// <summary>
+        /// Adds a DataX startup filter to a WebHostBuilder.
+        /// </summary>
+        /// <typeparam name="TStartup">DataX concrete startup filter type inheriting from <see cref="DataXServiceStartup"/></typeparam>
+        /// <param name="hostBuilder">The host builder to be configured</param>
+        /// <param name="startup">Optional startup instance to be used.</param>
+        /// <returns>The configured host builder</returns>
         public static IWebHostBuilder UseDataXStartup<TStartup>(this IWebHostBuilder hostBuilder, TStartup startup = null)
             where TStartup : DataXServiceStartup, new()
         {
