@@ -18,7 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\DataX.Contract\DataX.Contract.csproj" />
     <ProjectReference Include="..\..\DataX.Utilities\DataX.Utilities.Telemetry\DataX.Utilities.Telemetry.csproj" />
-    <ProjectReference Include="..\DataX.ServiceHost.ServiceFabric\DataX.ServiceHost.ServiceFabric.csproj" />
+    <ProjectReference Include="..\..\DataX.Utilities\DataX.Utilities.Web\DataX.Utilities.Web.csproj" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

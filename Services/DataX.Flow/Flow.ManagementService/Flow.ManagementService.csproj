@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -46,9 +46,11 @@
     <ProjectReference Include="..\..\DataX.Config\DataX.Config.Input.EventHub\DataX.Config.Input.EventHub.csproj" />
     <ProjectReference Include="..\..\DataX.Config\DataX.Config.KeyVault\DataX.Config.KeyVault.csproj" />
     <ProjectReference Include="..\..\DataX.Config\DataX.Config.LivyClient\DataX.Config.LivyClient.csproj" />
+    <ProjectReference Include="..\..\DataX.Config\DataX.Config.Local\DataX.Config.Local.csproj" />
     <ProjectReference Include="..\..\DataX.Config\DataX.Config.Storage\DataX.Config.Storage.csproj" />
     <ProjectReference Include="..\..\DataX.Config\DataX.Config\DataX.Config.csproj" />
     <ProjectReference Include="..\..\DataX.ServiceHost\DataX.ServiceHost.AspNetCore\DataX.ServiceHost.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\DataX.ServiceHost\DataX.ServiceHost\DataX.ServiceHost.csproj" />
     <ProjectReference Include="..\..\DataX.Utilities\DataX.Utilities.KeyVault\DataX.Utilities.KeyVault.csproj" />
     <ProjectReference Include="..\..\DataX.Utilities\DataX.Utilities.Telemetry\DataX.Utilities.Telemetry.csproj" />
     <ProjectReference Include="..\..\DataX.Utilities\DataX.Utilities.Web\DataX.Utilities.Web.csproj" />

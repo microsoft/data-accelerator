@@ -17,7 +17,7 @@ namespace DataX.Config.Local
         private ILogger _logger { get; }
 
         [ImportingConstructor]
-        public LocalSparkClientFactory(ILogger logger)
+        public LocalSparkClientFactory(ILogger<LocalSparkClientFactory> logger)
         {
             this._logger = logger;
         }

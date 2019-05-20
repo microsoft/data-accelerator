@@ -20,8 +20,9 @@
     "Flow.ManagementService": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "api/values",
+      "launchUrl": "api/flow/getall",
       "environmentVariables": {
+        "AzureServicesAuthConnectionString": "RunAs=Developer; DeveloperTool=VisualStudio",
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "http://localhost:5000"

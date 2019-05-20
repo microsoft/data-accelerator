@@ -17,14 +17,17 @@ using System.Threading.Tasks;
 using System.Linq;
 using DataX.Utilities.Web;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
+using DataX.ServiceHost.AspNetCore.Authorization.Roles;
 
 namespace Flow.Management.Controllers
 {
     [Route("api")]
+    [DataXReader]
     public partial class FlowManagementController : Controller
     {
         private readonly ILogger<FlowManagementController> _logger;
-        private FlowOperation _flowOperation;
+        private readonly FlowOperation _flowOperation;
         private JobOperation _jobOperation;
         private RuntimeConfigGeneration _runtimeConfigGenerator;
         private bool _isLocal = false;
@@ -44,6 +47,7 @@ namespace Flow.Management.Controllers
 
         [HttpPost]
         [Route("flow/save")] // save flow config
+        [DataXWriter]
         public async Task<ApiResult> SaveFlow([FromBody]JObject config)
         {
             try
@@ -75,6 +79,7 @@ namespace Flow.Management.Controllers
 
         [HttpPost]
         [Route("flow/generateconfigs")] // generate flow configs
+        [DataXWriter]
         public async Task<ApiResult> GenerateConfigs([FromBody] string flowName)
         {
             try
@@ -154,6 +159,7 @@ namespace Flow.Management.Controllers
 
         [HttpPost]
         [Route("flow/startjobs")]
+        [DataXWriter]
         public async Task<ApiResult> StartJobsForFlow([FromBody] string flowName)
         {
             try
@@ -174,6 +180,7 @@ namespace Flow.Management.Controllers
 
         [HttpPost]
         [Route("flow/restartjobs")]
+        [DataXWriter]
         public async Task<ApiResult> RestartJobsForFlow([FromBody] string flowName)
         {
             try
@@ -194,6 +201,7 @@ namespace Flow.Management.Controllers
 
         [HttpPost]
         [Route("flow/stopjobs")]
+        [DataXWriter]
         public async Task<ApiResult> StopJobsForFlow([FromBody] string flowName)
         {
             try
@@ -215,6 +223,7 @@ namespace Flow.Management.Controllers
 
         [HttpPost]
         [Route("userqueries/schema")] // generator (sqlparser)
+        [DataXWriter]
         public async Task<ApiResult> GetSchema([FromBody]JObject config)
         {
             try
@@ -242,6 +251,7 @@ namespace Flow.Management.Controllers
 
         [HttpPost]
         [Route("userqueries/codegen")] // generator
+        [DataXWriter]
         public async Task<ApiResult> GetCodeGen([FromBody]JObject config)
         {
             try
@@ -328,6 +338,7 @@ namespace Flow.Management.Controllers
 
         [HttpPost]
         [Route("job/start")] // start the job
+        [DataXWriter]
         public async Task<ApiResult> StartJob([FromBody] string jobName)
         {
             try
@@ -349,6 +360,7 @@ namespace Flow.Management.Controllers
 
         [HttpPost]
         [Route("job/stop")] // stop the job
+        [DataXWriter]
         public async Task<ApiResult> StopJob([FromBody] string jobName)
         {
             try
@@ -369,6 +381,7 @@ namespace Flow.Management.Controllers
 
         [HttpPost]
         [Route("job/restart")]
+        [DataXWriter]
         public async Task<ApiResult> RestartJob([FromBody] string jobName)
         {
             try
@@ -390,6 +403,7 @@ namespace Flow.Management.Controllers
 
         [HttpGet]
         [Route("job/syncall")]
+        [DataXWriter]
         public async Task<ApiResult> SyncAllJobs()
         {
             try

@@ -21,7 +21,7 @@ namespace DataX.Config
     public class SparkJobOperation
     {
         [ImportingConstructor]
-        public SparkJobOperation(SparkJobData jobData, SparkClusterManager clusterManager, ILogger logger)
+        public SparkJobOperation(SparkJobData jobData, SparkClusterManager clusterManager, ILogger<SparkJobOperation> logger)
         {
             this.JobData= jobData;
             this.ClusterManager = clusterManager;
