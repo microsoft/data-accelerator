@@ -126,7 +126,7 @@ namespace DataX.Metrics.Ingestor.Helper
             }
             catch(Exception e)
             {
-                _logger.LogError(e, "Exception thrown in ProcessEventsAsync");
+                _logger.LogError(e, "Exception thrown in ProcessEventsAsync :"+e.Message);
             }
         }
 
