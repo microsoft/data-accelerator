@@ -1,7 +1,7 @@
 ﻿namespace DataX.ServiceHost.ServiceFabric.Authorization
 {
     using DataX.ServiceHost.Authorization;
-    using DataX.ServiceHost.Settings;
+    using DataX.Contract.Settings;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Authorization.Infrastructure;
     using System.Linq;

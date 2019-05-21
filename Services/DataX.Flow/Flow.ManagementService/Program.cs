@@ -3,13 +3,14 @@
 // Licensed under the MIT License
 // *********************************************************************
 using DataX.ServiceHost;
+using DataX.ServiceHost.AspNetCore.Extensions;
+using Flow.ManagementService;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.ServiceFabric.Services.Runtime;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Flow.Management
 {
@@ -22,7 +23,7 @@ namespace Flow.Management
         {
             try
             {
-                if(HostUtil.InServiceFabric)
+                if (HostUtil.InServiceFabric)
                 {
                     // The ServiceManifest.XML file defines one or more service type names.
                     // Registering a service maps a service type name to a .NET type.
@@ -52,10 +53,12 @@ namespace Flow.Management
             }
         }
 
+        /// <summary>
+        /// Create a new WebHostBuilder with DataX default configuration that allows this to be run standalone
+        /// </summary>
         private static IWebHostBuilder WebHostBuilder
             => new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>();
+                    .UseDataXDefaultConfiguration<FlowManagementServiceStartup>()
+                    .Configure(app => app.UseDataXApplicationDefaults());
     }
 }

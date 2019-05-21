@@ -3,7 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 using DataX.ServiceHost.ServiceFabric;
-using DataX.ServiceHost.Settings;
+using DataX.Contract.Settings;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;

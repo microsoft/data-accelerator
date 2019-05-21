@@ -3,7 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 using DataX.ServiceHost.ServiceFabric.Extensions.Configuration;
-using DataX.ServiceHost.Settings;
+using DataX.Contract.Settings;
 using DataX.Utilities.Telemetry;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

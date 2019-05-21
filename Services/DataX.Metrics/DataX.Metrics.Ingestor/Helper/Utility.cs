@@ -13,7 +13,7 @@ namespace DataX.Metrics.Ingestor.Helper
     // TODO: Remove when configuration fully consolidated
     [Obsolete("Use another method for configuration, such as: "
         + nameof(ServiceHost.ServiceFabric.ServiceFabricUtil) + ", "
-        + nameof(ServiceHost.Settings.DataXSettings) + ", or "
+        + nameof(Contract.Settings.DataXSettings) + ", or "
         + nameof(Microsoft.Extensions.Configuration.IConfiguration))]
     public static class Utility
     {

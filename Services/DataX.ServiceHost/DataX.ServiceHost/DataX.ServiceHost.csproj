@@ -11,4 +11,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="2.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\DataX.Contract\DataX.Contract.csproj" />
+  </ItemGroup>
+
 </Project>
