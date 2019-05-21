@@ -11,7 +11,7 @@ Licensed under the MIT License
     <Parameter Name="cosmosDBConfigDatabaseName" Value="" MustOverride="true" />
     <Parameter Name="cosmosDBConfigCollectionName" Value="" MustOverride="true" />
     <Parameter Name="AppInsightsIntrumentationKey" Value="" MustOverride="true" />
-    <Parameter Name="EnableOneBox" Value="" />
+    <Parameter Name="EnableOneBox" Value="" MustOverride="true" />
   </Section>
 
 </Settings>
