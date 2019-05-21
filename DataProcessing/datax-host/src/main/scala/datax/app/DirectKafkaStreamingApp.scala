@@ -4,17 +4,18 @@
 // *********************************************************************
 package datax.app
 
-import com.microsoft.azure.eventhubs.EventData
 import datax.host.StreamingHost
 import datax.input._
 import datax.processor.CommonProcessorFactory
+import org.apache.kafka.clients.consumer.ConsumerRecord
 
-object BlobStreamingApp {
+// Main entry point class for processing data from Kafka input
+object DirectKafkaStreamingApp {
   def main(inputArguments: Array[String]): Unit = {
-    new StreamingHost[EventData].runStreamingApp(
+    new StreamingHost[ConsumerRecord[String,String]]().runStreamingApp(
       inputArguments,
-      EventHubInputSetting.asInstanceOf[InputSetting[InputConf]],
-      EventHubStreamingFactory,
-      config => CommonProcessorFactory.createProcessor(config).asBlobPointerProcessor())
+      KafkaInputSetting.asInstanceOf[InputSetting[InputConf]],
+      KafkaStreamingFactory,
+      config => CommonProcessorFactory.createProcessor(config).asDirectKafkaProcessor())
   }
 }
