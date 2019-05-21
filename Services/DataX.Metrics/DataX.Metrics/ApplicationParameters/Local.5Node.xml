@@ -6,9 +6,7 @@ Licensed under the MIT License
 <Application xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="fabric:/DataX.Metrics" xmlns="http://schemas.microsoft.com/2011/01/fabric">
   <Parameters>
     <Parameter Name="DataX.Metrics.Ingestor_ASPNETCORE_ENVIRONMENT" Value="Development" />
-    <Parameter Name="DataX.Metrics.Ingestor_PartitionCount" Value="1" />
-    <Parameter Name="DataX.Metrics.Ingestor_MinReplicaSetSize" Value="3" />
-    <Parameter Name="DataX.Metrics.Ingestor_TargetReplicaSetSize" Value="3" />
+    <Parameter Name="DataX.Metrics.Ingestor_InstanceCount" Value="-1" />
     <Parameter Name="AzureServicesAuthConnectionString" Value="" />
     <Parameter Name="ServiceKeyvaultName" Value="" />
     <Parameter Name="EventHubName" Value="" />

@@ -24,7 +24,7 @@ Licensed under the MIT License
                                     AzureActiveDirectory="true"
                                     ServerCertThumbprint="0123456789012345678901234567890123456789" />
   -->
-  <ClusterConnectionParameters />
+  <ClusterConnectionParameters ConnectionEndpoint="dx2489971833-sf.westus2.cloudapp.azure.com:19000" X509Credential="true" ServerCertThumbprint="E335218DDA482A59A3D711072B6363E8633EDFAE" FindType="FindByThumbprint" FindValue="E335218DDA482A59A3D711072B6363E8633EDFAE" StoreLocation="CurrentUser" StoreName="My" />
   <ApplicationParameterFile Path="..\ApplicationParameters\Cloud.xml" />
   <CopyPackageParameters CompressPackage="true" />
   <UpgradeDeployment Mode="Monitored" Enabled="true">
