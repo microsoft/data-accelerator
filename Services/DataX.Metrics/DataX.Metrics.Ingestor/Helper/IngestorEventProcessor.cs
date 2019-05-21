@@ -71,57 +71,63 @@ namespace DataX.Metrics.Ingestor.Helper
         /// </summary>
         async Task IEventProcessor.ProcessEventsAsync(PartitionContext context, IEnumerable<EventData> messages)
         {
-            _cancellationToken.ThrowIfCancellationRequested();
             var sw = new Stopwatch();
             sw.Start();
 
-            int messageCount = 0;
-            int metricCount = 0;
-            foreach (EventData eventData in messages)
+            try
             {
-                messageCount++;
-                var data = Encoding.UTF8.GetString(eventData.Body.Array, eventData.Body.Offset, eventData.Body.Count);
-                StringReader reader = new StringReader(data);
-
-                string line = null;
-                while (null != (line = await reader.ReadLineAsync()))
+                int messageCount = 0;
+                int metricCount = 0;
+                foreach (EventData eventData in messages)
                 {
-                    try
-                    {
-                        var metricOutput = GenerateRow(line);
-                        if (metricOutput != null)
-                        {
-                            metricCount++;
-                            _cache.SortedSetAdd(metricOutput.RedisKey, metricOutput.Content, metricOutput.EpochTime, When.NotExists, CommandFlags.None);
-                        }
-                    }
+                    messageCount++;
+                    var data = Encoding.UTF8.GetString(eventData.Body.Array, eventData.Body.Offset, eventData.Body.Count);
+                    StringReader reader = new StringReader(data);
 
-                    catch (Exception e)
+                    string line = null;
+                    while (null != (line = await reader.ReadLineAsync()))
                     {
-                        _logger.LogError(e, e.Message, new Dictionary<string, string>()
+                        try
+                        {
+                            var metricOutput = GenerateRow(line);
+                            if (metricOutput != null)
+                            {
+                                metricCount++;
+                                _cache.SortedSetAdd(metricOutput.RedisKey, metricOutput.Content, metricOutput.EpochTime, When.NotExists, CommandFlags.None);
+                            }
+                        }
+
+                        catch (Exception e)
+                        {
+                            _logger.LogError(e, e.Message, new Dictionary<string, string>()
                         {
                             {"MetricData", line},
                             {"PartitionId", context.Lease.PartitionId},
                             {"Offset", context.Lease.Offset},
                         });
+                        }
                     }
                 }
-            }
 
-            sw.Stop();
+                sw.Stop();
 
-            _logger.LogInformation($"EventHubReader/ProcessMessages/Completed",
-                new Dictionary<string, string>()
-                {
+                _logger.LogInformation($"EventHubReader/ProcessMessages/Completed",
+                    new Dictionary<string, string>()
+                    {
                         {"PartitionId", context.Lease.PartitionId},
                         {"Offset", context.Lease.Offset},
-                },
-                new Dictionary<string, double>()
-                {
+                    },
+                    new Dictionary<string, double>()
+                    {
                         {"MessagesRecieved", messageCount},
                         {"MetricsSent", metricCount},
                         {"ElapsedTimeInMs",  sw.ElapsedMilliseconds}
-                });
+                    });
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e, "Exception thrown in ProcessEventsAsync :"+e.Message);
+            }
         }
 
         /// <summary>
