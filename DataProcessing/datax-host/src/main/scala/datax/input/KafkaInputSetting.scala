@@ -131,7 +131,7 @@ object KafkaInputSetting extends InputSetting[InputKafkaConf] {
 
     regex.findFirstMatchIn(connStr) match {
       case Some(partition) => partition.group(1)
-      case None => null
+      case None =>  throw new EngineException(s"EventHub connection string does not match the endpoint pattern ${regex.regex}")
     }
   }
 

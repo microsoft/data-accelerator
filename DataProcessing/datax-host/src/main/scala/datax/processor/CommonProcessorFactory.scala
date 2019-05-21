@@ -9,7 +9,7 @@ import java.util.concurrent.Executors
 
 import com.microsoft.azure.eventhubs.EventData
 import datax.config._
-import datax.constants.{ColumnName, DatasetName, FeatureName, ProcessingPropertyName, ProductConstant}
+import datax.constants._
 import datax.data.FileInternal
 import datax.exception.EngineException
 import datax.fs.HadoopClient
@@ -413,8 +413,8 @@ object CommonProcessorFactory {
           })
           .toDF(
             ColumnName.RawObjectColumn,
-            "Properties",
-            "SystemProperties",
+            ColumnName.RawPropertiesColumn,
+            ColumnName.RawSystemPropertiesColumn,
             ColumnName.InternalColumnFileInfo
           ), batchTime, batchInterval, outputPartitionTime, null, "")
       },
@@ -592,8 +592,8 @@ object CommonProcessorFactory {
           })
           .toDF(
             ColumnName.RawObjectColumn,
-            "Properties",
-            "SystemProperties",
+            ColumnName.RawPropertiesColumn,
+            ColumnName.RawSystemPropertiesColumn,
             ColumnName.InternalColumnFileInfo
           ), batchTime, batchInterval, outputPartitionTime, null, "")
       } // end of proessConsumerRecord
