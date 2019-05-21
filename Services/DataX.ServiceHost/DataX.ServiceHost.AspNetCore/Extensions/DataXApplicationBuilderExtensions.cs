@@ -4,6 +4,9 @@
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.DependencyInjection;
 
+    /// <summary>
+    /// Extensions for IApplicationBuilder
+    /// </summary>
     public static class DataXApplicationBuilderExtensions
     {
         /// <summary>

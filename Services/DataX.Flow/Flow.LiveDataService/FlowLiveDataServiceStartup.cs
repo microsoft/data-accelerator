@@ -9,6 +9,9 @@ namespace Flow.LiveDataService
     using DataX.ServiceHost.AspNetCore.Startup;
     using DataX.Contract.Settings;
 
+    /// <summary>
+    /// StartupFilter for Flow.LiveDataService
+    /// </summary>
     public class FlowLiveDataServiceStartup : DataXServiceStartup
     {
         public FlowLiveDataServiceStartup() { }

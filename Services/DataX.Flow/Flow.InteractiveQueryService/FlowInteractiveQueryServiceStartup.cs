@@ -9,6 +9,9 @@ namespace Flow.InteractiveQueryService
     using DataX.ServiceHost.AspNetCore.Startup;
     using DataX.Contract.Settings;
 
+    /// <summary>
+    /// StartupFilter for Flow.InteractiveQueryService
+    /// </summary>
     public class FlowInteractiveQueryServiceStartup : DataXServiceStartup
     {
         public FlowInteractiveQueryServiceStartup() { }

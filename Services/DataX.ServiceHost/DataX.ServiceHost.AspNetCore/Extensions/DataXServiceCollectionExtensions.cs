@@ -9,6 +9,9 @@ using System.Text;
 
 namespace DataX.ServiceHost.AspNetCore.Extensions
 {
+    /// <summary>
+    /// Extensions for IServiceCollection
+    /// </summary>
     public static class DataXServiceCollectionExtensions
     {
         /// <summary>

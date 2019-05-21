@@ -10,6 +10,9 @@
     using Microsoft.Extensions.DependencyInjection;
     using System.IO;
 
+    /// <summary>
+    /// Extensions for IWebHostBuilder
+    /// </summary>
     public static class DataXWebHostBuilderExtensions
     {
         /// <summary>

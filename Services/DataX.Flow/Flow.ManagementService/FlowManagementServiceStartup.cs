@@ -22,6 +22,9 @@ using System.Threading.Tasks;
 
 namespace Flow.ManagementService
 {
+    /// <summary>
+    /// StartupFilter for Flow.ManagementService
+    /// </summary>
     public sealed class FlowManagementServiceStartup : DataXServiceStartup
     {
         private const string _MetricsHttpEndpointRelativeUri = "/api/data/upload";

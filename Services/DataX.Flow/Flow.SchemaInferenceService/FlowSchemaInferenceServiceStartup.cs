@@ -9,6 +9,9 @@ namespace Flow.SchemaInferenceService
     using DataX.ServiceHost.AspNetCore.Startup;
     using DataX.Contract.Settings;
 
+    /// <summary>
+    /// StartupFilter for Flow.SchemaInferenceService
+    /// </summary>
     public class FlowSchemaInferenceServiceStartup : DataXServiceStartup
     {
         public FlowSchemaInferenceServiceStartup() { }
