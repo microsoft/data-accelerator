@@ -33,7 +33,6 @@ namespace DataX.ServiceHost.AspNetCore.Extensions
 
             startup.ConfigureServices(services);
 
-            // Add the FlowManagement Startup to be called _along with_ using Configure in the WebHostBuilder
             services.AddTransient<IStartupFilter>(_ => startup);
 
             return services;
