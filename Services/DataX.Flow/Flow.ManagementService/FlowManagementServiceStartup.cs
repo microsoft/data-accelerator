@@ -1,5 +1,7 @@
 ﻿using DataX.Config;
+using DataX.Config.ConfigDataModel;
 using DataX.Config.ConfigurationProviders;
+using DataX.Config.Local;
 using DataX.Config.PublicService;
 using DataX.Contract.Settings;
 using DataX.ServiceHost.AspNetCore.Startup;
@@ -75,28 +77,28 @@ namespace Flow.ManagementService
         // Get the required settings to bootstrap the config gen
         private void InitConfigSettings()
         {
-            InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_EnableOneBox, Settings.EnableOneBox.ToString());
+            InitialConfiguration.Set(Constants.ConfigSettingName_EnableOneBox, Settings.EnableOneBox.ToString());
 
             if (!Settings.EnableOneBox)
             {
                 InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_ConnectionString, Settings.CosmosDBConfigConnectionString);
                 InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_DatabaseName, Settings.CosmosDBConfigDatabaseName);
                 InitialConfiguration.Set(CosmosDbConfigurationProvider.ConfigSettingName_CosmosDBConfig_CollectionName, Settings.CosmosDBConfigCollectionName);
-                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ServiceKeyVaultName, Settings.ServiceKeyVaultName);
+                InitialConfiguration.Set(Constants.ConfigSettingName_ServiceKeyVaultName, Settings.ServiceKeyVaultName);
             }
             else
             {
                 // Local settings
                 var metricsHttpEndpoint = Settings.MetricsHttpEndpoint.TrimEnd('/') + _MetricsHttpEndpointRelativeUri;
-                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_LocalRoot, Settings.LocalRoot);
-                InitialConfiguration.Set(DataX.Config.Local.LocalSparkClient.ConfigSettingName_SparkHomeFolder, Settings.SparkHome);
-                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ClusterName, "localCluster");
-                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ServiceKeyVaultName, "local");
-                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_RuntimeKeyVaultName, "local");
-                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_MetricEventHubConnectionKey, "local");
-                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ConfigFolderContainerPath, "");
-                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ConfigFolderHost, new Uri(Environment.CurrentDirectory).AbsoluteUri);
-                InitialConfiguration.Set(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_LocalMetricsHttpEndpoint, metricsHttpEndpoint);
+                InitialConfiguration.Set(Constants.ConfigSettingName_LocalRoot, Settings.LocalRoot);
+                InitialConfiguration.Set(LocalSparkClient.ConfigSettingName_SparkHomeFolder, Settings.SparkHome);
+                InitialConfiguration.Set(Constants.ConfigSettingName_ClusterName, "localCluster");
+                InitialConfiguration.Set(Constants.ConfigSettingName_ServiceKeyVaultName, "local");
+                InitialConfiguration.Set(Constants.ConfigSettingName_RuntimeKeyVaultName, "local");
+                InitialConfiguration.Set(Constants.ConfigSettingName_MetricEventHubConnectionKey, "local");
+                InitialConfiguration.Set(Constants.ConfigSettingName_ConfigFolderContainerPath, "");
+                InitialConfiguration.Set(Constants.ConfigSettingName_ConfigFolderHost, new Uri(Environment.CurrentDirectory).AbsoluteUri);
+                InitialConfiguration.Set(Constants.ConfigSettingName_LocalMetricsHttpEndpoint, metricsHttpEndpoint);
             }
 
         }
