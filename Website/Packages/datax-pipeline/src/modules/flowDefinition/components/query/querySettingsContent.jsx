@@ -201,7 +201,7 @@ export default class QuerySettingsContent extends React.Component {
                             {hasKernelId && this.renderExecuteQueryButton()}
                             {hasKernelId && this.renderResampleButton()}
 
-                            <a style={linkStyle} href={queryExampleWiki} target="_blank">
+                            <a style={linkStyle} href={queryExampleWiki} target="_blank" rel="noopener noreferrer">
                                 View Example
                             </a>
                         </div>

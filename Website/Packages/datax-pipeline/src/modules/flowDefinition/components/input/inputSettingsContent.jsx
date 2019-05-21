@@ -415,7 +415,7 @@ export default class InputSettingsContent extends React.Component {
                     <Label className="ms-font-m" style={inlineBlockStyle}>
                         Describe Schema in JSON Format
                     </Label>
-                    <a style={linkStyle} href={inputSchemaExampleWiki} target="_blank">
+                    <a style={linkStyle} href={inputSchemaExampleWiki} target="_blank" rel="noopener noreferrer">
                         View Example
                     </a>
                 </div>
@@ -435,7 +435,7 @@ export default class InputSettingsContent extends React.Component {
                     <Label className="ms-font-m" style={inlineBlockStyle}>
                         Data Schema Normalization (input SQL to run against the schema above)
                     </Label>
-                    <a style={linkStyle} href={normalizationExampleWiki} target="_blank">
+                    <a style={linkStyle} href={normalizationExampleWiki} target="_blank" rel="noopener noreferrer">
                         View Example
                     </a>
                 </div>
