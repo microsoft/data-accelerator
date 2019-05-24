@@ -20,6 +20,10 @@ subscriptionId=
 # ResourceGroupName to generate resources 
 resourceGroupName=DataX
 
+# y if you want to enable Kafka, n otherwise
+# This will deploy the Kafka specific samples and resources such as HDinsight Kafka and EventHub Kafka  
+enableKafka=y
+
 # ProductName to create resources. All resource names will be based on this
 # ProductName must be 1-35 characters. Letters and numbers only
 # If ProductName is empty, a new name will be generated
@@ -30,14 +34,14 @@ productName=
 randomizeProductName=y
 
 # Location for the resourceGroup
-resourceGroupLocation=westus2
+resourceGroupLocation=eastus
 
 # Location for MicrosoftInsights resource which is not available for some locations
 # Available values: "EastUS", "SouthCentralUS", "NorthEurope", "WestEurope", "SoutheastAsia", "WestUS2", "CanadaCentral", "CentralIndia"
-resourceLocationForMicrosoftInsights=westus2
+resourceLocationForMicrosoftInsights=eastus
 
 # Location for Service Fabric resource
-resourceLocationForServiceFabric=westus2
+resourceLocationForServiceFabric=eastus
 
 # y if you want the script to create selfsigned certs, n otherwise
 # if this is n, the script will load the existing certs. Please make sure you provide the password to import the certs 
@@ -70,10 +74,16 @@ writerRole=DataXWriter
 # If password is empty, a new password will be generated
 sparkPassword=
 
+# Admin password for Spark
+kafkaPassword=
+
 # RDP/SSH password for Spark
 # This password must be 6-72 characters long and must contain at least one digit, one upper case letter and one lower case letter
 # If password is empty, a new password will be generated
 sparkSshPassword=
+
+# RDP/SSH password for Apache Spark
+kafkaSshPassword=
 
 # Password for Service fabric
 # If password is empty, a new password will be generated
@@ -168,6 +178,10 @@ feedUrl=https://api.nuget.org/v3/index.json
 # Please specify here if you want to use a custom name.
 # Default value is "<product name>"
 # sparkClusterName=
+
+# CA certificate download URL. Required for Kafka data processing.
+# A CA certificate will be downloaded from this link.
+caCertificateLocation=https://curl.haxx.se/ca/cacert.pem
 
 # Please specify if you want to use the particular package builds
 # The latest bits will be installed if you don't specify anything
