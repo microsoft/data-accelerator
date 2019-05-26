@@ -20,7 +20,7 @@ namespace DataX.Utilities.Telemetry
     {
         public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
-            var settings = configuration.GetValue<DataXSettings>(DataXSettingsConstants.ServiceEnvironment);
+            var settings = configuration.GetSection(DataXSettingsConstants.ServiceEnvironment).Get<DataXSettings>();
 
             ConfigureServices(services, settings ?? new DataXSettings());
         }

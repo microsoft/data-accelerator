@@ -75,6 +75,8 @@ namespace DataX.ServiceHost.AspNetCore.Startup
                 context.Response.Headers.Add("X-Content-Type-Options", new string[] { "nosniff" });
                 await next();
             });
+            app.UseAuthentication();
+            app.UseMvc();
         }
 
         public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
