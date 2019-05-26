@@ -22,7 +22,6 @@
       "launchBrowser": true,
       "launchUrl": "api/values",
       "environmentVariables": {
-        "AzureServicesAuthConnectionString": "RunAs=App;AppId=5f4d310b-887f-4e06-b481-28ca3a0db446;TenantId=72f988bf-86f1-41af-91ab-2d7cd011db47;CertificateThumbprint=E335218DDA482A59A3D711072B6363E8633EDFAE;CertificateStoreLocation=LocalMachine",
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "http://localhost:5000"
