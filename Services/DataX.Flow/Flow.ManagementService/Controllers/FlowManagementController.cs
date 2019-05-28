@@ -19,6 +19,7 @@ using DataX.Utilities.Web;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using DataX.ServiceHost.AspNetCore.Authorization.Roles;
+using Microsoft.Extensions.Configuration;
 
 namespace Flow.Management.Controllers
 {
@@ -27,14 +28,16 @@ namespace Flow.Management.Controllers
     public partial class FlowManagementController : Controller
     {
         private readonly ILogger<FlowManagementController> _logger;
+        private readonly IConfiguration _configuration;
         private readonly FlowOperation _flowOperation;
         private JobOperation _jobOperation;
         private RuntimeConfigGeneration _runtimeConfigGenerator;
         private bool _isLocal = false;
 
-        public FlowManagementController(ILogger<FlowManagementController> logger, FlowOperation flowOp, RuntimeConfigGeneration runtimeConfigGenerator, JobOperation jobOp)
+        public FlowManagementController(ILogger<FlowManagementController> logger, IConfiguration configuration, FlowOperation flowOp, RuntimeConfigGeneration runtimeConfigGenerator, JobOperation jobOp)
         {
             _logger = logger;
+            _configuration = configuration;
             _flowOperation = flowOp;
             _jobOperation = jobOp;
             _runtimeConfigGenerator = runtimeConfigGenerator;

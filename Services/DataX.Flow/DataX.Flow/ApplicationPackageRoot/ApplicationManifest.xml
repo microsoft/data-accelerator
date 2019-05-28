@@ -3,7 +3,7 @@
 Copyright (c) Microsoft Corporation.  All rights reserved.
 Licensed under the MIT License
 -->
-<ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="DataX.FlowType" ApplicationTypeVersion="1.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+<ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="DataX.FlowType" ApplicationTypeVersion="1.0.1" xmlns="http://schemas.microsoft.com/2011/01/fabric">
   <Parameters>
     <Parameter Name="Flow.LiveDataService_ASPNETCORE_ENVIRONMENT" DefaultValue="" />
     <Parameter Name="Flow.LiveDataService_InstanceCount" DefaultValue="-1" />
@@ -28,7 +28,7 @@ Licensed under the MIT License
        should match the Name and Version attributes of the ServiceManifest element defined in the 
        ServiceManifest.xml file. -->
   <ServiceManifestImport>
-    <ServiceManifestRef ServiceManifestName="Flow.LiveDataServicePkg" ServiceManifestVersion="1.0.0" />
+    <ServiceManifestRef ServiceManifestName="Flow.LiveDataServicePkg" ServiceManifestVersion="1.0.1" />
     <ConfigOverrides>
       <ConfigOverride Name="Config">
         <Settings>
@@ -49,7 +49,7 @@ Licensed under the MIT License
     </EnvironmentOverrides>
   </ServiceManifestImport>
   <ServiceManifestImport>
-    <ServiceManifestRef ServiceManifestName="Flow.SchemaInferenceServicePkg" ServiceManifestVersion="1.0.0" />
+    <ServiceManifestRef ServiceManifestName="Flow.SchemaInferenceServicePkg" ServiceManifestVersion="1.0.1" />
     <ConfigOverrides>
       <ConfigOverride Name="Config">
         <Settings>
@@ -70,7 +70,7 @@ Licensed under the MIT License
     </EnvironmentOverrides>
   </ServiceManifestImport>
   <ServiceManifestImport>
-    <ServiceManifestRef ServiceManifestName="Flow.InteractiveQueryServicePkg" ServiceManifestVersion="1.0.0" />
+    <ServiceManifestRef ServiceManifestName="Flow.InteractiveQueryServicePkg" ServiceManifestVersion="1.0.1" />
     <ConfigOverrides>
       <ConfigOverride Name="Config">
         <Settings>
@@ -91,7 +91,7 @@ Licensed under the MIT License
     </EnvironmentOverrides>
   </ServiceManifestImport>
   <ServiceManifestImport>
-    <ServiceManifestRef ServiceManifestName="Flow.ManagementServicePkg" ServiceManifestVersion="1.0.0" />
+    <ServiceManifestRef ServiceManifestName="Flow.ManagementServicePkg" ServiceManifestVersion="1.0.1" />
     <ConfigOverrides>
       <ConfigOverride Name="Config">
         <Settings>

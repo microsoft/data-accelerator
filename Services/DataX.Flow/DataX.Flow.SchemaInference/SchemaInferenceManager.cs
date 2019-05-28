@@ -10,19 +10,23 @@ using DataX.Flow.Common.Models;
 using DataX.Utilities.EventHub;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace DataX.Flow.SchemaInference
 {
     public class SchemaInferenceManager
     {
-        private EngineEnvironment _engineEnvironment = new EngineEnvironment();
+        private EngineEnvironment _engineEnvironment;
         private readonly ILogger _logger;
+        private readonly IConfiguration _configuration;
 
         private string OpsSamplePath => $@"https://{_engineEnvironment.EngineFlowConfig.OpsBlobBase}/samples";
 
-        public SchemaInferenceManager(ILogger logger)
+        public SchemaInferenceManager(ILogger logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
+            _engineEnvironment = new EngineEnvironment(_configuration);
         }
 
         public async Task<ApiResult> GetInputSchema(JObject jObject)

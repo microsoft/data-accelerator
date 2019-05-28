@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace DataX.Flow.InteractiveQuery
 {
@@ -22,15 +23,18 @@ namespace DataX.Flow.InteractiveQuery
     {
         private string _flowContainerName => _engineEnvironment.EngineFlowConfig.FlowContainerName;
         private const string _GarbageCollectBlobName = "kernelList.json";
-        private EngineEnvironment _engineEnvironment = new EngineEnvironment();
+        private EngineEnvironment _engineEnvironment;
         private readonly ILogger _logger;
         private const string _HDInsight = "HDInsight";
         private const string _DataBricks = "DataBricks";
         private readonly string _sparkType = _HDInsight;
+        private readonly IConfiguration _configuration;
 
-        public InteractiveQueryManager(ILogger logger)
+        public InteractiveQueryManager(ILogger logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
+            _engineEnvironment = new EngineEnvironment(_configuration);
         }
 
         private string SetupSteps { get; set; } = string.Empty;

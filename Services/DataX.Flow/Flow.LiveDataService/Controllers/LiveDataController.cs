@@ -10,6 +10,7 @@ using System;
 using System.Threading.Tasks;
 using DataX.Utilities.Web;
 using DataX.ServiceHost.AspNetCore.Authorization.Roles;
+using Microsoft.Extensions.Configuration;
 
 namespace Flow.LiveDataService.Controllers
 {
@@ -18,9 +19,11 @@ namespace Flow.LiveDataService.Controllers
     public class LiveDataController : Controller
     {
         private readonly ILogger<LiveDataController> _logger;
-        public LiveDataController(ILogger<LiveDataController> logger)
+        private readonly IConfiguration _configuration;
+        public LiveDataController(ILogger<LiveDataController> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
         }
 
         [HttpPost]
@@ -30,7 +33,7 @@ namespace Flow.LiveDataService.Controllers
             try
             {
                 RolesCheck.EnsureWriter(Request);
-                LiveDataManager ldm = new LiveDataManager(_logger);
+                LiveDataManager ldm = new LiveDataManager(_logger, _configuration);
                 return await ldm.RefreshInputDataAndKernel(jObject);
             }
             catch (Exception e)
