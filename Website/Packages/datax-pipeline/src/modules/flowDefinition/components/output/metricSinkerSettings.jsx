@@ -51,7 +51,7 @@ export default class MetricSinkerSettings extends React.Component {
         // show metrics dashboard link only when flow has previously been saved in the past
         if (this.props.flowId) {
             return (
-                <a style={linkStyle} href={`${window.origin}/dashboard/${this.props.flowId}`} target="_blank">
+                <a style={linkStyle} href={`${window.origin}/dashboard/${this.props.flowId}`} target="_blank" rel="noopener noreferrer">
                     Metrics Dashboard
                 </a>
             );
