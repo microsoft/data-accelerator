@@ -20,9 +20,9 @@ subscriptionId=
 # ResourceGroupName to generate resources 
 resourceGroupName=DataX
 
-# y if you want to enable Kafka, n otherwise
+# y if you want to deploy Kafka sample, n otherwise
 # This will deploy the Kafka specific samples and resources such as HDinsight Kafka and EventHub Kafka  
-enableKafka=y
+enableKafkaSample=y
 
 # ProductName to create resources. All resource names will be based on this
 # ProductName must be 1-35 characters. Letters and numbers only

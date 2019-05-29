@@ -215,7 +215,7 @@ function Get-Tokens {
     $kafkaNativeConnectionString = ''
     $kafkaNativeTopics = ''
 
-    if($enableKafka -eq 'y') {
+    if($enableKafkaSample -eq 'y') {
         $kafkaNativeConnectionString = "datagen-kafkaNativeConnectionString"
         $kafkaNativeTopics = "kafka1,kafka2"
     }
