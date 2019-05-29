@@ -36,7 +36,7 @@
     "consumerGroup" : "dataxops",
     "opsBlobDirectory" : "dataxops",
     "configgenSecretPrefix" : "$serviceSecretPrefix-",
-    "interactiveQueryDefaultContainer" : "default",
+    "interactiveQueryDefaultContainer" : "defaultdx",
     "sparkClusterName" : "$sparkName",
     "subscriptionId" : "keyvault://$servicesKVName/$clientSecretPrefix-subscriptionId",
     "sparkConnectionString" : "keyvault://$servicesKVName/$serviceSecretPrefix-livyconnectionstring-$sparkName"
