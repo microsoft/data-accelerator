@@ -19,7 +19,7 @@
       "wasbs:///datax/bin/azure-eventhubs-spark_2.11-2.3.6.jar",
       "wasbs:///datax/bin/azure-keyvault-webkey-1.1.jar",
       "wasbs:///datax/bin/java-uuid-generator-3.1.5.jar",
-      "wasbs:///datax/bin/proton-j-0.27.1.jar",
+      "wasbs:///datax/bin/proton-j-0.31.0.jar",
       "wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar"
     ],
     "driverMemory": "6400m",
