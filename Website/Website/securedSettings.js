@@ -51,6 +51,10 @@ module.exports = async function(host) {
                     env.mongoDbUrl = await getSecretOrThrow('mongoDbUrl');
                     env.mongoSharedDbUrl = await getSecretOrThrow('mongoSharedDbUrl').catch(err => env.mongoDbUrl);
                 },
+                ,
+                async function() {
+                    env.kubernetesServices = await getSecret('kubernetesServices');
+                },
                 async function() {
                     let redisDataConnectionString = await getSecret('redisDataConnectionString');
                     if (redisDataConnectionString)
