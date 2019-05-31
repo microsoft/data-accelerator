@@ -457,6 +457,45 @@ object CommonProcessorFactory {
         processDataset(jsonRdd.map((FileInternal(), _)).toDF(ColumnName.InternalColumnFileInfo, ColumnName.RawObjectColumn),
           batchTime, batchInterval, outputPartitionTime, null, "")
       },
+      // process blob path from batch blob input
+      processBatchBlobPaths = (pathsRDD: RDD[String],
+                      batchTime: Timestamp,
+                      batchInterval: Duration,
+                      outputPartitionTime: Timestamp,
+                      namespace: String) => {
+
+
+        val spark = SparkSessionSingleton.getInstance(pathsRDD.sparkContext.getConf)
+
+        val metricLogger = MetricLoggerFactory.getMetricLogger(metricAppName, metricConf)
+        val batchTimeStr = DateTimeUtil.formatSimple(batchTime)
+        val batchLog = LogManager.getLogger(s"BatchProcessor-B$batchTimeStr")
+        val batchTimeInMs = batchTime.getTime
+
+        def postMetrics(metrics: Iterable[(String, Double)]): Unit = {
+          metricLogger.sendBatchMetrics(metrics, batchTime.getTime)
+          batchLog.warn(s"Metric ${metrics.map(m => m._1 + "=" + m._2).mkString(",")}")
+        }
+
+        batchLog.warn(s"Start batch ${batchTime}, output partition time:${outputPartitionTime}, namespace:${namespace}")
+        val t1 = System.nanoTime
+
+       // val files = pathsRDD.collect()
+       // val filesCount = files.length
+      //  postMetrics(Map(s"InputBlobs" -> filesCount.toDouble))
+       // val pathsList = files.mkString(",")
+       // batchLog.debug(s"Batch loading files:$pathsList")
+        //spark.sparkContext.parallelize(files, filesCount)
+
+        val inputDf = pathsRDD
+            .flatMap(file => HadoopClient.readHdfsFile(file, gzip = file.endsWith(".gz"))
+            .filter(l=>l!=null && !l.isEmpty).map((file, outputPartitionTime, _)))
+          .toDF(ColumnName.InternalColumnFileInfo, ColumnName.MetadataColumnOutputPartitionTime, ColumnName.RawObjectColumn)
+
+        val processedMetrics = processDataset(inputDf, batchTime, batchInterval, outputPartitionTime, null, "")
+        processedMetrics
+       // Map.empty[String, Double]
+      },
 
       // process blob path pointer data frame
       processPaths = (pathsRDD: RDD[String],
