@@ -16,7 +16,7 @@
       "${localRoot}/bin/azure-eventhubs-1.2.1.jar",
       "${localRoot}/bin/azure-eventhubs-spark_2.11-2.3.6.jar",
       "${localRoot}/bin/hdinsight-keyvault-authenticator-1.0.7-with-dependencies.jar",
-      "${localRoot}/bin/proton-j-0.27.1.jar"
+      "${localRoot}/bin/proton-j-0.31.0.jar"
 
     ],
     "driverMemory": "6400m",
