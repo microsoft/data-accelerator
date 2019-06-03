@@ -18,6 +18,7 @@ case class CommonProcessor( processJson: (RDD[String], Timestamp, Duration, Time
                             processEventHubDataFrame: (DataFrame) => Map[String, StreamingQuery],
                             processEventData: (RDD[EventData], Timestamp, Duration, Timestamp) => Map[String, Double],
                             processPaths: (RDD[String], Timestamp, Duration, Timestamp, String) => Map[String, Double],
+                            processBatchBlobPaths: (RDD[String], Timestamp, Duration, Timestamp, String) => Map[String, Double],
                             processConsumerRecord: (RDD[ConsumerRecord[String,String]], Timestamp, Duration, Timestamp) => Map[String, Double]){
 
   def asBlobPointerProcessor() = new BlobPointerProcessor(processPaths = this.processPaths)
@@ -26,4 +27,5 @@ case class CommonProcessor( processJson: (RDD[String], Timestamp, Duration, Time
   def asStructuredStreamingProcessor = new EventHubStructuredStreamingProcessor(processDataFrame = this.processEventHubDataFrame)
   def asDirectLocalProcessor() = new DirectLocalProcessor(processEventData = this.processEventData)
   def asDirectKafkaProcessor() = new DirectKafkaProcessor(processConsumerRecord = this.processConsumerRecord)
+  def asBatchBlobProcessor() = new BatchBlobProcessor(processBatchBlobPaths = this.processBatchBlobPaths)
 }
