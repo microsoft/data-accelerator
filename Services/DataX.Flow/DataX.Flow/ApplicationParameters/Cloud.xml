@@ -15,6 +15,7 @@ Licensed under the MIT License
     <Parameter Name="cosmosDBConfigDatabaseName" Value="" />
     <Parameter Name="cosmosDBConfigCollectionName" Value="" />
     <Parameter Name="AppInsightsIntrumentationKey" Value="" />
+    <Parameter Name="CACertificateLocation" Value="" />
     <Parameter Name="MefStorageAccountName" Value="" />
     <Parameter Name="MefContainerName" Value="" />
     <Parameter Name="MefBlobDirectory" Value="" />

@@ -3,20 +3,21 @@
 // Licensed under the MIT License
 // *********************************************************************
 package datax.input
-
-import datax.config.{SettingDictionary, SettingNamespace}
+import datax.config.{SettingDictionary,SettingNamespace}
 import org.apache.log4j.LogManager
 
-object EventHubInputSetting {
-  case class InputEventHubConf(connectionString: String,
-                               consumerGroup: String,
-                               checkpointDir: String,
-                               checkpointInterval: String,
-                               maxRate: String,
-                               startEnqueueTime: Option[Long],
-                               flushExistingCheckpoints: Option[Boolean],
-                               repartition: Option[Int]
-                              )
+case class InputEventHubConf(connectionString: String,
+                             consumerGroup: String,
+                             checkpointDir: String,
+                             checkpointInterval: String,
+                             maxRate: String,
+                             startEnqueueTime: Option[Long],
+                             flushExistingCheckpoints: Option[Boolean],
+                             repartition: Option[Int]
+                            ) extends InputConf
+
+
+object EventHubInputSetting extends InputSetting[InputEventHubConf] {
 
   val NamespaceEventHub = "eventhub"
   val NamespacePrefix = SettingNamespace.JobInputPrefix + NamespaceEventHub+SettingNamespace.Seperator
@@ -49,7 +50,7 @@ object EventHubInputSetting {
     }
   }
 
-  def getInputEventHubConf(dict: SettingDictionary): InputEventHubConf = {
+  def getInputConf(dict: SettingDictionary): InputEventHubConf = {
     logger.warn("EventHub NamespacePrefix=" + NamespacePrefix)
     buildInputEventHubConf(dict.getSubDictionary(NamespacePrefix))
   }

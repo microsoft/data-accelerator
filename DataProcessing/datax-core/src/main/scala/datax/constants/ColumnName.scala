@@ -12,6 +12,8 @@ object ColumnName {
   val RawObjectColumn = "Raw"
   val EventNameColumn = "EventName"
   def PropertiesColumn = s"${NamePrefix.Value}Properties"
+  def RawPropertiesColumn = "Properties"
+  def RawSystemPropertiesColumn = "SystemProperties"
 
   def InternalColumnPrefix = s"__${NamePrefix.Value}_"
   def InternalColumnFileInfo = InternalColumnPrefix + "FileInfo"

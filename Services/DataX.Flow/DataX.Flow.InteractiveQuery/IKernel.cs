@@ -1,4 +1,8 @@
-﻿using DataX.Contract;
+﻿// *********************************************************************
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License
+// *********************************************************************
+using DataX.Contract;
 using DataX.Flow.Common;
 using DataX.Flow.Common.Models;
 using System;

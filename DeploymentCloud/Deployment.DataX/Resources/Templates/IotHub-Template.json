@@ -1,0 +1,150 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "iotHubName": {
+            "type": "string"
+        },
+        "default_resource_location": {
+            "type": "string"
+        },
+        "sku_name": {
+            "type": "string"
+        },
+        "sku_units": {
+            "type": "string"
+        },
+        "d2c_partitions": {
+            "type": "string"
+        },
+        "features": {
+            "type": "string"
+        },
+        "consumerGroupName": {
+            "type": "string"
+        },
+        "retentionDays": {
+            "type": "string"
+        },
+        "namespaces_kafkaeventhub_name": {
+            "type": "string"
+        }
+    },
+	"variables": {
+        "kafka1EventHubName": "kafka1",
+        "kafka2EventHubName": "kafka2",
+        "authorizationRules_listen_name": "listen"
+	},
+    "resources": [
+        {
+            "apiVersion": "2018-04-01",
+            "type": "Microsoft.Devices/IotHubs",
+            "name": "[parameters('iotHubName')]",
+            "location": "[parameters('default_resource_location')]",
+            "properties": {
+                "eventHubEndpoints": {
+                    "events": {
+                        "retentionTimeInDays": 1,
+                        "partitionCount": "[parameters('d2c_partitions')]"
+                    },
+                    "operationsMonitoringEvents": {
+                        "retentionTimeInDays": "[parameters('retentionDays')]",
+                        "partitionCount": "[parameters('d2c_partitions')]"
+                      }
+                },
+                "features": "[parameters('features')]"
+            },
+            "sku": {
+                "name": "[parameters('sku_name')]",
+                "capacity": "[parameters('sku_units')]"
+            }
+        },
+		{
+		  "apiVersion": "2018-04-01",
+		  "type": "Microsoft.Devices/iotHubs/eventhubEndpoints/ConsumerGroups",
+		  "name": "[concat(parameters('iotHubName'), '/events/',parameters('consumerGroupName'))]",
+		  "dependsOn": [
+			"[concat('Microsoft.Devices/iothubs/', parameters('iotHubName'))]"
+		  ]
+        },
+        {
+			"type": "Microsoft.EventHub/namespaces",
+			"sku": {
+				"name": "Standard",
+				"tier": "Standard",
+				"capacity": 1
+			},
+			"name": "[parameters('namespaces_kafkaeventhub_name')]",
+			"apiVersion": "2017-04-01",
+			"location": "[parameters('default_resource_location')]",
+			"tags": {},
+			"scale": null,
+			"properties": {
+				"kafkaEnabled": true
+			},
+			"dependsOn": []
+        },
+		{
+			"type": "Microsoft.EventHub/namespaces/AuthorizationRules",
+			"name": "[concat(parameters('namespaces_kafkaeventhub_name'), '/', variables('authorizationRules_listen_name'))]",
+			"apiVersion": "2017-04-01",
+			"location": "[parameters('default_resource_location')]",
+			"scale": null,
+			"properties": {
+				"rights": [
+					"Listen",
+					"Send"
+				]
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.EventHub/namespaces', parameters('namespaces_kafkaeventhub_name'))]"
+			]
+		},
+		{
+			"type": "Microsoft.EventHub/namespaces/eventhubs",
+			"name": "[concat(parameters('namespaces_kafkaeventhub_name'), '/', variables('kafka1EventHubName'))]",
+			"apiVersion": "2017-04-01",
+			"location": "[parameters('default_resource_location')]",
+			"scale": null,
+			"properties": {
+				"messageRetentionInDays": 1,
+				"partitionCount": 2,
+				"status": "Active"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.EventHub/namespaces', parameters('namespaces_kafkaeventhub_name'))]"
+			]
+		},
+		{
+			"type": "Microsoft.EventHub/namespaces/eventhubs",
+			"name": "[concat(parameters('namespaces_kafkaeventhub_name'), '/', variables('kafka2EventHubName'))]",
+			"apiVersion": "2017-04-01",
+			"location": "[parameters('default_resource_location')]",
+			"scale": null,
+			"properties": {
+				"messageRetentionInDays": 1,
+				"partitionCount": 2,
+				"status": "Active"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.EventHub/namespaces', parameters('namespaces_kafkaeventhub_name'))]"
+			]
+		},
+		{
+			"type": "Microsoft.EventHub/namespaces/eventhubs/authorizationRules",
+			"name": "[concat(parameters('namespaces_kafkaeventhub_name'), '/', variables('kafka1EventHubName'), '/', variables('authorizationRules_listen_name'))]",
+			"apiVersion": "2017-04-01",
+			"location": "[parameters('default_resource_location')]",
+			"scale": null,
+			"properties": {
+				"rights": [
+					"Listen"
+				]
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.EventHub/namespaces', parameters('namespaces_kafkaeventhub_name'))]",
+				"[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('namespaces_kafkaeventhub_name'), variables('kafka1EventHubName'))]"
+			]
+		}
+    ]
+}

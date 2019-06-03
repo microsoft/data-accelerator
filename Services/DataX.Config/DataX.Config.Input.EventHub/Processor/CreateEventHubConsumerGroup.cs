@@ -21,11 +21,9 @@ namespace DataX.Config.Input.EventHub.Processor
     [Export(typeof(IFlowDeploymentProcessor))]
     public class CreateEventHubConsumerGroup : ProcessorBase
     {
-        public const string HubType_EventHub = "events";
-        public const string HubType_IoTHub = "iothub";
-
         public const string TokenName_InputEventHubConnectionString = "inputEventHubConnectionString";
-        public const string TokenName_InputEventHubConsumerGroup= "inputEventHubConsumerGroup";
+        public const string TokenName_InputEventHubConsumerGroup = "inputEventHubConsumerGroup";
+        public const string TokenName_InputEventHubs = "inputEventHubs";
         public const string TokenName_InputEventHubCheckpointDir = "inputEventHubCheckpointDir";
         public const string TokenName_InputEventHubCheckpointInterval = "inputEventHubCheckpointInterval";
         public const string TokenName_InputEventHubMaxRate = "inputEventHubMaxRate";
@@ -94,7 +92,7 @@ namespace DataX.Config.Input.EventHub.Processor
                 return "eventhub/iothub input not defined, skipped";
             }
 
-            if (inputType != HubType_EventHub && inputType != HubType_IoTHub)
+            if (inputType != Constants.InputType_EventHub && inputType != Constants.InputType_IoTHub && inputType != Constants.InputType_KafkaEventHub && inputType != Constants.InputType_Kafka)   
             {
                 return $"unsupported inputtype '{inputType}', skipped.";
             }
@@ -108,11 +106,16 @@ namespace DataX.Config.Input.EventHub.Processor
             var resolvedConnectionString = await KeyVaultClient.ResolveSecretUriAsync(connectionString);
             var hubInfo = ConnectionStringParser.ParseEventHub(resolvedConnectionString);
 
+            if (inputType == Constants.InputType_Kafka || inputType == Constants.InputType_KafkaEventHub)
+            {
+                hubInfo.Name = this.NormalizeEventNames(config.Properties.InputEventHubName);
+            }
+
             var consumerGroupName = flowConfig.Name;
 
             // Create consumer group only if the resource creation flag is set. This is to support scenario where EventHub
             // is in a different subscription than where services are deployed
-            if (Configuration[Constants.ConfigSettingName_ResourceCreation].ToLower(CultureInfo.InvariantCulture) == "true")
+            if (Configuration[Constants.ConfigSettingName_ResourceCreation].ToLower(CultureInfo.InvariantCulture) == "true" && (inputType == Constants.InputType_EventHub || inputType == Constants.InputType_IoTHub))
             {
                 var serviceKeyVaultName = Configuration[Constants.ConfigSettingName_ServiceKeyVaultName];
                 Ensure.NotNull(serviceKeyVaultName, "serviceKeyVaultName");
@@ -126,23 +129,24 @@ namespace DataX.Config.Input.EventHub.Processor
                 Result result = null;
                 switch (inputType)
                 {
-                    case HubType_EventHub:
+                    case Constants.InputType_EventHub:
+                    case Constants.InputType_KafkaEventHub:
                         //Check for required parameters
                         if (string.IsNullOrEmpty(hubInfo.Namespace) || string.IsNullOrEmpty(hubInfo.Name))
                         {
                             throw new ConfigGenerationException("Could not parse Event Hub connection string; please check input.");
                         }
-                        result = await EventHubUtil.CreateEventHubConsumerGroup(
+                        result = await EventHubUtil.CreateEventHubConsumerGroups(
                                                         clientId: clientId,
                                                         tenantId: tenantId,
                                                         secretKey: resolvedSecretKey,
                                                         subscriptionId: inputSubscriptionId,
                                                         resourceGroupName: inputResourceGroupName,
                                                         hubNamespace: hubInfo.Namespace,
-                                                        hubName: hubInfo.Name,
+                                                        hubNames: hubInfo.Name,
                                                         consumerGroupName: consumerGroupName);
                         break;
-                    case HubType_IoTHub:
+                    case Constants.InputType_IoTHub:
                         //Check for required parameters
                         if (string.IsNullOrEmpty(hubInfo.Name))
                         {
@@ -165,6 +169,7 @@ namespace DataX.Config.Input.EventHub.Processor
             }
 
             flowToDeploy.SetStringToken(TokenName_InputEventHubConsumerGroup, consumerGroupName);
+            flowToDeploy.SetStringToken(TokenName_InputEventHubs, hubInfo.Name);
 
             var checkpointDir = Configuration.GetOrDefault(ConfigSettingName_InputEventHubCheckpointDir, "hdfs://mycluster/datax/direct/${name}/");
             flowToDeploy.SetStringToken(TokenName_InputEventHubCheckpointDir, checkpointDir);
@@ -178,6 +183,12 @@ namespace DataX.Config.Input.EventHub.Processor
             flowToDeploy.SetObjectToken(TokenName_InputEventHubFlushExistingCheckpoints, flushExistingCheckpoints);
 
             return "done";
+        }
+
+        // Normalize the evenet hub names
+        private string NormalizeEventNames(string names)
+        {
+            return names.Trim().Replace(" ", "");
         }
     }
 }

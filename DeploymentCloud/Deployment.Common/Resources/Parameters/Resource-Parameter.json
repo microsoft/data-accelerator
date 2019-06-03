@@ -85,6 +85,24 @@
 		},
 		"certType": {
 			"value": "$certtype"
-		}
+		},
+        "virtualNetworkName": {
+            "value": "VNet-$serviceFabricName"
+        },
+        "addressPrefix": {
+            "value": "10.0.0.0/16"
+        },
+        "computeLocation": {
+            "value": "$resourceLocationForServiceFabric"
+        },
+        "subnet0Name": {
+            "value": "Subnet-0"
+        },
+        "subnet0Prefix": {
+            "value": "10.0.0.0/24"
+        },
+        "clusterName": {
+            "value": "$serviceFabricName"
+        }
 	}
 }

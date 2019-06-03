@@ -276,12 +276,6 @@ function ensureAuthenticated(req, res, next) {
         if (req.session) {
             req.session.returnTo = req.originalUrl;
         }
-        //special case if the request comes from Office software
-        let userAgent = req.headers['user-agent'];
-        if (userAgent && userAgent.toLowerCase().indexOf('office') >= 0) {
-            res.status(200).send('OK'); // send 200 status with no data
-            return;
-        }
         res.redirect('/login');
     }
 }

@@ -14,7 +14,8 @@ import org.apache.spark.rdd.RDD
 import scala.concurrent.duration.Duration
 
 class BlobPointerProcessor(processPaths: (RDD[String], Timestamp, Duration, Timestamp, String) => Map[String, Double])
-  extends EventHubStreamingProcessor{
+  extends StreamingProcessor[EventData]{
+
   val processPathsRDD = processPaths
 
   override val process = (rdd: RDD[EventData], batchTime: Timestamp, batchInterval: Duration) => {

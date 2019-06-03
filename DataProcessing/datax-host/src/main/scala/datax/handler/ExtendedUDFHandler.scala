@@ -51,6 +51,7 @@ object ExtendedUDFHandler {
       val returnType = ScalaReflection.schemaFor(typeArgs.last).dataType
       val udf = clazz.newInstance()
       val argumentCount = typeArgs.length - 1
+
       val wrap = generateFunctionRef(udf, argumentCount, spark, dict)
       registerFunction(spark, name, wrap.func, returnType, argumentCount)
       wrap.onInterval

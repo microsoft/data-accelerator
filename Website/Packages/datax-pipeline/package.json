@@ -1,6 +1,6 @@
 {
   "name": "datax-pipeline",
-  "version": "1.2.2-SNAPSHOT",
+  "version": "1.2.2-SNAPSHOT-5-21",
   "description": "Pipeline features",
   "author": "Microsoft",
   "license": "MIT",
@@ -34,7 +34,7 @@
     "jsoneditor-react": "1.0.0",
     "mini-css-extract-plugin": "0.4.4",
     "monaco-editor-webpack-plugin": "1.6.0",
-    "datax-common": "1.1.1",
+    "datax-common": "1.2.2-SNAPSHOT-5-21",
     "office-ui-fabric-react": "6.111.2",
     "q": "1.5.1",
     "promise-polyfill": "8.1.0",

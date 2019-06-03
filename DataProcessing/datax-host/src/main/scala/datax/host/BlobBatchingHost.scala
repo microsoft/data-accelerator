@@ -11,9 +11,10 @@ import java.util.concurrent.Executors
 
 import datax.config.UnifiedConfig
 import datax.constants.ProductConstant
+import datax.exception.EngineException
 import datax.fs.HadoopClient
 import datax.input.BatchBlobInputSetting
-import datax.processor.BlobPointerProcessor
+import datax.processor.{BatchBlobProcessor, BlobPointerProcessor}
 import datax.telemetry.AppInsightLogger
 import datax.utility.DataMerger
 import org.apache.log4j.LogManager
@@ -25,29 +26,42 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 object BlobBatchingHost {
-  def getInputBlobPathPrefixes(prefix: String, datetimeFormat: String, startTime: Instant, durationInSeconds: Long, timeIntervalInSeconds: Long):Iterable[(String, Timestamp)] = {
-    val result = new ListBuffer[(String, Timestamp)]
-    val cache = new HashSet[String]
+  val appLog = LogManager.getLogger("runBatchApp")
 
-    var t:Long = 0
-    //val utcZoneId = ZoneId.of("UTC")
-    val dateFormat = new SimpleDateFormat(datetimeFormat)
-    while(t<durationInSeconds){
-      val timestamp = Timestamp.from(startTime.plusSeconds(t))
+  private def getInputBlobPathPrefixes(path: String, startTime: Instant):Iterable[(String, Timestamp)] = {
+    val result = new ListBuffer[(String, Timestamp)]
+
+    val pattern = getDateTimePattern(path)
+
+    if(!pattern.isEmpty) {
+      val dateFormat = new SimpleDateFormat(pattern)
+      val timestamp = Timestamp.from(startTime)
       val partitionFolder = dateFormat.format(timestamp)
-      if(!cache.contains(partitionFolder)){
-        val path = prefix+partitionFolder
-        result += Tuple2(path, timestamp)
-        cache += partitionFolder
-      }
-      t+= timeIntervalInSeconds
+      val path2 = path.replace("{" + pattern + "}", partitionFolder)
+      result += Tuple2(path2, timestamp)
+    }
+    else {
+      result += Tuple2(path, Timestamp.from(Instant.now()))
     }
 
     result
   }
 
-  def runBatchApp(inputArguments: Array[String],processorGenerator: UnifiedConfig=>BlobPointerProcessor ) = {
-    val appLog = LogManager.getLogger("runBatchApp")
+  // Get the datetime pattern like {yyyy-MM-dd} in the input path.
+  // For e.g. if the input path is "wasbs://outputs@myaccount.blob.core.windows.net/{yyyy-MM-dd}/flow1", this will return yyyy-MM-dd
+  private def getDateTimePattern(inputPath:String):String ={
+    val regex = """\{([yMdHmsS\-/.]+)\}*""".r
+
+    regex.findFirstMatchIn(inputPath) match {
+      case Some(partition) => partition.group(1)
+      case None =>
+        appLog.warn(s"InputPath string does not contain the datetime pattern ${regex.regex}.")
+        ""
+    }
+  }
+
+
+  def runBatchApp(inputArguments: Array[String],processorGenerator: UnifiedConfig=>BatchBlobProcessor ) = {
     val (appHost, config) = CommonAppHost.initApp(inputArguments)
 
     appLog.warn(s"Batch Mode Work Started")
@@ -56,18 +70,12 @@ object BlobBatchingHost {
     AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/batch/app/begin")
 
     val prefixes = blobsConf.flatMap(blobs=>{
-      val inputBlobPathPrefix = blobs.pathPrefix
-      val inputBlobDateTimeFormat = blobs.pathPartitionFolderFormat
+      val inputBlobPath= blobs.path
       val inputBlobStartTime = Instant.parse(blobs.startTime)
-      val inputBlobDurationInHours = blobs.durationInHours
-      val inputBlobTimeIntervalInHours = 1
 
       getInputBlobPathPrefixes(
-        prefix = inputBlobPathPrefix,
-        datetimeFormat = inputBlobDateTimeFormat,
-        startTime = inputBlobStartTime,
-        durationInSeconds = inputBlobDurationInHours*3600,
-        timeIntervalInSeconds = inputBlobTimeIntervalInHours*3600
+        path = inputBlobPath,
+        startTime = inputBlobStartTime
       )
     }).par
 
@@ -90,7 +98,7 @@ object BlobBatchingHost {
       val namespace = "_"+HadoopClient.tempFilePrefix(prefix._1)
       appLog.warn(s"Namespace for prefix ${prefix._1} is '$namespace'")
       val pathsRDD = sc.makeRDD(HadoopClient.listFiles(prefix._1).toSeq)
-      val result = processor.processPathsRDD(pathsRDD, prefix._2, 1 hour, prefix._2, namespace)
+      val result = processor.process(pathsRDD, prefix._2, 1 hour)
       appLog.warn(s"End processing ${prefix}")
 
       result
