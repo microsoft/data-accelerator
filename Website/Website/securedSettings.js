@@ -54,7 +54,7 @@ module.exports = async function(host) {
                 async function() {
                     let kubernetesServices = await getSecret('kubernetesServices');
                     // JSON object looks like this:
-                    // {"Flow.InteractiveQueryService":"http://<ExternalIP for Interactive Query Service>:5000","Flow.SchemaInferenceService":"http://<External IP for Schema Inference Service>:5000","Flow.ManagementService":"http://<External IP for Flow Management Service>:5000","Flow.LiveDataService":"http://<ExternalIP for live Data Service>:5000"}
+                    // {"Flow.InteractiveQueryService":"http://<External IP for Interactive Query Service>:5000","Flow.SchemaInferenceService":"http://<External IP for Schema Inference Service>:5000","Flow.ManagementService":"http://<External IP for Flow Management Service>:5000","Flow.LiveDataService":"http://<External IP for live Data Service>:5000"}
                     if (kubernetesServices) {
                         env.kubernetesServices = JSON.parse(kubernetesServices);
                     }
