@@ -186,12 +186,13 @@ function initialize(host) {
     };
 
     /**
-     * call services on service fabric
+     * call services on service fabric or services hosted on Kubernetes
      * @param {http request coming from client} req
      * @param {query object to call Service Fabric service} query
      * Example:
      * {
-     *   application: "DataX.Flow",
+     *   application: "DataX.Flow",// This does not apply the kubernetes scenario. This applies only to the ServiceFabric scenario.
+     *   the rest of the parameters stay the same for the Kubernetes scenario as well.
      *   service: "Flow.ManagementService",
      *   method: "GET", // or POST
      *   headers: {"Content-type": "application/json"} // optional headers
@@ -207,6 +208,8 @@ function initialize(host) {
         let url;
         if (env.localServices[query.service]) {
             url = `${env.localServices[query.service]}/api/${query.api}`;
+        } else if (env.kubernetesServices && env.kubernetesServices[query.service]) {
+            url = `${env.kubernetesServices[query.service]}/api/${query.api}`;
         } else {
             url = `${serviceClusterUrl}/api/${query.application}/${query.service}/${query.api}`;
         }
