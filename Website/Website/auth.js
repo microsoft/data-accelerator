@@ -89,10 +89,6 @@ function initialize(host) {
     const authContext = new AuthenticationContext(`https://login.microsoftonline.com/${tenantName}`);
     const serviceClusterUrl = env.serviceClusterUrl;
 
-    // Updates will be made once the ARM support is added.
-    // This expects a secret with a value that is a json object comprising of all the backend service names and the external IP addresses as exposed by AKS where each of them can be listened to.
-    const kubernetesServices = env.kubernetesServices ? env.kubernetesServices : null;
-
     function resourceToResourceId(resource) {
         if (resource === 'service') {
             return env.serviceResourceId;
@@ -212,8 +208,8 @@ function initialize(host) {
         let url;
         if (env.localServices[query.service]) {
             url = `${env.localServices[query.service]}/api/${query.api}`;
-        } else if (kubernetesServices != null && `${kubernetesServices[query.service]}`) {
-            url = `${kubernetesServices[query.service]}/api/${query.api}`;
+        } else if (env.kubernetesServices && env.kubernetesServices[query.service]) {
+            url = `${env.kubernetesServices[query.service]}/api/${query.api}`;
         } else {
             url = `${serviceClusterUrl}/api/${query.application}/${query.service}/${query.api}`;
         }
