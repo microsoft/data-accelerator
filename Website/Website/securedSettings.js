@@ -51,9 +51,13 @@ module.exports = async function(host) {
                     env.mongoDbUrl = await getSecretOrThrow('mongoDbUrl');
                     env.mongoSharedDbUrl = await getSecretOrThrow('mongoSharedDbUrl').catch(err => env.mongoDbUrl);
                 },
-                ,
                 async function() {
-                    env.kubernetesServices = await getSecret('kubernetesServices');
+                    let kubernetesServices = await getSecret('kubernetesServices');
+                    // JSON object looks like this:
+                    // {"Flow.InteractiveQueryService":"http://<ExternalIP for Interactive Query Service>:5000","Flow.SchemaInferenceService":"http://<External IP for Schema Inference Service>:5000","Flow.ManagementService":"http://<External IP for Flow Management Service>:5000","Flow.LiveDataService":"http://<ExternalIP for live Data Service>:5000"}
+                    if (kubernetesServices) {
+                        env.kubernetesServices = JSON.parse(kubernetesServices);
+                    }
                 },
                 async function() {
                     let redisDataConnectionString = await getSecret('redisDataConnectionString');

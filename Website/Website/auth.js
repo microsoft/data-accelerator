@@ -91,7 +91,7 @@ function initialize(host) {
 
     // Updates will be made once the ARM support is added.
     // This expects a secret with a value that is a json object comprising of all the backend service names and the external IP addresses as exposed by AKS where each of them can be listened to.
-    const kubernetesServices = JSON.parse(env.kubernetesServices);
+    const kubernetesServices = env.kubernetesServices;
 
     function resourceToResourceId(resource) {
         if (resource === 'service') {
