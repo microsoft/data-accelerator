@@ -1,4 +1,8 @@
-﻿using DataX.Config;
+﻿// *********************************************************************
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License
+// *********************************************************************
+using DataX.Config;
 using DataX.Config.ConfigDataModel;
 using DataX.Config.ConfigurationProviders;
 using DataX.Config.Local;

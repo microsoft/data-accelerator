@@ -1,4 +1,8 @@
-﻿namespace DataX.ServiceHost.AspNetCore.Authorization
+﻿// *********************************************************************
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License
+// *********************************************************************
+namespace DataX.ServiceHost.AspNetCore.Authorization
 {
     using DataX.ServiceHost.Authorization;
     using DataX.Contract.Settings;

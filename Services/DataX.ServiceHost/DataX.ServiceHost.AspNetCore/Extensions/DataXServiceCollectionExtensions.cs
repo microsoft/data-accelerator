@@ -1,4 +1,8 @@
-﻿using DataX.ServiceHost.AspNetCore.Startup;
+﻿// *********************************************************************
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License
+// *********************************************************************
+using DataX.ServiceHost.AspNetCore.Startup;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
