@@ -20,7 +20,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.ServiceHost.ServiceFa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Gateway.Contract", "DataX.Gateway.Contract\DataX.Gateway.Contract.csproj", "{72F03D91-7DD7-4392-B25A-0790139E8774}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataX.Utility.Nuget", "..\DataX.Utilities\DataX.Utility.Nuget\DataX.Utility.Nuget.csproj", "{7BE24BB5-3237-4403-921E-3CFC5A4A8E20}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Utility.Nuget", "..\DataX.Utilities\DataX.Utility.Nuget\DataX.Utility.Nuget.csproj", "{7BE24BB5-3237-4403-921E-3CFC5A4A8E20}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.ServiceHost", "..\DataX.ServiceHost\DataX.ServiceHost\DataX.ServiceHost.csproj", "{C96A9A61-E881-46D6-BD29-239E2DE13FC1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -87,6 +89,14 @@ Global
 		{7BE24BB5-3237-4403-921E-3CFC5A4A8E20}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7BE24BB5-3237-4403-921E-3CFC5A4A8E20}.Release|x64.ActiveCfg = Release|Any CPU
 		{7BE24BB5-3237-4403-921E-3CFC5A4A8E20}.Release|x64.Build.0 = Release|Any CPU
+		{C96A9A61-E881-46D6-BD29-239E2DE13FC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C96A9A61-E881-46D6-BD29-239E2DE13FC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C96A9A61-E881-46D6-BD29-239E2DE13FC1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C96A9A61-E881-46D6-BD29-239E2DE13FC1}.Debug|x64.Build.0 = Debug|Any CPU
+		{C96A9A61-E881-46D6-BD29-239E2DE13FC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C96A9A61-E881-46D6-BD29-239E2DE13FC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C96A9A61-E881-46D6-BD29-239E2DE13FC1}.Release|x64.ActiveCfg = Release|Any CPU
+		{C96A9A61-E881-46D6-BD29-239E2DE13FC1}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
