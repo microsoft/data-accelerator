@@ -40,6 +40,7 @@ Licensed under the MIT License
             <Parameter Name="cosmosDBConfigCollectionName" Value="[cosmosDBConfigCollectionName]" />
             <Parameter Name="AppInsightsIntrumentationKey" Value="[AppInsightsIntrumentationKey]" />
             <Parameter Name="CACertificateLocation" Value="[CACertificateLocation]" />
+            <Parameter Name="EnableOneBox" Value="[EnableOneBox]" />
           </Section>
         </Settings>
       </ConfigOverride>
@@ -61,6 +62,7 @@ Licensed under the MIT License
             <Parameter Name="cosmosDBConfigCollectionName" Value="[cosmosDBConfigCollectionName]" />
             <Parameter Name="AppInsightsIntrumentationKey" Value="[AppInsightsIntrumentationKey]" />
             <Parameter Name="CACertificateLocation" Value="[CACertificateLocation]" />
+            <Parameter Name="EnableOneBox" Value="[EnableOneBox]" />
           </Section>
         </Settings>
       </ConfigOverride>
@@ -81,6 +83,7 @@ Licensed under the MIT License
             <Parameter Name="cosmosDBConfigDatabaseName" Value="[cosmosDBConfigDatabaseName]" />
             <Parameter Name="cosmosDBConfigCollectionName" Value="[cosmosDBConfigCollectionName]" />
             <Parameter Name="AppInsightsIntrumentationKey" Value="[AppInsightsIntrumentationKey]" />
+            <Parameter Name="EnableOneBox" Value="[EnableOneBox]" />
           </Section>
         </Settings>
       </ConfigOverride>
@@ -104,6 +107,7 @@ Licensed under the MIT License
             <Parameter Name="MefStorageAccountName" Value="[MefStorageAccountName]" />
             <Parameter Name="MefContainerName" Value="[MefContainerName]" />
             <Parameter Name="MefBlobDirectory" Value="[MefBlobDirectory]" />
+            <Parameter Name="EnableOneBox" Value="[EnableOneBox]" />
           </Section>
         </Settings>
       </ConfigOverride>
