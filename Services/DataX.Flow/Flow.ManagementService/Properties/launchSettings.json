@@ -22,6 +22,7 @@
       "launchBrowser": true,
       "launchUrl": "api/values",
       "environmentVariables": {
+        "AzureServicesAuthConnectionString": "RunAs=Developer; DeveloperTool=VisualStudio",
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "http://localhost:5000"

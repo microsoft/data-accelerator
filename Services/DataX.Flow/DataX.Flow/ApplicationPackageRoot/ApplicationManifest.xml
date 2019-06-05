@@ -23,6 +23,7 @@ Licensed under the MIT License
     <Parameter Name="MefStorageAccountName" DefaultValue="" />
     <Parameter Name="MefContainerName" DefaultValue="" />
     <Parameter Name="MefBlobDirectory" DefaultValue="" />
+    <Parameter Name="EnableOneBox" DefaultValue="false" />
   </Parameters>
   <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
        should match the Name and Version attributes of the ServiceManifest element defined in the 
@@ -39,6 +40,7 @@ Licensed under the MIT License
             <Parameter Name="cosmosDBConfigCollectionName" Value="[cosmosDBConfigCollectionName]" />
             <Parameter Name="AppInsightsIntrumentationKey" Value="[AppInsightsIntrumentationKey]" />
             <Parameter Name="CACertificateLocation" Value="[CACertificateLocation]" />
+            <Parameter Name="EnableOneBox" Value="[EnableOneBox]" />
           </Section>
         </Settings>
       </ConfigOverride>
@@ -60,6 +62,7 @@ Licensed under the MIT License
             <Parameter Name="cosmosDBConfigCollectionName" Value="[cosmosDBConfigCollectionName]" />
             <Parameter Name="AppInsightsIntrumentationKey" Value="[AppInsightsIntrumentationKey]" />
             <Parameter Name="CACertificateLocation" Value="[CACertificateLocation]" />
+            <Parameter Name="EnableOneBox" Value="[EnableOneBox]" />
           </Section>
         </Settings>
       </ConfigOverride>
@@ -80,6 +83,7 @@ Licensed under the MIT License
             <Parameter Name="cosmosDBConfigDatabaseName" Value="[cosmosDBConfigDatabaseName]" />
             <Parameter Name="cosmosDBConfigCollectionName" Value="[cosmosDBConfigCollectionName]" />
             <Parameter Name="AppInsightsIntrumentationKey" Value="[AppInsightsIntrumentationKey]" />
+            <Parameter Name="EnableOneBox" Value="[EnableOneBox]" />
           </Section>
         </Settings>
       </ConfigOverride>
@@ -103,6 +107,7 @@ Licensed under the MIT License
             <Parameter Name="MefStorageAccountName" Value="[MefStorageAccountName]" />
             <Parameter Name="MefContainerName" Value="[MefContainerName]" />
             <Parameter Name="MefBlobDirectory" Value="[MefBlobDirectory]" />
+            <Parameter Name="EnableOneBox" Value="[EnableOneBox]" />
           </Section>
         </Settings>
       </ConfigOverride>

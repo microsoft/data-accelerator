@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using DataX.Config.ConfigDataModel;
 
 namespace DataX.Flow.DeleteHelper
@@ -25,7 +26,7 @@ namespace DataX.Flow.DeleteHelper
         private const string _Centralprocessing = "centralprocessing";
         private string _flowContainerName => _engineEnvironment.EngineFlowConfig.FlowContainerName;
         private string _eventHubPrimaryKeyListener;
-        private EngineEnvironment _engineEnvironment = new EngineEnvironment();
+        private EngineEnvironment _engineEnvironment;
         private readonly Dictionary<string, string> _keySecretList = new Dictionary<string, string>();
 
         private string ConfigName { get; set; }
@@ -64,10 +65,13 @@ namespace DataX.Flow.DeleteHelper
 
         private string _inputEventhubConnectionStringRef;
         private readonly ILogger _logger;
+        private readonly IConfiguration _configuration;
 
-        public ConfigDeleter(ILogger logger)
+        public ConfigDeleter(ILogger logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
+            _engineEnvironment = new EngineEnvironment(_configuration);
         }
 
         /// This is the function that can be called for deleting all assets created on save of a flow: consumergroup, secrets in Key Vault, cosmosDB products document such that this flow stops showing up in the UI under Flows and blobs

@@ -31,6 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\DataX.ServiceHost\DataX.ServiceHost.ServiceFabric\DataX.ServiceHost.ServiceFabric.csproj" />
+    <ProjectReference Include="..\..\DataX.ServiceHost\DataX.ServiceHost\DataX.ServiceHost.csproj" />
     <ProjectReference Include="..\DataX.Utilities.KeyVault\DataX.Utilities.KeyVault.csproj" />
   </ItemGroup>
 

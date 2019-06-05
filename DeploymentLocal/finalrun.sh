@@ -1,3 +1,3 @@
 #!/bin/bash
-dotnet DataX.FlowManagement.dll &
+dotnet Flow.ManagementService.dll &
 npm start

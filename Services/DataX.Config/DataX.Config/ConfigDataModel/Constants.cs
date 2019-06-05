@@ -25,6 +25,10 @@ namespace DataX.Config.ConfigDataModel
         public const string ConfigSettingName_LocalMetricsHttpEndpoint = "localMetricsHttpEndpoint";
         public const string ConfigSettingName_SecretPrefix = "configgenSecretPrefix";
         public const string ConfigSettingName_ResourceCreation = "resourceCreation";
+        public const string ConfigSettingName_CosmosDBConfigConnectionString = "CosmosDBConfigConnectionString";
+        public const string ConfigSettingName_CosmosDBConfigDatabaseName = "CosmosDBConfigDatabaseName";
+        public const string ConfigSettingName_CosmosDBConfigCollectionName = "CosmosDBConfigCollectionName";
+        public const string ConfigSettingName_AppInsightsIntrumentationKey = "AppInsightsIntrumentationKey";
 
         public const string TokenName_SparkJobConfigFilePath = "sparkJobConfigFilePath";
         public const string TokenName_SparkJobName = "sparkJobName";

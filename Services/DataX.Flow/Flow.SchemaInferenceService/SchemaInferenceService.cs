@@ -26,9 +26,13 @@ namespace Flow.SchemaInferenceService
     /// </summary>
     internal sealed class SchemaInferenceService : StatelessService
     {
-        public SchemaInferenceService(StatelessServiceContext context)
+        private readonly IWebHostBuilder _hostBuilder;
+
+        public SchemaInferenceService(StatelessServiceContext context, IWebHostBuilder hostBuilder)
             : base(context)
-        { }
+        {
+            _hostBuilder = hostBuilder;
+        }
 
         /// <summary>
         /// Optional override to create listeners (like tcp, http) for this service instance.
@@ -43,14 +47,10 @@ namespace Flow.SchemaInferenceService
                     {
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
 
-                        return new WebHostBuilder()
-                                    .UseKestrel()
+                        return _hostBuilder
                                     .ConfigureServices(
                                         services => services
                                             .AddSingleton<StatelessServiceContext>(serviceContext))
-                                    .UseContentRoot(Directory.GetCurrentDirectory())
-                                    .UseStartup<Startup>()
-                                    
                                     .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
                                     .UseUrls(url)
                                     .Build();
