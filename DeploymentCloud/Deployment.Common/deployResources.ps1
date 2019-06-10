@@ -203,7 +203,6 @@ function Get-Tokens {
     }
 
     $tokens.Add('appInsightKey', $aiKey )
-
     $tokens.Add('resourceLocation', $resourceGroupLocation )
     
     $certtype = '' 
@@ -212,6 +211,17 @@ function Get-Tokens {
     }
     
     $tokens.Add('certtype', $certtype )
+    
+    $kafkaNativeConnectionString = ''
+    $kafkaNativeTopics = ''
+
+    if($enableKafkaSample -eq 'y') {
+        $kafkaNativeConnectionString = "datagen-kafkaNativeConnectionString"
+        $kafkaNativeTopics = "kafka1,kafka2"
+    }
+    
+    $tokens.Add('kafkaNativeConnectionString', $kafkaNativeConnectionString)
+    $tokens.Add('kafkaNativeTopics', $kafkaNativeTopics)
 
     $tokens
 }
@@ -467,8 +477,8 @@ function Setup-SecretsForSpark {
     $secretName = "sparkclusterloginpassword"
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sparkPwd
 
-    $secretName = "sshuser" 
-    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sshuser
+    $secretName = "sparksshuser" 
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sparksshuser
 
     $secretName = "sparksshpassword" 
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sparkSshPwd
@@ -530,7 +540,10 @@ function Setup-Secrets {
     $secretName = $prefix + "azureservicesauthconnectionstring"    
     $tValue = "<Parameter Name=""AzureServicesAuthConnectionString"" Value=""RunAs=App;AppId=" + $azureADApplicationConfiggenApplicationId + ";TenantId=" + $tenantId + ";CertificateThumbprint=" + $certPrimary.Certificate.Thumbprint + ";CertificateStoreLocation=LocalMachine""/>"
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $tValue
-    
+
+    $secretName = $prefix + "cacertificatelocation"
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $caCertificateLocation
+
     $prefix = "$clientSecretPrefix-"
     $secretName = $prefix + "aiKey"    
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $aiKey
@@ -662,7 +675,7 @@ function Open-Port {
 	$port = 443
 	
 	# Get the load balancer resource
-	$resource = Get-AzureRmResource | Where {$_.resourceGroupName -eq $resourceGroupName -and $_.ResourceType -eq "Microsoft.Network/loadBalancers"}
+	$resource = Get-AzureRmResource | Where {$_.resourceGroupName -eq $resourceGroupName -and $_.ResourceType -eq "Microsoft.Network/loadBalancers" -and $_.Name -like "LB-*"}
 	$slb = Get-AzureRmLoadBalancer -Name $resource.Name -resourceGroupName $resourceGroupName
     
 	$probe = Get-AzureRmLoadBalancerProbeConfig -Name $probename -LoadBalancer $slb -ErrorAction SilentlyContinue

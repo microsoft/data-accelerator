@@ -1,6 +1,6 @@
 {
   "name": "datax-home",
-  "version": "1.1.0",
+  "version": "1.2.2",
   "description": "Home page",
   "author": "Microsoft",
   "license": "MIT",
@@ -10,6 +10,10 @@
   ],
   "engines": {
     "node": "10.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Microsoft/data-accelerator"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -26,7 +30,7 @@
     "css-loader": "1.0.1",
     "file-loader": "2.0.0",
     "mini-css-extract-plugin": "0.4.4",
-    "datax-common": "1.1.0",
+    "datax-common": "1.2.2",
     "office-ui-fabric-react": "6.111.2",
     "q": "1.5.1",
     "react": "16.6.3",

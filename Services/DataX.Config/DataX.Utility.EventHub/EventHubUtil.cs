@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DataX.Flow.Common;
 
 namespace DataX.Utility.EventHub
 {
@@ -36,30 +37,40 @@ namespace DataX.Utility.EventHub
                    consumerGroupName: consumerGroupName));
         }
 
-        public static async Task<Result> CreateEventHubConsumerGroup(string clientId,
+       public static async Task<Result> CreateEventHubConsumerGroups(string clientId,
                                                     string tenantId,
                                                     string secretKey,
                                                     string subscriptionId,
                                                     string resourceGroupName,
                                                     string hubNamespace,
-                                                    string hubName,
+                                                    string hubNames,
                                                     string consumerGroupName)
         {
             Ensure.NotNull(hubNamespace, "hubNamespace");
 
-            return await UpsertHubConsumerGroup(
-                clientId: clientId,
-                tenantId: tenantId,
-                secretKey: secretKey,
-                subscriptionId: subscriptionId,
-                hubName: hubName,
-                consumerGroupName: consumerGroupName,
-                resourceGroupName: resourceGroupName,
-                op: (client) => client.UpsertEventHubConsumerGroup(
+            Result result = null;
+            var ehNames = Helper.ParseEventHubNames(hubNames);
+
+            foreach(var ehName in ehNames)
+            {
+                result = await UpsertHubConsumerGroup(
+                    clientId: clientId,
+                    tenantId: tenantId,
+                    secretKey: secretKey,
+                    subscriptionId: subscriptionId,
+                    hubName: ehName,
+                    consumerGroupName: consumerGroupName,
                     resourceGroupName: resourceGroupName,
-                    hubNamespace: hubNamespace,
-                    hubName: hubName,
-                    consumerGroupName: consumerGroupName));
+                    op: (client) => client.UpsertEventHubConsumerGroup(
+                        resourceGroupName: resourceGroupName,
+                        hubNamespace: hubNamespace,
+                        hubName: ehName,
+                        consumerGroupName: consumerGroupName));
+
+                Ensure.IsSuccessResult(result);
+            }
+
+            return result;
         }
 
         public static async Task<Result> UpsertHubConsumerGroup(string clientId,

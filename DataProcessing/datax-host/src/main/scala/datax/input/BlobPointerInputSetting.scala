@@ -5,11 +5,8 @@
 package datax.input
 
 import datax.config.{SettingDictionary, SettingNamespace}
-import datax.input.EventHubInputSetting.InputEventHubConf
 import datax.input.StreamingInputSetting.StreamingConf
 import org.apache.log4j.LogManager
-
-import scala.collection.mutable
 
 object BlobPointerInputSetting {
   case class InputSource(target: String, catalogPrefix:Option[String])

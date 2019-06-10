@@ -1,0 +1,460 @@
+{
+    "_id": {"$oid": "5c89bdeffe682403e89dfabd"},
+    "name": "HomeAutomationLocal",
+    "icon": "/img/iot.png",
+    "displayName": "HomeAutomationLocal",
+    "commonProcessor": 
+    {
+        "sparkJobConfigFolder": "_S_{cpConfigFolderBase}/${name}",
+        "template": 
+        {
+            "name": "_S_{name}",
+            "input": 
+            {
+                "eventhub": 
+                {
+                    "connectionString": "_S_{inputEventHubConnectionString}",
+                    "consumerGroup": "_S_{inputEventHubConsumerGroup}",
+                    "checkpointDir": "_S_{inputEventHubCheckpointDir}",
+                    "checkpointInterval": "_S_{inputEventHubCheckpointInterval}",
+                    "maxRate": "_S_{inputEventHubMaxRate}",
+                    "flushExistingCheckpoints": "_S_{inputEventHubFlushExistingCheckpoints}"
+                },
+                "streaming": 
+                {
+                    "checkpointDir": "_S_{inputStreamingCheckpointDir}",
+                    "intervalInSeconds": "_S_{inputStreamingIntervalInSeconds}"
+                },
+                "blobSchemaFile": "_S_{inputSchemaFilePath}",
+                "referenceData": "_S_{inputReferenceData}"
+            },
+            "process": 
+            {
+                "metric": 
+                {
+                    "httppost": "_S_{localMetricsHttpEndpoint}"
+                },
+                "timestampColumn": "_S_{processTimestampColumn}",
+                "watermark": "_S_{processWatermark}",
+                "jarUDAFs": "_S_{processJarUDAFs}",
+                "jarUDFs": "_S_{processJarUDFs}",
+                "azureFunctions": "_S_{processAzureFunctions}",
+                "projections": "_S_{processProjections}",
+                "timeWindows": "_S_{processTimeWindows}",
+                "transform": "_S_{processTransforms}",
+                "appendEventTags": {},
+                "accumulationTables": "_S_{processStateTables}"
+            },
+            "outputs": "_S_{outputs}"
+        },
+        "sparkJobTemplateRef": "defaultSparkJobTemplate",
+        "jobCommonTokens": 
+        {
+            "jobName": "_S_{name}",
+            "sparkJobName": "DataXDirect-${name}",
+            "sparkJobDriverLogLevel": "WARN",
+            "sparkJobExecutorLogLevel": "INFO",
+            "sparkJobNumExecutors": "_S_{guiSparkJobNumExecutors}",
+            "sparkJobExecutorMemory": "_S_{guiSparkJobExecutorMemory}",
+            "processedSchemaPath": null
+        },
+        "jobs": 
+        [
+            {
+                "partitionJobNumber": "1"
+            }
+        ]
+    },
+    "metrics": 
+    {
+        "sources": 
+        [
+            {
+                "name": "events",
+                "input": 
+                {
+                    "type": "MetricApi",
+                    "metricKeys": 
+                    [
+                        "DATAX-HomeAutomationLocal:Input_DataXProcessedInput_Events_Count"
+                    ]
+                },
+                "output": 
+                {
+                    "type": "SumWithTimeChart",
+                    "data": 
+                    {
+                        "sum": true,
+                        "timechart": true,
+                        "average": true,
+                        "speed": true
+                    },
+                    "dynamicOffsetInMs": 300000
+                }
+            },
+            {
+                "name": "CLOSEAlert",
+                "input": 
+                {
+                    "type": "MetricDetailsApi",
+                    "pollingInterval": 60000,
+                    "metricKeys": 
+                    [
+                        {
+                            "name": "HomeAutomationLocal:CLOSEAlert",
+                            "displayName": "CLOSEAlert"
+                        }
+                    ]
+                },
+                "output": 
+                {
+                    "type": "DirectTable",
+                    "data": 
+                    {
+                        "timechart": false,
+                        "current": false,
+                        "table": true
+                    },
+                    "chartTimeWindowInMs": 3600000
+                }
+            },
+            {
+                "name": "DoorUnlockedSimpleAlert",
+                "input": 
+                {
+                    "type": "MetricDetailsApi",
+                    "pollingInterval": 60000,
+                    "metricKeys": 
+                    [
+                        {
+                            "name": "HomeAutomationLocal:DoorUnlockedSimpleAlert",
+                            "displayName": "DoorUnlockedSimpleAlert"
+                        }
+                    ]
+                },
+                "output": 
+                {
+                    "type": "DirectTable",
+                    "data": 
+                    {
+                        "timechart": false,
+                        "current": false,
+                        "table": true
+                    },
+                    "chartTimeWindowInMs": 3600000
+                }
+            },
+            {
+                "name": "HeaterStateOneIsOn, WindowLockStateOneIsLocked",
+                "input": 
+                {
+                    "type": "MetricApi",
+                    "pollingInterval": 60000,
+                    "metricKeys": 
+                    [
+                        {
+                            "name": "HomeAutomationLocal:HeaterStateOneIsOn",
+                            "displayName": "HeaterStateOneIsOn"
+                        },
+                        {
+                            "name": "HomeAutomationLocal:WindowLockStateOneIsLocked",
+                            "displayName": "WindowLockStateOneIsLocked"
+                        }
+                    ]
+                },
+                "output": 
+                {
+                    "type": "DirectTimeChart",
+                    "data": 
+                    {
+                        "timechart": true,
+                        "current": false,
+                        "table": false
+                    },
+                    "chartTimeWindowInMs": 3600000
+                }
+            },
+            {
+                "name": "WindowOpenFiveMinWhileHeaterOnCombinedAlert",
+                "input": 
+                {
+                    "type": "MetricDetailsApi",
+                    "pollingInterval": 60000,
+                    "metricKeys": 
+                    [
+                        {
+                            "name": "HomeAutomationLocal:WindowOpenFiveMinWhileHeaterOnCombinedAlert",
+                            "displayName": "WindowOpenFiveMinWhileHeaterOnCombinedAlert"
+                        }
+                    ]
+                },
+                "output": 
+                {
+                    "type": "DirectTable",
+                    "data": 
+                    {
+                        "timechart": false,
+                        "current": false,
+                        "table": true
+                    },
+                    "chartTimeWindowInMs": 3600000
+                }
+            }
+        ],
+        "widgets": 
+        [
+            {
+                "name": "eventsChart",
+                "displayName": "Events/Second",
+                "data": "events_timechart",
+                "position": "TimeCharts",
+                "type": "StackAreaChart"
+            },
+            {
+                "name": "totalEvents",
+                "displayName": "Events Ingested Today",
+                "data": "events_sum",
+                "formatter": "longint",
+                "position": "FirstRow",
+                "type": "SimpleBox"
+            },
+            {
+                "name": "averageEvents",
+                "displayName": "Avg. Events/Minute",
+                "data": "events_average",
+                "formatter": "longint",
+                "position": "FirstRow",
+                "type": "SimpleBox"
+            },
+            {
+                "name": "CLOSEAlert",
+                "displayName": "CLOSEAlert",
+                "data": "CLOSEAlert_table",
+                "position": "TimeCharts",
+                "type": "DetailsList"
+            },
+            {
+                "name": "DoorUnlockedSimpleAlert",
+                "displayName": "DoorUnlockedSimpleAlert",
+                "data": "DoorUnlockedSimpleAlert_table",
+                "position": "TimeCharts",
+                "type": "DetailsList"
+            },
+            {
+                "name": "HeaterStateOneIsOn, WindowLockStateOneIsLocked",
+                "displayName": "HeaterStateOneIsOn, WindowLockStateOneIsLocked",
+                "data": "HeaterStateOneIsOn, WindowLockStateOneIsLocked_timechart",
+                "position": "TimeCharts",
+                "type": "MultiLineChart"
+            },
+            {
+                "name": "WindowOpenFiveMinWhileHeaterOnCombinedAlert",
+                "displayName": "WindowOpenFiveMinWhileHeaterOnCombinedAlert",
+                "data": "WindowOpenFiveMinWhileHeaterOnCombinedAlert_table",
+                "position": "TimeCharts",
+                "type": "DetailsList"
+            }
+        ],
+        "initParameters": 
+        {
+            "widgetSets": 
+            [
+                "direct"
+            ],
+            "jobNames": 
+            {
+                "type": "getCPSparkJobNames"
+            }
+        }
+    },
+    "gui": 
+    {
+        "name": "HomeAutomationLocal",
+        "displayName": "HomeAutomationLocal",
+        "owner": "",
+        "input": 
+        {
+            "mode": "streaming",
+            "type": "local",
+            "properties": 
+            {
+                "inputEventhubName": "",
+                "inputEventhubConnection": "",
+                "windowDuration": "60",
+                "timestampColumn": "eventTimeStamp",
+                "watermarkValue": "0",
+                "watermarkUnit": "second",
+                "maxRate": "100",
+                "inputSchemaFile": "{\"type\":\"struct\",\"fields\":[{\"name\":\"deviceDetails\",\"type\":{\"type\":\"struct\",\"fields\":[{\"name\":\"deviceId\",\"type\":\"long\",\"nullable\":false,\"metadata\":{\"allowedValues\":[1,2,3,4,5,6]}},{\"name\":\"deviceType\",\"type\":\"string\",\"nullable\":false,\"metadata\":{\"allowedValues\":[\"DoorLock\",\"WindowLock\",\"Heating\"]}},{\"name\":\"eventTime\",\"type\":\"long\",\"nullable\":false,\"metadata\":{\"useCurrentTimeMillis\":true}},{\"name\":\"homeId\",\"type\":\"long\",\"nullable\":false,\"metadata\":{\"allowedValues\":[32,150,25,81]}},{\"name\":\"status\",\"type\":\"long\",\"nullable\":false,\"metadata\":{\"allowedValues\":[0,1]}}]},\"nullable\":false,\"metadata\":{}}]}",
+                "showNormalizationSnippet": false,
+                "normalizationSnippet": "current_timestamp() AS eventTimeStamp\nSystemProperties AS _SystemProperties\nProperties AS _Properties\nRaw.*"
+            },
+            "referenceData": 
+            [
+                {
+                    "id": "myDevicesRefData",
+                    "type": "csv",
+                    "typeDisplay": "CSV/TSV File",
+                    "properties": 
+                    {
+                        "path": "/app/aspnetcore/devices.csv",
+                        "delimiter": ",",
+                        "header": true
+                    }
+                }
+            ]
+        },
+        "process": 
+        {
+            "timestampColumn": "eventTimeStamp",
+            "watermark": "0 second",
+            "functions": 
+            [
+                {
+                    "id": "whoOpened",
+                    "type": "jarUDF",
+                    "properties": 
+                    {
+                        "name": null,
+                        "path": "/app/aspnetcore/datax/bin/datax-udf-samples_2.3_2.11-1.1.0.jar",
+                        "class": "datax.sample.udf.UdfHelloWorld",
+                        "libs": []
+                    },
+                    "typeDisplay": "UDF"
+                }
+            ],
+            "queries": 
+            [
+                "--DataXQuery--\nDeviceWindowedInput = SELECT \n                        deviceDetails.deviceId,\n                        deviceDetails.deviceType,\n                        eventTimeStamp,\n                        deviceDetails.homeId,\n                        deviceDetails.status\n                    FROM DataXProcessedInput\n                    TIMEWINDOW('5 minutes')\n                    GROUP BY deviceId, deviceType, eventTimeStamp, homeId, status;\n                  \n\n--DataXQuery--\nDeviceNotWindowedInputWithNameAndWho = SELECT \n                        DataXProcessedInput.deviceDetails.deviceId,\n                        DataXProcessedInput.deviceDetails.deviceType,\n                        eventTimeStamp,\n                        DataXProcessedInput.deviceDetails.homeId,\n                        DataXProcessedInput.deviceDetails.status,\n                        myDevicesRefdata.deviceName,\n                        whoOpened(CAST(DataXProcessedInput.deviceDetails.deviceId AS String)) AS whoOpened\n                    FROM DataXProcessedInput \n                    JOIN myDevicesRefdata \n                    ON DataXProcessedInput.deviceDetails.deviceId = myDevicesRefdata.deviceId \n                    AND DataXProcessedInput.deviceDetails.homeId = myDevicesRefdata.homeId;\n\n--DataXQuery--\nDeviceInfoTimeWindow = SELECT \n                    deviceId,\n                    deviceType,\n                    homeId,\n                    MAX(eventTimeStamp) AS MaxEventTime,\n                    MIN(status) AS MinReading,\n                    MAX(status) AS MaxReading\n                FROM DeviceWindowedInput\n                GROUP BY deviceId, deviceType, homeId;\n\n--DataXQuery--\nHeaterStateOneIsOn = SELECT \n                    eventTimeStamp AS EventTime,\n                    'HeaterStateOneIsOn' AS MetricName,\n                    deviceDetails.status AS Metric,\n                    'HomeAutomationLocal' AS Product, \n                    '' AS Pivot1\n                FROM DataXProcessedInput\n                WHERE deviceDetails.homeId = 150\n                    AND deviceDetails.deviceType = 'Heating'\n                GROUP BY EventTime, MetricName, Metric, Product, Pivot1;\n                    \n                    \n--DataXQuery--\nWindowLockStateOneIsLocked = SELECT \n                        eventTimeStamp AS EventTime,\n                        'WindowLockStateOneIsLocked' AS MetricName,\n                        deviceDetails.status AS Metric,\n                        'HomeAutomationLocal' AS Product, \n                        '' AS Pivot1\n                    FROM DataXProcessedInput\n                    WHERE deviceDetails.homeId = 150\n                    AND deviceDetails.deviceType = 'WindowLock'\n                GROUP BY EventTime, MetricName, Metric, Product, Pivot1;\n\n--DataXQuery--\nWindowOpenFiveMin = SELECT\n                        MaxEventTime,\n                        MaxReading\n                    FROM DeviceInfoTimeWindow\n                    INNER JOIN WindowLockStateOneIsLocked ON WindowLockStateOneIsLocked.EventTime = DeviceInfoTimeWindow.MaxEventTime\n                    WHERE homeId = 150\n                        AND MaxReading = 0\n                        AND deviceType = 'WindowLock';\n\n--DataXQuery--\nWindowOpenFiveMinWhileHeaterOnCombinedAlert = SELECT\n                                    MaxEventTime AS EventTime,\n                                    'WindowOpenFiveMinWhileHeaterOnCombinedAlert' AS MetricName,\n                                    0 AS Metric,\n                                    'HomeAutomationLocal' AS Product, \n                                    'Window open for 5+ minutes while heater is on.' AS Pivot1\n                                FROM WindowOpenFiveMin\n                                INNER JOIN HeaterStateOneIsOn ON HeaterStateOneIsOn.EventTime = WindowOpenFiveMin.MaxEventTime\n                                WHERE MaxReading = 0\n                                   AND HeaterStateOneIsOn.Metric = 1;\n\n--DataXQuery--\nDoorUnlockedSimpleAlert = SELECT DISTINCT\n                        eventTimeStamp AS EventTime,\n                        'DoorUnlockedSimpleAlert' AS MetricName,\n                        0 AS Metric,\n                        'HomeAutomationLocal' AS Product, \n                        CONCAT('Door unlocked: ', deviceName, ' at home ', homeId) AS Pivot1\n                        FROM DeviceNotWindowedInputWithNameAndWho\n                        WHERE deviceType = 'DoorLock' AND\n                        homeId = 150 AND\n                        status = 0;\n\n--DataXQuery--\nRules = ProcessRules(DataXProcessedInput);\n\n--DataXQuery--\nProcessAlerts(DataXProcessedInput);\n\nOUTPUT DoorUnlockedSimpleAlert TO Metrics;\nOUTPUT HeaterStateOneIsOn, WindowLockStateOneIsLocked TO Metrics;\nOUTPUT WindowOpenFiveMinWhileHeaterOnCombinedAlert TO Metrics;"
+            ],
+            "jobconfig": 
+            {
+                "jobNumExecutors": "4",
+                "jobExecutorMemory": "4000"
+            }
+        },
+        "outputs": 
+        [
+            {
+                "id": "Metrics",
+                "type": "metric",
+                "properties": {},
+                "typeDisplay": "Metrics"
+            }
+        ],
+        "outputTemplates": [],
+        "rules": 
+        [
+            {
+                "id": "DoorLock Close",
+                "type": "tag",
+                "properties": 
+                {
+                    "_S_productId": "",
+                    "_S_ruleType": "SimpleRule",
+                    "_S_ruleId": "",
+                    "_S_ruleDescription": "DoorLock Close",
+                    "_S_condition": "deviceDetails.deviceType = 'DoorLock' AND deviceDetails.status = 1",
+                    "_S_tagName": "Tag",
+                    "_S_tag": "CLOSE",
+                    "_S_aggs": [],
+                    "_S_pivots": [],
+                    "_S_isAlert": true,
+                    "_S_severity": "Critical",
+                    "_S_alertSinks": 
+                    [
+                        "Metrics"
+                    ],
+                    "_S_outputTemplate": "",
+                    "schemaTableName": "DataXProcessedInput",
+                    "conditions": 
+                    {
+                        "type": "group",
+                        "conjunction": "or",
+                        "conditions": 
+                        [
+                            {
+                                "type": "condition",
+                                "conjunction": "or",
+                                "aggregate": "AVG",
+                                "field": "deviceDetails.deviceType",
+                                "operator": "stringEqual",
+                                "value": "DoorLock"
+                            },
+                            {
+                                "type": "condition",
+                                "conjunction": "and",
+                                "aggregate": "AVG",
+                                "field": "deviceDetails.status",
+                                "operator": "equal",
+                                "value": "1"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "DoorLock Open",
+                "type": "tag",
+                "properties": 
+                {
+                    "_S_productId": "",
+                    "_S_ruleType": "SimpleRule",
+                    "_S_ruleId": "",
+                    "_S_ruleDescription": "DoorLock Open",
+                    "_S_condition": "deviceDetails.deviceType = 'DoorLock' AND deviceDetails.status = 1 AND deviceDetails.homeId = 150",
+                    "_S_tagName": "Tag",
+                    "_S_tag": "OPEN",
+                    "_S_aggs": [],
+                    "_S_pivots": [],
+                    "_S_isAlert": false,
+                    "_S_severity": "Critical",
+                    "_S_alertSinks": [],
+                    "_S_outputTemplate": "",
+                    "schemaTableName": "DataXProcessedInput",
+                    "conditions": 
+                    {
+                        "type": "group",
+                        "conjunction": "or",
+                        "conditions": 
+                        [
+                            {
+                                "type": "condition",
+                                "conjunction": "or",
+                                "aggregate": "AVG",
+                                "field": "deviceDetails.deviceType",
+                                "operator": "stringEqual",
+                                "value": "DoorLock"
+                            },
+                            {
+                                "type": "condition",
+                                "conjunction": "and",
+                                "aggregate": "AVG",
+                                "field": "deviceDetails.status",
+                                "operator": "equal",
+                                "value": "1"
+                            },
+                            {
+                                "type": "condition",
+                                "conjunction": "and",
+                                "aggregate": "AVG",
+                                "field": "deviceDetails.homeId",
+                                "operator": "equal",
+                                "value": "150"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "subscription": null
+    },
+    "properties": 
+    {
+        "foo": "v"
+    },
+    "jobNames": 
+    [
+        "HomeAutomationLocal"
+    ]
+}

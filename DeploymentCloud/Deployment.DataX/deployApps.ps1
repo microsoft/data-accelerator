@@ -98,6 +98,6 @@ Deploy-Web -packagesPath $packageFileFolder
 # Deploy DataX jar files
 Write-Host -ForegroundColor Green "Deploying jar files... (13/16 steps)"
 Write-Host -ForegroundColor Green "Estimated time to complete: 1 min"
-Deploy-Files -saName $sparkBlobAccountName -containerName "default" -filter "*.jar" -filesPath $packageFileFolder -targetPath "datax\bin"
+Deploy-Files -saName $sparkBlobAccountName -containerName "defaultdx" -filter "*.jar" -filesPath $packageFileFolder -targetPath "datax\bin"
 
 Exit 0

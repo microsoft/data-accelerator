@@ -1,0 +1,17 @@
+﻿// *********************************************************************
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License
+// *********************************************************************
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace DataX.SimulatedData.DataGenService.Model
+{
+    public class KafkaConnection
+    {
+        public string BootstrapServers { get; set; }
+        public List<string> Topics { get; set; }
+        public string ConnectionString { get; set; }
+    }
+}

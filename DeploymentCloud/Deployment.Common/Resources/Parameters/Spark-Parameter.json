@@ -38,7 +38,7 @@
 				"keyVault": {
 				"id": "/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.KeyVault/vaults/$sparkRDPKVName"
 				},
-				"secretName": "sshuser"
+				"secretName": "sparksshuser"
 			}
 		},
 		"sparkSshPassword": {
@@ -72,6 +72,12 @@
 		},
 		"userAssignedIdentitiesName": {
 			"value": "$sparkManagedIdentityName"
-		}
+		},
+        "virtualNetworkName": {
+            "value": "VNet-$serviceFabricName"
+        },
+        "subnet0Name": {
+            "value": "Subnet-0"
+        }
 	}
 }

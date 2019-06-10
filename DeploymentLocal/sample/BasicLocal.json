@@ -1,0 +1,227 @@
+{
+    "_id": {"$oid": "5c8a8594fe682403e89dfabf"},
+    "name": "BasicLocal",
+    "icon": "/img/iot.png",
+    "displayName": "BasicLocal",
+    "commonProcessor": 
+    {
+        "sparkJobConfigFolder": "_S_{cpConfigFolderBase}/${name}",
+        "template": 
+        {
+            "name": "_S_{name}",
+            "input": 
+            {
+                "eventhub": 
+                {
+                    "connectionString": "_S_{inputEventHubConnectionString}",
+                    "consumerGroup": "_S_{inputEventHubConsumerGroup}",
+                    "checkpointDir": "_S_{inputEventHubCheckpointDir}",
+                    "checkpointInterval": "_S_{inputEventHubCheckpointInterval}",
+                    "maxRate": "_S_{inputEventHubMaxRate}",
+                    "flushExistingCheckpoints": "_S_{inputEventHubFlushExistingCheckpoints}"
+                },
+                "streaming": 
+                {
+                    "checkpointDir": "_S_{inputStreamingCheckpointDir}",
+                    "intervalInSeconds": "_S_{inputStreamingIntervalInSeconds}"
+                },
+                "blobSchemaFile": "_S_{inputSchemaFilePath}",
+                "referenceData": "_S_{inputReferenceData}"
+            },
+            "process": 
+            {
+                "metric": 
+                {
+                    "httppost": "_S_{localMetricsHttpEndpoint}"
+                },
+                "timestampColumn": "_S_{processTimestampColumn}",
+                "watermark": "_S_{processWatermark}",
+                "jarUDAFs": "_S_{processJarUDAFs}",
+                "jarUDFs": "_S_{processJarUDFs}",
+                "azureFunctions": "_S_{processAzureFunctions}",
+                "projections": "_S_{processProjections}",
+                "timeWindows": "_S_{processTimeWindows}",
+                "transform": "_S_{processTransforms}",
+                "appendEventTags": {},
+                "accumulationTables": "_S_{processStateTables}"
+            },
+            "outputs": "_S_{outputs}"
+        },
+        "sparkJobTemplateRef": "defaultSparkJobTemplate",
+        "jobCommonTokens": 
+        {
+            "jobName": "_S_{name}",
+            "sparkJobName": "DataXDirect-${name}",
+            "sparkJobDriverLogLevel": "WARN",
+            "sparkJobExecutorLogLevel": "INFO",
+            "sparkJobNumExecutors": "_S_{guiSparkJobNumExecutors}",
+            "sparkJobExecutorMemory": "_S_{guiSparkJobExecutorMemory}",
+            "processedSchemaPath": null
+        },
+        "jobs": 
+        [
+            {
+                "partitionJobNumber": "1"
+            }
+        ]
+    },
+    "metrics": 
+    {
+        "sources": 
+        [
+            {
+                "name": "events",
+                "input": 
+                {
+                    "type": "MetricApi",
+                    "metricKeys": 
+                    [
+                        "DATAX-BasicLocal:Input_DataXProcessedInput_Events_Count"
+                    ]
+                },
+                "output": 
+                {
+                    "type": "SumWithTimeChart",
+                    "data": 
+                    {
+                        "sum": true,
+                        "timechart": true,
+                        "average": true,
+                        "speed": true
+                    },
+                    "dynamicOffsetInMs": 300000
+                }
+            },
+            {
+                "name": "maxTemperature",
+                "input": 
+                {
+                    "type": "MetricApi",
+                    "pollingInterval": 10000,
+                    "metricKeys": 
+                    [
+                        {
+                            "name": "BasicLocal:maxTemperature",
+                            "displayName": "maxTemperature"
+                        }
+                    ]
+                },
+                "output": 
+                {
+                    "type": "DirectTimeChart",
+                    "data": 
+                    {
+                        "timechart": true,
+                        "current": false,
+                        "table": false
+                    },
+                    "chartTimeWindowInMs": 3600000
+                }
+            }
+        ],
+        "widgets": 
+        [
+            {
+                "name": "eventsChart",
+                "displayName": "Events/Second",
+                "data": "events_timechart",
+                "position": "TimeCharts",
+                "type": "StackAreaChart"
+            },
+            {
+                "name": "totalEvents",
+                "displayName": "Events Ingested Today",
+                "data": "events_sum",
+                "formatter": "longint",
+                "position": "FirstRow",
+                "type": "SimpleBox"
+            },
+            {
+                "name": "averageEvents",
+                "displayName": "Avg. Events/Minute",
+                "data": "events_average",
+                "formatter": "longint",
+                "position": "FirstRow",
+                "type": "SimpleBox"
+            },
+            {
+                "name": "maxTemperature",
+                "displayName": "maxTemperature",
+                "data": "maxTemperature_timechart",
+                "position": "TimeCharts",
+                "type": "MultiLineChart"
+            }
+        ],
+        "initParameters": 
+        {
+            "widgetSets": 
+            [
+                "direct"
+            ],
+            "jobNames": 
+            {
+                "type": "getCPSparkJobNames"
+            }
+        }
+    },
+    "gui": 
+    {
+        "name": "BasicLocal",
+        "displayName": "BasicLocal",
+        "owner": "",
+        "input": 
+        {
+            "mode": "streaming",
+            "type": "local",
+            "properties": 
+            {
+                "inputEventhubName": "",
+                "inputEventhubConnection": "",
+                "windowDuration": "10",
+                "timestampColumn": "",
+                "watermarkValue": "0",
+                "watermarkUnit": "second",
+                "maxRate": "100",
+                "inputSchemaFile": "{\n    \"type\": \"struct\",\n    \"fields\": [\n      {\n        \"name\": \"temperature\",\n        \"type\": \"double\",\n        \"nullable\": false,\n        \"metadata\": {\n          \"minValue\": 5.1,\n          \"maxValue\": 100.1\n        }\n      },\n      {\n        \"name\": \"eventTime\",\n        \"type\": \"long\",\n        \"nullable\": false,\n        \"metadata\": { \"useCurrentTimeMillis\": true }\n      }\n    ]\n  }\n  ",
+                "showNormalizationSnippet": false,
+                "normalizationSnippet": "SystemProperties AS _SystemProperties\nProperties AS _Properties\nRaw.*"
+            },
+            "referenceData": []
+        },
+        "process": 
+        {
+            "timestampColumn": "",
+            "watermark": "0 second",
+            "functions": [],
+            "queries": 
+            [
+                "--DataXQuery--\nevents = SELECT\n        * \n        FROM\n        DataXProcessedInput;\n\n--DataXQuery--\nmaxTemperature =  SELECT\n        MAX(eventTime) AS EventTime,\n        'maxTemperature' AS MetricName,\n        Max(temperature) AS Metric,\n        'BasicLocal' AS Product          \n    FROM\n        events;\n\nOUTPUT maxTemperature TO Metrics;\n"
+            ],
+            "jobconfig": 
+            {
+                "jobNumExecutors": "4",
+                "jobExecutorMemory": "4000"
+            }
+        },
+        "outputs": 
+        [
+            {
+                "id": "Metrics",
+                "type": "metric",
+                "properties": {},
+                "typeDisplay": null
+            }
+        ],
+        "outputTemplates": [],
+        "rules": [],
+        "subscription": null
+    },
+    "properties": 
+    {
+        "foo": "v"
+    },
+    "jobNames": 
+    [
+        "BasicLocal"
+    ]
+}

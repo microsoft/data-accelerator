@@ -25,7 +25,11 @@
 				"DataSchemaStorageAccountName": "$sparkBlobAccountName",
 				"DataSchemaStorageAccountKeyValueKeyVaultKeyName": "datagen-storageaccountAccesskey",
 				"DataSchemaStorageContainerName": "samples",
-				"DataSchemaPathWithinContainer": "iotdevice\\iotsample.json"
+                "DataSchemaPathWithinContainer": "iotdevice\\iotsample.json",
+                "KafkaConnectionStringKeyVaultKeyName": "datagen-kafkaEventHubConnectionString",
+                "KafkaTopics": "kafka1,kafka2",
+                "KafkaHDInsightBrokersKeyVaultKeyName": "$kafkaNativeConnectionString",
+                "KafkaHDInsightTopics": "$kafkaNativeTopics"
             }
         }
     }

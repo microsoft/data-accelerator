@@ -251,6 +251,7 @@ namespace DataX.Config
 
                 //wait some time and retry if state is not as expected
                 await Task.Delay(intervalInMs);
+                i++;
             }
 
             throw new GeneralException($"Job '{jobName}' failed to get to state '{state}' after '{retries}' sync attempts");
