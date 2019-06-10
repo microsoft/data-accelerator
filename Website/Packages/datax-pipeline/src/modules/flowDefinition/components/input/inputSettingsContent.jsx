@@ -138,23 +138,23 @@ export default class InputSettingsContent extends React.Component {
     renderTypeDropdown() {
         const options = this.props.enableLocalOneBox
             ? Models.inputTypes
-                  .filter(type => type.name === 'Local')
-                  .map(type => {
-                      return {
-                          key: type.key,
-                          text: type.name,
-                          disabled: type.disabled
-                      };
-                  })
+                .filter(type => type.name === 'Local')
+                .map(type => {
+                    return {
+                        key: type.key,
+                        text: type.name,
+                        disabled: type.disabled
+                    };
+                })
             : Models.inputTypes
-                  .filter(type => type.name !== 'Local')
-                  .map(type => {
-                      return {
-                          key: type.key,
-                          text: type.name,
-                          disabled: type.disabled
-                      };
-                  });
+                .filter(type => type.name !== 'Local')
+                .map(type => {
+                    return {
+                        key: type.key,
+                        text: type.name,
+                        disabled: type.disabled
+                    };
+                });
 
         return (
             <div style={typeDropdownStyle}>
@@ -171,13 +171,14 @@ export default class InputSettingsContent extends React.Component {
     }
 
     renderEventHubName() {
-        if (this.props.input.type === Models.inputTypeEnum.iothub) {
+        if (this.props.input.type !== Models.inputTypeEnum.events && this.props.input.type !== Models.inputTypeEnum.local) {
+            const label = this.props.input.type === Models.inputTypeEnum.iothub ? 'Event Hub-Compatible Name' : 'Topics (Use commas to separate topics)';
             return (
                 <div style={sectionStyle}>
                     <TextField
                         className="ms-font-m"
                         spellCheck={false}
-                        label="Event Hub-Compatible Name"
+                        label={label}
                         value={this.props.input.properties.inputEventhubName}
                         onChange={(event, value) => this.props.onUpdateHubName(value)}
                         disabled={!this.props.inputEventHubEnabled}
@@ -193,7 +194,20 @@ export default class InputSettingsContent extends React.Component {
         if (this.props.input.type === Models.inputTypeEnum.local) {
             return null;
         } else {
-            const label = this.props.input.type === Models.inputTypeEnum.events ? 'Connection String' : 'Event Hub-Compatible Endpoint';
+            let label = 'Connection String';
+
+            switch (this.props.input.type) {
+                case Models.inputTypeEnum.iothub:
+                    label = 'Event Hub-Compatible Endpoint';
+                    break;
+                case Models.inputTypeEnum.kafka:
+                    label = 'Bootstrap Servers (Use commas to separate server IPs/URLs)';
+                    break;
+                case Models.inputTypeEnum.kafkaeventhub:
+                    label = 'Event Hub Namespace Connection String';
+                    break;
+            }
+
             return (
                 <div style={sectionStyle}>
                     <TextField
@@ -213,7 +227,7 @@ export default class InputSettingsContent extends React.Component {
     }
 
     renderSubscriptionId() {
-        if (this.props.input.type === Models.inputTypeEnum.local) {
+        if (this.props.input.type === Models.inputTypeEnum.local || this.props.input.type === Models.inputTypeEnum.kafka || this.props.input.type === Models.inputTypeEnum.kafkaeventhub) {
             return null;
         } else {
             return (
@@ -236,7 +250,7 @@ export default class InputSettingsContent extends React.Component {
     }
 
     renderResourceGroup() {
-        if (this.props.input.type === Models.inputTypeEnum.local) {
+        if (this.props.input.type === Models.inputTypeEnum.local || this.props.input.type === Models.inputTypeEnum.kafka || this.props.input.type === Models.inputTypeEnum.kafkaeventhub) {
             return null;
         } else {
             return (
@@ -401,7 +415,7 @@ export default class InputSettingsContent extends React.Component {
                     <Label className="ms-font-m" style={inlineBlockStyle}>
                         Describe Schema in JSON Format
                     </Label>
-                    <a style={linkStyle} href={inputSchemaExampleWiki} target="_blank">
+                    <a style={linkStyle} href={inputSchemaExampleWiki} target="_blank" rel="noopener noreferrer">
                         View Example
                     </a>
                 </div>
@@ -421,7 +435,7 @@ export default class InputSettingsContent extends React.Component {
                     <Label className="ms-font-m" style={inlineBlockStyle}>
                         Data Schema Normalization (input SQL to run against the schema above)
                     </Label>
-                    <a style={linkStyle} href={normalizationExampleWiki} target="_blank">
+                    <a style={linkStyle} href={normalizationExampleWiki} target="_blank" rel="noopener noreferrer">
                         View Example
                     </a>
                 </div>

@@ -53,33 +53,99 @@ function Setup-IotHub {
     }
 }
 
+function Get-KafkaHosts {
+    $login = Get-Secret -VaultName $sparkRDPKVName -SecretName "kafkaLogin"
+    $pwd = Get-Secret -VaultName $sparkRDPKVName -SecretName "kafkaclusterloginpassword"
+
+    $password = $pwd | ConvertTo-SecureString -asPlainText -Force
+    $creds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $login, $password
+    $resp = Invoke-WebRequest -Uri "https://$kafkaName.azurehdinsight.net/api/v1/clusters/$kafkaName/services/KAFKA/components/KAFKA_BROKER" -Credential $creds
+    $respObj = ConvertFrom-Json $resp.Content
+    $brokerHosts = $respObj.host_components.HostRoles.host_name[0..1]
+    $hosts = ($brokerHosts -join ":9092,") + ":9092"
+    return $hosts
+}
+
 # Create secrets to keyVaults
 function Setup-Secrets {
+    $userContentContainerLocation = -join("wasbs://", $userContentContainerName, "@", $sparkBlobAccountName, ".blob.core.windows.net/iotsample/")
+    
+    # IotHub
     $hub =  Get-AzureRmIotHub -ResourceGroupName $resourceGroupName -Name $iotHubName
     $endPoint = $hub.Properties.EventHubEndpoints.events.Endpoint
     $key = (Get-AzureRmIotHubKey -ResourceGroupName $resourceGroupName -Name $iotHubName -KeyName "iothubowner").PrimaryKey
     
     $iotHubConnectionString ="Endpoint=$endPoint;SharedAccessKeyName=iothubowner;SharedAccessKey=$key;EntityPath=$iotHubName"
-    
+
     $vaultName = "$sparkKVName"
     $secretName = "iotsample-input-eventhubconnectionstring"
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $iotHubConnectionString
 	
-	$userContentContainerLocation = -join("wasbs://", $userContentContainerName, "@", $sparkBlobAccountName, ".blob.core.windows.net/iotsample/")
-    $secretName = "iotsample-referencedata-devicesdata"
+	$secretName = "iotsample-referencedata-devicesdata"
     $secretValue = -join($userContentContainerLocation, "devices.csv");
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $secretValue
 
     $secretName = "iotsample-jarpath-udfsample"
     $secretValue = -join($userContentContainerLocation, "udfsample.jar");
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $secretValue
-    
-    $vaultName = "$servicesKVName"
 
+    # EventHub
+    $eventHubConnectionString = (Invoke-AzureRmResourceAction -ResourceGroupName $resourceGroupName -ResourceType Microsoft.EventHub/namespaces/eventhubs/authorizationRules -ResourceName "$kafkaEventHubNamespaceName/kafka1/listen" -Action listKeys -ApiVersion 2015-08-01 -Force).primaryConnectionString
+    $secretName = "eventhub-input-eventhubconnectionstring"
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $eventHubConnectionString
+	
+	$secretName = "eventhub-referencedata-devicesdata"
+    $secretValue = -join($userContentContainerLocation, "devices.csv");
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $secretValue
+
+    $secretName = "eventhub-jarpath-udfsample"
+    $secretValue = -join($userContentContainerLocation, "udfsample.jar");
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $secretValue
+
+    $vaultName = "$servicesKVName"
+    
     $secretName = "datagen-iotHubConnectionString"
     $iotHubConnectionString = (Get-AzureRmIotHubConnectionString -ResourceGroupName $resourceGroupName -Name $iotHubName -KeyName "iotHubowner").PrimaryConnectionString
     $value = $iotHubConnectionString + ";DeviceId={0}"
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $value
+
+    $secretName = "datagen-kafkaEventHubConnectionString"
+    $kafkaEventHubConnectionString = (Invoke-AzureRmResourceAction -ResourceGroupName $resourceGroupName -ResourceType Microsoft.EventHub/namespaces/AuthorizationRules -ResourceName "$kafkaEventHubNamespaceName/listen" -Action listKeys -ApiVersion 2015-08-01 -Force).primaryConnectionString
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $kafkaEventHubConnectionString
+    
+    if($enableKafkaSample -eq 'y') {
+        # Kafka
+        # NativeKafka
+        $vaultName = "$sparkKVName"
+        $kafkaHosts = Get-KafkaHosts
+        $secretName = "nativekafka-input-eventhubconnectionstring"
+        Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $kafkaHosts
+        
+        $secretName = "nativekafka-referencedata-devicesdata"
+        $secretValue = -join($userContentContainerLocation, "devices.csv");
+        Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $secretValue
+
+        $secretName = "nativekafka-jarpath-udfsample"
+        $secretValue = -join($userContentContainerLocation, "udfsample.jar");
+        Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $secretValue
+
+        # EventHubKafka
+        $secretName = "eventhubkafka-input-eventhubconnectionstring"
+        Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $kafkaEventHubConnectionString
+        
+        $secretName = "eventhubkafka-referencedata-devicesdata"
+        $secretValue = -join($userContentContainerLocation, "devices.csv");
+        Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $secretValue
+
+        $secretName = "eventhubkafka-jarpath-udfsample"
+        $secretValue = -join($userContentContainerLocation, "udfsample.jar");
+        Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $secretValue
+
+        $vaultName = "$servicesKVName"
+
+        $secretName = "datagen-kafkaNativeConnectionString"
+        Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $kafkaHosts
+    }
 }
 
 function Add-CosmosDBData ([string]$filePath) {
@@ -113,13 +179,31 @@ function Add-CosmosDBData ([string]$filePath) {
 function Get-Tokens {
     $tokens = Get-DefaultTokens
 
+    $tokens.Add('subscriptionId', $subscriptionId )
     $tokens.Add('resourceLocation', $resourceGroupLocation)
     $tokens.Add('iotHubName', $iotHubName)
+    $tokens.Add('kafkaName', $kafkaName)
+    $tokens.Add('kafkaEventHubNamespaceName', $kafkaEventHubNamespaceName)
     $tokens.Add('clientSecretPrefix', $clientSecretPrefix)
 
     $tokens
 }
 
+function Setup-SecretsForKafka {
+    $vaultName = "$sparkRDPKVName"
+    
+    $secretName = "kafkaLogin" 
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $kafkaLogin
+
+    $secretName = "kafkaclusterloginpassword"
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $kafkaPwd
+
+    $secretName = "kafkasshuser" 
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $kafkasshuser
+
+    $secretName = "kafkasshpassword" 
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $kafkaSshPwd
+}
 #******************************************************************************
 # Script body
 # Execution begins here
@@ -140,8 +224,17 @@ $tokens = Get-Tokens
 
 Write-Host -ForegroundColor Green "Deploying Resources... (14/16 steps)"
 Write-Host -ForegroundColor Green "Estimated time to complete: 6 mins"
-Deploy-Resources -templateName "Sample-Template.json" -paramName "Sample-parameter.json" -templatePath $templatePath -tokens $tokens
+
+Write-Host -ForegroundColor Green "For the sample Flow, deploying IotHub..."
+Deploy-Resources -templateName "IotHub-Template.json" -paramName "IotHub-parameter.json" -templatePath $templatePath -tokens $tokens
 Setup-IotHub
+
+if($enableKafkaSample -eq 'y') {
+    Setup-SecretsForKafka
+    Write-Host -ForegroundColor Green "For the sample Flow, deploying Kafka..."
+    Deploy-Resources -templateName "Kafka-Template.json" -paramName "Kafka-parameter.json" -templatePath $templatePath -tokens $tokens
+}
+
 # Add secret for IotHub connection string to Keyvault  
 Setup-Secrets
 
@@ -163,8 +256,15 @@ $parameterPath = Fix-ApplicationTypeVersion -parametersPath $parameterFileFolder
 
 # Copy files Simulated service needs
 Add-CosmosDBData -filePath ".\Samples\flows\iotsample-product.json"
+Add-CosmosDBData -filePath ".\Samples\flows\eventhub-product.json"
+
+if($enableKafkaSample -eq 'y') {
+    Add-CosmosDBData -filePath ".\Samples\flows\nativekafka-product.json"
+    Add-CosmosDBData -filePath ".\Samples\flows\eventhubkafka-product.json"
+}
+
 Deploy-Files -saName $sparkBlobAccountName -containerName "samples" -filter "iotsample.json" -filesPath ".\Samples\samples\iotDevice" -targetPath "iotdevice"
-Deploy-Files -saName $sparkBlobAccountName -containerName "samples" -filter "iotsample-091610A6B869B8C9318E988F390F46AB.json" -filesPath ".\Samples\samples" -targetPath ""
+Deploy-Files -saName $sparkBlobAccountName -containerName "samples" -filter "*.json" -filesPath ".\Samples\samples" -targetPath ""
 Deploy-Files -saName $sparkBlobAccountName -containerName $userContentContainerName -filter "*.*" -filesPath ".\Samples\usercontent" -targetPath "iotsample"
 
 # Deploy Simulated service

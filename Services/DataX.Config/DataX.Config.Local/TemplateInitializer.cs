@@ -5,6 +5,7 @@
 using DataX.Config.ConfigDataModel;
 using DataX.Contract;
 using System;
+using System.IO;
 using System.Composition;
 using System.Threading.Tasks;
 
@@ -22,6 +23,7 @@ namespace DataX.Config.Local
         private const string _DefaultSparkClusterConfig="localSparkCluster.json";
         private const string _FlattenerConfig = "flattenerConfig.json";
         private const string _SparkJobTemplateName = "defaultSparkJobTemplate";
+        private const string _SamplesFolder = "samples";
 
         [ImportingConstructor]
         public TemplateInitializer(
@@ -42,12 +44,17 @@ namespace DataX.Config.Local
         {
             try
             {
+                // Load common templates
                 await AddTemplateFromResourceFile(_DefaultFlowTemplate, FlowDataManager.CommonDataName_DefaultFlowConfig);
                 await AddTemplateFromResourceFile(_DefaultSparkJobTemplate, _SparkJobTemplateName);
                 await AddTemplateFromResourceFile(_FlattenerConfig, ConfigFlattenerManager.DefaultConfigName);
 
+                // Load cluster template
                 var localClusterContent = ResourceUtility.GetEmbeddedResource(this.GetType(), _DefaultSparkClusterConfig);
-                await DesignTimeStorage.SaveByName("localCluster", localClusterContent, SparkClusterData.DataCollectionName);               
+                await DesignTimeStorage.SaveByName("localCluster", localClusterContent, SparkClusterData.DataCollectionName);
+
+                // Load samples
+                await LoadSamples();
 
                 return new SuccessResult("Templates initialized for local");
             }
@@ -80,5 +87,18 @@ namespace DataX.Config.Local
             }
         }
 
+        // Load the flow configs for the local samples to the local store
+        private async Task<Result> LoadSamples()
+        {
+            if(Directory.Exists(_SamplesFolder)) 
+            {
+                 foreach(string fileName in Directory.GetFiles(_SamplesFolder, "*.json"))
+                 {
+                    string content = File.ReadAllText(fileName);
+                    await DesignTimeStorage.SaveByName(fileName, content, FlowDataManager.DataCollectionName).ConfigureAwait(false);
+                 }
+            }
+            return new SuccessResult("Samples loaded");
+        }
     }
 }

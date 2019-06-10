@@ -10,8 +10,7 @@ import com.microsoft.azure.eventhubs.EventData
 import org.apache.log4j.LogManager
 import org.apache.spark.storage._
 import org.apache.spark.streaming.receiver._
-import org.apache.spark.sql.types.{DataType, StructType}
-import datax.utility
+import org.apache.spark.sql.types.{DataType}
 
 
 /** This is a test receiver that generates data. */

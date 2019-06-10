@@ -75,7 +75,13 @@
 		},
 		"userAssignedIdentitiesName": {
 			"type": "string"
-		}
+		},
+        "virtualNetworkName": {
+            "type": "string"
+        },
+        "subnet0Name": {
+            "type": "string"
+        }
 	},
 	"variables": {
 		"storageAccounts_containerName_scripts": "scripts",
@@ -87,7 +93,9 @@
 		"storageAccounts_containerName_checkpoints": "checkpoints",
 		"storageAccountsURI": "[concat(parameters('storageAccounts_spark_name'),'.blob.core.windows.net')]",
         "storageAccountsResourceID": "[resourceId('Microsoft.Storage/storageAccounts',parameters('storageAccounts_spark_name'))]",
-		"userAssignedIdentitiesResourceID": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',parameters('userAssignedIdentitiesName'))]"
+		"userAssignedIdentitiesResourceID": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',parameters('userAssignedIdentitiesName'))]",
+        "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
+        "subnet0Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet0Name'))]"
 	},
 	"resources": [		
 		{
@@ -127,7 +135,7 @@
 						{
 							"name": "[variables('storageAccountsURI')]",
 							"isDefault": true,
-							"container": "default",
+							"container": "defaultdx",
 							"key": "[listKeys(variables('storageAccountsResourceID'), '2015-05-01-preview').key1]"
 						}
 					]
@@ -148,7 +156,10 @@
 									"password": "[parameters('sparkSshPassword')]"
 								}
 							},
-							"virtualNetworkProfile": null,
+							"virtualNetworkProfile": {
+                                "id": "[variables('vnetID')]",
+                                "subnet": "[variables('subnet0Ref')]"
+                            },
 							"scriptActions": []
 						},
 						{
@@ -164,7 +175,10 @@
 									"password": "[parameters('sparkSshPassword')]"
 								}
 							},
-							"virtualNetworkProfile": null,
+							"virtualNetworkProfile": {
+                                "id": "[variables('vnetID')]",
+                                "subnet": "[variables('subnet0Ref')]"
+                            },
 							"scriptActions": []
 						}
 					]

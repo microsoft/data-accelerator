@@ -218,6 +218,15 @@ function validateInput(input) {
             );
             validations.push(Helpers.isValidNumberAboveZero(input.properties.maxRate));
             validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
+        } else if (input.type === Models.inputTypeEnum.kafkaeventhub || input.type === Models.inputTypeEnum.kafka) {
+            validations.push(input.properties.inputEventhubName.trim() !== '');
+            validations.push(input.properties.inputEventhubConnection.trim() !== '');
+            validations.push(Helpers.isValidNumberAboveZero(input.properties.windowDuration));
+            validations.push(
+                input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
+            );
+            validations.push(Helpers.isValidNumberAboveZero(input.properties.maxRate));
+            validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
         } else if (input.type === Models.inputTypeEnum.local) {
             validations.push(Helpers.isValidNumberAboveZero(input.properties.windowDuration));
             validations.push(
@@ -293,7 +302,6 @@ function isFunctionSettingsComplete(functionItem) {
         case Models.functionTypeEnum.azureFunction:
             validations.push(functionItem.properties.serviceEndpoint && functionItem.properties.serviceEndpoint.trim() !== '');
             validations.push(functionItem.properties.api && functionItem.properties.api.trim() !== '');
-            validations.push(functionItem.properties.code && functionItem.properties.code.trim() !== '');
             validations.push(functionItem.properties.methodType && functionItem.properties.methodType.trim() !== '');
 
             if (functionItem.properties.params && functionItem.properties.params.length > 0) {
