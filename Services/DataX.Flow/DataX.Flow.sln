@@ -49,12 +49,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataX.Contract", "DataX.Con
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Contract", "..\DataX.Contract\DataX.Contract.csproj", "{75E388EF-A3E7-4248-86D1-99782D97D9A1}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataX.ServiceHost", "DataX.ServiceHost", "{AFC65A75-34B4-4B0F-B447-757122588F26}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.ServiceHost.ServiceFabric", "..\DataX.ServiceHost\DataX.ServiceHost.ServiceFabric\DataX.ServiceHost.ServiceFabric.csproj", "{E7FDFA12-EBE1-4A09-B58B-9B95C575E53E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.ServiceHost.AspNetCore", "..\DataX.ServiceHost\DataX.ServiceHost.AspNetCore\DataX.ServiceHost.AspNetCore.csproj", "{E682FD26-B182-4929-9C32-1FF931D71B77}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Config", "..\DataX.Config\DataX.Config\DataX.Config.csproj", "{26D768EE-564E-482C-B3B5-A6A8F9937FD0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Config.ConfigurationProviders", "..\DataX.Config\DataX.Config.ConfigurationProviders\DataX.Config.ConfigurationProviders.csproj", "{DEDFCDE7-4885-4B00-AB2B-A6196503A9E8}"
@@ -89,9 +83,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Gateway.Contract", ".
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Utility.Nuget", "..\DataX.Utilities\DataX.Utility.Nuget\DataX.Utility.Nuget.csproj", "{7BE24BB5-3237-4403-921E-3CFC5A4A8E20}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{33E458B4-903F-4941-B82A-FCC741D56785}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.ServiceHost", "..\DataX.ServiceHost\DataX.ServiceHost\DataX.ServiceHost.csproj", "{9FE363A8-7187-4F29-910C-AD2A845B48E0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.ServiceHost.AspNetCore", "..\DataX.ServiceHost\DataX.ServiceHost.AspNetCore\DataX.ServiceHost.AspNetCore.csproj", "{52E1724E-62DD-4CC2-A5E8-AD3947EC5C9F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.ServiceHost.ServiceFabric", "..\DataX.ServiceHost\DataX.ServiceHost.ServiceFabric\DataX.ServiceHost.ServiceFabric.csproj", "{37675FE0-BFD5-434C-B1CF-473EA564EF32}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -269,22 +265,6 @@ Global
 		{75E388EF-A3E7-4248-86D1-99782D97D9A1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{75E388EF-A3E7-4248-86D1-99782D97D9A1}.Release|x64.ActiveCfg = Release|Any CPU
 		{75E388EF-A3E7-4248-86D1-99782D97D9A1}.Release|x64.Build.0 = Release|Any CPU
-		{E7FDFA12-EBE1-4A09-B58B-9B95C575E53E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E7FDFA12-EBE1-4A09-B58B-9B95C575E53E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E7FDFA12-EBE1-4A09-B58B-9B95C575E53E}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{E7FDFA12-EBE1-4A09-B58B-9B95C575E53E}.Debug|x64.Build.0 = Debug|Any CPU
-		{E7FDFA12-EBE1-4A09-B58B-9B95C575E53E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E7FDFA12-EBE1-4A09-B58B-9B95C575E53E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E7FDFA12-EBE1-4A09-B58B-9B95C575E53E}.Release|x64.ActiveCfg = Release|Any CPU
-		{E7FDFA12-EBE1-4A09-B58B-9B95C575E53E}.Release|x64.Build.0 = Release|Any CPU
-		{E682FD26-B182-4929-9C32-1FF931D71B77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E682FD26-B182-4929-9C32-1FF931D71B77}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E682FD26-B182-4929-9C32-1FF931D71B77}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{E682FD26-B182-4929-9C32-1FF931D71B77}.Debug|x64.Build.0 = Debug|Any CPU
-		{E682FD26-B182-4929-9C32-1FF931D71B77}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E682FD26-B182-4929-9C32-1FF931D71B77}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E682FD26-B182-4929-9C32-1FF931D71B77}.Release|x64.ActiveCfg = Release|Any CPU
-		{E682FD26-B182-4929-9C32-1FF931D71B77}.Release|x64.Build.0 = Release|Any CPU
 		{26D768EE-564E-482C-B3B5-A6A8F9937FD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{26D768EE-564E-482C-B3B5-A6A8F9937FD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{26D768EE-564E-482C-B3B5-A6A8F9937FD0}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -429,6 +409,22 @@ Global
 		{9FE363A8-7187-4F29-910C-AD2A845B48E0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9FE363A8-7187-4F29-910C-AD2A845B48E0}.Release|x64.ActiveCfg = Release|Any CPU
 		{9FE363A8-7187-4F29-910C-AD2A845B48E0}.Release|x64.Build.0 = Release|Any CPU
+		{52E1724E-62DD-4CC2-A5E8-AD3947EC5C9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52E1724E-62DD-4CC2-A5E8-AD3947EC5C9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52E1724E-62DD-4CC2-A5E8-AD3947EC5C9F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{52E1724E-62DD-4CC2-A5E8-AD3947EC5C9F}.Debug|x64.Build.0 = Debug|Any CPU
+		{52E1724E-62DD-4CC2-A5E8-AD3947EC5C9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52E1724E-62DD-4CC2-A5E8-AD3947EC5C9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52E1724E-62DD-4CC2-A5E8-AD3947EC5C9F}.Release|x64.ActiveCfg = Release|Any CPU
+		{52E1724E-62DD-4CC2-A5E8-AD3947EC5C9F}.Release|x64.Build.0 = Release|Any CPU
+		{37675FE0-BFD5-434C-B1CF-473EA564EF32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37675FE0-BFD5-434C-B1CF-473EA564EF32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37675FE0-BFD5-434C-B1CF-473EA564EF32}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{37675FE0-BFD5-434C-B1CF-473EA564EF32}.Debug|x64.Build.0 = Debug|Any CPU
+		{37675FE0-BFD5-434C-B1CF-473EA564EF32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37675FE0-BFD5-434C-B1CF-473EA564EF32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37675FE0-BFD5-434C-B1CF-473EA564EF32}.Release|x64.ActiveCfg = Release|Any CPU
+		{37675FE0-BFD5-434C-B1CF-473EA564EF32}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -440,8 +436,6 @@ Global
 		{19AC676B-6FCE-4EA3-99A8-B893B9CC0B76} = {BAC65147-0FB3-457E-992E-0EEBA3DC9330}
 		{EF704744-E4A9-42D4-830A-17EEA66A98FC} = {BAC65147-0FB3-457E-992E-0EEBA3DC9330}
 		{75E388EF-A3E7-4248-86D1-99782D97D9A1} = {7D216C6D-7895-41DF-92F3-B5F0E0472F3B}
-		{E7FDFA12-EBE1-4A09-B58B-9B95C575E53E} = {AFC65A75-34B4-4B0F-B447-757122588F26}
-		{E682FD26-B182-4929-9C32-1FF931D71B77} = {AFC65A75-34B4-4B0F-B447-757122588F26}
 		{58740BCA-B537-4A61-9085-51F192A7106D} = {BAC65147-0FB3-457E-992E-0EEBA3DC9330}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
