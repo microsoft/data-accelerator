@@ -150,9 +150,12 @@ SOFTWARE
             <artifactId>kafka-clients</artifactId>
             <version>2.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-sqldb-spark</artifactId>
+            <version>1.0.2</version>
+        </dependency>
     </dependencies>
-
-   
   <profiles>
     <profile>
       <id>build</id>
