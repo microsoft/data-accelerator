@@ -10,8 +10,7 @@ import datax.config.SettingDictionary
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 package object sink {
-  type JsonSinkDelegate = (Row, Seq[Row], Timestamp, Int, String)=>Map[String, Int]
-  type SinkDelegate = (DataFrame, Timestamp, String)=>Map[String, Int]
+  type SinkDelegate = (Row, Seq[Row], Timestamp, Int, String)=>Map[String, Int]
   type Metrics = Map[String, Double]
 
   trait SinkOperatorFactory{
@@ -22,7 +21,6 @@ package object sink {
 
   case class SinkOperator(name: String,
                           isEnabled: Boolean,
-                          sinkAsJson: Boolean,
                           flagColumnExprGenerator: () => String,
                           generator: (Int)=>SinkDelegate,
                           onInitialization: (SparkSession)=>Unit = null,
