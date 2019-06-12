@@ -10,7 +10,6 @@ import com.microsoft.azure.documentdb._
 import datax.client.cosmosdb.CosmosDBConf
 import datax.config.SettingDictionary
 import datax.exception.EngineException
-import datax.securedsetting.KeyVaultClient
 import datax.utility.ConverterUtil._
 import datax.utility.SinkerUtil
 import org.apache.log4j.LogManager
@@ -120,6 +119,7 @@ object CosmosDBSinkerManager extends SinkOperatorFactory {
     SinkOperator(
       name = SinkName,
       isEnabled = conf!=null,
+      sinkAsJson = true,
       flagColumnExprGenerator = () => null,
       generator = flagColumnIndex => SinkerUtil.outputGenerator(
         (dataToSend:Seq[String],ls: String) => {

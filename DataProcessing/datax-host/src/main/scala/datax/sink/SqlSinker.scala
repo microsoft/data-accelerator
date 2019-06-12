@@ -39,7 +39,6 @@ object SqlSinker extends SinkOperatorFactory  {
   private def writeUsingSqlConnector(dataToSend:DataFrame, sqlConf: SqlConf, logSuffix:String) ={
 
     val cfgMap = getConfigMap(sqlConf)
-
     dataToSend.write.mode(sqlConf.writeMode).sqlDB(Config(cfgMap))
     dataToSend.count().toInt
   }
@@ -74,6 +73,7 @@ object SqlSinker extends SinkOperatorFactory  {
         "hostNameInCertificate"   -> sqlConf.hostNameInCertificate)
     }
 
+    // if bulkCopy is enabled, add the corresponding settings
     if(sqlConf.useBulkCopy) {
 
       configMap += (
@@ -86,20 +86,19 @@ object SqlSinker extends SinkOperatorFactory  {
     configMap
   }
 
-  def getSinkOperator(dict: SettingDictionary, name1: String) : SinkOperator = {
+  def getSinkOperator(dict: SettingDictionary, name: String) : SinkOperator = {
 
-    val conf = SqlOutputSetting.buildSqlOutputConf(dict, name1)
+    val conf = SqlOutputSetting.buildSqlOutputConf(dict, name)
     SinkOperator(
       name = SinkName,
       isEnabled = conf!=null,
       sinkAsJson = false,
       flagColumnExprGenerator = () => conf.filter,
-      generator = (flagColumnIndex)=> SinkerUtil.emptyOutputGenerator(),
-      generatorDf = ()=>getRowsSinkerGeneratorDf(conf)
+      generator = (flagColumnIndex)=> getRowsSinkerGeneratorDf(conf)
     )
   }
 
-  def getRowsSinkerGeneratorDf(sqlConf: SqlConf) : SinkDelegateDf = {
+  def getRowsSinkerGeneratorDf(sqlConf: SqlConf) : SinkDelegate = {
     val sender = (dataToSend:DataFrame, loggerSuffix:String) => writeToSql(dataToSend, sqlConf, SinkName)
     SinkerUtil.outputGenerator(sender,SinkName)()
   }

@@ -67,7 +67,7 @@ object HttpPoster extends SinkOperatorFactory {
 
   def getRowsSinkerGenerator(httpPostConf: HttpPostConf, flagColumnIndex: Int) : SinkDelegate = {
     val sender = (dataToSend:Seq[String],ls: String) => HttpPoster.postEvents(dataToSend, httpPostConf.endpoint, httpPostConf.appendHeaders, ls)
-    SinkerUtil.outputGenerator(sender,SinkName)(flagColumnIndex)
+    SinkerUtil.outputGenerator(sender, SinkName)(flagColumnIndex)
   }
 
   def getSinkOperator(dict: SettingDictionary, name: String) : SinkOperator = {
@@ -75,6 +75,7 @@ object HttpPoster extends SinkOperatorFactory {
     SinkOperator(
       name = SinkName,
       isEnabled = conf!=null,
+      sinkAsJson = true,
       flagColumnExprGenerator = () => conf.filter,
       generator = (flagColumnIndex)=>getRowsSinkerGenerator(conf, flagColumnIndex)
     )
