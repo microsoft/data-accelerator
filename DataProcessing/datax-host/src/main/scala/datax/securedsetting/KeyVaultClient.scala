@@ -43,7 +43,9 @@ object KeyVaultClient {
             case None =>
               var value = ""
 			  if(secretType == "secretscope"){
-				value = dbutils.secrets.get(scope = vaultName, key = secretName)
+				value = dbutils.synchronized{
+					dbutils.secrets.get(scope = vaultName, key = secretName)
+				}
 			  }
 			  else{
 				value = kvc.synchronized{
