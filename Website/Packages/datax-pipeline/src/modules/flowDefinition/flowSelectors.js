@@ -27,6 +27,11 @@ export const getFlowDisplayName = createSelector(
     flow => flow.displayName
 );
 
+export const getFlowDatabricksToken = createSelector(
+    getFlow,
+    flow => flow.databricksToken
+);
+
 // Settings - Input
 export const getFlowInput = createSelector(
     getFlow,

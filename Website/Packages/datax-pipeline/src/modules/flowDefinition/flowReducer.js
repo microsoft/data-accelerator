@@ -11,13 +11,17 @@ const INITIAL_FLOW_STATE = {
     name: '',
     displayName: Models.getDefaultName(),
     owner: '',
+    databricksToken: '',
     input: Models.defaultInput,
     referenceData: [],
     functions: [],
     query: QueryModels.defaultQuery,
     scale: {
         jobNumExecutors: '4',
-        jobExecutorMemory: '1000'
+        jobExecutorMemory: '1000',
+        jobDatabricksAutoScale: true,
+        jobDatabricksMinWorkers: '1',
+        jobDatabricksMaxWorkers: '8'
     },
     outputs: [Models.getMetricSinker()],
     outputTemplates: [],
@@ -69,6 +73,12 @@ export default (state = INITIAL_FLOW_STATE, action) => {
             return Object.assign({}, state, {
                 isDirty: true,
                 displayName: action.payload
+            });
+
+        case Actions.FLOW_UPDATE_DATABRICKSTOKEN:
+            return Object.assign({}, state, {
+                isDirty: true,
+                databricksToken: action.payload
             });
 
         case Actions.FLOW_UPDATE_OWNER:

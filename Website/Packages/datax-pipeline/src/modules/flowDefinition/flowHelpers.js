@@ -453,6 +453,7 @@ export function convertFlowToConfig(flow) {
         name: flow.name,
         displayName: flow.displayName.trim(),
         owner: flow.owner,
+        databricksToken: flow.databricksToken,
         input: Object.assign({}, flow.input, { referenceData: flow.referenceData }),
         process: {
             timestampColumn: flow.input.properties.timestampColumn,
@@ -484,6 +485,7 @@ export function convertConfigToFlow(config) {
         name: config.name,
         displayName: config.displayName,
         owner: config.owner,
+        databricksToken: config.databricksToken,
         input: input,
         referenceData: input.referenceData ? input.referenceData : [],
         functions: config.process.functions ? config.process.functions : [],

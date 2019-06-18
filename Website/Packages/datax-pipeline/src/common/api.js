@@ -5,3 +5,4 @@
 import { nodeServiceGetApi, ApiNames } from 'datax-common';
 
 export const functionEnabled = () => nodeServiceGetApi(ApiNames.FunctionEnabled);
+export const isDatabricksSparkType = () => nodeServiceGetApi(ApiNames.IsDatabricksSparkType);
