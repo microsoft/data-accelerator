@@ -149,7 +149,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                                     {
                                         var httpOutput = ProcessLocalOutputMetric(configName, localMetricsEndpoint);
                                         Ensure.EnsureNullElseThrowNotSupported(flowOutput.HttpOutput, "Multiple target httpost/metric ouptut for same dataset not supported.");
-                                        flowOutput.HttpOutput = httpOutput;                                       
+                                        flowOutput.HttpOutput = httpOutput;
                                     }
                                     break;
                                 }
@@ -173,6 +173,13 @@ namespace DataX.Config.ConfigGeneration.Processor
                                 var blobOutput = ProcessOutputLocal(configName, output);
                                 Ensure.EnsureNullElseThrowNotSupported(flowOutput.BlobOutput, "Multiple target blob ouptut for same dataset not supported.");
                                 flowOutput.BlobOutput = blobOutput;
+                                break;
+                            }
+                        case "sqlserver":
+                            {
+                                var sqlOutput =  await ProcessOutputSql(configName, output);
+                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.SqlOutput, "Multiple target Sql ouptut for same dataset not supported.");
+                                flowOutput.SqlOutput = sqlOutput;
                                 break;
                             }
                         default:
@@ -320,6 +327,45 @@ namespace DataX.Config.ConfigGeneration.Processor
 
         }
 
+        private async Task<FlowSqlOutputSpec> ProcessOutputSql(string configName, FlowGuiOutput uiOutput)
+        {
+            if (uiOutput != null && uiOutput.Properties != null)
+            {
+                var sparkKeyVaultName = Configuration[Constants.ConfigSettingName_RuntimeKeyVaultName];
+
+                string connectionString = await KeyVaultClient.ResolveSecretUriAsync(uiOutput.Properties.ConnectionString).ConfigureAwait(false);
+
+                var database = GetValueFromJdbcConnection(connectionString,"database");
+                var user = GetValueFromJdbcConnection(connectionString, "user");
+                var pwd = GetValueFromJdbcConnection(connectionString, "password");
+                var url = GetUrlFromJdbcConnection(connectionString);
+
+                // Save password and url in keyvault
+                var pwdSecretId = $"{configName}-outSqlPassword";
+                var pwdRef = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, pwdSecretId, pwd, true).ConfigureAwait(false);
+
+                var urlSecretId = $"{configName}-outSqlUrl";
+                var urlRef = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, urlSecretId, url, true).ConfigureAwait(false);
+
+                FlowSqlOutputSpec sqlOutput = new FlowSqlOutputSpec()
+                {
+                    ConnectionStringRef = uiOutput.Properties.ConnectionString,
+                    TableName = uiOutput.Properties.TableName,
+                    WriteMode = uiOutput.Properties.WriteMode,
+                    UseBulkInsert = uiOutput.Properties.UseBulkInsert,
+                    DatabaseName = database,
+                    User = user,
+                    Password = pwdRef,
+                    Url = urlRef
+                };
+                return sqlOutput;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         /// <summary>
         /// Parses the account name from connection string
         /// </summary>
@@ -358,6 +404,33 @@ namespace DataX.Config.ConfigGeneration.Processor
             }
 
             return matched;
+        }
+
+        private string GetValueFromJdbcConnection(string connectionString, string key)
+        {
+            try
+            {
+                Match match = Regex.Match(connectionString, $"{key}=([^;]*);", RegexOptions.IgnoreCase);
+                string value = match.Groups[1].Value;
+                return value;
+            }
+            catch (Exception)
+            {
+                throw new Exception ($"{key} not found in jdbc connection string");
+            }
+        }
+        private string GetUrlFromJdbcConnection(string connectionString)
+        {
+            try
+            {
+                Match match = Regex.Match(connectionString, @"jdbc:sqlserver://(.*):", RegexOptions.IgnoreCase);
+                string value = match.Groups[1].Value;
+                return value;
+            }
+            catch (Exception)
+            {
+                throw new Exception("url pattern not found in jdbc connecton string");
+            }
         }
     }
 }

@@ -477,6 +477,10 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateBlobPartitionFormat={this.props.onUpdateBlobPartitionFormat}
                                 onUpdateFormatType={this.props.onUpdateFormatType}
                                 onUpdateCompressionType={this.props.onUpdateCompressionType}
+                                onUpdateSqlConnection={this.props.onUpdateSqlConnection}
+                                onUpdateSqlTableName={this.props.onUpdateSqlTableName}
+                                onUpdateSqlWriteMode={this.props.onUpdateSqlWriteMode}
+                                onUpdateSqlUseBulkInsert={this.props.onUpdateSqlUseBulkInsert}
                                 addOutputSinkButtonEnabled={this.state.addOutputSinkButtonEnabled}
                                 deleteOutputSinkButtonEnabled={this.state.deleteOutputSinkButtonEnabled}
                             />
@@ -861,6 +865,11 @@ const mapDispatchToProps = dispatch => ({
     onUpdateBlobPartitionFormat: format => dispatch(Actions.updateBlobPartitionFormat(format)),
     onUpdateFormatType: type => dispatch(Actions.updateFormatType(type)),
     onUpdateCompressionType: type => dispatch(Actions.updateCompressionType(type)),
+
+    onUpdateSqlConnection: connection => dispatch(Actions.updateSqlConnection(connection)),
+    onUpdateSqlTableName: name => dispatch(Actions.updateSqlTableName(name)),
+    onUpdateSqlWriteMode: mode => dispatch(Actions.updateSqlWriteMode(mode)),
+    onUpdateSqlUseBulkInsert: useBulkInsert => dispatch(Actions.updateSqlUseBulkInsert(useBulkInsert)),
 
     // Rule Actions
     onNewRule: type => dispatch(Actions.newRule(type)),

@@ -45,7 +45,8 @@ export const sinkerTypeEnum = {
     eventHub: 'eventHub',
     blob: 'blob',
     metric: 'metric',
-    local: 'local'
+    local: 'local',
+    sql: 'sqlServer'
 };
 
 export const sinkerCompressionTypeEnum = {
@@ -56,6 +57,36 @@ export const sinkerCompressionTypeEnum = {
 export const sinkerFormatTypeEnum = {
     json: 'json'
 };
+
+export const sinkerSqlWriteModeEnum = {
+    append: 'append',
+    overwrite: 'overwrite',
+    ignore: 'ignore',
+    errorifexists: 'errorIfExists'
+};
+
+export const sinkerSqlWriteModes = [
+    {
+        key: sinkerSqlWriteModeEnum.append,
+        name: 'Append',
+        disabled: false
+    },
+    {
+        key: sinkerSqlWriteModeEnum.overwrite,
+        name: 'Overwrite',
+        disabled: false
+    },
+    {
+        key: sinkerSqlWriteModeEnum.ignore,
+        name: 'Ignore',
+        disabled: false
+    },
+    {
+        key: sinkerSqlWriteModeEnum.errorIfExists,
+        name: 'ErrorIfExists',
+        disabled: false
+    }
+];
 
 export const ruleTypeEnum = {
     tag: 'tag'
@@ -227,6 +258,11 @@ export const outputSinkerTypes = [
     {
         key: sinkerTypeEnum.eventHub,
         name: 'Event Hub',
+        disabled: false
+    },
+    {
+        key: sinkerTypeEnum.sql,
+        name: 'SQL Server',
         disabled: false
     },
     {
@@ -536,6 +572,17 @@ export function getDefaultSinkerSettings(type, owner) {
                 blobPartitionFormat: '',
                 format: sinkerFormatTypeEnum.json,
                 compressionType: sinkerCompressionTypeEnum.none
+            }
+        };
+    } else if (type === sinkerTypeEnum.sql) {
+        return {
+            id: '',
+            type: type,
+            properties: {
+                connectionString: '',
+                tableName: '',
+                writeMode: sinkerSqlWriteModeEnum.append,
+                useBulkInsert: false
             }
         };
     } else {
