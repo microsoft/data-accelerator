@@ -2,7 +2,7 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: flow-management-service
+  name: flow-live-data-service
 spec:
   replicas: 1
   strategy:
@@ -13,15 +13,15 @@ spec:
   template:
     metadata:
       labels:
-        app: flow-management-service
+        app: flow-live-data-service
         aadpodidbinding: managed-service-identity 
     spec:
       terminationGracePeriodSeconds: 30
       nodeSelector:
         "beta.kubernetes.io/os": linux
       containers:
-      - name: flow-management-service
-        image: dataxregistry.azurecr.io/datax/cloud:v1
+      - name: flow-live-data-service
+        image: dataxregistry.azurecr.io/datax/cloud/flow.livedataservice:v1
         imagePullPolicy: "Always"
         ports:
         - containerPort: 5000
@@ -33,7 +33,7 @@ spec:
         env:
         - name: ASPNETCORE_URLS
           value: "http://+:5000"
-        - name: DataX__ServiceEnvironment__AppInsightsIntrumentationKeySecretName
+        - name: DataX__ServiceEnvironment__AppInsightsIntrumentationKey
           value: ""
         - name: DataX__ServiceEnvironment__CosmosDBConfigCollectionName
           value: ""
@@ -46,15 +46,19 @@ spec:
         - name: JwtBearerOptions__Audience
           value: ""
         - name: JwtBearerOptions__Authority
-          value: ""          
+          value: ""
+        - name: servicedllname
+          value: "Flow.LiveDataService.dll"
+        - name: DataX__ServiceEnvironment__EnableOneBox
+          value: "false"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: flow-management-service
+  name: flow-live-data-service
 spec:
   type: LoadBalancer
   ports:
   - port: 5000
   selector:
-    app: flow-management-service
+    app: flow-live-data-service
