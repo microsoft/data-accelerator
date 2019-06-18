@@ -58,7 +58,6 @@ export const FLOW_UPDATE_SELECTED_FUNCTION_INDEX = 'FLOW_UPDATE_SELECTED_FUNCTIO
 export const FLOW_UPDATE_INPUT = 'FLOW_UPDATE_INPUT';
 export const FLOW_FETCHING_INPUT_SCHEMA = 'FLOW_FETCHING_INPUT_SCHEMA';
 export const FLOW_UPDATE_SAMPLING_INPUT_DURATION = 'FLOW_UPDATE_SAMPLING_INPUT_DURATION';
-//export const FLOW_UPDATE_RESAMPLING_INPUT_DURATION = 'FLOW_UPDATE_RESAMPLING_INPUT_DURATION';
 
 // Message
 export const FLOW_UPDATE_ERROR_MESSAGE = 'FLOW_UPDATE_ERROR_MESSAGE';
@@ -211,13 +210,6 @@ export const updateSamplingInputDuration = duration => dispatch => {
         duration: duration
     });
 };
-
-/* export const updateResamplingInputDuration = duration => dispatch => {
-    return dispatch({
-        type: QUERY_UPDATE_RESAMPLING_INPUT_DURATION,
-        duration: duration
-    });
-}; */
 
 export const updateInputSchema = schema => (dispatch, getState) => {
     updateInputProperties(dispatch, getState, {

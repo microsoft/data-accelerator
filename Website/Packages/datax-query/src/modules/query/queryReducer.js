@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
-import * as Actions from './actions';
+import * as Actions from './queryActions';
 import * as Models from './queryModels';
 
 const INITIAL_QUERY_STATE = {    

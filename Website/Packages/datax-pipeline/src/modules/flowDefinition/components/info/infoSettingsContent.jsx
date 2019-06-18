@@ -80,7 +80,6 @@ InfoSettingsContent.propTypes = {
     displayName: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     owner: PropTypes.string.isRequired,
-    databricksToken: PropTypes.string.isRequired,
 
     onUpdateDisplayName: PropTypes.func.isRequired,
     onUpdateDatabricksToken: PropTypes.func.isRequired,

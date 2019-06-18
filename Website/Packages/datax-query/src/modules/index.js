@@ -11,7 +11,7 @@ import * as KernelActions from './query/kernelActions';
 import * as KernelSelectors from './query/kernelSelectors';
 import * as LayoutActions from './query/layoutActions';
 import * as LayoutSelectors from './query/layoutSelectors';
-import * as QueryActions from './query/actions';
+import * as QueryActions from './query/queryActions';
 import * as QuerySelectors from './query/querySelectors';
 import * as QueryModels from './query/queryModels';
 import * as QueryApi from './query/api';

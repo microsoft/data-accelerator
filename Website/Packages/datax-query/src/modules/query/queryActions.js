@@ -26,9 +26,9 @@ export const QUERY_UPDATE_RESAMPLING_INPUT_DURATION = 'QUERY_UPDATE_RESAMPLING_I
 export const QUERY_UPDATE_ERROR_MESSAGE = 'QUERY_UPDATE_ERROR_MESSAGE';
 export const QUERY_UPDATE_WARNING_MESSAGE = 'QUERY_UPDATE_WARNING_MESSAGE';
 
-export const updateSamplingInputDuration = duration => dispatch => {
+export const updateResamplingInputDuration = duration => dispatch => {
     return dispatch({
-        type: QUERY_UPDATE_SAMPLING_INPUT_DURATION,
+        type: QUERY_UPDATE_RESAMPLING_INPUT_DURATION,
         duration: duration
     });
 };
