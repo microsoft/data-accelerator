@@ -35,10 +35,10 @@ export const updateKernelVersion = version => dispatch => {
     });
 };
 
-export const getKernel = (flow, version, updateErrorMessage) => (dispatch, getState) => {
+export const getKernel = (flowname, displayName, owner, inputSchemaFile, normalizationSnippet, referenceData, functions, version, updateErrorMessage) => (dispatch, getState) => {
     updateErrorMessage(dispatch, undefined);
     fetchingKernel(dispatch, true);
-    return Api.getDiagnosticKernel(flow)
+    return Api.getDiagnosticKernel(flowname, displayName, owner, inputSchemaFile, normalizationSnippet, referenceData, functions)
         .then(response => {
             const kernelId = response.result;
             const warning = response.message;
@@ -59,10 +59,10 @@ export const getKernel = (flow, version, updateErrorMessage) => (dispatch, getSt
         });
 };
 
-export const refreshKernel = (flow, kernelId, version, updateErrorMessage) => (dispatch, getState) => {
+export const refreshKernel = (flowname, displayName, owner, inputSchemaFile, normalizationSnippet, referenceData, functions, kernelId, version, updateErrorMessage) => (dispatch, getState) => {
     updateErrorMessage(dispatch, undefined);
     fetchingKernel(dispatch, true);
-    return Api.refreshDiagnosticKernel(flow, kernelId)
+    return Api.refreshDiagnosticKernel(flowname, displayName, owner, inputSchemaFile, normalizationSnippet, referenceData, functions, kernelId)
         .then(response => {
             const kernelId = response.result;
             const warning = response.message;

@@ -5,6 +5,7 @@
 import { createSelector } from 'reselect';
 import * as Helpers from './flowHelpers';
 import * as Models from './flowModels';
+import { CommonHelpers } from 'datax-common';
 
 // Settings - Flow
 export const getFlow = state => state.flow;
@@ -203,36 +204,36 @@ function validateInput(input) {
     if (input.mode === Models.inputModeEnum.streaming) {
         if (input.type === Models.inputTypeEnum.events) {
             validations.push(input.properties.inputEventhubConnection.trim() !== '');
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.windowDuration));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
             validations.push(
                 input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
             );
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.maxRate));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
             validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
         } else if (input.type === Models.inputTypeEnum.iothub) {
             validations.push(input.properties.inputEventhubName.trim() !== '');
             validations.push(input.properties.inputEventhubConnection.trim() !== '');
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.windowDuration));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
             validations.push(
                 input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
             );
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.maxRate));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
             validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
         } else if (input.type === Models.inputTypeEnum.kafkaeventhub || input.type === Models.inputTypeEnum.kafka) {
             validations.push(input.properties.inputEventhubName.trim() !== '');
             validations.push(input.properties.inputEventhubConnection.trim() !== '');
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.windowDuration));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
             validations.push(
                 input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
             );
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.maxRate));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
             validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
         } else if (input.type === Models.inputTypeEnum.local) {
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.windowDuration));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
             validations.push(
                 input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
             );
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.maxRate));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
             validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
         } else {
             validation.push(false);
@@ -452,7 +453,7 @@ export const validateFlowScale = createSelector(
 );
 
 function validateScale(scale) {
-    return scale && Helpers.isValidNumberAboveZero(scale.jobNumExecutors) && Helpers.isValidNumberAboveZero(scale.jobExecutorMemory);
+    return scale && CommonHelpers.isValidNumberAboveZero(scale.jobNumExecutors) && CommonHelpers.isValidNumberAboveZero(scale.jobExecutorMemory);
 }
 
 // Validation -  Flow

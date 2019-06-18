@@ -9,8 +9,7 @@ import './styles/styles.css';
 
 import flowslist from './modules/flowList/reducer';
 import flow from './modules/flowDefinition/flowReducer';
-import flowKernel from './modules/flowDefinition/kernelReducer';
-import flowLayoutSettings from './modules/flowDefinition/layoutReducer';
+import {kernelReducer, layoutReducer, queryReducer } from 'datax-query';
 
 /**
  * Website Consumption Contract
@@ -46,8 +45,9 @@ import flowLayoutSettings from './modules/flowDefinition/layoutReducer';
 export const reducers = {
     flowslist,
     flow,
-    flowKernel,
-    flowLayoutSettings
+    queryKernel: kernelReducer,
+    queryLayoutSettings: layoutReducer,
+    query: queryReducer
 };
 
 // Exported React Components

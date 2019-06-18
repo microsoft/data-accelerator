@@ -20,6 +20,7 @@ import 'datax-pipeline/dist/css/index.css';
 import 'datax-jobs/dist/css/index.css';
 import 'datax-metrics/dist/css/index.css';
 import 'datax-home/dist/css/index.css';
+import 'datax-query/dist/css/index.css';
 
 // Image dependencies
 require.context('datax-home/dist/img', false, /\.(svg)$/);

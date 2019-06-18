@@ -68,6 +68,7 @@
     "datax-jobs": "1.2.2-SNAPSHOT-5-21",
     "datax-metrics": "1.2.2-SNAPSHOT-5-21",
     "datax-pipeline": "1.2.2-SNAPSHOT-5-21",
+    "datax-query": "1.1.1-SNAPSHOT-6-16",
     "office-ui-fabric-react": "6.111.2",
     "promise-polyfill": "8.1.0",
     "prop-types": "15.6.2",

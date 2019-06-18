@@ -4,13 +4,6 @@
 // *********************************************************************
 import * as Models from './flowModels';
 
-export function isValidNumberAboveZero(value) {
-    const number = Number(value);
-    const isNumber = !isNaN(number);
-    const isValid = isNumber && number > 0 && value[0] !== '0';
-    return isValid;
-}
-
 export function isValidNumberAboveOrEqualZero(value) {
     const number = Number(value);
     const isNumber = !isNaN(number);

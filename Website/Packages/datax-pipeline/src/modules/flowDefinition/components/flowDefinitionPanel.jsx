@@ -12,10 +12,6 @@ import * as Helpers from '../flowHelpers';
 import * as Models from '../flowModels';
 import * as Actions from '../flowActions';
 import * as Selectors from '../flowSelectors';
-import * as LayoutActions from '../layoutActions';
-import * as LayoutSelectors from '../layoutSelectors';
-import * as KernelActions from '../kernelActions';
-import * as KernelSelectors from '../kernelSelectors';
 import { DefaultButton, PrimaryButton, Spinner, SpinnerSize, MessageBar, MessageBarType } from 'office-ui-fabric-react';
 import { Dialog, DialogType, DialogFooter } from 'office-ui-fabric-react/lib/Dialog';
 import { Modal } from 'office-ui-fabric-react/lib/Modal';
@@ -23,7 +19,6 @@ import InfoSettingsContent from './info/infoSettingsContent';
 import InputSettingsContent from './input/inputSettingsContent';
 import ReferenceDataSettingsContent from './referenceData/referenceDataSettingsContent';
 import FunctionSettingsContent from './function/functionSettingsContent';
-import QuerySettingsContent from './query/querySettingsContent';
 import ScaleSettingsContent from './scale/scaleSettingsContent';
 import OutputSettingsContent from './output/outputSettingsContent';
 import RulesSettingsContent from './rule/rulesSettingsContent';
@@ -37,8 +32,17 @@ import {
     IconButtonStyles,
     VerticalTabs,
     VerticalTabItem,
-    getApiErrorMessage
+    getApiErrorMessage,
 } from 'datax-common';
+import {  
+    QueryApi,
+    KernelActions, 
+    KernelSelectors,
+    QueryActions,    
+    LayoutActions,
+    LayoutSelectors,
+    QuerySettingsContent
+} from 'datax-query';
 
 class FlowDefinitionPanel extends React.Component {
     constructor(props) {
@@ -101,7 +105,7 @@ class FlowDefinitionPanel extends React.Component {
     }
 
     handleWindowClose() {
-        Api.deleteDiagnosticKernelOnUnload(this.props.kernelId);
+        QueryApi.deleteDiagnosticKernelOnUnload(this.props.kernelId);
         this.sleep(500);
     }
 
@@ -688,11 +692,11 @@ class FlowDefinitionPanel extends React.Component {
     }
 
     onGetTableSchemas() {
-        return this.props.onGetTableSchemas(this.props.flow);
+        return this.props.onGetTableSchemas(this.props.flow.name, this.props.flow.displayName, this.props.flow.query, this.props.flow.input.properties.inputSchemaFile, Helpers.convertFlowToConfigRules(this.props.flow.rules), this.props.flow.outputTemplates);
     }
 
     onGetCodeGenQuery() {
-        return this.props.onGetCodeGenQuery(this.props.flow);
+        return this.props.onGetCodeGenQuery(this.props.flow.name, this.props.flow.displayName, this.props.flow.query, Helpers.convertFlowToConfigRules(this.props.flow.rules), this.props.flow.outputTemplates);
     }
 
     getKernel() {
@@ -702,14 +706,14 @@ class FlowDefinitionPanel extends React.Component {
         ) {
             const version = this.props.kernelVersion + 1;
             this.props.onUpdateKernelVersion(version);
-            this.props.onGetKernel(this.props.flow, version, Actions.updateErrorMessage);
+            this.props.onGetKernel(this.props.flow.name, this.props.flow.displayName, this.props.flow.owner, this.props.flow.input.properties.inputSchemaFile, this.props.flow.input.properties.normalizationSnippet, this.props.flow.referenceData, this.props.flow.functions, version, QueryActions.updateErrorMessage);
         }
     }
 
     refreshKernel(kernelId) {
         const version = this.props.kernelVersion + 1;
         this.props.onUpdateKernelVersion(version);
-        this.props.onRefreshKernel(this.props.flow, kernelId, version, Actions.updateErrorMessage);
+        this.props.onRefreshKernel(this.props.flow.name, this.props.flow.displayName, this.props.flow.owner, this.props.flow.input.properties.inputSchemaFile, this.props.flow.input.properties.normalizationSnippet, this.props.flow.referenceData, this.props.flow.functions, kernelId, version, QueryActions.updateErrorMessage);
     }
 
     onDeleteKernel(kernelId) {
@@ -721,11 +725,11 @@ class FlowDefinitionPanel extends React.Component {
     onResampleInput(kernelId) {
         const version = this.props.kernelVersion + 1;
         this.props.onUpdateKernelVersion(version);
-        this.props.onResampleInput(this.props.flow, kernelId, version);
+        this.props.onResampleInput(this.props.flow.name, this.props.flow.displayName, this.props.flow.owner, this.props.flow.input.properties.inputSchemaFile, this.props.flow.input.properties.normalizationSnippet, this.props.flow.input.properties.inputEventhubConnection, this.props.flow.input.properties.inputSubscriptionId, this.props.flow.input.properties.inputResourceGroup, this.props.flow.input.properties.inputEventhubName, this.props.flow.input.type, this.props.flow.resamplingInputDuration, kernelId, version);
     }
 
     onExecuteQuery(selectedQuery, kernelId) {
-        return this.props.onExecuteQuery(this.props.flow, selectedQuery, kernelId);
+        return this.props.onExecuteQuery(this.props.flow.name, this.props.flow.displayName, Helpers.convertFlowToConfigRules(this.props.flow.rules), this.props.flow.outputTemplates, selectedQuery, kernelId);
     }
 }
 
@@ -827,16 +831,16 @@ const mapDispatchToProps = dispatch => ({
     onUpdateAzureFunctionParams: params => dispatch(Actions.updateAzureFunctionParams(params)),
 
     // Query Actions
-    onUpdateQuery: query => dispatch(Actions.updateQuery(query)),
-    onGetCodeGenQuery: flow => Actions.getCodeGenQuery(flow),
-    onExecuteQuery: (flow, selectedQuery, kernelId) => dispatch(Actions.executeQuery(flow, selectedQuery, kernelId)),
-    onGetKernel: (flow, version, updateErrorMessage) => dispatch(KernelActions.getKernel(flow, version, updateErrorMessage)),
+    onUpdateQuery: query => dispatch(QueryActions.updateQuery(query)),
+    onGetCodeGenQuery: (flowname, displayName, query, rules, outputTemplates) => QueryActions.getCodeGenQuery(flowname, displayName, query, rules, outputTemplates),
+    onExecuteQuery: (flowname, displayName, rules, outputTemplates, selectedQuery, kernelId) => dispatch(QueryActions.executeQuery(flowname, displayName, rules, outputTemplates, selectedQuery, kernelId)),
+    onGetKernel: (flowname, displayName, owner, inputSchemaFile, normalizationSnippet, referenceData, functions, version, updateErrorMessage) => dispatch(KernelActions.getKernel(flowname, displayName, owner, inputSchemaFile, normalizationSnippet, referenceData, functions, version, updateErrorMessage)),
     onUpdateKernelVersion: version => dispatch(KernelActions.updateKernelVersion(version)),
-    onRefreshKernel: (flow, kernelId, version, updateErrorMessage) =>
-        dispatch(KernelActions.refreshKernel(flow, kernelId, version, updateErrorMessage)),
+    onRefreshKernel: (flowname, displayName, owner, inputSchemaFile, normalizationSnippet, referenceData, functions, kernelId, version, updateErrorMessage) =>
+        dispatch(KernelActions.refreshKernel(flowname, displayName, owner, inputSchemaFile, normalizationSnippet, referenceData, functions, kernelId, version, updateErrorMessage)),
     onDeleteKernel: (kernelId, version) => dispatch(KernelActions.deleteKernel(kernelId, version)),
-    onResampleInput: (flow, kernelId, version) => dispatch(Actions.resampleInput(flow, kernelId, version)),
-    onUpdateResamplingInputDuration: duration => dispatch(Actions.updateResamplingInputDuration(duration)),
+    onResampleInput: (flowname, displayName, owner, inputSchemaFile, normalizationSnippet, inputEventhubConnection, inputSubscriptionId, inputResourceGroup, inputEventhubName, inputType, resamplingInputDuration, kernelId, version) => dispatch(QueryActions.resampleInput(flowname, displayName, owner, inputSchemaFile, normalizationSnippet, inputEventhubConnection, inputSubscriptionId, inputResourceGroup, inputEventhubName, inputType, resamplingInputDuration, kernelId, version)),
+    onUpdateResamplingInputDuration: duration => dispatch(QueryActions.updateResamplingInputDuration(duration)),
     onDeleteAllKernels: updateErrorMessage => dispatch(KernelActions.deleteAllKernels(updateErrorMessage)),
 
     // Query Pane Layout Actions
@@ -877,7 +881,7 @@ const mapDispatchToProps = dispatch => ({
     onUpdateTagAggregates: aggregates => dispatch(Actions.updateTagAggregates(aggregates)),
     onUpdateTagPivots: pivots => dispatch(Actions.updateTagPivots(pivots)),
     onUpdateSchemaTableName: name => dispatch(Actions.updateSchemaTableName(name)),
-    onGetTableSchemas: flow => Actions.getTableSchemas(flow),
+    onGetTableSchemas: (flowname, displayName, query, inputSchemaFile, rules, outputTemplates) => QueryActions.getTableSchemas(flowname, displayName, query, inputSchemaFile, rules, outputTemplates),
 
     // Save and Delete Actions
     onSaveFlow: flow => Actions.saveFlow(flow),

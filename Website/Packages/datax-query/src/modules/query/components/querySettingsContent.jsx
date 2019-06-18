@@ -14,9 +14,8 @@ import 'brace/theme/xcode';
 import 'brace/ext/language_tools';
 import { JsonEditor } from 'jsoneditor-react';
 import SplitterLayout from 'react-splitter-layout';
-import { Colors, IconButtonStyles, LoadingPanel } from 'datax-common';
-import * as Helpers from '../../flowHelpers';
-import * as Actions from '../../flowActions';
+import { Colors, IconButtonStyles, LoadingPanel, CommonHelpers as Helpers } from 'datax-common';
+import * as Actions from '../actions';
 
 const queryExampleWiki = 'https://aka.ms/data-accelerator-query';
 

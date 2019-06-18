@@ -15,7 +15,7 @@ import 'brace/theme/textmate';
 import MonacoEditor from 'react-monaco-editor';
 import 'brace/mode/sql';
 import 'brace/theme/xcode';
-import { Colors, IconButtonStyles, ScrollableContentPane, StatementBox, LoadingPanel, getApiErrorMessage } from 'datax-common';
+import { Colors, IconButtonStyles, ScrollableContentPane, StatementBox, LoadingPanel, getApiErrorMessage, CommonHelpers} from 'datax-common';
 
 const inputSchemaExampleWiki = 'https://aka.ms/data-accelerator-input';
 const normalizationExampleWiki = 'https://aka.ms/data-accelerator-normalization';
@@ -463,7 +463,7 @@ export default class InputSettingsContent extends React.Component {
     }
 
     validateNumber(value) {
-        return !Helpers.isValidNumberAboveZero(value) ? 'Numbers only and must be greater than zero' : '';
+        return !CommonHelpers.isValidNumberAboveZero(value) ? 'Numbers only and must be greater than zero' : '';
     }
 
     validateWatermarkValue(value) {

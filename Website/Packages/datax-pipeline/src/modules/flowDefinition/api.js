@@ -3,10 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 import Q from 'q';
-import { serviceGetApi, servicePostApi, nodeServiceGetApi } from 'datax-common';
-import { Constants, ApiNames } from '../../common/apiConstants';
-import * as Models from './flowModels';
-import * as Helpers from './flowHelpers';
+import { serviceGetApi, servicePostApi, nodeServiceGetApi, Constants, ApiNames} from 'datax-common';
 
 // Flow Service
 export const getFlow = name => getProduct(name).then(f => f.gui);
@@ -25,67 +22,6 @@ export const deleteFlow = flow =>
         inputResourceGroup: flow.input.properties.inputResourceGroup,
         eventHubNames: flow.input.properties.inputEventhubName,
         inputType: flow.input.type,
-    });
-
-export const getTableSchemas = flow =>
-    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.flow, 'userqueries/schema', {
-        name: flow.name,
-        displayName: flow.displayName,
-        query: flow.query,
-        inputSchema: flow.input.properties.inputSchemaFile,
-        rules: Helpers.convertFlowToConfigRules(flow.rules),
-        outputTemplates: flow.outputTemplates
-    });
-
-export const getCodeGenQuery = flow =>
-    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.flow, 'userqueries/codegen', {
-        name: flow.name,
-        displayName: flow.displayName,
-        query: flow.query,
-        rules: Helpers.convertFlowToConfigRules(flow.rules),
-        outputTemplates: flow.outputTemplates
-    });
-
-// Interactive Query
-export const getDiagnosticKernel = flow =>
-    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernel', {
-        name: flow.name,
-        displayName: flow.displayName,
-        userName: flow.owner,
-        inputSchema: flow.input.properties.inputSchemaFile,
-        normalizationSnippet: flow.input.properties.normalizationSnippet,
-        refData: flow.referenceData,
-        functions: flow.functions
-    });
-
-export const refreshDiagnosticKernel = (flow, kernelId) =>
-    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernel/refresh', {
-        kernelId: kernelId,
-        userName: flow.owner,
-        name: flow.name,
-        displayName: flow.displayName,
-        inputSchema: flow.input.properties.inputSchemaFile,
-        normalizationSnippet: flow.input.properties.normalizationSnippet,
-        refData: flow.referenceData,
-        functions: flow.functions
-    });
-
-export const deleteAllKernels = () =>
-    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernels/deleteall', {});
-
-export const deleteDiagnosticKernelOnUnload = kernelId =>
-    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernel/delete', kernelId);
-
-export const deleteDiagnosticKernel = deleteDiagnosticKernelOnUnload;
-
-export const executeQuery = (flow, selectedQuery, kernelId) =>
-    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernel/executequery', {
-        name: flow.name,
-        displayName: flow.displayName,
-        query: selectedQuery,
-        kernelId: kernelId,
-        rules: Helpers.convertFlowToConfigRules(flow.rules),
-        outputTemplates: flow.outputTemplates
     });
 
 // Schema Inference
