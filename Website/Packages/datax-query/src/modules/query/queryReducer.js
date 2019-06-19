@@ -6,13 +6,17 @@ import * as Actions from './queryActions';
 import * as Models from './queryModels';
 
 const INITIAL_QUERY_STATE = {    
-    query: Models.defaultQuery,   
+    query: Models.defaultQuery,    
+    errorMessage: undefined,
+    warningMessage: undefined,
+    isDirty: false,
+    resamplingInputDuration:'15'
 };
 
 export default (state = INITIAL_QUERY_STATE, action) => {
     switch (action.type) {
         
-        case Actions.QUERY_INIT:
+        /* case Actions.QUERY_INIT:
             const flow = action.payload;
             return Object.assign({}, INITIAL_QUERY_STATE, query, {                
                 enableLocalOneBox: state.enableLocalOneBox
@@ -21,7 +25,7 @@ export default (state = INITIAL_QUERY_STATE, action) => {
         case Actions.QUERY_NEW:
             return Object.assign({}, INITIAL_QUERY_STATE, {
                query: Models.getDefaultQuery(state.enableLocalOneBox)
-            });
+            }); */
        
         case Actions.QUERY_UPDATE_RESAMPLING_INPUT_DURATION:
             return Object.assign({}, state, {

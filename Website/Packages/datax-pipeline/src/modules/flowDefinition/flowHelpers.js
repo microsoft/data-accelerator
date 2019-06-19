@@ -498,3 +498,25 @@ export function convertConfigToFlow(config) {
 
     return flow;
 }
+export function convertFlowToQueryMetadata(flow) {
+    // return query metadata
+    let QueryMetadata = {
+        name: flow.name,
+        displayName: flow.displayName,
+        userName: flow.owner,
+        refData: flow.referenceData,
+        inputSchema: flow.input.properties.inputSchemaFile,
+        normalizationSnippet: flow.input.properties.normalizationSnippet,
+        outputTemplates: flow.outputTemplates,
+        functions:flow.functions,
+        rules: convertFlowToConfigRules(flow.rules),
+        eventhubConnection:flow.input.properties.inputEventhubConnection, 
+        inputResourceGroup: flow.input.properties.inputResourceGroup, 
+        eventhubNames: flow.input.properties.inputEventhubName, 
+        inputType: flow.input.type,
+        seconds: flow.resamplingInputDuration,
+        query: flow.query,
+        inputSubscriptionId: flow.input.properties.inputSubscriptionId,
+    };
+    return QueryMetadata;
+}

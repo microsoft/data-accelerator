@@ -38,29 +38,6 @@ export const getInputSchema = flow =>
         seconds: flow.samplingInputDuration
     });
 
-// Live Data
-export const resampleInput = (flow, kernelId) =>
-    servicePostApi(
-        Constants.serviceRouteApi,
-        Constants.serviceApplication,
-        Constants.services.liveData,
-        'inputdata/refreshsampleandkernel',
-        {
-            name: flow.name,
-            displayName: flow.displayName,
-            userName: flow.owner,
-            kernelId: kernelId,
-            inputSchema: flow.input.properties.inputSchemaFile,
-            normalizationSnippet: flow.input.properties.normalizationSnippet,
-            eventhubConnectionString: flow.input.properties.inputEventhubConnection,
-            inputSubscriptionId: flow.input.properties.inputSubscriptionId,
-            inputResourceGroup: flow.input.properties.inputResourceGroup,
-            eventHubNames: flow.input.properties.inputEventhubName,
-            inputType: flow.input.type,
-            seconds: flow.resamplingInputDuration
-        }
-    );
-
 // Product and Jobs
 
 export const getProduct = name =>

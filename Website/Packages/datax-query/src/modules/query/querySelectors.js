@@ -4,7 +4,7 @@
 // *********************************************************************
 import { createSelector } from 'reselect';
 
-// Settings - Flow
+// Settings - query
 export const getQuery = state => state.query;
 
 // Settings - Query
@@ -21,6 +21,5 @@ export const validateFlowQuery = createSelector(
 );
 
 function validateQuery(query) {
-    //removing validation; codegen will add OUTPUTs for alerts. Blank query is valid.
     return query || query.trim() === '';
 }

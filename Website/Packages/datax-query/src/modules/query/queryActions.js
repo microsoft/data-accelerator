@@ -15,8 +15,8 @@ import * as KernelSelectors from './kernelSelectors';
  */
 
 // Init
-export const QUERY_INIT = 'QUERY_INIT';
-export const QUERY_NEW = 'QUERY_NEW';
+//export const QUERY_INIT = 'QUERY_INIT';
+//export const QUERY_NEW = 'QUERY_NEW';
 
 // Query
 export const QUERY_UPDATE_QUERY = 'QUERY_UPDATE_QUERY';
@@ -41,8 +41,8 @@ export const updateQuery = query => dispatch => {
     });
 };
 
-export const getTableSchemas = (flowname, displayName, query, inputSchemaFile, rules={}, outputTemplates) => {
-    return Api.getTableSchemas(flowname, displayName, query, inputSchemaFile, rules, outputTemplates).then(tables => {
+export const getTableSchemas = (queryMetadata) => {
+    return Api.getTableSchemas(queryMetadata).then(tables => {
         let tableToSchemaMap = {};
         tables.forEach(table => {
             tableToSchemaMap[table.name] = table;
@@ -52,16 +52,16 @@ export const getTableSchemas = (flowname, displayName, query, inputSchemaFile, r
     });
 };
 
-export const getCodeGenQuery = (flowname, displayName, query, rules={}, outputTemplates) => {
-    return Api.getCodeGenQuery(flowname, displayName, query, rules, outputTemplates).then(query => {
+export const getCodeGenQuery = (queryMetadata) => {
+    return Api.getCodeGenQuery(queryMetadata).then(query => {
         return query;
     });
 };
 
-export const executeQuery = (flowname, displayName, selectedQuery, rules={}, outputTemplates, kernelId) => {
+export const executeQuery = (queryMetadata, selectedQuery, kernelId) => {
     return dispatch => {
         updateErrorMessage(dispatch, undefined);
-        return Api.executeQuery(flowname, displayName, selectedQuery, rules, outputTemplates, kernelId)
+        return Api.executeQuery(queryMetadata, selectedQuery, kernelId)
             .then(result => {
                 return result;
             })
@@ -73,10 +73,10 @@ export const executeQuery = (flowname, displayName, selectedQuery, rules={}, out
     };
 };
 
-export const resampleInput = (flowname, displayName, owner, inputSchemaFile, normalizationSnippet, inputEventhubConnection, inputSubscriptionId, inputResourceGroup, inputEventhubName, inputType, resamplingInputDuration, kernelId, version) => (dispatch, getState) => {
+export const resampleInput = (queryMetadata, kernelId, version) => (dispatch, getState) => {
     updateErrorMessage(dispatch, undefined);
     KernelActions.fetchingKernel(dispatch, true);
-    return Api.resampleInput(flowname, displayName, owner, inputSchemaFile, normalizationSnippet, inputEventhubConnection, inputSubscriptionId, inputResourceGroup, inputEventhubName, inputType, resamplingInputDuration, kernelId)
+    return Api.resampleInput(queryMetadata, kernelId)
         .then(response => {
             const kernelId = response.result;
             const warning = response.message;

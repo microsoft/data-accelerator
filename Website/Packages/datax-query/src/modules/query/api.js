@@ -4,47 +4,47 @@
 // *********************************************************************
 import { Constants, servicePostApi } from 'datax-common';
 
-export const getTableSchemas = (flowname, displayName, query, inputSchemaFile, rules, outputTemplates) =>
+export const getTableSchemas = queryMetadata =>
     servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.flow, 'userqueries/schema', {
-        name: flowname,
-        displayName: displayName,
-        query: query,
-        inputSchema: inputSchemaFile,
-        rules: rules,
-        outputTemplates: outputTemplates
+        name: queryMetadata.name,
+        displayName: queryMetadata.displayName,
+        query: queryMetadata.query,
+        inputSchema: queryMetadata.inputSchema,
+        rules: queryMetadata.rules,
+        outputTemplates: queryMetadata.outputTemplates
     });
 
-export const getCodeGenQuery = (flowname, displayName, query, rules, outputTemplates) =>
+export const getCodeGenQuery = queryMetadata =>
     servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.flow, 'userqueries/codegen', {
-        name: flowname,
-        displayName: displayName,
-        query: query,
-        rules: rules,
-        outputTemplates: outputTemplates
+        name: queryMetadata.name,
+        displayName: queryMetadata.displayName,
+        query: queryMetadata.query,
+        rules: queryMetadata.rules,
+        outputTemplates: queryMetadata.outputTemplates
     });
 
 // Interactive Query
-export const getDiagnosticKernel = (flowname, displayName, owner, inputSchemaFile, normalizationSnippet, referenceData, functions) =>
+export const getDiagnosticKernel = queryMetadata =>
     servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernel', {
-        name: flowname,
-        displayName: displayName,
-        userName: owner,
-        inputSchema: inputSchemaFile,
-        normalizationSnippet: normalizationSnippet,
-        refData: referenceData,
-        functions: functions
+        name: queryMetadata.name,
+        displayName: queryMetadata.displayName,
+        userName: queryMetadata.userName,
+        inputSchema: queryMetadata.inputSchema,
+        normalizationSnippet: queryMetadata.normalizationSnippet,
+        refData: queryMetadata.refData,
+        functions: queryMetadata.functions
     });
 
-export const refreshDiagnosticKernel = (flowname, displayName, owner, inputSchemaFile, normalizationSnippet, referenceData, functions, kernelId) =>
+export const refreshDiagnosticKernel = (queryMetadata, kernelId) =>
     servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernel/refresh', {
         kernelId: kernelId,
-        userName: owner,
-        name: flowname,
-        displayName: displayName,
-        inputSchema: inputSchemaFile,
-        normalizationSnippet: normalizationSnippet,
-        refData: referenceData,
-        functions: functions
+        userName: queryMetadata.userName,
+        name: queryMetadata.name,
+        displayName: queryMetadata.displayName,
+        inputSchema: queryMetadata.inputSchema,
+        normalizationSnippet: queryMetadata.normalizationSnippet,
+        refData: queryMetadata.refData,
+        functions: queryMetadata.functions
     });
 
 export const deleteAllKernels = () =>
@@ -55,35 +55,35 @@ export const deleteDiagnosticKernelOnUnload = kernelId =>
 
 export const deleteDiagnosticKernel = deleteDiagnosticKernelOnUnload;
 
-export const executeQuery = (flowname, displayName, rules, outputTemplates, selectedQuery, kernelId) =>
+export const executeQuery = (queryMetadata, selectedQuery, kernelId) =>
     servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernel/executequery', {
-        name: flowname,
-        displayName: displayName,
+        name: queryMetadata.name,
+        displayName: queryMetadata.displayName,
         query: selectedQuery,
         kernelId: kernelId,
-        rules: rules,
-        outputTemplates: outputTemplates
+        rules: queryMetadata.rules,
+        outputTemplates: queryMetadata.outputTemplates
     });
 
 // Live Data
-export const resampleInput = (flowname, displayName, owner, inputSchemaFile, normalizationSnippet, inputEventhubConnection, inputSubscriptionId, inputResourceGroup, inputEventhubName, inputType, resamplingInputDuration, kernelId) =>
+export const resampleInput = (queryMetadata, kernelId) =>
     servicePostApi(
         Constants.serviceRouteApi,
         Constants.serviceApplication,
         Constants.services.liveData,
         'inputdata/refreshsampleandkernel',
         {
-            name: flowname,
-            displayName: displayName,
-            userName: owner,
+            name: queryMetadata.name,
+            displayName: queryMetadata.displayName,
+            userName: queryMetadata.userName,
             kernelId: kernelId,
-            inputSchema: inputSchemaFile,
-            normalizationSnippet: normalizationSnippet,
-            eventhubConnectionString: inputEventhubConnection,
-            inputSubscriptionId: inputSubscriptionId,
-            inputResourceGroup: inputResourceGroup,
-            eventHubNames: inputEventhubName,
-            inputType: inputType,
-            seconds: resamplingInputDuration
+            inputSchema: queryMetadata.inputSchema,
+            normalizationSnippet: queryMetadata.normalizationSnippet,
+            eventhubConnectionString: queryMetadata.eventhubConnection,
+            inputSubscriptionId: queryMetadata.inputSubscriptionId,
+            inputResourceGroup: queryMetadata.inputResourceGroup,
+            eventHubNames: queryMetadata.eventhubNames,
+            inputType: queryMetadata.inputType,
+            seconds: queryMetadata.seconds
         }
     );
