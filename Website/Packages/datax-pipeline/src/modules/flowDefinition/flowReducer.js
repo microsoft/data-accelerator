@@ -93,12 +93,7 @@ export default (state = INITIAL_FLOW_STATE, action) => {
         case Actions.FLOW_UPDATE_SAMPLING_INPUT_DURATION:
             return Object.assign({}, state, {
                 samplingInputDuration: action.duration
-            });
-
-        /* case QueryActions.QUERY_UPDATE_RESAMPLING_INPUT_DURATION:
-            return Object.assign({}, state, {
-                resamplingInputDuration: action.duration
-            }); */
+            });     
 
         case Actions.FLOW_UPDATE_REFERENCE_DATA_LIST:
             return Object.assign({}, state, {
@@ -189,12 +184,6 @@ export default (state = INITIAL_FLOW_STATE, action) => {
 
         case Actions.FLOW_UPDATE_SELECTED_FUNCTION_INDEX:
             return Object.assign({}, state, { selectedFunctionIndex: action.payload });
-
-        /* case QueryActions.QUERY_UPDATE_QUERY:
-            return Object.assign({}, state, {
-                isDirty: true,
-                query: action.payload
-            }); */
 
         case Actions.FLOW_UPDATE_SCALE:
             return Object.assign({}, state, {
