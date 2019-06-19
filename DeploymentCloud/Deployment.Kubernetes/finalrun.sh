@@ -1,2 +1,2 @@
 #!/bin/bash
-dotnet $servicedllname
+dotnet "$servicedllname"
