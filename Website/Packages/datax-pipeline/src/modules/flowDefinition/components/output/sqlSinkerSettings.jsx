@@ -68,6 +68,7 @@ export default class SqlSinkerSettings extends React.Component {
     }
 
     renderSqlWriteModeDropdown() {
+        const isbulkInsert = this.props.sinker.properties.useBulkInsert;
         const options = Models.sinkerSqlWriteModes.map(type => {
             return {
                 key: type.key,
@@ -78,12 +79,13 @@ export default class SqlSinkerSettings extends React.Component {
 
         return (
             <div style={sectionStyle}>
-                <Label className="ms-font-m info-settings-textbox">WriteMode</Label>
+                <Label className="ms-font-m info-settings-textbox">Write Mode</Label>
                 <Dropdown
                     className="ms-font-m info-settings-textbox"
                     options={options}
                     selectedKey={this.props.sinker.properties.writeMode}
                     onChange={(event, selection) => this.props.onUpdateSqlWriteMode(selection.key)}
+                    disabled={isbulkInsert}
                 />
             </div>
         );
@@ -93,16 +95,14 @@ export default class SqlSinkerSettings extends React.Component {
         const isbulkInsert = this.props.sinker.properties.useBulkInsert;
         return (
             <div>
-                <div style={sectionContainerStyle}>
-                    <div style={toggleSectionStyle}>
-                        <Toggle
-                            label="Use SQL Bulk Insert?"
-                            onText="Yes"
-                            offText="No"
-                            checked={isbulkInsert}
-                            onChange={(event, value) => this.props.onUpdateSqlUseBulkInsert(value)}
-                        />
-                    </div>
+                <div style={toggleSectionStyle}>
+                    <Toggle
+                        label="Use SQL Bulk Insert?"
+                        onText="Yes"
+                        offText="No"
+                        checked={isbulkInsert}
+                        onChange={(event, value) => this.props.onUpdateSqlUseBulkInsert(value)}
+                    />
                 </div>
             </div>
         );
@@ -139,19 +139,6 @@ const sinkTypeSection = {
 
 const sectionStyle = {
     paddingBottom: 15
-};
-
-const sectionContainerStyle = {
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    backgroundColor: Colors.neutralLighter,
-    border: `1px solid ${Colors.neutralQuaternaryAlt}`,
-    paddingLeft: 15,
-    paddingRight: 0,
-    paddingTop: 15,
-    paddingBottom: 0,
-    marginBottom: 20
 };
 
 const toggleSectionStyle = {

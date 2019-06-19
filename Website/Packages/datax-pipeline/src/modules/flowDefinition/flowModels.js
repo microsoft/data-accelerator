@@ -262,7 +262,7 @@ export const outputSinkerTypes = [
     },
     {
         key: sinkerTypeEnum.sql,
-        name: 'SQL Server',
+        name: 'Azure SQL Database',
         disabled: false
     },
     {
