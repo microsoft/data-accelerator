@@ -498,6 +498,7 @@ export function convertConfigToFlow(config) {
 
     return flow;
 }
+/** This is the contract between the package that is dependent on datax-query package. For example, datax-pipeline package needs to pass in queryMetadata object which contains all the required parameters as needed by various apis in the datax-query package*/
 export function convertFlowToQueryMetadata(flow) {
     // return query metadata
     let QueryMetadata = {
