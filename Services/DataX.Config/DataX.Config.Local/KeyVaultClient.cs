@@ -25,7 +25,7 @@ namespace DataX.Config.Local
             return Task.FromResult(secretUri);
         }    
 
-        public Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, bool hashSuffix = false)
+        public Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, string uriPrefix, bool hashSuffix = false)
         {
             return Task.FromResult(secretValue);
         }

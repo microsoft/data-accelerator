@@ -25,8 +25,8 @@ namespace DataX.Flow.InteractiveQuery
         private const string _GarbageCollectBlobName = "kernelList.json";
         private EngineEnvironment _engineEnvironment;
         private readonly ILogger _logger;
-        private const string _HDInsight = "HDInsight";
-        private const string _DataBricks = "DataBricks";
+        private const string _HDInsight = Config.ConfigDataModel.Constants.SparkTypeHDInsight;
+        private const string _DataBricks = Config.ConfigDataModel.Constants.SparkTypeDataBricks;
         private readonly string _sparkType = _HDInsight;
         private readonly IConfiguration _configuration;
 

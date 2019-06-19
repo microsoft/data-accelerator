@@ -35,17 +35,17 @@ namespace DataX.Config.KeyVault
             return GetKeyVault().GetSecretFromKeyvaultAsync(secretUri);
         }
 
-        public async Task<string> SaveSecretAsync(string keyvaultName, string secretUri, string secret)
+        public async Task<string> SaveSecretAsync(string keyvaultName, string secretUri, string secret, string uriPrefix)
         {
             await GetKeyVault().SaveSecretStringAsync(keyvaultName, secretUri, secret);
-            return SecretUriParser.ComposeUri(keyvaultName, secretUri);
+            return SecretUriParser.ComposeUri(keyvaultName, secretUri, uriPrefix);
         }
 
-        public async Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, bool hashSuffix = false)
+        public async Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, string uriPrefix, bool hashSuffix = false)
         {
             var finalSecretName = hashSuffix ? (secretName + "-" + HashGenerator.GetHashCode(secretValue)) : secretName;
             await GetKeyVault().SaveSecretStringAsync(keyvaultName, finalSecretName, secretValue);
-            return SecretUriParser.ComposeUri(keyvaultName, finalSecretName);
+            return SecretUriParser.ComposeUri(keyvaultName, finalSecretName, uriPrefix);
         }
     }
 }

@@ -32,11 +32,11 @@ namespace DataX.Config.Test.Mock
             return secretUri;
         }
 
-        public async Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, bool hashSuffix = false)
+        public async Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, string uriPrefix, bool hashSuffix = false)
         {
             var finalSecretName = hashSuffix ? (secretName + "-" + HashGenerator.GetHashCode(secretValue)) : secretName;
             await Task.Yield();
-            return $"keyvault://{keyvaultName}/{finalSecretName}";
+            return $"{uriPrefix}://{keyvaultName}/{finalSecretName}";
         }
     }
 }

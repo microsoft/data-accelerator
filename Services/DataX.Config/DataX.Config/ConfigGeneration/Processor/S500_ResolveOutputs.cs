@@ -81,6 +81,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                             keyvaultName: RuntimeKeyVaultName.Value,
                             secretName: secretName,
                             secretValue: connStr,
+                            uriPrefix: (Configuration[Constants.ConfigSettingName_SparkType].Length > 0 && Configuration[Constants.ConfigSettingName_SparkType] == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault,
                             hashSuffix: true);
 
                         rd.Properties.ConnectionString = secretUri;
@@ -196,8 +197,9 @@ namespace DataX.Config.ConfigGeneration.Processor
                 var accountName = ParseBlobAccountName(connectionString);
                 var blobPath = $"wasbs://{uiOutput.Properties.ContainerName}@{accountName}.blob.core.windows.net/{uiOutput.Properties.BlobPrefix}/%1$tY/%1$tm/%1$td/%1$tH/${{quarterBucket}}/${{minuteBucket}}";
                 var secretId = $"{configName}-output";
-                var blobPathSecret = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, secretId, blobPath, true);
-                await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, $"datax-sa-{accountName}", ParseBlobAccountKey(connectionString), false);
+                var uriPrefix = (Configuration[Constants.ConfigSettingName_SparkType].Length > 0 && Configuration[Constants.ConfigSettingName_SparkType] == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
+                var blobPathSecret = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, secretId, blobPath, uriPrefix, true);
+                await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, $"datax-sa-{accountName}", ParseBlobAccountKey(connectionString), uriPrefix, false);
 
                 FlowBlobOutputSpec blobOutput = new FlowBlobOutputSpec()
                 {
@@ -246,7 +248,7 @@ namespace DataX.Config.ConfigGeneration.Processor
 
                 FlowEventHubOutputSpec eventhubOutput = new FlowEventHubOutputSpec()
                 {
-                    ConnectionStringRef = KeyVaultUri.ComposeUri(sparkKeyVaultName, metricsEhConnectionStringKey),
+                    ConnectionStringRef = KeyVaultUri.ComposeUri(sparkKeyVaultName, metricsEhConnectionStringKey, Configuration[Constants.ConfigSettingName_SparkType]),
                     CompressionType = "none",
                     Format = "json"
                 };

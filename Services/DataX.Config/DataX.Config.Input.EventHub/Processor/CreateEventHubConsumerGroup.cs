@@ -47,6 +47,7 @@ namespace DataX.Config.Input.EventHub.Processor
         public override async Task<FlowGuiConfig> HandleSensitiveData(FlowGuiConfig guiConfig)
         {
             var runtimeKeyVaultName = Configuration[Constants.ConfigSettingName_RuntimeKeyVaultName];
+            var uriPrefix = (Configuration[Constants.ConfigSettingName_SparkType].Length > 0 && Configuration[Constants.ConfigSettingName_SparkType] == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
             Ensure.NotNull(runtimeKeyVaultName, "runtimeKeyVaultName");
 
             // Replace Input Event Hub Connection String
@@ -55,7 +56,7 @@ namespace DataX.Config.Input.EventHub.Processor
             {
                 //TODO: create new secret
                 var secretName = $"{guiConfig.Name}-input-eventhubconnectionstring";
-                var secretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, eventHubConnectionString);
+                var secretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, eventHubConnectionString, uriPrefix);
                 guiConfig.Input.Properties.InputEventhubConnection = secretId;
             }
 
@@ -64,7 +65,7 @@ namespace DataX.Config.Input.EventHub.Processor
             if (!string.IsNullOrEmpty(inputSubscriptionId) && !KeyVaultUri.IsSecretUri(inputSubscriptionId))
             {
                 var secretName = $"{guiConfig.Name}-input-inputsubscriptionid";
-                var secretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, inputSubscriptionId);
+                var secretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, inputSubscriptionId, uriPrefix);
                 guiConfig.Input.Properties.InputSubscriptionId = secretId;
             }
 
@@ -73,8 +74,17 @@ namespace DataX.Config.Input.EventHub.Processor
             if (!string.IsNullOrEmpty(inputResourceGroup) && !KeyVaultUri.IsSecretUri(inputResourceGroup))
             {
                 var secretName = $"{guiConfig.Name}-input-inputResourceGroup";
-                var secretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, inputResourceGroup);
+                var secretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, inputResourceGroup, uriPrefix);
                 guiConfig.Input.Properties.InputResourceGroup = secretId;
+            }
+
+            // Replace Info Databricks Token
+            var infoDatabricksToken = guiConfig?.DatabricksToken;
+            if(!string.IsNullOrEmpty(infoDatabricksToken) && !KeyVaultUri.IsSecretUri(infoDatabricksToken))
+            {
+                var secretName = $"{guiConfig.Name}-info-databricksToken";
+                var secretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, infoDatabricksToken, uriPrefix);
+                guiConfig.DatabricksToken = secretId;
             }
 
             return guiConfig;
@@ -171,7 +181,7 @@ namespace DataX.Config.Input.EventHub.Processor
             flowToDeploy.SetStringToken(TokenName_InputEventHubConsumerGroup, consumerGroupName);
             flowToDeploy.SetStringToken(TokenName_InputEventHubs, hubInfo.Name);
 
-            var checkpointDir = Configuration.GetOrDefault(ConfigSettingName_InputEventHubCheckpointDir, "hdfs://mycluster/datax/direct/${name}/");
+            var checkpointDir = (Configuration[Constants.ConfigSettingName_SparkType].Length > 0 && Configuration[Constants.ConfigSettingName_SparkType] == Constants.SparkTypeDataBricks) ? Configuration.GetOrDefault(ConfigSettingName_InputEventHubCheckpointDir, "dbfs:/mycluster/datax/direct/${name}/") : Configuration.GetOrDefault(ConfigSettingName_InputEventHubCheckpointDir, "hdfs://mycluster/datax/direct/${name}/");
             flowToDeploy.SetStringToken(TokenName_InputEventHubCheckpointDir, checkpointDir);
 
             var intervalInSeconds = props?.WindowDuration;

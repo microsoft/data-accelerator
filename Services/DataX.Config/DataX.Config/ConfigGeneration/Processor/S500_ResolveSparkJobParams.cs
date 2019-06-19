@@ -21,7 +21,10 @@ namespace DataX.Config.ConfigGeneration.Processor
     {
         public const string TokenName_SparkJobNumExecutors = "guiSparkJobNumExecutors";
         public const string TokenName_SparkJobJobExecutorMemory = "guiSparkJobExecutorMemory";
-        
+        public const string TokenName_SparkJobDatabricksMinWorkers = "guiSparkJobDatabricksMinWorkers";
+        public const string TokenName_SparkJobDatabricksMaxWorkers = "guiSparkJobDatabricksMaxWorkers";
+        public const string TokenName_DatabricksToken = "guiSparkDatabricksToken";
+
         public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
         {
             var guiConfig = flowToDeploy.Config?.GetGuiConfig();
@@ -57,6 +60,28 @@ namespace DataX.Config.ConfigGeneration.Processor
             }
 
             flowToDeploy.SetStringToken(TokenName_SparkJobJobExecutorMemory, $"{jobExecutorMemory}m");
+
+            // Setting TokenName_SparkJobDatabricksMinWorkers
+            var jobDatabricksMinWorkersString = guiConfig?.Process?.JobConfig?.JobDatabricksMinWorkers;
+            if (!int.TryParse(jobDatabricksMinWorkersString, out int jobDatabricksMinWorkers))
+            {
+                throw new ConfigGenerationException($"Invalid value for process.jobconfig.jobDatabricksMinWorkers:'{jobDatabricksMinWorkersString}'.");
+            }
+
+            flowToDeploy.SetStringToken(TokenName_SparkJobDatabricksMinWorkers, $"{jobDatabricksMinWorkers}");
+
+            // Setting TokenName_SparkJobDatabricksMaxWorkers
+            var jobDatabricksMaxWorkersString = guiConfig?.Process?.JobConfig?.JobDatabricksMaxWorkers;
+            if (!int.TryParse(jobDatabricksMaxWorkersString, out int jobDatabricksMaxWorkers))
+            {
+                throw new ConfigGenerationException($"Invalid value for process.jobconfig.jobDatabricksMaxWorkers:'{jobDatabricksMaxWorkersString}'.");
+            }
+
+            flowToDeploy.SetStringToken(TokenName_SparkJobDatabricksMaxWorkers, $"{jobDatabricksMaxWorkers}");
+
+            // Setting TokenName_DatabricksToken
+            var jobDatabricksTokenString = guiConfig?.DatabricksToken;
+            flowToDeploy.SetStringToken(TokenName_DatabricksToken, $"{jobDatabricksTokenString}");
 
             await Task.Yield();
             return "done";

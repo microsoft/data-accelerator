@@ -20,6 +20,7 @@ Licensed under the MIT License
     <Parameter Name="cosmosDBConfigCollectionName" DefaultValue="" />
     <Parameter Name="AppInsightsIntrumentationKey" DefaultValue="" />
     <Parameter Name="CACertificateLocation" DefaultValue="" />
+    <Parameter Name="SparkType" DefaultValue="" />
     <Parameter Name="MefStorageAccountName" DefaultValue="" />
     <Parameter Name="MefContainerName" DefaultValue="" />
     <Parameter Name="MefBlobDirectory" DefaultValue="" />
@@ -40,6 +41,7 @@ Licensed under the MIT License
             <Parameter Name="cosmosDBConfigCollectionName" Value="[cosmosDBConfigCollectionName]" />
             <Parameter Name="AppInsightsIntrumentationKey" Value="[AppInsightsIntrumentationKey]" />
             <Parameter Name="CACertificateLocation" Value="[CACertificateLocation]" />
+            <Parameter Name="SparkType" Value="[SparkType]" />
             <Parameter Name="EnableOneBox" Value="[EnableOneBox]" />
           </Section>
         </Settings>
@@ -62,6 +64,7 @@ Licensed under the MIT License
             <Parameter Name="cosmosDBConfigCollectionName" Value="[cosmosDBConfigCollectionName]" />
             <Parameter Name="AppInsightsIntrumentationKey" Value="[AppInsightsIntrumentationKey]" />
             <Parameter Name="CACertificateLocation" Value="[CACertificateLocation]" />
+            <Parameter Name="SparkType" Value="[SparkType]" />
             <Parameter Name="EnableOneBox" Value="[EnableOneBox]" />
           </Section>
         </Settings>
@@ -83,6 +86,7 @@ Licensed under the MIT License
             <Parameter Name="cosmosDBConfigDatabaseName" Value="[cosmosDBConfigDatabaseName]" />
             <Parameter Name="cosmosDBConfigCollectionName" Value="[cosmosDBConfigCollectionName]" />
             <Parameter Name="AppInsightsIntrumentationKey" Value="[AppInsightsIntrumentationKey]" />
+            <Parameter Name="SparkType" Value="[SparkType]" />
             <Parameter Name="EnableOneBox" Value="[EnableOneBox]" />
           </Section>
         </Settings>
@@ -104,6 +108,7 @@ Licensed under the MIT License
             <Parameter Name="cosmosDBConfigDatabaseName" Value="[cosmosDBConfigDatabaseName]" />
             <Parameter Name="cosmosDBConfigCollectionName" Value="[cosmosDBConfigCollectionName]" />
             <Parameter Name="AppInsightsIntrumentationKey" Value="[AppInsightsIntrumentationKey]" />
+            <Parameter Name="SparkType" Value="[SparkType]" />
             <Parameter Name="MefStorageAccountName" Value="[MefStorageAccountName]" />
             <Parameter Name="MefContainerName" Value="[MefContainerName]" />
             <Parameter Name="MefBlobDirectory" Value="[MefBlobDirectory]" />

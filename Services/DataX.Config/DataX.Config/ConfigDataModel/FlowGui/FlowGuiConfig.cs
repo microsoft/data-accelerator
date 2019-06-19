@@ -28,6 +28,8 @@ namespace DataX.Config.ConfigDataModel
         public string Name { get; set; }
         [JsonProperty("displayName")]
         public string DisplayName { get; set; }
+        [JsonProperty("databricksToken")]
+        public string DatabricksToken { get; set; }
         [JsonProperty("owner")]
         public string Owner { get; set; }
         [JsonProperty("input")]
