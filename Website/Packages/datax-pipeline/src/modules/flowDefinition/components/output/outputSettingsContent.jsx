@@ -11,7 +11,7 @@ import { Colors, IconButtonStyles, PanelHeader, PanelHeaderButtons, ScrollableCo
 import CosmosDbSinkerSettings from './cosmosdbSinkerSettings';
 import EventHubSinkerSettings from './eventHubSinkerSettings';
 import BlobSinkerSettings from './blobSinkerSettings';
-import SqlSinkerSettings from './SqlSinkerSettings';
+import SqlSinkerSettings from './sqlSinkerSettings';
 import MetricSinkerSettings from './metricSinkerSettings';
 import LocalSinkerSettings from './localSinkerSettings';
 import * as Styles from '../../../../common/styles';

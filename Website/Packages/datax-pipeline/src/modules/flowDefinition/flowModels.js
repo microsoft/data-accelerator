@@ -83,7 +83,7 @@ export const sinkerSqlWriteModes = [
     },
     {
         key: sinkerSqlWriteModeEnum.errorIfExists,
-        name: 'ErrorIfExists',
+        name: 'Error if exists',
         disabled: false
     }
 ];
