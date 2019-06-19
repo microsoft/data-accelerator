@@ -50,11 +50,11 @@ SOFTWARE
     </scm>
 
     <groupId>com.microsoft.datax</groupId>
-    <artifactId>datax-host_2.3_2.11</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <artifactId>datax-host_2.4_2.11</artifactId>
+    <version>1.2.0-SNAPSHOT</version>
 
     <properties>
-        <spark.version>2.3.0</spark.version>
+        <spark.version>2.4.0</spark.version>
         <scala.version.major>2.11</scala.version.major>
         <scala.version.minor>8</scala.version.minor>
         <scala.version>${scala.version.major}.${scala.version.minor}</scala.version>
@@ -117,13 +117,13 @@ SOFTWARE
         </dependency>
         <dependency>
             <groupId>com.microsoft.datax</groupId>
-            <artifactId>datax-core_2.3_2.11</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <artifactId>datax-core_2.4_2.11</artifactId>
+            <version>1.2.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.datax</groupId>
-            <artifactId>datax-utility_2.3_2.11</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <artifactId>datax-utility_2.4_2.11</artifactId>
+            <version>1.2.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
@@ -150,9 +150,16 @@ SOFTWARE
             <artifactId>kafka-clients</artifactId>
             <version>2.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-sqldb-spark</artifactId>
+            <version>1.0.2</version>
+		    <dependency>
+            <groupId>com.databricks</groupId>
+            <artifactId>dbutils-api_2.11</artifactId>
+            <version>0.0.3</version>
+        </dependency>
     </dependencies>
-
-   
   <profiles>
     <profile>
       <id>build</id>

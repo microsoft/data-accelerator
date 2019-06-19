@@ -27,7 +27,7 @@ import QuerySettingsContent from './query/querySettingsContent';
 import ScaleSettingsContent from './scale/scaleSettingsContent';
 import OutputSettingsContent from './output/outputSettingsContent';
 import RulesSettingsContent from './rule/rulesSettingsContent';
-import { functionEnabled } from '../../../common/api';
+import { functionEnabled, isDatabricksSparkType } from '../../../common/api';
 import {
     Colors,
     Panel,
@@ -88,7 +88,8 @@ class FlowDefinitionPanel extends React.Component {
             addOutputSinkButtonEnabled: false,
             deleteOutputSinkButtonEnabled: false,
             scaleNumExecutorsSliderEnabled: false,
-            scaleExecutorMemorySliderEnabled: false
+            scaleExecutorMemorySliderEnabled: false,
+            isDatabricksSparkType: false
         };
 
         this.handleWindowClose = this.handleWindowClose.bind(this);
@@ -183,6 +184,10 @@ class FlowDefinitionPanel extends React.Component {
                 scaleNumExecutorsSliderEnabled: response.scaleNumExecutorsSliderEnabled ? true : false,
                 scaleExecutorMemorySliderEnabled: response.scaleExecutorMemorySliderEnabled ? true : false
             });
+        });
+
+        isDatabricksSparkType().then(response => {
+            this.setState({ isDatabricksSparkType: response });
         });
     }
 
@@ -323,8 +328,11 @@ class FlowDefinitionPanel extends React.Component {
                                 displayName={this.props.flow.displayName}
                                 name={this.props.flow.name}
                                 owner={this.props.flow.owner}
+                                databricksToken={this.props.flow.databricksToken}
                                 onUpdateDisplayName={this.props.onUpdateDisplayName}
+                                onUpdateDatabricksToken={this.props.onUpdateDatabricksToken}
                                 flowNameTextboxEnabled={this.state.flowNameTextboxEnabled}
+                                isDatabricksSparkType={this.state.isDatabricksSparkType}
                             />
                         </VerticalTabItem>
 
@@ -493,6 +501,10 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateExecutorMemory={this.props.onUpdateExecutorMemory}
                                 scaleNumExecutorsSliderEnabled={this.state.scaleNumExecutorsSliderEnabled}
                                 scaleExecutorMemorySliderEnabled={this.state.scaleExecutorMemorySliderEnabled}
+                                isDatabricksSparkType={this.state.isDatabricksSparkType}
+                                onUpdateDatabricksAutoScale={this.props.onUpdateDatabricksAutoScale}
+                                onUpdateDatabricksMinWorkers={this.props.onUpdateDatabricksMinWorkers}
+                                onUpdateDatabricksMaxWorkers={this.props.onUpdateDatabricksMaxWorkers}
                             />
                         </VerticalTabItem>
                     </VerticalTabs>
@@ -787,6 +799,7 @@ const mapDispatchToProps = dispatch => ({
 
     // Info Actions
     onUpdateDisplayName: displayName => dispatch(Actions.updateDisplayName(displayName)),
+    onUpdateDatabricksToken: databricksToken => dispatch(Actions.updateDatabricksToken(databricksToken)),
 
     // Input Actions
     onUpdateInputMode: mode => dispatch(Actions.updateInputMode(mode)),
@@ -849,6 +862,9 @@ const mapDispatchToProps = dispatch => ({
     // Scale Actions
     onUpdateNumExecutors: numExecutors => dispatch(Actions.updateNumExecutors(numExecutors)),
     onUpdateExecutorMemory: executorMemory => dispatch(Actions.updateExecutorMemory(executorMemory)),
+    onUpdateDatabricksAutoScale: databricksAutoScale => dispatch(Actions.updateDatabricksAutoScale(databricksAutoScale)),
+    onUpdateDatabricksMinWorkers: databricksMinWorkers => dispatch(Actions.updateDatabricksMinWorkers(databricksMinWorkers)),
+    onUpdateDatabricksMaxWorkers: databricksMaxWorkers => dispatch(Actions.updateDatabricksMaxWorkers(databricksMaxWorkers)),
 
     // Output Actions
     onNewSinker: type => dispatch(Actions.newSinker(type)),

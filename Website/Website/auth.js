@@ -348,6 +348,10 @@ exports.initialize = function(host) {
             res.type('application/json').send(functionEnabled(req.user._json.roles, host.conf.env.enableLocalOneBox));
         });
 
+        app.get('/api/isdatabrickssparktype', function(req, res) {
+            res.type('application/json').send(isDatabricksSparkType(process.env.DATAX_SPARK_TYPE));
+        });
+
         app.all('/api/*', (req, res, next) => {
             let roles = req.user._json.roles;
             let errorResult = checkPermission(roles, webComposition.api, req);
@@ -426,4 +430,8 @@ function functionEnabled(roles, enableLocalOneBox) {
     });
 
     return supportedFunctionalities;
+}
+
+function isDatabricksSparkType(sparkType) {
+    return sparkType && sparkType.toLowerCase() == 'databricks' ? true : false;
 }

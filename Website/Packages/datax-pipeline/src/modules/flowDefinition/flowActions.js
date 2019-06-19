@@ -24,6 +24,7 @@ export const FLOW_NEW = 'FLOW_NEW';
 // Info
 export const FLOW_UPDATE_DISPLAY_NAME = 'FLOW_UPDATE_DISPLAY_NAME';
 export const FLOW_UPDATE_OWNER = 'FLOW_UPDATE_OWNER';
+export const FLOW_UPDATE_DATABRICKSTOKEN = 'FLOW_UPDATE_DATABRICKSTOKEN';
 
 // Query
 export const FLOW_UPDATE_QUERY = 'FLOW_UPDATE_QUERY';
@@ -115,6 +116,13 @@ export const updateOwner = () => (dispatch, getState) => {
     return dispatch({
         type: FLOW_UPDATE_OWNER,
         payload: UserSelectors.getUserAlias(getState())
+    });
+};
+
+export const updateDatabricksToken = databricksToken => dispatch => {
+    return dispatch({
+        type: FLOW_UPDATE_DATABRICKSTOKEN,
+        payload: databricksToken
     });
 };
 
@@ -803,6 +811,33 @@ export const updateExecutorMemory = executorMemory => (dispatch, getState) => {
         dispatch,
         Object.assign({}, Selectors.getFlowScale(getState()), {
             jobExecutorMemory: executorMemory
+        })
+    );
+};
+
+export const updateDatabricksAutoScale = databricksAutoScale => (dispatch, getState) => {
+    updateScale(
+        dispatch,
+        Object.assign({}, Selectors.getFlowScale(getState()), {
+            jobDatabricksAutoScale: databricksAutoScale
+        })
+    );
+};
+
+export const updateDatabricksMinWorkers = databricksMinWorkers => (dispatch, getState) => {
+    updateScale(
+        dispatch,
+        Object.assign({}, Selectors.getFlowScale(getState()), {
+            jobDatabricksMinWorkers: databricksMinWorkers
+        })
+    );
+};
+
+export const updateDatabricksMaxWorkers = databricksMaxWorkers => (dispatch, getState) => {
+    updateScale(
+        dispatch,
+        Object.assign({}, Selectors.getFlowScale(getState()), {
+            jobDatabricksMaxWorkers: databricksMaxWorkers
         })
     );
 };
