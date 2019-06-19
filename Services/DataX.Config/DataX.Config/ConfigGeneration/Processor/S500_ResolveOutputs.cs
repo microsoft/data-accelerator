@@ -130,14 +130,14 @@ namespace DataX.Config.ConfigGeneration.Processor
                         case "cosmosdb":
                             {
                                 var cosmosDbOutput = ProcessOutputCosmosDb(output);
-                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.CosmosDbOutput, "Multiple target cosmosDB ouptut for same dataset not supported.");
+                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.CosmosDbOutput, "Multiple target cosmosDB output for same dataset not supported.");
                                 flowOutput.CosmosDbOutput = cosmosDbOutput;
                                 break;
                             }
                         case "eventhub":
                             {
                                 var eventhubOutput = ProcessOutputEventHub(output);
-                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.EventHubOutput, "Multiple target eventHub/metric ouptut for same dataset not supported.");
+                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.EventHubOutput, "Multiple target eventHub/metric output for same dataset not supported.");
                                 flowOutput.EventHubOutput = eventhubOutput;
                                 break;
                             }
@@ -148,7 +148,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                                     if (Configuration.TryGet(Constants.ConfigSettingName_LocalMetricsHttpEndpoint, out string localMetricsEndpoint))
                                     {
                                         var httpOutput = ProcessLocalOutputMetric(configName, localMetricsEndpoint);
-                                        Ensure.EnsureNullElseThrowNotSupported(flowOutput.HttpOutput, "Multiple target httpost/metric ouptut for same dataset not supported.");
+                                        Ensure.EnsureNullElseThrowNotSupported(flowOutput.HttpOutput, "Multiple target httpost/metric output for same dataset not supported.");
                                         flowOutput.HttpOutput = httpOutput;
                                     }
                                     break;
@@ -156,7 +156,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                                 else
                                 {
                                     var eventhubOutput = ProcessOutputMetric(output);
-                                    Ensure.EnsureNullElseThrowNotSupported(flowOutput.EventHubOutput, "Multiple target eventHub/metric ouptut for same dataset not supported.");
+                                    Ensure.EnsureNullElseThrowNotSupported(flowOutput.EventHubOutput, "Multiple target eventHub/metric output for same dataset not supported.");
                                     flowOutput.EventHubOutput = eventhubOutput;
                                     break;
                                 }
@@ -164,21 +164,21 @@ namespace DataX.Config.ConfigGeneration.Processor
                         case "blob":
                             {
                                 var blobOutput = await ProcessOutputBlob(configName, output);
-                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.BlobOutput, "Multiple target blob ouptut for same dataset not supported.");
+                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.BlobOutput, "Multiple target blob output for same dataset not supported.");
                                 flowOutput.BlobOutput = blobOutput;
                                 break;
                             }
                         case "local":
                             {
                                 var blobOutput = ProcessOutputLocal(configName, output);
-                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.BlobOutput, "Multiple target blob ouptut for same dataset not supported.");
+                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.BlobOutput, "Multiple target blob output for same dataset not supported.");
                                 flowOutput.BlobOutput = blobOutput;
                                 break;
                             }
                         case "sqlserver":
                             {
                                 var sqlOutput =  await ProcessOutputSql(configName, output);
-                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.SqlOutput, "Multiple target Sql ouptut for same dataset not supported.");
+                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.SqlOutput, "Multiple target Sql output for same dataset not supported.");
                                 flowOutput.SqlOutput = sqlOutput;
                                 break;
                             }
