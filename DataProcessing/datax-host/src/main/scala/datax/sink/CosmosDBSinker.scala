@@ -120,6 +120,7 @@ object CosmosDBSinkerManager extends SinkOperatorFactory {
     SinkOperator(
       name = SinkName,
       isEnabled = conf!=null,
+      sinkAsJson = true,
       flagColumnExprGenerator = () => null,
       generator = flagColumnIndex => SinkerUtil.outputGenerator(
         (dataToSend:Seq[String],ls: String) => {
