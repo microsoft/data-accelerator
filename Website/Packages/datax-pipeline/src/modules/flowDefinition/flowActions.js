@@ -646,6 +646,31 @@ function updateSinker(dispatch, index, sinker) {
     });
 }
 
+// Sql Sinker
+export const updateSqlConnection = connection => (dispatch, getState) => {
+    updateSinkerProperties(dispatch, getState, {
+        connectionString: connection
+    });
+};
+
+export const updateSqlTableName = name => (dispatch, getState) => {
+    updateSinkerProperties(dispatch, getState, {
+        tableName: name
+    });
+};
+
+export const updateSqlWriteMode = mode => (dispatch, getState) => {
+    updateSinkerProperties(dispatch, getState, {
+        writeMode: mode
+    });
+};
+
+export const updateSqlUseBulkInsert = bulkInsert => (dispatch, getState) => {
+    updateSinkerProperties(dispatch, getState, {
+        useBulkInsert: bulkInsert
+    });
+};
+
 // Rule Actions
 export const updateRules = rules => dispatch => {
     return dispatch({

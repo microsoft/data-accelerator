@@ -367,6 +367,11 @@ function isSinkerSettingsComplete(sinker) {
             validations.push(sinker.properties.blobPartitionFormat && sinker.properties.blobPartitionFormat.trim() !== '');
             break;
 
+        case Models.sinkerTypeEnum.sql:
+            validations.push(sinker.properties.connectionString && sinker.properties.connectionString.trim() !== '');
+            validations.push(sinker.properties.tableName && sinker.properties.connectionString.trim() !== '');
+            break;
+
         case Models.sinkerTypeEnum.metric:
             // no additional validation needed, this is a system provided sinker type
             break;

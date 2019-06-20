@@ -348,74 +348,88 @@
 					"type" : "scopedObject",
 					"namespace" : "output",
 					"namespaceField" : "name",
-					"fields" : {
-						"blob" : {
-							"type" : "object",
-							"namespace" : "blob",
-							"fields" : {
-								"groupEvaluation" : "groupevaluation",
-								"compressionType" : {
-									"type" : "excludeDefaultValue",
-									"namespace" : "compressiontype",
-									"defaultValue" : "gzip"
-								},
-								"format" : {
-									"type" : "excludeDefaultValue",
-									"namespace" : "format",
-									"defaultValue" : "json"
-								},
-								"groups" : {
-									"type" : "map",
-									"namespace" : "group",
-									"fields" : {
-										"folder" : "folder"
-									}
-								}
-							}
-						},
-						"eventhub" : {
-							"type" : "object",
-							"namespace" : "eventhub",
-							"fields" : {
-								"connectionStringRef" : "connectionstring",
-								"compressionType" : {
-									"type" : "excludeDefaultValue",
-									"namespace" : "compressiontype",
-									"defaultValue" : "gzip"
-								},
-								"format" : {
-									"type" : "excludeDefaultValue",
-									"namespace" : "format",
-									"defaultValue" : "json"
-								},
-								"appendProperties" : {
-									"type" : "mapProps",
-									"namespace" : "appendproperty"
-								}
-							}
-						},
-						"cosmosdb" : {
-							"type" : "object",
-							"namespace" : "cosmosdb",
-							"fields" : {
-								"connectionStringRef" : "connectionstring",
-								"database" : "database",
-								"collection" : "collection"
-							}
-						},
-						"httpPost" : {
-							"type" : "object",
-							"namespace" : "httppost",
-							"fields" : {
-								"endpoint" : "endpoint",
-								"filter" : "filter",
-								"appendHeaders" : {
-									"type" : "mapProps",
-									"namespace" : "header"
-								}
-							}
-						}
-					}
+          "fields": {
+            "blob": {
+              "type": "object",
+              "namespace": "blob",
+              "fields": {
+                "groupEvaluation": "groupevaluation",
+                "compressionType": {
+                  "type": "excludeDefaultValue",
+                  "namespace": "compressiontype",
+                  "defaultValue": "gzip"
+                },
+                "format": {
+                  "type": "excludeDefaultValue",
+                  "namespace": "format",
+                  "defaultValue": "json"
+                },
+                "groups": {
+                  "type": "map",
+                  "namespace": "group",
+                  "fields": {
+                    "folder": "folder"
+                  }
+                }
+              }
+            },
+            "eventhub": {
+              "type": "object",
+              "namespace": "eventhub",
+              "fields": {
+                "connectionStringRef": "connectionstring",
+                "compressionType": {
+                  "type": "excludeDefaultValue",
+                  "namespace": "compressiontype",
+                  "defaultValue": "gzip"
+                },
+                "format": {
+                  "type": "excludeDefaultValue",
+                  "namespace": "format",
+                  "defaultValue": "json"
+                },
+                "appendProperties": {
+                  "type": "mapProps",
+                  "namespace": "appendproperty"
+                }
+              }
+            },
+            "cosmosdb": {
+              "type": "object",
+              "namespace": "cosmosdb",
+              "fields": {
+                "connectionStringRef": "connectionstring",
+                "database": "database",
+                "collection": "collection"
+              }
+            },
+            "httpPost": {
+              "type": "object",
+              "namespace": "httppost",
+              "fields": {
+                "endpoint": "endpoint",
+                "filter": "filter",
+                "appendHeaders": {
+                  "type": "mapProps",
+                  "namespace": "header"
+                }
+              }
+            },
+            "sqlServer": {
+              "type": "object",
+              "namespace": "sql",
+              "fields": {
+                "connectionStringRef": "connectionstring",
+                "databaseName": "databasename",
+                "tableName": "table",
+                "writeMode": "writemode",
+                "useBulkInsert": "usebulkinsert",
+                "url": "url",
+                "user": "user",
+                "password": "password"
+              }
+            }
+          }
 				},
 				"outputs" : {
 					"type" : "array",
@@ -423,74 +437,88 @@
 						"type" : "scopedObject",
 						"namespace" : "output",
 						"namespaceField" : "name",
-						"fields" : {
-							"blob" : {
-								"type" : "object",
-								"namespace" : "blob",
-								"fields" : {
-									"groupEvaluation" : "groupevaluation",
-									"compressionType" : {
-										"type" : "excludeDefaultValue",
-										"namespace" : "compressiontype",
-										"defaultValue" : "gzip"
-									},
-									"format" : {
-										"type" : "excludeDefaultValue",
-										"namespace" : "format",
-										"defaultValue" : "json"
-									},
-									"groups" : {
-										"type" : "map",
-										"namespace" : "group",
-										"fields" : {
-											"folder" : "folder"
-										}
-									}
-								}
-							},
-							"eventhub" : {
-								"type" : "object",
-								"namespace" : "eventhub",
-								"fields" : {
-									"connectionStringRef" : "connectionstring",
-									"compressionType" : {
-										"type" : "excludeDefaultValue",
-										"namespace" : "compressiontype",
-										"defaultValue" : "gzip"
-									},
-									"format" : {
-										"type" : "excludeDefaultValue",
-										"namespace" : "format",
-										"defaultValue" : "json"
-									},
-									"appendProperties" : {
-										"type" : "mapProps",
-										"namespace" : "appendproperty"
-									}
-								}
-							},
-							"cosmosdb" : {
-								"type" : "object",
-								"namespace" : "cosmosdb",
-								"fields" : {
-									"connectionStringRef" : "connectionstring",
-									"database" : "database",
-									"collection" : "collection"
-								}
-							},
-							"httpPost" : {
-								"type" : "object",
-								"namespace" : "httppost",
-								"fields" : {
-									"endpoint" : "endpoint",
-									"filter" : "filter",
-									"appendHeaders" : {
-										"type" : "mapProps",
-										"namespace" : "header"
-									}
-								}
-							}
-						}
+            "fields": {
+              "blob": {
+                "type": "object",
+                "namespace": "blob",
+                "fields": {
+                  "groupEvaluation": "groupevaluation",
+                  "compressionType": {
+                    "type": "excludeDefaultValue",
+                    "namespace": "compressiontype",
+                    "defaultValue": "gzip"
+                  },
+                  "format": {
+                    "type": "excludeDefaultValue",
+                    "namespace": "format",
+                    "defaultValue": "json"
+                  },
+                  "groups": {
+                    "type": "map",
+                    "namespace": "group",
+                    "fields": {
+                      "folder": "folder"
+                    }
+                  }
+                }
+              },
+              "eventhub": {
+                "type": "object",
+                "namespace": "eventhub",
+                "fields": {
+                  "connectionStringRef": "connectionstring",
+                  "compressionType": {
+                    "type": "excludeDefaultValue",
+                    "namespace": "compressiontype",
+                    "defaultValue": "gzip"
+                  },
+                  "format": {
+                    "type": "excludeDefaultValue",
+                    "namespace": "format",
+                    "defaultValue": "json"
+                  },
+                  "appendProperties": {
+                    "type": "mapProps",
+                    "namespace": "appendproperty"
+                  }
+                }
+              },
+              "cosmosdb": {
+                "type": "object",
+                "namespace": "cosmosdb",
+                "fields": {
+                  "connectionStringRef": "connectionstring",
+                  "database": "database",
+                  "collection": "collection"
+                }
+              },
+              "httpPost": {
+                "type": "object",
+                "namespace": "httppost",
+                "fields": {
+                  "endpoint": "endpoint",
+                  "filter": "filter",
+                  "appendHeaders": {
+                    "type": "mapProps",
+                    "namespace": "header"
+                  }
+                }
+              },
+              "sqlServer": {
+                "type": "object",
+                "namespace": "sql",
+                "fields": {
+                  "connectionStringRef": "connectionstring",
+                  "databaseName": "databasename",
+                  "tableName": "table",
+                  "writeMode": "writemode",
+                  "useBulkInsert": "usebulkinsert",
+                  "url": "url",
+                  "user": "user",
+                  "password": "password"
+                }
+              }
+            }
 					}
 				}
 			}
