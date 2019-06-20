@@ -24,6 +24,7 @@ namespace DataX.Config.ConfigGeneration.Processor
         public const string TokenName_SparkJobDatabricksMinWorkers = "guiSparkJobDatabricksMinWorkers";
         public const string TokenName_SparkJobDatabricksMaxWorkers = "guiSparkJobDatabricksMaxWorkers";
         public const string TokenName_DatabricksToken = "guiSparkDatabricksToken";
+        public const string TokenName_SparkJobDatabricksAutoScale = "guiSparkJobDatabricksAutoScale";
 
         public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
         {
@@ -82,6 +83,10 @@ namespace DataX.Config.ConfigGeneration.Processor
             // Setting TokenName_DatabricksToken
             var jobDatabricksTokenString = guiConfig?.DatabricksToken;
             flowToDeploy.SetStringToken(TokenName_DatabricksToken, $"{jobDatabricksTokenString}");
+
+            // Setting TokenName_SparkJobDatabricksAutoScale
+            var jobDatabricksAutoScaleString = guiConfig?.Process?.JobConfig?.JobDatabricksAutoScale;
+            flowToDeploy.SetStringToken(TokenName_SparkJobDatabricksAutoScale, $"{jobDatabricksAutoScaleString}");
 
             await Task.Yield();
             return "done";

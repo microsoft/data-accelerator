@@ -121,7 +121,17 @@ namespace DataX.Config.DatabricksClient
         public async Task<SparkJobSyncResult> SubmitJob(JToken jobData)
         {
             Ensure.NotNull(jobData, "jobData");
-            var jobResult = await CallDatabricksService(HttpMethod.Post, "jobs/create", jobData.ToString());
+            JObject obj = JObject.Parse(jobData.ToString());
+            JObject newCluster = (JObject)obj["new_cluster"];
+            if (!(bool)obj.SelectToken("new_cluster.enableAutoscale"))
+            {
+                newCluster.Property("autoscale").Remove();
+            }
+            else
+            {
+                newCluster.Property("num_workers").Remove();
+            }
+            var jobResult = await CallDatabricksService(HttpMethod.Post, "jobs/create", obj.ToString());
             var jobId = JsonConvert.DeserializeObject<DatabricksJobResult>(jobResult.Content).JobId;
             var runResult = await CallDatabricksService(HttpMethod.Post, "jobs/run-now", $@"{{""job_id"":{jobId}}}");
             var runId = JsonConvert.DeserializeObject<DatabricksJobResult>(runResult.Content).RunId;
@@ -146,7 +156,7 @@ namespace DataX.Config.DatabricksClient
 
         public async Task<SparkJobSyncResult[]> GetJobs()
         {
-            return new SparkJobSyncResult[1];
+            throw new NotImplementedException();
         }
     }
 }
