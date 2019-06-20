@@ -799,7 +799,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
     // Init Actions
     initFlow: context => dispatch(Actions.initFlow(context)),
-    initQuery: query =>dispatch(QueryActions.initQuery(query)),
+    initQuery: query => dispatch(QueryActions.initQuery(query)),
     // Message Actions
     onUpdateWarningMessage: message => dispatch(Actions.updateWarningMessage(message)),
 
