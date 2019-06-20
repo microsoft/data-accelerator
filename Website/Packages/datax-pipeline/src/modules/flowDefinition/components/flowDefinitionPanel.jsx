@@ -34,11 +34,11 @@ import {
     VerticalTabItem,
     getApiErrorMessage
 } from 'datax-common';
-import {  
+import {
     QueryApi,
-    KernelActions, 
+    KernelActions,
     KernelSelectors,
-    QueryActions,    
+    QueryActions,
     LayoutActions,
     LayoutSelectors,
     QuerySelectors,
@@ -218,8 +218,8 @@ class FlowDefinitionPanel extends React.Component {
     }
 
     renderBackButton() {
-        const buttonTooltip = (this.props.flow.isDirty || this.props.isQueryDirty) ? 'Discard Changes' : 'Go Back';
-        let buttonText = (this.props.flow.isDirty || this.props.isQueryDirty )? 'Cancel' : 'Back';
+        const buttonTooltip = this.props.flow.isDirty || this.props.isQueryDirty ? 'Discard Changes' : 'Go Back';
+        let buttonText = this.props.flow.isDirty || this.props.isQueryDirty ? 'Cancel' : 'Back';
         let buttonIcon = <i style={IconButtonStyles.neutralStyle} className="ms-Icon ms-Icon--NavigateBack" />;
 
         if (this.state.loading) {
@@ -238,7 +238,8 @@ class FlowDefinitionPanel extends React.Component {
 
     renderSaveButton() {
         if (!this.state.loading) {
-            const enableButton = (this.props.flow.isDirty || this.props.isQueryDirty) && this.props.flowValidated && this.state.saveFlowButtonEnabled;
+            const enableButton =
+                (this.props.flow.isDirty || this.props.isQueryDirty) && this.props.flowValidated && this.state.saveFlowButtonEnabled;
             return (
                 <DefaultButton
                     key="deploy"
@@ -723,14 +724,23 @@ class FlowDefinitionPanel extends React.Component {
         ) {
             const version = this.props.kernelVersion + 1;
             this.props.onUpdateKernelVersion(version);
-            this.props.onGetKernel(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query), version, QueryActions.updateErrorMessage);
+            this.props.onGetKernel(
+                Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query),
+                version,
+                QueryActions.updateErrorMessage
+            );
         }
     }
 
     refreshKernel(kernelId) {
         const version = this.props.kernelVersion + 1;
         this.props.onUpdateKernelVersion(version);
-        this.props.onRefreshKernel(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query), kernelId, version, QueryActions.updateErrorMessage);
+        this.props.onRefreshKernel(
+            Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query),
+            kernelId,
+            version,
+            QueryActions.updateErrorMessage
+        );
     }
 
     onDeleteKernel(kernelId) {
@@ -799,7 +809,6 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
     // Init Actions
     initFlow: context => dispatch(Actions.initFlow(context)),
-    initQuery: query => dispatch(QueryActions.initQuery(query)),
     // Message Actions
     onUpdateWarningMessage: message => dispatch(Actions.updateWarningMessage(message)),
 
@@ -851,9 +860,10 @@ const mapDispatchToProps = dispatch => ({
 
     // Query Actions
     onUpdateQuery: query => dispatch(QueryActions.updateQuery(query)),
-    onGetCodeGenQuery: (queryMetadata) => QueryActions.getCodeGenQuery(queryMetadata),
+    onGetCodeGenQuery: queryMetadata => QueryActions.getCodeGenQuery(queryMetadata),
     onExecuteQuery: (queryMetadata, selectedQuery, kernelId) => dispatch(QueryActions.executeQuery(queryMetadata, selectedQuery, kernelId)),
-    onGetKernel: (queryMetadata, version, updateErrorMessage) => dispatch(KernelActions.getKernel(queryMetadata, version, updateErrorMessage)),
+    onGetKernel: (queryMetadata, version, updateErrorMessage) =>
+        dispatch(KernelActions.getKernel(queryMetadata, version, updateErrorMessage)),
     onUpdateKernelVersion: version => dispatch(KernelActions.updateKernelVersion(version)),
     onRefreshKernel: (queryMetadata, kernelId, version, updateErrorMessage) =>
         dispatch(KernelActions.refreshKernel(queryMetadata, kernelId, version, updateErrorMessage)),
@@ -908,10 +918,10 @@ const mapDispatchToProps = dispatch => ({
     onUpdateTagAggregates: aggregates => dispatch(Actions.updateTagAggregates(aggregates)),
     onUpdateTagPivots: pivots => dispatch(Actions.updateTagPivots(pivots)),
     onUpdateSchemaTableName: name => dispatch(Actions.updateSchemaTableName(name)),
-    onGetTableSchemas: (queryMetadata) => QueryActions.getTableSchemas(queryMetadata),
+    onGetTableSchemas: queryMetadata => QueryActions.getTableSchemas(queryMetadata),
 
     // Save and Delete Actions
-    onSaveFlow: (flow,query) => Actions.saveFlow(flow, query),
+    onSaveFlow: (flow, query) => Actions.saveFlow(flow, query),
     onDeleteFlow: flow => Actions.deleteFlow(flow),
 
     // enableOneBox Action

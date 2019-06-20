@@ -6,7 +6,7 @@ import Q from 'q';
 import * as Api from './api';
 import * as Selectors from './flowSelectors';
 import { UserSelectors, getApiErrorMessage } from 'datax-common';
-import {QueryActions} from 'datax-query';
+import { QueryActions } from 'datax-query';
 import * as Helpers from './flowHelpers';
 
 /**
@@ -85,10 +85,7 @@ export const initFlow = context => (dispatch, getState) => {
                 });
             })
             .then(flow => {
-                return dispatch({
-                    type: QueryActions.QUERY_INIT,
-                    payload: flow.payload.query
-                });
+                dispatch(QueryActions.initQuery(flow.payload.query));
             })
             .catch(error => {
                 const message = getApiErrorMessage(error);

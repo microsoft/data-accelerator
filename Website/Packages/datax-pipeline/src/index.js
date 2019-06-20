@@ -9,7 +9,7 @@ import './styles/styles.css';
 
 import flowslist from './modules/flowList/reducer';
 import flow from './modules/flowDefinition/flowReducer';
-import {kernelReducer, layoutReducer, queryReducer } from 'datax-query';
+import { kernelReducer, layoutReducer, queryReducer } from 'datax-query';
 
 /**
  * Website Consumption Contract
