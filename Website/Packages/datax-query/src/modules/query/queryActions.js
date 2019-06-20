@@ -15,8 +15,7 @@ import * as KernelSelectors from './kernelSelectors';
  */
 
 // Init
-//export const QUERY_INIT = 'QUERY_INIT';
-//export const QUERY_NEW = 'QUERY_NEW';
+export const QUERY_INIT = 'QUERY_INIT';
 
 // Query
 export const QUERY_UPDATE_QUERY = 'QUERY_UPDATE_QUERY';
@@ -30,6 +29,14 @@ export const updateResamplingInputDuration = duration => dispatch => {
     return dispatch({
         type: QUERY_UPDATE_RESAMPLING_INPUT_DURATION,
         duration: duration
+    });
+};
+
+
+export const initQuery = query => dispatch=>{
+    return dispatch({
+        type: QUERY_INIT,
+        payload: query
     });
 };
 

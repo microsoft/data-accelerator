@@ -16,16 +16,13 @@ const INITIAL_QUERY_STATE = {
 export default (state = INITIAL_QUERY_STATE, action) => {
     switch (action.type) {
         
-        /* case Actions.QUERY_INIT:
-            const flow = action.payload;
-            return Object.assign({}, INITIAL_QUERY_STATE, query, {                
-                enableLocalOneBox: state.enableLocalOneBox
-            });
+        case Actions.QUERY_INIT:
+            const query = action.payload;
+            return Object.assign({}, INITIAL_QUERY_STATE, query, {
+                query: query
+             });
             
-        case Actions.QUERY_NEW:
-            return Object.assign({}, INITIAL_QUERY_STATE, {
-               query: Models.getDefaultQuery(state.enableLocalOneBox)
-            }); */
+        
        
         case Actions.QUERY_UPDATE_RESAMPLING_INPUT_DURATION:
             return Object.assign({}, state, {

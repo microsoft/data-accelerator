@@ -13,6 +13,12 @@ export const getFlowQuery = createSelector(
     query => query.query
 );
 
+// Validation - Query
+export const getQueryDirty = createSelector(
+    getQuery,
+    query => query.isDirty
+);
+
 
 // Validation - Query
 export const validateFlowQuery = createSelector(
@@ -21,5 +27,5 @@ export const validateFlowQuery = createSelector(
 );
 
 function validateQuery(query) {
-    return query || query.trim() === '';
+    return query? (query || query.trim() === ''): true;
 }

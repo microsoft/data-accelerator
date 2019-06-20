@@ -598,7 +598,7 @@ class FlowDefinitionPanel extends React.Component {
         });
 
         this.props
-            .onSaveFlow(this.props.flow)
+            .onSaveFlow(this.props.flow, this.props.query)
             .then(name => {
                 this.setState({
                     isSaving: false,
