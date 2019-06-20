@@ -18,9 +18,8 @@ import datax.utility.{GZipHelper, SinkerUtil}
 import org.apache.log4j.LogManager
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
-import scala.collection.mutable
 import scala.concurrent.duration.Duration
 
 object BlobSinker extends SinkOperatorFactory {
@@ -158,7 +157,8 @@ object BlobSinker extends SinkOperatorFactory {
     if(formatConf.isDefined && !formatConf.get.equalsIgnoreCase("json"))
       throw new Error(s"Output format: ${formatConf.get} as specified in the config is not supported")
     val outputFolders = blobOutputConf.groups.map{case(k,v)=>k->KeyVaultClient.resolveSecretIfAny(v.folder)}
-    (rowInfo: Row, rows: Seq[Row], outputPartitionTime: Timestamp, partitionId: Int, loggerSuffix: String) => {
+
+    val jsonSinkDelegate = (rowInfo: Row, rows: Seq[Row], outputPartitionTime: Timestamp, partitionId: Int, loggerSuffix: String) => {
       val target = FileInternal.getInfoTargetTag(rowInfo)
       if(compressionTypeConf.isDefined && !(compressionTypeConf.get.equalsIgnoreCase("gzip")|| compressionTypeConf.get.equalsIgnoreCase("none")|| compressionTypeConf.get.equals("")))
         throw new Error(s"Output compressionType: ${compressionTypeConf.get} as specified in the config is not supported")
@@ -178,13 +178,19 @@ object BlobSinker extends SinkOperatorFactory {
         loggerSuffix = loggerSuffix
       )
     }
+
+    (data: DataFrame, time: Timestamp, loggerSuffix: String) => {
+      SinkerUtil.sinkJson(data, time, jsonSinkDelegate)
+    }
   }
+
 
   def getSinkOperator(dict: SettingDictionary, name: String): SinkOperator = {
     val blobConf = BlobOutputSetting.buildBlobOutputConf(dict, name)
     SinkOperator(
       name = SinkName,
       isEnabled = blobConf!=null,
+      sinkAsJson = true,
       flagColumnExprGenerator = () =>  blobConf.groupEvaluation.getOrElse(null),
       generator = flagColumnIndex=>getRowsSinkerGenerator(blobConf, flagColumnIndex),
       onBatch = (spark: SparkSession, outputPartitionTime: Timestamp, targets: Set[String]) => {
