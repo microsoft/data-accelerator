@@ -6,6 +6,7 @@ import { createSelector } from 'reselect';
 import * as Helpers from './flowHelpers';
 import * as Models from './flowModels';
 import { CommonHelpers } from 'datax-common';
+import { QuerySelectors } from 'datax-query';
 
 // Settings - Flow
 export const getFlow = state => state.flow;
@@ -324,17 +325,6 @@ function isFunctionSettingsComplete(functionItem) {
     return validations.every(value => value);
 }
 
-// Validation - Query
-export const validateFlowQuery = createSelector(
-    getFlowQuery,
-    validateQuery
-);
-
-function validateQuery(query) {
-    //removing validation; codegen will add OUTPUTs for alerts. Blank query is valid.
-    return query || query.trim() === '';
-}
-
 // Validation - Outputs
 export const validateFlowOutputs = createSelector(
     getFlowOutputs,
@@ -466,7 +456,7 @@ export const validateFlow = createSelector(
     validateFlowInfo,
     validateFlowInput,
     validateFlowFunctions,
-    validateFlowQuery,
+    QuerySelectors.validateFlowQuery,
     validateFlowOutputs,
     validateFlowOutputTemplates,
     validateFlowRules,

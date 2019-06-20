@@ -8,8 +8,8 @@ import { serviceGetApi, servicePostApi, nodeServiceGetApi, Constants, ApiNames} 
 // Flow Service
 export const getFlow = name => getProduct(name).then(f => f.gui);
 
-export const saveFlow = config =>
-    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.flow, 'flow/save', config);
+export const saveFlow = (config, query) =>
+    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.flow, 'flow/save', config, query);
 
 export const deleteFlow = flow =>
     servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.flow, 'flow/delete', {

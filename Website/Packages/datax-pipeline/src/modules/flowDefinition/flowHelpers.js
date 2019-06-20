@@ -434,7 +434,7 @@ export function isMetricSinker(sinker) {
     return sinker.type === Models.sinkerTypeEnum.metric;
 }
 
-export function convertFlowToConfig(flow) {
+export function convertFlowToConfig(flow, query) {
     let referenceData = [...flow.referenceData];
     let functions = [...flow.functions];
     let sinkers = [...flow.outputs];
@@ -459,7 +459,7 @@ export function convertFlowToConfig(flow) {
             timestampColumn: flow.input.properties.timestampColumn,
             watermark: `${flow.input.properties.watermarkValue} ${flow.input.properties.watermarkUnit}`,
             functions: functions,
-            queries: [flow.query],
+            queries: [query],
             jobconfig: flow.scale
         },
         outputs: sinkers,
@@ -499,7 +499,7 @@ export function convertConfigToFlow(config) {
     return flow;
 }
 /** This is the contract between the package that is dependent on datax-query package. For example, datax-pipeline package needs to pass in queryMetadata object which contains all the required parameters as needed by various apis in the datax-query package*/
-export function convertFlowToQueryMetadata(flow) {
+export function convertFlowToQueryMetadata(flow, query) {
     // return query metadata
     let QueryMetadata = {
         name: flow.name,
@@ -516,7 +516,7 @@ export function convertFlowToQueryMetadata(flow) {
         eventhubNames: flow.input.properties.inputEventhubName, 
         inputType: flow.input.type,
         seconds: flow.resamplingInputDuration,
-        query: flow.query,
+        query: query,
         inputSubscriptionId: flow.input.properties.inputSubscriptionId,
     };
     return QueryMetadata;

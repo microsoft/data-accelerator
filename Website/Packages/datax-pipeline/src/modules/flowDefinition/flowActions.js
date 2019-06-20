@@ -6,6 +6,7 @@ import Q from 'q';
 import * as Api from './api';
 import * as Selectors from './flowSelectors';
 import { UserSelectors, getApiErrorMessage } from 'datax-common';
+import {QueryActions} from 'datax-query';
 import * as Helpers from './flowHelpers';
 
 /**
@@ -81,6 +82,12 @@ export const initFlow = context => (dispatch, getState) => {
                 return dispatch({
                     type: FLOW_INIT,
                     payload: flow
+                });
+            })
+            .then(flow => {
+                return dispatch({
+                    type: QueryActions.QUERY_INIT,
+                    payload: flow.payload.query
                 });
             })
             .catch(error => {
@@ -770,8 +777,8 @@ const rejectWithMessage = (error, msg) =>
     });
 
 // Save and Delete Actions
-export const saveFlow = flow => {
-    return Api.saveFlow(Helpers.convertFlowToConfig(flow)).then(result => {
+export const saveFlow = (flow, query) => {
+    return Api.saveFlow(Helpers.convertFlowToConfig(flow, query)).then(result => {
         const name = result.name;
 
         // generate job configurations for product

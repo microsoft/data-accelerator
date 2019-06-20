@@ -41,6 +41,7 @@ import {
     QueryActions,    
     LayoutActions,
     LayoutSelectors,
+    QuerySelectors,
     QuerySettingsContent
 } from 'datax-query';
 
@@ -217,8 +218,8 @@ class FlowDefinitionPanel extends React.Component {
     }
 
     renderBackButton() {
-        const buttonTooltip = this.props.flow.isDirty ? 'Discard Changes' : 'Go Back';
-        let buttonText = this.props.flow.isDirty ? 'Cancel' : 'Back';
+        const buttonTooltip = (this.props.flow.isDirty || this.props.isQueryDirty) ? 'Discard Changes' : 'Go Back';
+        let buttonText = (this.props.flow.isDirty || this.props.isQueryDirty )? 'Cancel' : 'Back';
         let buttonIcon = <i style={IconButtonStyles.neutralStyle} className="ms-Icon ms-Icon--NavigateBack" />;
 
         if (this.state.loading) {
@@ -237,7 +238,7 @@ class FlowDefinitionPanel extends React.Component {
 
     renderSaveButton() {
         if (!this.state.loading) {
-            const enableButton = this.props.flow.isDirty && this.props.flowValidated && this.state.saveFlowButtonEnabled;
+            const enableButton = (this.props.flow.isDirty || this.props.isQueryDirty) && this.props.flowValidated && this.state.saveFlowButtonEnabled;
             return (
                 <DefaultButton
                     key="deploy"
@@ -670,7 +671,7 @@ class FlowDefinitionPanel extends React.Component {
         console.log(this.props.flow);
 
         console.log('Config object');
-        const config = Helpers.convertFlowToConfig(this.props.flow);
+        const config = Helpers.convertFlowToConfig(this.props.flow, this.props.query);
         console.log(config);
 
         console.log('Flow object from Config');
@@ -704,11 +705,11 @@ class FlowDefinitionPanel extends React.Component {
     }
 
     onGetTableSchemas() {
-        return this.props.onGetTableSchemas(Helpers.convertFlowToQueryMetadata(this.props.flow));
+        return this.props.onGetTableSchemas(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query));
     }
 
     onGetCodeGenQuery() {
-        return this.props.onGetCodeGenQuery(Helpers.convertFlowToQueryMetadata(this.props.flow));
+        return this.props.onGetCodeGenQuery(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query));
     }
 
     getKernel() {
@@ -718,14 +719,14 @@ class FlowDefinitionPanel extends React.Component {
         ) {
             const version = this.props.kernelVersion + 1;
             this.props.onUpdateKernelVersion(version);
-            this.props.onGetKernel(Helpers.convertFlowToQueryMetadata(this.props.flow), version, QueryActions.updateErrorMessage);
+            this.props.onGetKernel(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query), version, QueryActions.updateErrorMessage);
         }
     }
 
     refreshKernel(kernelId) {
         const version = this.props.kernelVersion + 1;
         this.props.onUpdateKernelVersion(version);
-        this.props.onRefreshKernel(Helpers.convertFlowToQueryMetadata(this.props.flow), kernelId, version, QueryActions.updateErrorMessage);
+        this.props.onRefreshKernel(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query), kernelId, version, QueryActions.updateErrorMessage);
     }
 
     onDeleteKernel(kernelId) {
@@ -737,11 +738,11 @@ class FlowDefinitionPanel extends React.Component {
     onResampleInput(kernelId) {
         const version = this.props.kernelVersion + 1;
         this.props.onUpdateKernelVersion(version);
-        this.props.onResampleInput(Helpers.convertFlowToQueryMetadata(this.props.flow), kernelId, version);
+        this.props.onResampleInput(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query), kernelId, version);
     }
 
     onExecuteQuery(selectedQuery, kernelId) {
-        return this.props.onExecuteQuery(Helpers.convertFlowToQueryMetadata(this.props.flow), selectedQuery, kernelId);
+        return this.props.onExecuteQuery(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query), selectedQuery, kernelId);
     }
 }
 
@@ -757,7 +758,8 @@ const mapStateToProps = state => ({
     input: Selectors.getFlowInput(state),
     referenceData: Selectors.getFlowReferenceData(state),
     functions: Selectors.getFlowFunctions(state),
-    query: Selectors.getFlowQuery(state),
+    query: QuerySelectors.getFlowQuery(state),
+    isQueryDirty: QuerySelectors.getQueryDirty(state),
     scale: Selectors.getFlowScale(state),
     outputs: Selectors.getFlowOutputs(state),
     outputTemplates: Selectors.getFlowOutputTemplates(state),
@@ -782,18 +784,19 @@ const mapStateToProps = state => ({
     inputValidated: Selectors.validateFlowInput(state),
     referenceDataValidated: Selectors.validateFlowReferenceData(state),
     functionsValidated: Selectors.validateFlowFunctions(state),
-    queryValidated: Selectors.validateFlowQuery(state),
+    queryValidated: QuerySelectors.validateFlowQuery(state),
     scaleValidated: Selectors.validateFlowScale(state),
     outputsValidated: Selectors.validateFlowOutputs(state),
     rulesValidated: Selectors.validateFlowRules(state),
-    flowValidated: Selectors.validateFlow(state)
+    flowValidated: Selectors.validateFlow(state),
+    queryValidated: QuerySelectors.validateFlowQuery(state)
 });
 
 // Dispatch Props
 const mapDispatchToProps = dispatch => ({
     // Init Actions
     initFlow: context => dispatch(Actions.initFlow(context)),
-
+    initQuery: query =>dispatch(QueryActions.initQuery(query)),
     // Message Actions
     onUpdateWarningMessage: message => dispatch(Actions.updateWarningMessage(message)),
 
@@ -900,7 +903,7 @@ const mapDispatchToProps = dispatch => ({
     onGetTableSchemas: (queryMetadata) => QueryActions.getTableSchemas(queryMetadata),
 
     // Save and Delete Actions
-    onSaveFlow: flow => Actions.saveFlow(flow),
+    onSaveFlow: (flow,query) => Actions.saveFlow(flow, query),
     onDeleteFlow: flow => Actions.deleteFlow(flow),
 
     // enableOneBox Action
