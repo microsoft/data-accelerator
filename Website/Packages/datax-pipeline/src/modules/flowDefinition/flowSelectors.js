@@ -96,12 +96,6 @@ function selectedFunction(functions, selectedIndex) {
     return selectedIndex !== undefined && selectedIndex < functions.length ? functions[selectedIndex] : undefined;
 }
 
-// Settings - Query
-export const getFlowQuery = createSelector(
-    getFlow,
-    flow => flow.query
-);
-
 // Settings - Scale
 export const getFlowScale = createSelector(
     getFlow,
@@ -461,7 +455,7 @@ export const validateFlow = createSelector(
     validateFlowInfo,
     validateFlowInput,
     validateFlowFunctions,
-    QuerySelectors.validateFlowQuery,
+    QuerySelectors.validateQueryTab,
     validateFlowOutputs,
     validateFlowOutputTemplates,
     validateFlowRules,

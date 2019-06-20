@@ -8,7 +8,7 @@ import { createSelector } from 'reselect';
 export const getQuery = state => state.query;
 
 // Settings - Query
-export const getFlowQuery = createSelector(
+export const getQueryContent = createSelector(
     getQuery,
     query => query.query
 );
@@ -19,10 +19,9 @@ export const getQueryDirty = createSelector(
     query => query.isDirty
 );
 
-
 // Validation - Query
-export const validateFlowQuery = createSelector(
-    getFlowQuery,
+export const validateQueryTab = createSelector(
+    getQueryContent,
     validateQuery
 );
 

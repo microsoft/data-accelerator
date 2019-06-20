@@ -762,7 +762,7 @@ const mapStateToProps = state => ({
     input: Selectors.getFlowInput(state),
     referenceData: Selectors.getFlowReferenceData(state),
     functions: Selectors.getFlowFunctions(state),
-    query: QuerySelectors.getFlowQuery(state),
+    query: QuerySelectors.getQueryContent(state),
     isQueryDirty: QuerySelectors.getQueryDirty(state),
     scale: Selectors.getFlowScale(state),
     outputs: Selectors.getFlowOutputs(state),
@@ -788,12 +788,11 @@ const mapStateToProps = state => ({
     inputValidated: Selectors.validateFlowInput(state),
     referenceDataValidated: Selectors.validateFlowReferenceData(state),
     functionsValidated: Selectors.validateFlowFunctions(state),
-    queryValidated: QuerySelectors.validateFlowQuery(state),
     scaleValidated: Selectors.validateFlowScale(state),
     outputsValidated: Selectors.validateFlowOutputs(state),
     rulesValidated: Selectors.validateFlowRules(state),
     flowValidated: Selectors.validateFlow(state),
-    queryValidated: QuerySelectors.validateFlowQuery(state)
+    queryValidated: QuerySelectors.validateQueryTab(state)
 });
 
 // Dispatch Props
