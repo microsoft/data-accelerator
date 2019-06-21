@@ -3,7 +3,8 @@
 // Licensed under the MIT License
 // *********************************************************************
 export const inputModeEnum = {
-    streaming: 'streaming'
+    streaming: 'streaming',
+    batching: 'batching'
 };
 
 export const inputTypeEnum = {
@@ -11,7 +12,23 @@ export const inputTypeEnum = {
     iothub: 'iothub',
     kafka: 'kafka',
     kafkaeventhub: 'kafkaeventhub',
+    blob: 'blob',
     local: 'local'
+};
+
+export const inputCompressionTypeEnum = {
+    none: 'none',
+    gzip: 'gzip'
+};
+
+export const jobModeEnum = {
+    recurrence: 'recurrence',
+    nonrecurrence: 'nonrecurrence',
+};
+
+export const inputFormatTypeEnum = {
+    json: 'json',
+    parquet: 'parquet'
 };
 
 export const watermarkUnitEnum = {
@@ -143,6 +160,11 @@ export const inputModes = [
         key: inputModeEnum.streaming,
         name: 'Streaming',
         disabled: false
+    },
+    {
+        key: inputModeEnum.batching,
+        name: 'Batching',
+        disabled: false
     }
 ];
 
@@ -170,6 +192,48 @@ export const inputTypes = [
     {
         key: inputTypeEnum.local,
         name: 'Local',
+        disabled: false
+    }
+];
+
+export const inputTypesBatching = [
+    {
+        key: inputTypeEnum.blob,
+        name: 'Azure Blob',
+        disabled: false
+    }
+];
+
+export const inputCompressionTypes = [
+    {
+        key: inputCompressionTypeEnum.none,
+        name: 'None',
+        disabled: false
+    },
+    {
+        key: inputCompressionTypeEnum.gzip,
+        name: 'GZIP',
+        disabled: false
+    }
+];
+
+export const inputFormatTypes = [
+    {
+        key: inputFormatTypeEnum.json,
+        name: 'JSON',
+        disabled: false
+    }
+];
+
+export const jobModes = [
+    {
+        key: jobModeEnum.recurrence,
+        name: 'Recurrence',
+        disabled: false
+    },
+    {
+        key: jobModeEnum.nonrecurrence,
+        name: 'Nonrecurrence',
         disabled: false
     }
 ];
@@ -734,9 +798,17 @@ export const defaultInput = {
     mode: inputModeEnum.streaming,
     properties: {
         inputEventhubName: '',
+        inputPath: '',
         inputEventhubConnection: '',
         inputSubscriptionId: '',
         inputResourceGroup: '',
+        recurrence: '1440',
+        offset: '1440',
+        startTime: '',
+        endTime: '',
+        inputFormatType: '',
+        inputCompressionType: '',
+        jobMode: '',
         windowDuration: '30',
         timestampColumn: '',
         watermarkValue: '0',
@@ -747,6 +819,30 @@ export const defaultInput = {
         normalizationSnippet: defaultNormalizationSnippet
     }
 };
+
+// export const defaultInputBlob = {
+//     type: inputTypeEnum.blob,
+//     mode: inputModeEnum.batching,
+//     properties: {
+//         inputEventhubName: '',
+//         inputEventhubConnection: '',
+//         inputSubscriptionId: '',
+//         inputResourceGroup: '',
+//         recurrence: '',
+//         startTime: '',
+//         endTime: '',
+//         inputFormatType: inputFormatTypeEnum.json,
+//         inputCompressionType: inputCompressionTypeEnum.none,
+//         windowDuration: '30',
+//         timestampColumn: '',
+//         watermarkValue: '0',
+//         watermarkUnit: watermarkUnitEnum.second,
+//         maxRate: '1000',
+//         inputSchemaFile: defaultSchema,
+//         showNormalizationSnippet: false,
+//         normalizationSnippet: defaultNormalizationSnippet
+//     }
+// };
 
 export const defaultInputLocal = {
     type: inputTypeEnum.local,

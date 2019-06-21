@@ -64,6 +64,7 @@ class FlowDefinitionPanel extends React.Component {
             inProgessDialogMessage: '',
             havePermission: true,
             saveFlowButtonEnabled: false,
+            deployFlowButtonEnabled: false,
             deleteFlowButtonEnabled: false,
             getInputSchemaButtonEnabled: false,
             outputSideToolBarEnabled: false,
@@ -158,6 +159,7 @@ class FlowDefinitionPanel extends React.Component {
         functionEnabled().then(response => {
             this.setState({
                 saveFlowButtonEnabled: response.saveFlowButtonEnabled ? true : false,
+                deployFlowButtonEnabled: response.deployFlowButtonEnabled ? true : false,
                 deleteFlowButtonEnabled: response.deleteFlowButtonEnabled ? true : false,
                 getInputSchemaButtonEnabled: response.getInputSchemaButtonEnabled ? true : false,
                 outputSideToolBarEnabled: response.outputSideToolBarEnabled ? true : false,
@@ -213,7 +215,13 @@ class FlowDefinitionPanel extends React.Component {
 
     renderButtons() {
         if (this.state.havePermission) {
-            return [this.renderBackButton(), this.renderSaveButton(), this.renderDeleteButton(), this.renderDebugButton()];
+            return [
+                this.renderBackButton(),
+                this.renderSaveButton(),
+                this.renderDeployButton(),
+                this.renderDeleteButton(),
+                this.renderDebugButton()
+            ];
         }
     }
 
@@ -242,15 +250,38 @@ class FlowDefinitionPanel extends React.Component {
                 (this.props.flow.isDirty || this.props.isQueryDirty) && this.props.flowValidated && this.state.saveFlowButtonEnabled;
             return (
                 <DefaultButton
-                    key="deploy"
+                    key="save"
                     className="header-button"
                     disabled={!enableButton}
-                    title="Deploy and restart the Flow"
+                    title="Save the Flow"
                     onClick={() => this.onSaveDefinition()}
                 >
                     <i
                         style={enableButton ? IconButtonStyles.greenStyle : IconButtonStyles.disabledStyle}
                         className="ms-Icon ms-Icon--Save"
+                    />
+                    Save
+                </DefaultButton>
+            );
+        } else {
+            return null;
+        }
+    }
+
+    renderDeployButton() {
+        if (!this.state.loading) {
+            const enableButton = this.props.flow.isDirty && this.props.flowValidated && this.state.deployFlowButtonEnabled;
+            return (
+                <DefaultButton
+                    key="deploy"
+                    className="header-button"
+                    disabled={!enableButton}
+                    title="Deploy and restart the Flow"
+                    onClick={() => this.onDeployDefinition()}
+                >
+                    <i
+                        style={enableButton ? IconButtonStyles.greenStyle : IconButtonStyles.disabledStyle}
+                        className="ms-Icon ms-Icon--Deploy"
                     />
                     Deploy
                 </DefaultButton>
@@ -352,9 +383,17 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateMode={this.props.onUpdateInputMode}
                                 onUpdateType={this.props.onUpdateInputType}
                                 onUpdateHubName={this.props.onUpdateInputHubName}
+                                onUpdateInputPath={this.props.onUpdateInputPath}
                                 onUpdateHubConnection={this.props.onUpdateInputHubConnection}
                                 onUpdateSubscriptionId={this.props.onUpdateInputSubscriptionId}
                                 onUpdateResourceGroup={this.props.onUpdateInputResourceGroup}
+                                onUpdateJobMode={this.props.onUpdateJobMode}
+                                onUpdateRecurrence={this.props.onUpdateRecurrence}
+                                onUpdateStartTime={this.props.onUpdateStartTime}
+                                onUpdateEndTime={this.props.onUpdateEndTime}
+                                onUpdateOffset={this.props.onUpdateOffset}
+                                onUpdateInputFormatType={this.props.onUpdateInputFormatType}
+                                onUpdateInputCompressionType={this.props.onUpdateInputCompressionType}
                                 onUpdateWindowDuration={this.props.onUpdateInputWindowDuration}
                                 onUpdateTimestampColumn={this.props.onUpdateInputTimestampColumn}
                                 onUpdateWatermarkValue={this.props.onUpdateInputWatermarkValue}
@@ -599,11 +638,41 @@ class FlowDefinitionPanel extends React.Component {
             isSaving: true,
             showMessageBar: false,
             messageBarIsError: false,
-            inProgessDialogMessage: 'Deployment in progress'
+            inProgessDialogMessage: 'Save in progress'
         });
 
         this.props
             .onSaveFlow(this.props.flow, this.props.query)
+            .then(name => {
+                this.setState({
+                    isSaving: false,
+                    showMessageBar: true,
+                    messageBarIsError: false,
+                    messageBarStatement: 'Flow definition is saved'
+                });
+
+                this.props.initFlow({ id: name });
+            })
+            .catch(error => {
+                this.setState({
+                    isSaving: false,
+                    showMessageBar: true,
+                    messageBarIsError: true,
+                    messageBarStatement: getApiErrorMessage(error)
+                });
+            });
+    }
+
+    onDeployDefinition() {
+        this.setState({
+            isSaving: true,
+            showMessageBar: false,
+            messageBarIsError: false,
+            inProgessDialogMessage: 'Deployment in progress'
+        });
+
+        this.props
+            .onDeployFlow(this.props.flow)
             .then(name => {
                 this.setState({
                     isSaving: false,
@@ -820,15 +889,24 @@ const mapDispatchToProps = dispatch => ({
     onUpdateInputMode: mode => dispatch(Actions.updateInputMode(mode)),
     onUpdateInputType: type => dispatch(Actions.updateInputType(type)),
     onUpdateInputHubName: name => dispatch(Actions.updateInputHubName(name)),
+    onUpdateInputPath: path => dispatch(Actions.updateInputPath(path)),
     onUpdateInputHubConnection: connection => dispatch(Actions.updateInputHubConnection(connection)),
     onUpdateInputSubscriptionId: id => dispatch(Actions.updateInputSubscriptionId(id)),
     onUpdateInputResourceGroup: name => dispatch(Actions.updateInputResourceGroup(name)),
+    onUpdateJobMode: jobMode => dispatch(Actions.updateJobMode(jobMode)),
+    onUpdateRecurrence: recurrence => dispatch(Actions.updateRecurrence(recurrence)),
+    onUpdateOffset: offset => dispatch(Actions.updateOffset(offset)),
+    onUpdateStartTime: startTime => dispatch(Actions.updateStartTime(startTime)),
+    onUpdateEndTime: endTime => dispatch(Actions.updateEndTime(endTime)),
+    onUpdateInputFormatType: formatType => dispatch(Actions.updateInputFormatType(formatType)),
+    onUpdateInputCompressionType: compressionType => dispatch(Actions.UpdateInputCompressionType(compressionType)),
     onUpdateInputWindowDuration: duration => dispatch(Actions.updateInputWindowDuration(duration)),
     onUpdateInputTimestampColumn: duration => dispatch(Actions.updateInputTimestampColumn(duration)),
     onUpdateInputWatermarkValue: duration => dispatch(Actions.updateInputWatermarkValue(duration)),
     onUpdateInputWatermarkUnit: duration => dispatch(Actions.updateInputWatermarkUnit(duration)),
     onUpdateInputMaxRate: maxRate => dispatch(Actions.updateInputMaxRate(maxRate)),
     onUpdateInputSchema: schema => dispatch(Actions.updateInputSchema(schema)),
+
     onGetInputSchema: flow => dispatch(Actions.getInputSchema(flow)),
     onUpdateShowNormalizationSnippet: show => dispatch(Actions.updateShowNormalizationSnippet(show)),
     onUpdateNormalizationSnippet: snippet => dispatch(Actions.updateNormalizationSnippet(snippet)),
@@ -922,6 +1000,7 @@ const mapDispatchToProps = dispatch => ({
 
     // Save and Delete Actions
     onSaveFlow: (flow, query) => Actions.saveFlow(flow, query),
+    onDeployFlow: (flow, query) => Actions.deployFlow(flow, query),
     onDeleteFlow: flow => Actions.deleteFlow(flow),
 
     // enableOneBox Action

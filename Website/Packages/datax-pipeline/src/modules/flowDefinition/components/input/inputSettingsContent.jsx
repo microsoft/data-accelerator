@@ -13,7 +13,15 @@ import 'brace/theme/textmate';
 import 'datax-query/dist/css/index.css';
 import 'brace/mode/sql';
 import 'brace/theme/xcode';
-import { Colors, IconButtonStyles, ScrollableContentPane, StatementBox, LoadingPanel, getApiErrorMessage, CommonHelpers} from 'datax-common';
+import {
+    Colors,
+    IconButtonStyles,
+    ScrollableContentPane,
+    StatementBox,
+    LoadingPanel,
+    getApiErrorMessage,
+    CommonHelpers
+} from 'datax-common';
 import { JsonEditor } from 'datax-query';
 import { MonacoEditorControl } from 'datax-query';
 
@@ -26,6 +34,7 @@ export default class InputSettingsContent extends React.Component {
 
         this.state = {
             showNormalizationSnippet: false,
+            isBackfilling: false,
             error: {}
         };
     }
@@ -54,53 +63,82 @@ export default class InputSettingsContent extends React.Component {
     }
 
     renderLeftPane() {
-        return (
-            <div style={leftPaneStyle}>
-                <ScrollableContentPane backgroundColor={Colors.neutralLighterAlt}>
-                    <div style={leftPaneSectionStyle}>
-                        {this.renderModeDropdown()}
-                        {this.renderTypeDropdown()}
-                        {this.renderEventHubName()}
-                        {this.renderEventHubConnection()}
-                        {this.renderSubscriptionId()}
-                        {this.renderResourceGroup()}
-                    </div>
-
-                    <div style={dividerStyle} />
-
-                    <div style={leftPaneSectionStyle}>
-                        <div style={sectionStyle}>
-                            <TextField
-                                className="ms-font-m"
-                                label="Batch Interval in Seconds"
-                                value={this.props.input.properties.windowDuration}
-                                onChange={(event, value) => this.props.onUpdateWindowDuration(value)}
-                                onGetErrorMessage={value => this.validateNumber(value)}
-                                disabled={!this.props.inputWindowDurationTextboxEnabled}
-                            />
+        if (this.props.input.mode === Models.inputModeEnum.batching) {
+            return (
+                <div style={leftPaneStyle}>
+                    <ScrollableContentPane backgroundColor={Colors.neutralLighterAlt}>
+                        <div style={leftPaneSectionStyle}>
+                            {this.renderModeDropdown()}
+                            {this.renderTypeDropdown()}
+                            {this.renderinputPath()}
+                            {this.renderEventHubConnection()}
+                            {this.renderFormatTypeDropdown()}
+                            {this.renderCompressionTypeDropdown()}
                         </div>
 
-                        <div style={sectionStyle}>
-                            <TextField
-                                className="ms-font-m"
-                                label="Maximum Events per Batch Interval"
-                                value={this.props.input.properties.maxRate}
-                                onChange={(event, value) => this.props.onUpdateMaxRate(value)}
-                                onGetErrorMessage={value => this.validateNumber(value)}
-                                disabled={!this.props.inputMaxRateTextboxEnabled}
-                            />
+                        <div style={dividerStyle} />
+
+                        <div style={leftPaneSectionStyle}>
+                            {this.renderJobModeToggle()}
+                            {this.renderRecurrenceOffset()}
+                            {this.renderTimeRange()}
                         </div>
 
-                        {this.renderTimestampColumn()}
-                        {this.renderWatermark()}
-                    </div>
+                        <div style={dividerStyle} />
 
-                    <div style={dividerStyle} />
+                        <div style={leftPaneSectionStyle}>{this.renderShowNormalizationSnippetToggle()}</div>
+                    </ScrollableContentPane>
+                </div>
+            );
+        } else {
+            return (
+                <div style={leftPaneStyle}>
+                    <ScrollableContentPane backgroundColor={Colors.neutralLighterAlt}>
+                        <div style={leftPaneSectionStyle}>
+                            {this.renderModeDropdown()}
+                            {this.renderTypeDropdown()}
+                            {this.renderEventHubName()}
+                            {this.renderEventHubConnection()}
+                            {this.renderSubscriptionId()}
+                            {this.renderResourceGroup()}
+                        </div>
 
-                    <div style={leftPaneSectionStyle}>{this.renderShowNormalizationSnippetToggle()}</div>
-                </ScrollableContentPane>
-            </div>
-        );
+                        <div style={dividerStyle} />
+
+                        <div style={leftPaneSectionStyle}>
+                            <div style={sectionStyle}>
+                                <TextField
+                                    className="ms-font-m"
+                                    label="Batch Interval in Seconds"
+                                    value={this.props.input.properties.windowDuration}
+                                    onChange={(event, value) => this.props.onUpdateWindowDuration(value)}
+                                    onGetErrorMessage={value => this.validateNumber(value)}
+                                    disabled={!this.props.inputWindowDurationTextboxEnabled}
+                                />
+                            </div>
+
+                            <div style={sectionStyle}>
+                                <TextField
+                                    className="ms-font-m"
+                                    label="Maximum Events per Batch Interval"
+                                    value={this.props.input.properties.maxRate}
+                                    onChange={(event, value) => this.props.onUpdateMaxRate(value)}
+                                    onGetErrorMessage={value => this.validateNumber(value)}
+                                    disabled={!this.props.inputMaxRateTextboxEnabled}
+                                />
+                            </div>
+
+                            {this.renderTimestampColumn()}
+                            {this.renderWatermark()}
+                        </div>
+
+                        <div style={dividerStyle} />
+
+                        <div style={leftPaneSectionStyle}>{this.renderShowNormalizationSnippetToggle()}</div>
+                    </ScrollableContentPane>
+                </div>
+            );
+        }
     }
 
     renderRightPane() {
@@ -138,23 +176,31 @@ export default class InputSettingsContent extends React.Component {
     renderTypeDropdown() {
         const options = this.props.enableLocalOneBox
             ? Models.inputTypes
-                .filter(type => type.name === 'Local')
-                .map(type => {
-                    return {
-                        key: type.key,
-                        text: type.name,
-                        disabled: type.disabled
-                    };
-                })
-            : Models.inputTypes
-                .filter(type => type.name !== 'Local')
-                .map(type => {
-                    return {
-                        key: type.key,
-                        text: type.name,
-                        disabled: type.disabled
-                    };
-                });
+                  .filter(type => type.name === 'Local')
+                  .map(type => {
+                      return {
+                          key: type.key,
+                          text: type.name,
+                          disabled: type.disabled
+                      };
+                  })
+            : this.props.input.mode === Models.inputModeEnum.streaming
+            ? Models.inputTypes
+                  .filter(type => type.name !== 'Local')
+                  .map(type => {
+                      return {
+                          key: type.key,
+                          text: type.name,
+                          disabled: type.disabled
+                      };
+                  })
+            : Models.inputTypesBatching.map(type => {
+                  return {
+                      key: type.key,
+                      text: type.name,
+                      disabled: type.disabled
+                  };
+              });
 
         return (
             <div style={typeDropdownStyle}>
@@ -171,8 +217,12 @@ export default class InputSettingsContent extends React.Component {
     }
 
     renderEventHubName() {
+        // if (this.props.input.type !== Models.inputTypeEnum.blob && this.props.input.type !== Models.inputTypeEnum.events && this.props.input.type !== Models.inputTypeEnum.local) {
         if (this.props.input.type !== Models.inputTypeEnum.events && this.props.input.type !== Models.inputTypeEnum.local) {
-            const label = this.props.input.type === Models.inputTypeEnum.iothub ? 'Event Hub-Compatible Name' : 'Topics (Use commas to separate topics)';
+            const label =
+                this.props.input.type === Models.inputTypeEnum.iothub
+                    ? 'Event Hub-Compatible Name'
+                    : 'Topics (Use commas to separate topics)';
             return (
                 <div style={sectionStyle}>
                     <TextField
@@ -187,6 +237,27 @@ export default class InputSettingsContent extends React.Component {
             );
         } else {
             return null;
+        }
+    }
+
+    renderinputPath() {
+        if (this.props.input.mode !== Models.inputModeEnum.batching) {
+            return null;
+        } else {
+            return (
+                <div style={sectionStyle}>
+                    <TextField
+                        type="password"
+                        className="ms-font-m"
+                        spellCheck={false}
+                        label="Blob Path"
+                        value={this.props.input.properties.inputPath}
+                        onChange={(event, value) => this.props.onUpdateInputPath(value)}
+                        autoAdjustHeight
+                        resizable={false}
+                    />
+                </div>
+            );
         }
     }
 
@@ -205,6 +276,9 @@ export default class InputSettingsContent extends React.Component {
                     break;
                 case Models.inputTypeEnum.kafkaeventhub:
                     label = 'Event Hub Namespace Connection String';
+                    break;
+                case Models.inputTypeEnum.blob:
+                    label = 'Blob Connection String';
                     break;
             }
 
@@ -227,9 +301,7 @@ export default class InputSettingsContent extends React.Component {
     }
 
     renderSubscriptionId() {
-        if (this.props.input.type === Models.inputTypeEnum.local || this.props.input.type === Models.inputTypeEnum.kafka || this.props.input.type === Models.inputTypeEnum.kafkaeventhub) {
-            return null;
-        } else {
+        if (this.props.input.type === Models.inputTypeEnum.events || this.props.input.type === Models.inputTypeEnum.iothub) {
             return (
                 <div style={sectionStyle}>
                     <TextField
@@ -246,13 +318,13 @@ export default class InputSettingsContent extends React.Component {
                     />
                 </div>
             );
+        } else {
+            return null;
         }
     }
 
     renderResourceGroup() {
-        if (this.props.input.type === Models.inputTypeEnum.local || this.props.input.type === Models.inputTypeEnum.kafka || this.props.input.type === Models.inputTypeEnum.kafkaeventhub) {
-            return null;
-        } else {
+        if (this.props.input.type === Models.inputTypeEnum.events || this.props.input.type === Models.inputTypeEnum.iothub) {
             return (
                 <div style={sectionStyle}>
                     <TextField
@@ -269,6 +341,191 @@ export default class InputSettingsContent extends React.Component {
                     />
                 </div>
             );
+        } else {
+            return null;
+        }
+    }
+
+    renderJobModeToggle() {
+        if (this.props.input.mode !== Models.inputModeEnum.batching) {
+            return null;
+        } else {
+            const options = Models.jobModes.map(mode => {
+                return {
+                    key: mode.key,
+                    text: mode.name,
+                    disabled: mode.disabled
+                };
+            });
+
+            return (
+                <div style={typeDropdownStyle}>
+                    <Label className="ms-font-m">JobMode</Label>
+                    <Dropdown
+                        className="ms-font-m"
+                        options={options}
+                        selectedKey={this.props.input.properties.jobMode}
+                        onChange={(event, selection) => this.props.onUpdateJobMode(selection.key)}
+                    />
+                </div>
+            );
+        }
+    }
+
+    renderRecurrenceOffset() {
+        if (
+            this.props.input.mode === Models.inputModeEnum.batching &&
+            this.props.input.properties.jobMode === Models.jobModeEnum.recurrence
+        ) {
+            return (
+                <div style={watermarkContainerStyle}>
+                    {this.renderRecurrence()}
+                    {this.renderOffset()}
+                </div>
+            );
+        } else {
+            return null;
+        }
+    }
+
+    renderRecurrence() {
+        if (this.props.input.mode === Models.inputModeEnum.batching) {
+            return (
+                <div style={watermarkValueStyle}>
+                    <TextField
+                        className="ms-font-m"
+                        spellCheck={false}
+                        label="Recurrence In Mins"
+                        value={this.props.input.properties.recurrence}
+                        onChange={(event, value) => this.props.onUpdateRecurrence(value)}
+                    />
+                </div>
+            );
+        } else {
+            return null;
+        }
+    }
+
+    renderOffset() {
+        if (this.props.input.mode === Models.inputModeEnum.batching) {
+            return (
+                <div style={watermarkUnitDropdownStyle}>
+                    <TextField
+                        className="ms-font-m"
+                        spellCheck={false}
+                        label="Offset In Mins"
+                        value={this.props.input.properties.offset}
+                        onChange={(event, value) => this.props.onUpdateOffset(value)}
+                    />
+                </div>
+            );
+        } else {
+            return null;
+        }
+    }
+
+    renderTimeRange() {
+        if (this.props.input.mode === Models.inputModeEnum.batching) {
+            return (
+                <div style={watermarkContainerStyle}>
+                    {this.renderStartTime()}
+                    {this.renderEndTime()}
+                </div>
+            );
+        } else {
+            return null;
+        }
+    }
+
+    renderStartTime() {
+        if (this.props.input.mode === Models.inputModeEnum.batching) {
+            return (
+                <div style={watermarkValueStyle}>
+                    <TextField
+                        className="ms-font-m"
+                        spellCheck={false}
+                        label="StartTime"
+                        placeholder="required for backfilling"
+                        value={this.props.input.properties.startTime}
+                        onChange={(event, value) => this.props.onUpdateStartTime(value)}
+                        disabled={!this.props.inputEventHubEnabled}
+                    />
+                </div>
+            );
+        } else {
+            return null;
+        }
+    }
+
+    renderEndTime() {
+        if (this.props.input.mode === Models.inputModeEnum.batching) {
+            return (
+                <div style={watermarkUnitDropdownStyle}>
+                    <TextField
+                        className="ms-font-m"
+                        spellCheck={false}
+                        label="EndTime"
+                        placeholder="required for backfilling"
+                        value={this.props.input.properties.endTime}
+                        onChange={(event, value) => this.props.onUpdateEndTime(value)}
+                        disabled={!this.props.inputEventHubEnabled}
+                    />
+                </div>
+            );
+        } else {
+            return null;
+        }
+    }
+
+    renderFormatTypeDropdown() {
+        if (this.props.input.type === Models.inputTypeEnum.blob || this.props.input.type === Models.inputTypeEnum.blob1) {
+            const options = Models.inputFormatTypes.map(type => {
+                return {
+                    key: type.key,
+                    text: type.name,
+                    disabled: type.disabled
+                };
+            });
+
+            return (
+                <div style={sectionStyle}>
+                    <Label className="ms-font-m">Format</Label>
+                    <Dropdown
+                        className="ms-font-m"
+                        options={options}
+                        selectedKey={this.props.input.properties.inputFormatType}
+                        onChange={(event, selection) => this.props.onUpdateInputFormatType(selection.key)}
+                    />
+                </div>
+            );
+        } else {
+            return null;
+        }
+    }
+
+    renderCompressionTypeDropdown() {
+        if (this.props.input.type === Models.inputTypeEnum.blob || this.props.input.type === Models.inputTypeEnum.blob1) {
+            const options = Models.inputCompressionTypes.map(type => {
+                return {
+                    key: type.key,
+                    text: type.name,
+                    disabled: type.disabled
+                };
+            });
+
+            return (
+                <div style={sectionStyle}>
+                    <Label className="ms-font-m">Compression</Label>
+                    <Dropdown
+                        className="ms-font-m"
+                        options={options}
+                        selectedKey={this.props.input.properties.inputCompressionType}
+                        onChange={(event, selection) => this.props.onUpdateInputCompressionType(selection.key)}
+                    />
+                </div>
+            );
+        } else {
+            return null;
         }
     }
 
@@ -504,9 +761,17 @@ InputSettingsContent.propTypes = {
     onUpdateMode: PropTypes.func.isRequired,
     onUpdateType: PropTypes.func.isRequired,
     onUpdateHubName: PropTypes.func.isRequired,
+    onUpdateInputPath: PropTypes.func.isRequired,
     onUpdateHubConnection: PropTypes.func.isRequired,
     onUpdateSubscriptionId: PropTypes.func.isRequired,
     onUpdateResourceGroup: PropTypes.func.isRequired,
+    onUpdateJobMode: PropTypes.func.isRequired,
+    onUpdateRecurrence: PropTypes.func.isRequired,
+    onUpdateOffset: PropTypes.func.isRequired,
+    onUpdateStartTime: PropTypes.func.isRequired,
+    onUpdateEndTime: PropTypes.func.isRequired,
+    onUpdateInputFormatType: PropTypes.func.isRequired,
+    onUpdateInputCompressionType: PropTypes.func.isRequired,
     onUpdateWindowDuration: PropTypes.func.isRequired,
     onUpdateTimestampColumn: PropTypes.func.isRequired,
     onUpdateWatermarkValue: PropTypes.func.isRequired,

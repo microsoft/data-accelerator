@@ -9,6 +9,7 @@ import {QueryModels, QueryActions} from 'datax-query';
 const INITIAL_FLOW_STATE = {
     // Flow Config
     name: '',
+    flowId: '',
     displayName: Models.getDefaultName(),
     owner: '',
     databricksToken: '',

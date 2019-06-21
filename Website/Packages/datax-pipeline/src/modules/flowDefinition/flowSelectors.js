@@ -238,6 +238,7 @@ function validateInput(input) {
         } else {
             validation.push(false);
         }
+    } else if (input.mode === Models.inputModeEnum.batching) {
     } else {
         // future support
         validation.push(false);

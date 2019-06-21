@@ -451,6 +451,7 @@ export function convertFlowToConfig(flow, query) {
     // return product config
     return {
         name: flow.name,
+        flowId: flow.flowId,
         displayName: flow.displayName.trim(),
         owner: flow.owner,
         databricksToken: flow.databricksToken,
@@ -464,8 +465,14 @@ export function convertFlowToConfig(flow, query) {
         },
         outputs: sinkers,
         outputTemplates: outputTemplates,
-        rules: convertFlowToConfigRules(rules)
+        rules: convertFlowToConfigRules(rules),
+        version: getTimeStamp()
     };
+}
+
+function getTimeStamp() {
+    let timeStamp = (new Date()).toISOString().slice(0, 19).replace(/-/g, "").replace(/:/g, "").replace("T", "");
+    return timeStamp;
 }
 
 export function convertConfigToFlow(config) {
@@ -483,6 +490,7 @@ export function convertConfigToFlow(config) {
     // return flow understood by our website
     let flow = {
         name: config.name,
+        flowId: config.flowId,
         displayName: config.displayName,
         owner: config.owner,
         databricksToken: config.databricksToken,

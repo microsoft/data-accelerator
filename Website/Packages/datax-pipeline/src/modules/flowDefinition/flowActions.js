@@ -125,10 +125,21 @@ export const updateDatabricksToken = databricksToken => dispatch => {
 
 // Input Actions
 export const updateInputMode = mode => (dispatch, getState) => {
+    let type = mode === Models.inputModeEnum.streaming ? Models.inputTypeEnum.events : Models.inputTypeEnum.blob;
+    let inputFormatType = mode === Models.inputModeEnum.streaming ? '' : Models.inputFormatTypeEnum.json;
+    let inputCompressionType = mode === Models.inputModeEnum.streaming ? '' : Models.inputCompressionTypeEnum.none;
+    let jobMode = mode === Models.inputModeEnum.streaming ? '' : Models.jobModeEnum.recurrence;
+
     updateInput(
         dispatch,
         Object.assign({}, Selectors.getFlowInput(getState()), {
-            mode: mode
+            mode: mode,
+            type: type,
+            properties: Object.assign({}, Selectors.getFlowInputProperties(getState()), {
+                inputFormatType: inputFormatType,
+                inputCompressionType: inputCompressionType,
+                jobMode: jobMode
+            })
         })
     );
 };
@@ -148,6 +159,12 @@ export const updateInputHubName = name => (dispatch, getState) => {
     });
 };
 
+export const updateInputPath = path => (dispatch, getState) => {
+    updateInputProperties(dispatch, getState, {
+        inputPath: path
+    });
+};
+
 export const updateInputHubConnection = connection => (dispatch, getState) => {
     updateInputProperties(dispatch, getState, {
         inputEventhubConnection: connection
@@ -163,6 +180,48 @@ export const updateInputSubscriptionId = id => (dispatch, getState) => {
 export const updateInputResourceGroup = name => (dispatch, getState) => {
     updateInputProperties(dispatch, getState, {
         inputResourceGroup: name
+    });
+};
+
+export const updateJobMode = jobMode => (dispatch, getState) => {
+    updateInputProperties(dispatch, getState, {
+        jobMode: jobMode
+    });
+};
+
+export const updateRecurrence = recurrence => (dispatch, getState) => {
+    updateInputProperties(dispatch, getState, {
+        recurrence: recurrence
+    });
+};
+
+export const updateOffset = offset => (dispatch, getState) => {
+    updateInputProperties(dispatch, getState, {
+        offset: offset
+    });
+};
+
+export const updateStartTime = startTime => (dispatch, getState) => {
+    updateInputProperties(dispatch, getState, {
+        startTime: startTime
+    });
+};
+
+export const updateEndTime = endTime => (dispatch, getState) => {
+    updateInputProperties(dispatch, getState, {
+        endTime: endTime
+    });
+};
+
+export const updateInputFormatType = formatType => (dispatch, getState) => {
+    updateInputProperties(dispatch, getState, {
+        inputFormatType: formatType
+    });
+};
+
+export const updateInputCompressionType = compressionType => (dispatch, getState) => {
+    updateInputProperties(dispatch, getState, {
+        inputCompressionType: compressionType
     });
 };
 
@@ -800,6 +859,20 @@ const rejectWithMessage = (error, msg) =>
 
 // Save and Delete Actions
 export const saveFlow = (flow, query) => {
+    return Api.saveFlow(Helpers.convertFlowToConfig(flow, query))
+        .then(result => {
+            return result.name;
+        })
+        .catch(error => {
+            const message = getApiErrorMessage(error);
+            return Q.reject({
+                error: true,
+                message: `There was an issue saving the Flow. Please fix following error then save again: ${message}`
+            });
+        });
+};
+
+export const deployFlow = (flow, query) => {
     return Api.saveFlow(Helpers.convertFlowToConfig(flow, query)).then(result => {
         const name = result.name;
 
