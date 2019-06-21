@@ -14,7 +14,7 @@ import * as LayoutSelectors from './query/layoutSelectors';
 import * as QueryActions from './query/queryActions';
 import * as QuerySelectors from './query/querySelectors';
 import * as QueryModels from './query/queryModels';
-import * as QueryApi from './query/api';
+import * as QueryApi from './query/api'; 
 export {    
     QueryApi,    
     KernelActions, 

@@ -3,8 +3,6 @@
 // Licensed under the MIT License
 // *********************************************************************
 
-import 'jsoneditor-react/es/editor.min.css';
-import 'monaco-editor/min/vs/editor/editor.main.css';
 import './styles/styles.css';
 import 'datax-query/dist/css/index.css';
 

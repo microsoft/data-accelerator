@@ -6,7 +6,6 @@ const webpack = require('webpack');
 const path = require('path');
 const pkg = require('./package.json');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
 const libraryName = pkg.name;
@@ -53,10 +52,6 @@ function configure(env, argv) {
                                 '@babel/preset-env',
                                 // https://babeljs.io/docs/en/babel-preset-react
                                 '@babel/preset-react'
-                            ],
-                            plugins: [
-                                //https://babeljs.io/docs/en/babel-plugin-syntax-dynamic-import
-                                '@babel/plugin-syntax-dynamic-import'
                             ]
                         }
                     }
@@ -93,18 +88,10 @@ function configure(env, argv) {
             ]
         },
         //https://webpack.js.org/configuration/plugins/
-        plugins: [
-            // https://github.com/Microsoft/monaco-editor-webpack-plugin
-            new MonacoWebpackPlugin({
-                languages: ['sql']
-            }),
+        plugins: [            
             // https://github.com/webpack-contrib/mini-css-extract-plugin
             new MiniCssExtractPlugin({
                 filename: 'css/[name].css'
-            }),
-            // https://webpack.js.org/plugins/limit-chunk-count-plugin/
-            new webpack.optimize.LimitChunkCountPlugin({
-                maxChunks: 1
             })
         ]
     };

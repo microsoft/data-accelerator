@@ -7,15 +7,14 @@ import PropTypes from 'prop-types';
 import * as Helpers from '../../flowHelpers';
 import * as Models from '../../flowModels';
 import { Label, TextField, Toggle, Dropdown, DefaultButton } from 'office-ui-fabric-react';
-import { JsonEditor } from 'jsoneditor-react';
-import 'jsoneditor-react/es/editor.min.css';
 import ace from 'brace';
 import 'brace/mode/json';
 import 'brace/theme/textmate';
-import MonacoEditor from 'react-monaco-editor';
+import 'datax-query/dist/css/index.css';
 import 'brace/mode/sql';
 import 'brace/theme/xcode';
 import { Colors, IconButtonStyles, ScrollableContentPane, StatementBox, LoadingPanel, getApiErrorMessage, CommonHelpers} from 'datax-common';
+import { MonacoEditorControl, JsonEditor } from 'datax-query';
 
 const inputSchemaExampleWiki = 'https://aka.ms/data-accelerator-input';
 const normalizationExampleWiki = 'https://aka.ms/data-accelerator-normalization';
@@ -440,8 +439,8 @@ export default class InputSettingsContent extends React.Component {
                     </a>
                 </div>
 
-                <div style={editorContainerStyle}>
-                    <MonacoEditor
+                
+                    <MonacoEditorControl
                         name="normalizationeditor"
                         height="100%"
                         width="100%"
@@ -457,7 +456,7 @@ export default class InputSettingsContent extends React.Component {
                             readOnly: !this.props.inputNormalizationEditorEnabled
                         }}
                     />
-                </div>
+               
             </div>
         );
     }

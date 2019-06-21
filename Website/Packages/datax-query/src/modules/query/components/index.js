@@ -4,3 +4,4 @@
 // *********************************************************************
 export { default as QuerySettingsContent } from './querySettingsContent'; 
 export { default as SideToolBar } from './sideToolBar'; 
+export { default as MonacoEditorControl } from './monacoeditorcontrol';
