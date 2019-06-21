@@ -80,6 +80,25 @@ namespace Flow.Management.Controllers
             }
         }
 
+
+        [HttpPost]
+        [Route("flow/schedulebatch")] // schedule batch jobs
+        public async Task<ApiResult> ScheduleBatch()
+        {
+            try
+            {
+                RolesCheck.EnsureWriter(Request, _isLocal);
+                var result = await _flowOperation.ScheduleBatch(this._runtimeConfigGenerator).ConfigureAwait(false);
+
+                return ApiResult.CreateSuccess(JToken.FromObject(result));
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return ApiResult.CreateError(e.Message);
+            }
+        }
+
         [HttpPost]
         [Route("flow/generateconfigs")] // generate flow configs
         [DataXWriter]
