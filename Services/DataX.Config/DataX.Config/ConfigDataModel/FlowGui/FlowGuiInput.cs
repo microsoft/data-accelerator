@@ -17,6 +17,9 @@ namespace DataX.Config.ConfigDataModel
         [JsonProperty("properties")]
         public FlowGuiInputProperties Properties { get; set; }
 
+        [JsonProperty("batching")]
+        public FlowGuiInputBatching Batching { get; set; }
+
         [JsonProperty("referenceData")]
         public FlowGuiReferenceData[] ReferenceData { get; set; }
     }

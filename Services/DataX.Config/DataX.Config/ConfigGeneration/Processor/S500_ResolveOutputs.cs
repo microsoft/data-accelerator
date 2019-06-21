@@ -59,7 +59,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             Ensure.NotNull(rulesCode.MetricsRoot, "rulesCode.MetricsRoot");
             Ensure.NotNull(rulesCode.MetricsRoot.metrics, "rulesCode.MetricsRoot.metrics");
 
-            var outputs = await ProcessOutputs(guiConfig.Outputs, rulesCode, config.Name);
+            var outputs = await ProcessOutputs(guiConfig.Input.Mode, guiConfig.Outputs, rulesCode, config.Name);
 
             flowToDeploy.SetObjectToken(TokenName_Outputs, outputs);
 
@@ -93,7 +93,7 @@ namespace DataX.Config.ConfigGeneration.Processor
         }
 
 
-        private async Task<FlowOutputSpec[]> ProcessOutputs(FlowGuiOutput[] uiOutputs, RulesCode rulesCode, string configName)
+        private async Task<FlowOutputSpec[]> ProcessOutputs(string inputMode, FlowGuiOutput[] uiOutputs, RulesCode rulesCode, string configName)
         {
             var outputList = uiOutputs.Select(o => o.Id).ToList();
 
@@ -164,7 +164,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                             }
                         case "blob":
                             {
-                                var blobOutput = await ProcessOutputBlob(configName, output);
+                                var blobOutput = await ProcessOutputBlob(inputMode, configName, output);
                                 Ensure.EnsureNullElseThrowNotSupported(flowOutput.BlobOutput, "Multiple target blob output for same dataset not supported.");
                                 flowOutput.BlobOutput = blobOutput;
                                 break;
@@ -194,7 +194,48 @@ namespace DataX.Config.ConfigGeneration.Processor
             return fOutputList.ToArray();
         }
 
-        private async Task<FlowBlobOutputSpec> ProcessOutputBlob(string configName, FlowGuiOutput uiOutput)
+        private string TransformPartitionFormat(string partitionFormat)
+        {
+            var parts = partitionFormat.Split(new char[] { ',', '/', ':', '-', ' ' });
+
+            string value = "";
+            foreach (var part in parts)
+            {
+                value = "";
+                switch (part.Substring(0,1))
+                {
+                    case "s":
+                        value = "%1$tS";
+                        break;
+                    case "m":
+                        value = "%1$tM";
+                        break;
+                    case "h":
+                    case "H":
+                        value = "%1$tH";
+                        break;
+                    case "d":
+                        value = "%1$td";
+                        break;
+                    case "M":
+                        value = "%1$tm";
+                        break;
+                    case "y":
+                        value = "%1$ty";
+                        break;
+                    default:
+                        value = "";
+                        break;
+                }
+
+                partitionFormat = partitionFormat.Replace(part, value);
+
+            }
+
+            return partitionFormat;
+        }
+
+        private async Task<FlowBlobOutputSpec> ProcessOutputBlob(string inputMode, string configName, FlowGuiOutput uiOutput)
         {
             if (uiOutput != null && uiOutput.Properties != null)
             {
@@ -202,7 +243,8 @@ namespace DataX.Config.ConfigGeneration.Processor
 
                 string connectionString = await KeyVaultClient.ResolveSecretUriAsync(uiOutput.Properties.ConnectionString);
                 var accountName = ParseBlobAccountName(connectionString);
-                var blobPath = $"wasbs://{uiOutput.Properties.ContainerName}@{accountName}.blob.core.windows.net/{uiOutput.Properties.BlobPrefix}/%1$tY/%1$tm/%1$td/%1$tH/${{quarterBucket}}/${{minuteBucket}}";
+                var timeFormat = inputMode != Constants.InputMode_Batching ? $"%1$tY/%1$tm/%1$td/%1$tH/${{quarterBucket}}/${{minuteBucket}}" : $"{TransformPartitionFormat(uiOutput.Properties.BlobPartitionFormat)}";
+                var blobPath = $"wasbs://{uiOutput.Properties.ContainerName}@{accountName}.blob.core.windows.net/{uiOutput.Properties.BlobPrefix}/{timeFormat}";
                 var secretId = $"{configName}-output";
                 var sparkType = Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string value) ? value : null;
                 var blobPathSecret = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, secretId, blobPath, sparkType, true);

@@ -21,6 +21,11 @@ namespace DataX.Config
         public const string DataCollectionName = "flows";
         public const string CommonDataName_DefaultFlowConfig = "defaultFlowConfig";
         public const string CommonDataName_KafkaFlowConfig = "kafkaFlowConfig";
+        public const string CommonDataName_BlobFlowConfig = "batchFlowConfig";
+
+        public const string GuiInputMode = "gui.input.mode";
+        public const string GuiInputBatchingLastProcessedTime = "gui.input.batching.recurring.lastProcessedTime";
+
 
         [ImportingConstructor]
         public FlowDataManager(ConfigGenConfiguration configuration, IDesignTimeConfigStorage storage, ICommonDataManager commonsData)
@@ -36,9 +41,16 @@ namespace DataX.Config
 
         private string GetFlowConfigName(string type)
         {
-            if (!string.IsNullOrEmpty(type) && (type == Constants.InputType_Kafka || type == Constants.InputType_KafkaEventHub))
+            if (!string.IsNullOrEmpty(type))
             {
-                return CommonDataName_KafkaFlowConfig;
+                if (type == Constants.InputType_Kafka || type == Constants.InputType_KafkaEventHub)
+                {
+                    return CommonDataName_KafkaFlowConfig;
+                }
+                else if (type == Constants.InputType_Blob)
+                {
+                    return CommonDataName_BlobFlowConfig;
+                }
             }
 
             return CommonDataName_DefaultFlowConfig;
@@ -48,6 +60,12 @@ namespace DataX.Config
         {
             var json = await this.Storage.GetByName(flowName, DataCollectionName);
             return FlowConfig.From(json);
+        }
+
+        public async Task<FlowConfig[]> GetByMode(string mode)
+        {
+            var jsons = await this.Storage.GetByFieldValue(mode, GuiInputMode, DataCollectionName).ConfigureAwait(false);
+            return jsons.Select(FlowConfig.From).ToArray();
         }
 
         public async Task<FlowConfig> GetDefaultConfig(TokenDictionary tokens = null)
@@ -89,6 +107,12 @@ namespace DataX.Config
         {
             var json = JsonConvert.SerializeObject(upsertedJobNames);
             return await this.Storage.UpdatePartialByName(json, FlowConfig.JsonFieldName_JobNames, flowName, DataCollectionName);
+        }
+
+        public async Task<Result> UpdateLastProcessedTimeForFlow(string flowName, long lastProcessedTime)
+        {
+            var value = JsonConvert.SerializeObject(lastProcessedTime);
+            return await this.Storage.UpdatePartialByName(value, GuiInputBatchingLastProcessedTime, flowName, DataCollectionName).ConfigureAwait(false);
         }
 
         public async Task<Result> UpdateMetricsForFlow(string flowName, MetricsConfig metrics)

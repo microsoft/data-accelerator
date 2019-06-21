@@ -102,7 +102,7 @@ namespace DataX.Config.Input.EventHub.Processor
                 return "eventhub/iothub input not defined, skipped";
             }
 
-            if (inputType != Constants.InputType_EventHub && inputType != Constants.InputType_IoTHub && inputType != Constants.InputType_KafkaEventHub && inputType != Constants.InputType_Kafka)   
+            if (inputType != Constants.InputType_EventHub && inputType != Constants.InputType_IoTHub && inputType != Constants.InputType_KafkaEventHub && inputType != Constants.InputType_Kafka && inputType != Constants.InputType_Blob)   
             {
                 return $"unsupported inputtype '{inputType}', skipped.";
             }

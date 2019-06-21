@@ -11,7 +11,7 @@ namespace DataX.Config.ConfigDataModel
     public static class Constants
     {
         public const string ConfigSettingName_RuntimeKeyVaultName = "sparkKeyVaultName";
-        public const string ConfigSettingName_ServiceKeyVaultName= "serviceKeyVaultName";
+        public const string ConfigSettingName_ServiceKeyVaultName = "serviceKeyVaultName";
         public const string ConfigSettingName_MetricEventHubConnectionKey = "metricEventHubConnectionStringKey";
         public const string ConfigSettingName_ConfigFolderHost = "cpConfigFolderBase";
         public const string ConfigSettingName_ConfigFolderContainerPath = "containerPath";
@@ -40,6 +40,10 @@ namespace DataX.Config.ConfigDataModel
         public const string InputType_IoTHub = "iothub";
         public const string InputType_EventHub = "events";
         public const string InputType_KafkaEventHub = "kafkaeventhub";
+        public const string InputType_Blob = "blob";
+
+        public const string InputMode_Streaming = "streaming";
+        public const string InputMode_Batching = "batching";
 
         public const string SparkTypeDataBricks = "databricks";
         public const string SparkTypeHDInsight = "HDInsight";

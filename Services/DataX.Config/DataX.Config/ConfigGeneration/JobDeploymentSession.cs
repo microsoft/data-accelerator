@@ -16,9 +16,12 @@ namespace DataX.Config
             : base(name, tokens)
         {
             this.Flow= flow;
+            this.JobConfigs = new List<JobConfig>();
         }
 
-        protected FlowDeploymentSession Flow { get; }
+        public FlowDeploymentSession Flow { get; }
+        
+        public List<JobConfig> JobConfigs { get; }
 
         public string SparkJobConfigFilePath
         {
