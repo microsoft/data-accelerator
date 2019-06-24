@@ -4,51 +4,40 @@
 // *********************************************************************
 package datax.input
 
-import datax.config.ConfigManager.logger
 import datax.config.{SettingDictionary, SettingNamespace}
+import datax.securedsetting.KeyVaultClient
 import org.apache.log4j.LogManager
 
-import scala.collection.mutable
-
-/*
-case class InputBlobsConf(pathPrefix:String,
-                          pathPartitionFolderFormat: String,
-                          startTime: String,
-                          durationInHours: Long)
-
-object BatchBlobInputSetting {
-  val NamespaceBlobsSource = "blobs"
-  val NamespacePrefix = SettingNamespace.JobInputPrefix + NamespaceBlobsSource + SettingNamespace.Seperator
-
-  val logger = LogManager.getLogger(this.getClass)
-
-  private def buildInputBlobsConf(dict: SettingDictionary, name: String): InputBlobsConf = {
-    logger.warn("Load Dictionary from buildInputBlobsConf as following:\n"+dict.dict.map(kv=>s"${kv._1}->${kv._2}").mkString("\n"))
-    logger.warn("buildInputBlobsConf name="+name);
-    InputBlobsConf(
-      pathPrefix = dict.getOrNull("pathprefix"),
-      pathPartitionFolderFormat = dict.getOrNull("pathpartitionfolderformat"),
-      startTime = dict.getOrNull("starttime"),
-      durationInHours = dict.getLong("durationinhours")
-    )
-  }
-  */
-
 case class InputBlobsConf(path:String,
-                         startTime: String)
+                         startTime: String,
+                         endTime: String,
+                         format: String,
+                         compression: String,
+                         partitionIncrementInMin:Long)
 
 object BatchBlobInputSetting {
-  val NamespaceBlobsSource = "blobs"
+  val NamespaceBlobsSource = "blob"
   val NamespacePrefix = SettingNamespace.JobInputPrefix + NamespaceBlobsSource + SettingNamespace.Seperator
+
+  val SettingPath = "path"
+  val SettingProcessStartTime = "processstarttime"
+  val SettingProcessEndTime = "processendtime"
+  val SettingPartitionIncrement = "partitionincrement"
+  val SettingFormat = "format"
+  val SettingCompression = "compression"
 
   val logger = LogManager.getLogger(this.getClass)
 
   private def buildInputBlobsConf(dict: SettingDictionary, name: String): InputBlobsConf = {
     logger.warn("Load Dictionary from buildInputBlobsConf as following:\n"+dict.dict.map(kv=>s"${kv._1}->${kv._2}").mkString("\n"))
-    logger.warn("buildInputBlobsConf name="+name);
+
     InputBlobsConf(
-      path = dict.getOrNull("path"),
-      startTime = dict.getOrNull("starttime")
+      path = KeyVaultClient.resolveSecretIfAny(dict.getOrNull(SettingPath)),
+      startTime = dict.getOrNull(SettingProcessStartTime),
+      endTime = dict.getOrNull(SettingProcessEndTime),
+      format = dict.getOrNull(SettingFormat),
+      compression = dict.getOrNull(SettingCompression),
+      partitionIncrementInMin = dict.getLong(SettingPartitionIncrement)
     )
   }
 
