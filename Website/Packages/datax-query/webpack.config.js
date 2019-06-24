@@ -30,8 +30,11 @@ function configure(env, argv) {
         // https://webpack.js.org/configuration/resolve/
         resolve: {
             extensions: ['.js', '.jsx'],
-            modules: [path.resolve(__dirname, 'src'), 'node_modules']
-        },
+            modules: [path.resolve(__dirname, 'src'), 'node_modules'],
+            alias: { 'react': path.resolve(__dirname, './node_modules/', 'react'),
+            'react-dom': path.resolve('./node_modules/react-dom')
+            }
+        },        
         // https://webpack.js.org/configuration/externals/
         externals: {
             react: 'umd react',

@@ -10,3 +10,4 @@ import './styles/styles.css';
  * Export all modules to expose out of this package library
  */
 export * from './modules';
+export { JsonEditor } from 'jsoneditor-react';

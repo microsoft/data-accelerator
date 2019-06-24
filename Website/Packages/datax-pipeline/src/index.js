@@ -4,7 +4,7 @@
 // *********************************************************************
 
 import './styles/styles.css';
-import 'datax-query/dist/css/index.css';
+import 'datax-query/dist/css/index.css'; 
 
 import flowslist from './modules/flowList/reducer';
 import flow from './modules/flowDefinition/flowReducer';
