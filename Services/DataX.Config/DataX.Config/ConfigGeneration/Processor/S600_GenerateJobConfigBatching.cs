@@ -3,6 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 using DataX.Config.ConfigDataModel;
+using DataX.Config.ConfigDataModel.RuntimeConfig;
 using DataX.Config.Utility;
 using DataX.Contract;
 using Newtonsoft.Json.Linq;
@@ -10,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Composition;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -22,17 +24,20 @@ namespace DataX.Config.ConfigGeneration.Processor
     [Export(typeof(IFlowDeploymentProcessor))]
     public class GenerateJobConfigBatching : ProcessorBase
     {
-        public const string ParameterObjectName_DefaultJobConfig = "defaultJobConfig";
+        public const string TokenName__DefaultJobConfig = "defaultJobConfig";
+        public const string TokenName_InputBatching = "inputBatching";
 
         [ImportingConstructor]
-        public GenerateJobConfigBatching(JobDataManager jobs, FlowDataManager flowData)
+        public GenerateJobConfigBatching(JobDataManager jobs, FlowDataManager flowData, IKeyVaultClient keyVaultClient)
         {
             this.JobData = jobs;
             this.FlowData = flowData;
+            this.KeyVaultClient = keyVaultClient;
         }
 
         private JobDataManager JobData { get; }
         private FlowDataManager FlowData { get; }
+        private IKeyVaultClient KeyVaultClient { get; }
 
         public override int GetOrder()
         {
@@ -51,7 +56,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             // set the default job config
             var defaultJobConfig = JsonConfig.From(flowConfig.CommonProcessor?.Template);
             Ensure.NotNull(defaultJobConfig, "defaultJobConfig");
-            flowToDeploy.SetAttachment(ParameterObjectName_DefaultJobConfig, defaultJobConfig);
+            flowToDeploy.SetAttachment(TokenName__DefaultJobConfig, defaultJobConfig);
 
             // Deploy job configs
             var jobsToDeploy = flowToDeploy?.GetJobs();
@@ -76,16 +81,16 @@ namespace DataX.Config.ConfigGeneration.Processor
             Ensure.NotNull(destFolder, "destFolder");
             Ensure.NotNull(defaultJobConfig, "defaultJobConfig");
 
-            var inputConfg = job.Flow.Config?.GetGuiConfig();
+            var inputConfig = job.Flow.Config?.GetGuiConfig();
 
             var jcons = new List<JobConfig>();
 
 
-            job.JobConfigs.AddRange(await GetJobConfig(job, inputConfg.Input.Batching, inputConfg.Input.Batching.Recurring, destFolder, defaultJobConfig).ConfigureAwait(false));
+            job.JobConfigs.AddRange(await GetJobConfig(job, inputConfig.Input.Batching, inputConfig.Input.Batching.Recurring, destFolder, defaultJobConfig).ConfigureAwait(false));
 
-            foreach (var item in inputConfg.Input.Batching.Onetime)
+            foreach (var item in inputConfig.Input.Batching.Onetime)
             {
-                job.JobConfigs.AddRange(await GetJobConfig(job, inputConfg.Input.Batching, item, destFolder, defaultJobConfig, true).ConfigureAwait(false));
+                job.JobConfigs.AddRange(await GetJobConfig(job, inputConfig.Input.Batching, item, destFolder, defaultJobConfig, true).ConfigureAwait(false));
             }
         }
 
@@ -122,7 +127,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                     var processingTime = schedulerStartTime;
                     var scheduledTime = NormalizeTimeBasedOnInterval(schedulerStartTime, batchingJob.Interval, delay);
 
-                    JobConfig jc = ScheduleSingleJob(job, destFolder, defaultJobConfig, isOneTime, interval, window, scheduledTime, processingTime, out processedTime);
+                    JobConfig jc = await ScheduleSingleJob(job, destFolder, defaultJobConfig, isOneTime, interval, window, scheduledTime, processingTime).ConfigureAwait(false);
                     processedTime = processingTime;
                     jQueue.Add(jc);
 
@@ -137,7 +142,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                     var processingTime = processTime;
                     var scheduledTime = NormalizeTimeBasedOnInterval(processTime, batchingJob.Interval, delay);
 
-                    JobConfig jc = ScheduleSingleJob(job, destFolder, defaultJobConfig, isOneTime, interval, window, scheduledTime, processingTime, out processedTime);
+                    JobConfig jc = await ScheduleSingleJob(job, destFolder, defaultJobConfig, isOneTime, interval, window, scheduledTime, processingTime).ConfigureAwait(false);
                     processedTime = processingTime;
                     jQueue.Add(jc);
                 }
@@ -160,7 +165,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                     var processingTime = processTime;
                     var scheduledTime = NormalizeTimeBasedOnInterval(processTime, batchingJob.Interval, delay);
                     var prefix = "-OneTime";
-                    JobConfig jc = ScheduleSingleJob(job, destFolder, defaultJobConfig, isOneTime, interval, window, processTime, processingTime, out processedTime, prefix);
+                    JobConfig jc = await ScheduleSingleJob(job, destFolder, defaultJobConfig, isOneTime, interval, window, processTime, processingTime, prefix).ConfigureAwait(false);
                     processTime = processTime.AddMinutes(interval);
                     jQueue.Add(jc);
                 }
@@ -174,7 +179,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             return jQueue;
         }
 
-        private static JobConfig ScheduleSingleJob(JobDeploymentSession job, string destFolder, JsonConfig defaultJobConfig, bool isOneTime, long interval, TimeSpan window, DateTime processTime, DateTime scheduledTime, out DateTime processedTime, string prefix = "")
+        private async Task<JobConfig> ScheduleSingleJob(JobDeploymentSession job, string destFolder, JsonConfig defaultJobConfig, bool isOneTime, long interval, TimeSpan window, DateTime processTime, DateTime scheduledTime, string prefix = "")
         {
             var ps_s = processTime;
             var ps_e = processTime.AddMinutes(interval).AddMilliseconds(-1); //ENDTIME
@@ -190,22 +195,53 @@ namespace DataX.Config.ConfigGeneration.Processor
             var newJobConfig = job.Tokens.Resolve(defaultJobConfig);
             Ensure.NotNull(newJobConfig, "newJobConfig");
 
-            processedTime = ps_s;
+            var processStartTime = ConvertDateToString(pe_e);
+            var processEndTime = ConvertDateToString(ps_e);
+
             var jc = new JobConfig
             {
-                Content = newJobConfig.ToString(),
+                Content = await GetBatchConfigContent(job.Flow.Config.GetGuiConfig(), job, newJobConfig.ToString(), processStartTime, processEndTime).ConfigureAwait(false),
                 FilePath = ResourcePathUtil.Combine(destFolder, job.Name + ".json"),
                 Name = jobName,
                 SparkJobName = job.SparkJobName + suffix,
-                ProcessStartTime = ConvertDateToString(pe_e),
-                ProcessEndTime = ConvertDateToString(ps_e),
+                ProcessStartTime = processStartTime,
+                ProcessEndTime = processEndTime,
                 ProcessingTime = dateString,
                 IsOneTime = isOneTime
             };
 
             return jc;
         }
-        
+
+        private async Task<string> GetBatchConfigContent(FlowGuiConfig inputConfig, JobDeploymentSession job, string content, string processStartTime, string processEndTime)
+        {
+            var inputBatching = inputConfig.Input.Batching.Inputs ?? Array.Empty<FlowGuiInputBatchingInput>();
+            var specsTasks = inputBatching.Select(async rd =>
+            {
+                var connectionString = await KeyVaultClient.ResolveSecretUriAsync(rd.InputConnection).ConfigureAwait(false);
+                var inputPath = await KeyVaultClient.ResolveSecretUriAsync(rd.InputPath).ConfigureAwait(false);
+
+                return new InputBatchingSpec()
+                {
+                    Name = ParseBlobAccountName(connectionString),
+                    Path = rd.InputPath,
+                    Format = "JSON",
+                    CompressionType = "None",
+                    ProcessStartTime = processStartTime,
+                    ProcessEndTime = processEndTime,
+                    PartitionIncrement = GetPartitionIncrement(inputPath).ToString(CultureInfo.InvariantCulture),
+                };
+            }).ToArray();
+
+            var specs = await Task.WhenAll(specsTasks).ConfigureAwait(false);
+
+            job.SetObjectToken(TokenName_InputBatching, specs);
+
+            var jsonContent = job.Tokens.Resolve(content);
+
+            return jsonContent;
+        }
+
         public override async Task<string> Delete(FlowDeploymentSession flowToDelete)
         {
             var flowConfig = flowToDelete.Config;
@@ -374,5 +410,53 @@ namespace DataX.Config.ConfigGeneration.Processor
 
             return result;
         }
+
+        private static long GetPartitionIncrement(string path)
+        {
+            Regex regex = new Regex(@"\{([yMdHhmsS\-\/.,: ]+)\}*", RegexOptions.IgnoreCase);
+            Match mc = regex.Match(path);
+
+            if (mc != null && mc.Success && mc.Groups.Count > 1)
+            {
+                var value = mc.Groups[1].Value.Trim();
+
+                value = value.Replace(@"[\/:\s-]", "", StringComparison.InvariantCultureIgnoreCase).Replace(@"(.)(?=.*\1)", "", StringComparison.InvariantCultureIgnoreCase);
+
+                if (value.Contains("h", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return 1 * 60;
+                }
+                else if (value.Contains("d", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return 1 * 60 * 24;
+                }
+                else if (value.Contains("M", StringComparison.InvariantCulture))
+                {
+                    return 1 * 60 * 24 * 30;
+                }
+                else if (value.Contains("y", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return 1 * 60 * 24 * 30 * 12;
+                }
+            }
+
+            return 1;
+        }
+
+        private static string ParseBlobAccountName(string connectionString)
+        {
+            string matched;
+            try
+            {
+                matched = Regex.Match(connectionString, @"(?<=AccountName=)(.*)(?=;AccountKey)").Value;
+            }
+            catch (Exception)
+            {
+                return "The connectionString does not have AccountName";
+            }
+
+            return matched;
+        }
+
     }
 }

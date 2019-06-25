@@ -87,6 +87,7 @@ namespace DataX.Config
                     var result = await sparkJobClient.StopJob(job.SyncResult.ClientCache);
                     job.SyncResult = result;
                     return await this.JobData.UpdateSyncResultByName(jobName, result);
+                case JobState.Success:
                 case JobState.Idle:
                     return new SuccessResult($"job '{jobName}' has already been stopped");
                 case JobState.Error:

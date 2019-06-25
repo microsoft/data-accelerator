@@ -9,6 +9,7 @@ namespace DataX.Config
         Idle,
         Starting,
         Running,
+        Success,
         Error
     }
 }
