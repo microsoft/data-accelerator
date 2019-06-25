@@ -15,7 +15,7 @@ import 'brace/mode/sql';
 import 'brace/theme/xcode';
 import { Colors, IconButtonStyles, ScrollableContentPane, StatementBox, LoadingPanel, getApiErrorMessage, CommonHelpers} from 'datax-common';
 import { JsonEditor } from 'datax-query';
-import MonacoEditor from 'react-monaco-editor';
+import { MonacoEditorControl } from 'datax-query';
 
 const inputSchemaExampleWiki = 'https://aka.ms/data-accelerator-input';
 const normalizationExampleWiki = 'https://aka.ms/data-accelerator-normalization';
@@ -440,7 +440,7 @@ export default class InputSettingsContent extends React.Component {
                     </a>
                 </div>
                 <div style={editorContainerStyle}>
-                    <MonacoEditor
+                    <MonacoEditorControl
                         name="normalizationeditor"
                         height="100%"
                         width="100%"

@@ -11,3 +11,4 @@ import './styles/styles.css';
  */
 export * from './modules';
 export { JsonEditor } from 'jsoneditor-react';
+export { default as MonacoEditorControl} from './modules/query/components/monacoeditorcontrol'
