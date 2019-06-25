@@ -7,38 +7,43 @@ package datax.host
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.time.Instant
-import java.util.concurrent.Executors
+import java.time.temporal.ChronoUnit
 
 import datax.config.UnifiedConfig
 import datax.constants.ProductConstant
-import datax.exception.EngineException
+import datax.data.FileInternal
 import datax.fs.HadoopClient
 import datax.input.BatchBlobInputSetting
-import datax.processor.{BatchBlobProcessor, BlobPointerProcessor}
+import datax.processor.{BatchBlobProcessor, CommonProcessorFactory}
 import datax.telemetry.AppInsightLogger
-import datax.utility.DataMerger
 import org.apache.log4j.LogManager
 
 import scala.language.postfixOps
 import scala.collection.mutable.{HashSet, ListBuffer}
-import scala.collection.parallel.ExecutionContextTaskSupport
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 object BlobBatchingHost {
   val appLog = LogManager.getLogger("runBatchApp")
 
-  private def getInputBlobPathPrefixes(path: String, startTime: Instant):Iterable[(String, Timestamp)] = {
+ def getInputBlobPathPrefixes(path: String, startTime: Instant, processingWindowInSeconds: Long, partitionIncrementDurationInSeconds: Long):Iterable[(String, Timestamp)] = {
     val result = new ListBuffer[(String, Timestamp)]
+    val cache = new HashSet[String]
 
-    val pattern = getDateTimePattern(path)
+    val datetimeFormat = getDateTimePattern(path)
+    var t:Long = 0
 
-    if(!pattern.isEmpty) {
-      val dateFormat = new SimpleDateFormat(pattern)
-      val timestamp = Timestamp.from(startTime)
-      val partitionFolder = dateFormat.format(timestamp)
-      val path2 = path.replace("{" + pattern + "}", partitionFolder)
-      result += Tuple2(path2, timestamp)
+    if(!datetimeFormat.isEmpty) {
+      val dateFormat = new SimpleDateFormat(datetimeFormat)
+      while (t <= processingWindowInSeconds) {
+        val timestamp = Timestamp.from(startTime.plusSeconds(t))
+        val partitionFolder = dateFormat.format(timestamp)
+        val path2 = path.replace("{" + datetimeFormat + "}", partitionFolder)
+        if (!cache.contains(partitionFolder)) {
+          result += Tuple2(path2, timestamp)
+          cache += partitionFolder
+        }
+        t += partitionIncrementDurationInSeconds
+      }
     }
     else {
       result += Tuple2(path, Timestamp.from(Instant.now()))
@@ -60,7 +65,6 @@ object BlobBatchingHost {
     }
   }
 
-
   def runBatchApp(inputArguments: Array[String],processorGenerator: UnifiedConfig=>BatchBlobProcessor ) = {
     val (appHost, config) = CommonAppHost.initApp(inputArguments)
 
@@ -72,40 +76,31 @@ object BlobBatchingHost {
     val prefixes = blobsConf.flatMap(blobs=>{
       val inputBlobPath= blobs.path
       val inputBlobStartTime = Instant.parse(blobs.startTime)
+      val inputBlobEndTime = Instant.parse(blobs.endTime)
+
+      val inputBlobProcessingWindowInSec= inputBlobStartTime.until(inputBlobEndTime, ChronoUnit.SECONDS)
+      val inputBlobPartitionIncrementInSec = blobs.partitionIncrementInMin*60
 
       getInputBlobPathPrefixes(
         path = inputBlobPath,
-        startTime = inputBlobStartTime
+        startTime = inputBlobStartTime,
+        inputBlobProcessingWindowInSec,
+        inputBlobPartitionIncrementInSec
       )
-    }).par
+    })
 
     val spark = appHost.getSpark(config.sparkConf)
     val sc = spark.sparkContext
     val processor = processorGenerator(config)
 
-    val ec = new ExecutionContext {
-      val threadPool = Executors.newFixedThreadPool(16)
-      def execute(runnable: Runnable) {
-        threadPool.submit(runnable)
-      }
-      def reportFailure(t: Throwable) {}
-    }
-
-    prefixes.tasksupport = new ExecutionContextTaskSupport(ec)
-
-    val batchResult = prefixes.map(prefix =>{
-      appLog.warn(s"Start processing ${prefix}")
-      val namespace = "_"+HadoopClient.tempFilePrefix(prefix._1)
-      appLog.warn(s"Namespace for prefix ${prefix._1} is '$namespace'")
-      val pathsRDD = sc.makeRDD(HadoopClient.listFiles(prefix._1).toSeq)
-      val result = processor.process(pathsRDD, prefix._2, 1 hour)
-      appLog.warn(s"End processing ${prefix}")
-
-      result
-    }).reduce(DataMerger.mergeMapOfDoubles)
+    val filesToProcess = prefixes.flatMap(prefix=>HadoopClient.listFiles(prefix._1).toSeq)
+    val minTimestamp = prefixes.minBy(_._2.getTime)._2
+    appLog.warn(s"Start processing for $minTimestamp")
+    val pathsRDD = sc.makeRDD(filesToProcess)
+    val batchResult = processor.process(pathsRDD, minTimestamp, 1 hour)
+    appLog.warn(s"End processing for $minTimestamp")
 
     appLog.warn(s"Batch Mode Work Ended, processed metrics: $batchResult")
     AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/batch/end", null, batchResult)
   }
-
 }

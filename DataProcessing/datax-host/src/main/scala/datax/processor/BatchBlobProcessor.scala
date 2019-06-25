@@ -9,7 +9,6 @@ import scala.concurrent.duration.Duration
 class BatchBlobProcessor(processBatchBlobPaths: (RDD[String], Timestamp, Duration, Timestamp, String) => Map[String, Double]) {
 
     val process = (rdd: RDD[String], batchTime: Timestamp, batchInterval: Duration) => {
-    val currentTime = DateTimeUtil.getCurrentTime()
-      processBatchBlobPaths(rdd, batchTime, batchInterval, currentTime, "")
+      processBatchBlobPaths(rdd, batchTime, batchInterval, batchTime, "")
   }
 }
