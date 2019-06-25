@@ -432,6 +432,7 @@ object HadoopClient {
     * @return a list of file paths under the folder
     */
   def listFiles(folder: String): Iterator[String] = {
+    resolveStorageAccountKeyForPath(folder)
     val path = new Path(folder)
     val fs = path.getFileSystem(getConf)
 
