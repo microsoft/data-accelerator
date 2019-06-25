@@ -5,6 +5,8 @@
 import { createSelector } from 'reselect';
 import * as Helpers from './flowHelpers';
 import * as Models from './flowModels';
+import { CommonHelpers } from 'datax-common';
+import { QuerySelectors } from 'datax-query';
 
 // Settings - Flow
 export const getFlow = state => state.flow;
@@ -93,12 +95,6 @@ export const getSelectedFunctionProperties = createSelector(
 function selectedFunction(functions, selectedIndex) {
     return selectedIndex !== undefined && selectedIndex < functions.length ? functions[selectedIndex] : undefined;
 }
-
-// Settings - Query
-export const getFlowQuery = createSelector(
-    getFlow,
-    flow => flow.query
-);
 
 // Settings - Scale
 export const getFlowScale = createSelector(
@@ -208,36 +204,36 @@ function validateInput(input) {
     if (input.mode === Models.inputModeEnum.streaming) {
         if (input.type === Models.inputTypeEnum.events) {
             validations.push(input.properties.inputEventhubConnection.trim() !== '');
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.windowDuration));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
             validations.push(
                 input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
             );
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.maxRate));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
             validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
         } else if (input.type === Models.inputTypeEnum.iothub) {
             validations.push(input.properties.inputEventhubName.trim() !== '');
             validations.push(input.properties.inputEventhubConnection.trim() !== '');
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.windowDuration));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
             validations.push(
                 input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
             );
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.maxRate));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
             validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
         } else if (input.type === Models.inputTypeEnum.kafkaeventhub || input.type === Models.inputTypeEnum.kafka) {
             validations.push(input.properties.inputEventhubName.trim() !== '');
             validations.push(input.properties.inputEventhubConnection.trim() !== '');
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.windowDuration));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
             validations.push(
                 input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
             );
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.maxRate));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
             validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
         } else if (input.type === Models.inputTypeEnum.local) {
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.windowDuration));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
             validations.push(
                 input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
             );
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.maxRate));
+            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
             validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
         } else {
             validation.push(false);
@@ -321,17 +317,6 @@ function isFunctionSettingsComplete(functionItem) {
             break;
     }
     return validations.every(value => value);
-}
-
-// Validation - Query
-export const validateFlowQuery = createSelector(
-    getFlowQuery,
-    validateQuery
-);
-
-function validateQuery(query) {
-    //removing validation; codegen will add OUTPUTs for alerts. Blank query is valid.
-    return query || query.trim() === '';
 }
 
 // Validation - Outputs
@@ -462,7 +447,7 @@ export const validateFlowScale = createSelector(
 );
 
 function validateScale(scale) {
-    return scale && Helpers.isValidNumberAboveZero(scale.jobNumExecutors) && Helpers.isValidNumberAboveZero(scale.jobExecutorMemory);
+    return scale && CommonHelpers.isValidNumberAboveZero(scale.jobNumExecutors) && CommonHelpers.isValidNumberAboveZero(scale.jobExecutorMemory);
 }
 
 // Validation -  Flow
@@ -470,7 +455,7 @@ export const validateFlow = createSelector(
     validateFlowInfo,
     validateFlowInput,
     validateFlowFunctions,
-    validateFlowQuery,
+    QuerySelectors.validateQueryTab,
     validateFlowOutputs,
     validateFlowOutputTemplates,
     validateFlowRules,

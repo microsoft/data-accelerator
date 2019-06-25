@@ -1,0 +1,27 @@
+/*
+ *********************************************************************
+ Copyright (c) Microsoft Corporation.  All rights reserved.
+ Licensed under the MIT License
+ *********************************************************************
+*/
+
+/* Query Pane styles */
+.query-pane-button {
+    height: 27px !important;
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+    min-width: 1px !important;
+  }
+
+.ms-IconExample:hover {
+    cursor: pointer !important;
+}
+
+.query-pane-TextField{
+    height: 27px !important;
+    width: 50px !important;
+}
+
+.query-pane-TextField .ms-TextField-fieldGroup {
+    height: 27px !important;
+}

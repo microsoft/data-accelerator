@@ -3,14 +3,12 @@
 // Licensed under the MIT License
 // *********************************************************************
 
-require('office-ui-fabric-react/dist/css/fabric.min.css');
+import 'jsoneditor-react/es/editor.min.css';
+import 'monaco-editor/min/vs/editor/editor.main.css';
 import './styles/styles.css';
-
 /**
  * Export all modules to expose out of this package library
  */
-export * from './components';
 export * from './modules';
-export * from './styles';
-export * from './utils';
-export * from './common';
+export { JsonEditor } from 'jsoneditor-react';
+export { default as MonacoEditorControl} from './modules/query/components/monacoeditorcontrol'

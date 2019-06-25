@@ -21,6 +21,9 @@ xcopy dist ..\datax-metrics\node_modules\datax-common\dist /i /s /y
 REM Patching dist folder to jobs
 xcopy dist ..\datax-jobs\node_modules\datax-common\dist /i /s /y
 
+REM Patching dist folder to query
+xcopy dist ..\datax-query\node_modules\datax-common\dist /i /s /y
+
 @echo off
 REM Patch all other dist folders that you want to patch here
 REM For example, you may want to patch the feature packages that uses this package

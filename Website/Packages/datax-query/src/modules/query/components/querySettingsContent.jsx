@@ -8,15 +8,14 @@ import SideToolBar from './sideToolBar';
 import { DefaultButton, Label, TextField } from 'office-ui-fabric-react';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import brace from 'brace';
-import MonacoEditor from 'react-monaco-editor';
+import MonacoEditorControl from './monacoeditorcontrol';
 import 'brace/mode/sql';
 import 'brace/theme/xcode';
 import 'brace/ext/language_tools';
 import { JsonEditor } from 'jsoneditor-react';
 import SplitterLayout from 'react-splitter-layout';
-import { Colors, IconButtonStyles, LoadingPanel } from 'datax-common';
-import * as Helpers from '../../flowHelpers';
-import * as Actions from '../../flowActions';
+import { Colors, IconButtonStyles, LoadingPanel, CommonHelpers as Helpers } from 'datax-common';
+import * as Actions from '../queryActions';
 
 const queryExampleWiki = 'https://aka.ms/data-accelerator-query';
 
@@ -130,7 +129,7 @@ export default class QuerySettingsContent extends React.Component {
         let editor;
         if (this.state.showCodeGenQuery) {
             editor = (
-                <MonacoEditor
+                <MonacoEditorControl
                     name="codegenqueryeditor"
                     height="100%"
                     fontSize="13px"
@@ -138,13 +137,14 @@ export default class QuerySettingsContent extends React.Component {
                     theme={theme}
                     value={this.state.codeGenQuery}
                     options={options}
+                    onChange={() => {return;}}
                     editorWillMount={monaco => this.editorWillMount(monaco)}
                     editorDidMount={editor => this.editorDidMount(editor)}
                 />
             );
         } else {
             editor = (
-                <MonacoEditor
+                <MonacoEditorControl
                     name="queryeditor"
                     height="100%"
                     fontSize="13px"

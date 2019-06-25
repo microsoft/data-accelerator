@@ -4,6 +4,7 @@
 // *********************************************************************
 import * as Actions from './flowActions';
 import * as Models from './flowModels';
+import {QueryModels, QueryActions} from 'datax-query';
 
 const INITIAL_FLOW_STATE = {
     // Flow Config
@@ -14,7 +15,7 @@ const INITIAL_FLOW_STATE = {
     input: Models.defaultInput,
     referenceData: [],
     functions: [],
-    query: Models.defaultQuery,
+    query: QueryModels.defaultQuery,
     scale: {
         jobNumExecutors: '4',
         jobExecutorMemory: '1000',
@@ -65,7 +66,7 @@ export default (state = INITIAL_FLOW_STATE, action) => {
                 selectedSinkerIndex: 0, // new flow by default contains the metric sinker
                 enableLocalOneBox: state.enableLocalOneBox ? state.enableLocalOneBox : false,
                 input: Models.getDefaultInput(state.enableLocalOneBox),
-                query: Models.getDefaultQuery(state.enableLocalOneBox)
+                query: QueryModels.getDefaultQuery(state.enableLocalOneBox)
             });
 
         case Actions.FLOW_UPDATE_DISPLAY_NAME:
@@ -92,12 +93,7 @@ export default (state = INITIAL_FLOW_STATE, action) => {
         case Actions.FLOW_UPDATE_SAMPLING_INPUT_DURATION:
             return Object.assign({}, state, {
                 samplingInputDuration: action.duration
-            });
-
-        case Actions.FLOW_UPDATE_RESAMPLING_INPUT_DURATION:
-            return Object.assign({}, state, {
-                resamplingInputDuration: action.duration
-            });
+            });     
 
         case Actions.FLOW_UPDATE_REFERENCE_DATA_LIST:
             return Object.assign({}, state, {
@@ -188,12 +184,6 @@ export default (state = INITIAL_FLOW_STATE, action) => {
 
         case Actions.FLOW_UPDATE_SELECTED_FUNCTION_INDEX:
             return Object.assign({}, state, { selectedFunctionIndex: action.payload });
-
-        case Actions.FLOW_UPDATE_QUERY:
-            return Object.assign({}, state, {
-                isDirty: true,
-                query: action.payload
-            });
 
         case Actions.FLOW_UPDATE_SCALE:
             return Object.assign({}, state, {
