@@ -8,6 +8,7 @@ using DataX.Config.ConfigurationProviders;
 using DataX.Config.Local;
 using DataX.Config.PublicService;
 using DataX.Contract.Settings;
+using DataX.Flow.Scheduler;
 using DataX.ServiceHost.AspNetCore.Startup;
 using DataX.Utilities.Blob;
 using Flow.Management;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -42,6 +44,7 @@ namespace Flow.ManagementService
         public override void ConfigureServices(IServiceCollection services)
         {
             base.ConfigureServices(services);
+            services.AddSingleton<IHostedService, TimedScheduler>();
 
             // Initialize the settings by getting the values from settings file
             InitConfigSettings();
