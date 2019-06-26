@@ -500,7 +500,7 @@ export function convertConfigToFlow(config) {
         databricksToken: config.databricksToken,
         input: input,
         batchInputs: input.batch,
-        batchList: config.batchList,
+        batchList: config.batchList !== undefined ? config.batchList : [],
         referenceData: input.referenceData ? input.referenceData : [],
         functions: config.process.functions ? config.process.functions : [],
         query: config.process.queries[0],

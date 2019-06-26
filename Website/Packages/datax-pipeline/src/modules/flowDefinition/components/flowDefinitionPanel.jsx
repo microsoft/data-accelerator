@@ -689,7 +689,7 @@ class FlowDefinitionPanel extends React.Component {
                     showMessageBar: true,
                     messageBarIsError: false,
                     messageBarStatement:
-                        'Flow definition is saved. In the batching mode, for the sheduled batch jobs, they will be created and started.'
+                        'Flow definition is saved. If there are any scheduled batch jobs in thie flow, they will be created and started by the scheduler.'
                 });
 
                 this.props.initFlow({ id: name });

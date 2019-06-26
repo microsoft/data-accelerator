@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import * as Helpers from '../../flowHelpers';
 import * as Models from '../../flowModels';
 import { TextField, Label, Dropdown } from 'office-ui-fabric-react';
+import DateTimePicker from 'react-datetime-picker';
 
 export default class RecurringScheduleSettings extends React.Component {
     constructor(props) {
@@ -67,13 +68,11 @@ export default class RecurringScheduleSettings extends React.Component {
     renderStartTime() {
         return (
             <div style={sectionStyle}>
-                <TextField
+                <Label className="ms-font-m info-settings-textbox">Start Time</Label>
+                <DateTimePicker
                     className="ms-font-m info-settings-textbox"
-                    spellCheck={false}
-                    label="StartTime"
-                    placeholder="optional"
                     value={this.props.batch.properties.startTime}
-                    onChange={(event, value) => this.props.onUpdateBatchStartTime(value)}
+                    onChange={(value) => this.props.onUpdateBatchStartTime(value)}
                 />
             </div>
         );
@@ -82,13 +81,11 @@ export default class RecurringScheduleSettings extends React.Component {
     renderEndTime() {
         return (
             <div style={sectionStyle}>
-                <TextField
+                <Label className="ms-font-m info-settings-textbox">End Time</Label>
+                <DateTimePicker
                     className="ms-font-m info-settings-textbox"
-                    spellCheck={false}
-                    label="EndTime"
-                    placeholder="optional"
                     value={this.props.batch.properties.endTime}
-                    onChange={(event, value) => this.props.onUpdateBatchEndTime(value)}
+                    onChange={(value) => this.props.onUpdateBatchEndTime(value)}
                 />
             </div>
         );

@@ -22,7 +22,9 @@
     "devpatch": "rimraf dist && webpack --mode development --config webpack.config.js --bail --progress --display-modules --display-error-details --colors --display-chunks --display-reasons && localdevpatch.bat",
     "devwatch": "webpack --mode development --config webpack.config.js --bail --progress --display-modules --display-error-details --colors --display-chunks --display-reasons --watch"
   },
-  "dependencies": {},
+  "dependencies": {
+    "react-datetime-picker": "^2.4.0"
+  },
   "devDependencies": {
     "@babel/core": "7.1.6",
     "@babel/plugin-syntax-dynamic-import": "7.0.0",

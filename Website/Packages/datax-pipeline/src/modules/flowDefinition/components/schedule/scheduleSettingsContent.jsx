@@ -23,6 +23,12 @@ const batchColumns = [
         name: 'Type',
         fieldName: 'typeDisplay',
         isResizable: true
+    },
+    {
+        key: 'columnBatchStatus',
+        name: 'Status',
+        fieldName: 'status',
+        isResizable: true
     }
 ];
 
@@ -72,6 +78,7 @@ export default class scheduleSettingsContent extends React.Component {
         const batchList = this.props.batchList;
         batchList.forEach(item => {
             item.typeDisplay = this.batchTypeToDisplayMap[item.type];
+            item.status = !item.disabled ? "Active" : "Disabled";
         });
 
         return (

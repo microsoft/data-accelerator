@@ -578,8 +578,8 @@ function isBatchListSettingsComplete(batch) {
             validations.push(batch.properties.delayType.trim() === '');
             validations.push(batch.properties.window && batch.properties.window.trim() !== '');
             validations.push(batch.properties.windowType && batch.properties.windowType.trim() !== '');
-            validations.push(batch.properties.startTime && batch.properties.startTime.trim() !== '');
-            validations.push(batch.properties.endTime && batch.properties.endTime.trim() !== '');
+            validations.push(batch.properties.startTime && batch.properties.startTime !== '');
+            validations.push(batch.properties.endTime && batch.properties.endTime !== '');
             validations.push(Helpers.isValidNumberAboveZero(batch.properties.interval));
             validations.push(Helpers.isValidNumberAboveZero(batch.properties.window));
             break;
