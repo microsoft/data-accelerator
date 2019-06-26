@@ -67,7 +67,7 @@ namespace DataX.Flow.InteractiveQuery
             var hashValue = Helper.GetHashCode(diag.UserName);
             string sampleDataPath = Path.Combine(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json");
 
-            response = await CreateAndInitializeKernelHelper(diag.InputSchema, diag.UserName, diag.Name, sampleDataPath, diag.NormalizationSnippet, diag.ReferenceDatas, diag.Functions);
+            response = await CreateAndInitializeKernelHelper(diag.InputSchema, diag.UserName, diag.Name, sampleDataPath, diag.NormalizationSnippet, diag.ReferenceDatas, diag.Functions, diag.DatabricksToken);
             if (response.Error.HasValue && response.Error.Value)
             {
                 _logger.LogError(response.Message);
@@ -211,7 +211,7 @@ namespace DataX.Flow.InteractiveQuery
                     diag.Name = await _engineEnvironment.GetUniqueName(Helper.GetSecretFromKeyvaultIfNeeded(_engineEnvironment.EngineFlowConfig.SubscriptionId), diag.DisplayName);
                 }
 
-                KernelService kernelService = CreateKernelService();
+                KernelService kernelService = CreateKernelService(diag.DatabricksToken);
 
                 //Create the xml with the scala steps to execute to initialize the kernel
                 var hashValue = Helper.GetHashCode(diag.UserName);
@@ -229,11 +229,11 @@ namespace DataX.Flow.InteractiveQuery
             }
         }
 
-        private KernelService CreateKernelService()
+        private KernelService CreateKernelService(string databricksToken = null)
         {
             if (_engineEnvironment.EngineFlowConfig.SparkType == _DataBricks)
             {
-                return new Databricks.DatabricksKernelService(_engineEnvironment.EngineFlowConfig, _engineEnvironment.SparkConnInfo, _logger);
+                return new Databricks.DatabricksKernelService(_engineEnvironment.EngineFlowConfig, _engineEnvironment.SparkConnInfo, _logger, Helper.GetSecretFromKeyvaultIfNeeded(databricksToken));
             }
             else
             {
@@ -273,7 +273,7 @@ namespace DataX.Flow.InteractiveQuery
         /// <param name="jObject">jObject</param>
         /// <returns>Returns the result whether the list of kernels were deleted or not. We don't fail if one of the kernels fails to delete because it just does not exist</returns>
         public async Task<ApiResult> DeleteAllKernels()
-        {            
+        {
             var response = await _engineEnvironment.GetEnvironmentVariables().ConfigureAwait(false);
             if (response.Error.HasValue && response.Error.Value)
             {
@@ -305,14 +305,14 @@ namespace DataX.Flow.InteractiveQuery
         /// <param name="referenceDatas">referenceDatas as passed in from the frontend</param>
         /// <param name="functions">functions as passed in from the frontend</param>
         /// <returns></returns>
-        private async Task<ApiResult> CreateAndInitializeKernelHelper(string rawSchema, string userId, string flowId, string sampleDataPath, string normalizationSnippet, List<ReferenceDataObject> referenceDatas, List<FunctionObject> functions)
+        private async Task<ApiResult> CreateAndInitializeKernelHelper(string rawSchema, string userId, string flowId, string sampleDataPath, string normalizationSnippet, List<ReferenceDataObject> referenceDatas, List<FunctionObject> functions, string databricksToken)
         {
             try
             {
                 //Create the xml with the scala steps to execute to initialize the kernel                
                 DiagnosticInputhelper(rawSchema, sampleDataPath, normalizationSnippet, flowId);
 
-                KernelService kernelService = CreateKernelService();
+                KernelService kernelService = CreateKernelService(databricksToken);
                 var response = await kernelService.GarbageCollectListOfKernels(_engineEnvironment.OpsBlobConnectionString, Path.Combine(_engineEnvironment.OpsDiagnosticPath, _GarbageCollectBlobName));
 
                 response = await kernelService.CreateKernelAsync();
@@ -377,7 +377,7 @@ namespace DataX.Flow.InteractiveQuery
 
             try
             {
-                KernelService kernelService = CreateKernelService();
+                KernelService kernelService = CreateKernelService(query.DatabricksToken);
                 var result = await kernelService.ExecuteQueryAsync(query.Query, query.KernelId);
                 return result;
             }
@@ -405,7 +405,7 @@ namespace DataX.Flow.InteractiveQuery
             var query = jObject.ToObject<InteractiveQueryObject>();
             try
             {
-                KernelService kernelService = CreateKernelService();
+                KernelService kernelService = CreateKernelService(query.DatabricksToken);
                 var result = await kernelService.GetSampleInputFromQueryAsync(query.Query, query.KernelId);
                 return result;
             }

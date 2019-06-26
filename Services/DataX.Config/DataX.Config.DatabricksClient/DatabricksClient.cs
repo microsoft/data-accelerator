@@ -34,8 +34,8 @@ namespace DataX.Config.DatabricksClient
         /// Call Databricks service to manage jobs
         /// </summary>
         /// <param name="method">GET, POST or DELETE</param>
-        /// <param name="jobId">Job ID, optional</param>
-        /// <param name="data">Job data, required only for starting jobs</param>
+        /// <param name="api">databricks api</param>
+        /// <param name="body">body of httpRequest</param>
         /// <returns>Result with IsSuccess and message; exception message if exception occurs</returns>
         private async Task<DatabricksHttpResult> CallDatabricksService(HttpMethod method, string api, string body = "")
         {

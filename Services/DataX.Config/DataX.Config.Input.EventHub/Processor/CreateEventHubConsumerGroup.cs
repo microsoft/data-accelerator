@@ -54,7 +54,7 @@ namespace DataX.Config.Input.EventHub.Processor
             var eventHubConnectionString = guiConfig?.Input?.Properties?.InputEventhubConnection;
             if (eventHubConnectionString != null && !KeyVaultUri.IsSecretUri(eventHubConnectionString))
             {
-                //TODO: create new secret
+                // create new secret
                 var secretName = $"{guiConfig.Name}-input-eventhubconnectionstring";
                 var secretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, eventHubConnectionString, uriPrefix);
                 guiConfig.Input.Properties.InputEventhubConnection = secretId;

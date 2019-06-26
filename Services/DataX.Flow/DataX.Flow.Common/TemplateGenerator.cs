@@ -78,6 +78,7 @@ val rawSchemaString = """"""<@RawSchema>""""""
 val rawSchema = DataType.fromJson(rawSchemaString)
 </step>
 <step seq = ""3"">
+import org.apache.spark.sql.functions._
 val file = ""<@SampleDataPath>""
 val rawData = spark.read.json(file)
 rawData.select(from_json(col(""Raw""), rawSchema).alias(""Raw""), col(""Properties""), col(""SystemProperties"")).selectExpr(<@NormalizationSnippet>).createOrReplaceTempView(""DataXProcessedInput"")

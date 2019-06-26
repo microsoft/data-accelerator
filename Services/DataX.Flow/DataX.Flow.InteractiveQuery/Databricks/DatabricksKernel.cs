@@ -69,10 +69,10 @@ namespace DataX.Flow.InteractiveQuery.Databricks
                 var responsestring2 = response2.Content.ReadAsStringAsync().Result;
                 result = JsonConvert.DeserializeObject<CommandResponse>(responsestring2);
                 status = result.Status;
-            } while (status == "Running");
+            } while (status != "Finished");
             client.Dispose();
 
-            return JsonConvert.SerializeObject(result.Results);
+            return (result.Results.Data != null) ? result.Results.Data.ToString() : "";
         }
 
     }
@@ -93,6 +93,9 @@ namespace DataX.Flow.InteractiveQuery.Databricks
     {
         [JsonProperty("resultType")]
         public string ResultType { get; set; }
+
+        [JsonProperty("data")]
+        public object Data { get; set; }
 
         [JsonProperty("summary")]
         public object Summary { get; set; }

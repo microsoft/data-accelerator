@@ -199,7 +199,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                 var secretId = $"{configName}-output";
                 var uriPrefix = (Configuration[Constants.ConfigSettingName_SparkType].Length > 0 && Configuration[Constants.ConfigSettingName_SparkType] == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
                 var blobPathSecret = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, secretId, blobPath, uriPrefix, true);
-                await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, $"datax-sa-{accountName}", ParseBlobAccountKey(connectionString), uriPrefix, false);
+                await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, $"{Constants.AccountSecretPrefix}{accountName}", ParseBlobAccountKey(connectionString), uriPrefix, false);
 
                 FlowBlobOutputSpec blobOutput = new FlowBlobOutputSpec()
                 {

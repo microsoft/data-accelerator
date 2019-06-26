@@ -18,6 +18,9 @@ namespace DataX.Flow.Common.Models
         [JsonProperty("displayName")]
         public string DisplayName;
 
+        [JsonProperty("databricksToken")]
+        public string DatabricksToken;
+
         [JsonProperty("userName")]
         public string UserName;
 
