@@ -312,6 +312,7 @@ export default class InputSettingsContent extends React.Component {
                         className="ms-font-m"
                         spellCheck={false}
                         label="Blob Path"
+                        placeholder="e.g. wasbs://<container_name>@<storage_account_name>.blob.core.windows.net/{yyyy-MM-dd}"
                         value={value}
                         onChange={(event, value) => this.props.onUpdateBatchInputPath(value)}
                         autoAdjustHeight

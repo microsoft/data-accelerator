@@ -253,8 +253,7 @@ class FlowDefinitionPanel extends React.Component {
 
     renderSaveButton() {
         if (!this.state.loading) {
-            const enableButton =
-                (this.props.flow.isDirty || this.props.isQueryDirty) && this.props.flowValidated && this.state.saveFlowButtonEnabled;
+            const enableButton = this.props.flow.isDirty && this.state.saveFlowButtonEnabled;
             return (
                 <DefaultButton
                     key="save"
@@ -689,7 +688,8 @@ class FlowDefinitionPanel extends React.Component {
                     isSaving: false,
                     showMessageBar: true,
                     messageBarIsError: false,
-                    messageBarStatement: 'Flow definition is saved'
+                    messageBarStatement:
+                        'Flow definition is saved. In the batching mode, for the sheduled batch jobs, they will be created and started.'
                 });
 
                 this.props.initFlow({ id: name });

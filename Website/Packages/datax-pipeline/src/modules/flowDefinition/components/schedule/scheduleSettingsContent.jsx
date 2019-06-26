@@ -50,7 +50,7 @@ export default class scheduleSettingsContent extends React.Component {
             <div style={rootStyle}>
                 <StatementBox
                     icon="SignOut"
-                    statement="Schedule Batch jobs."
+                    statement="Schedule recurring and/or one time batch jobs. For the jobs scheduled correctly, the scheduler will create and start jobs."
                 />
                 {this.renderContent()}
             </div>
@@ -186,7 +186,8 @@ export default class scheduleSettingsContent extends React.Component {
         return (
             <RecurringScheduleSettings
                 batch={batch}
-                
+                batchTypeDisplayName={this.batchTypeToDisplayMap[batch.type]}
+
                 onUpdateBatchName={this.props.onUpdateBatchName}
                 onUpdateBatchStartTime={this.props.onUpdateBatchStartTime}
                 onUpdateBatchEndTime={this.props.onUpdateBatchEndTime}
@@ -206,6 +207,8 @@ export default class scheduleSettingsContent extends React.Component {
         return (
             <OneTimeScheduleSettings
                 batch={batch}
+                batchTypeDisplayName={this.batchTypeToDisplayMap[batch.type]}
+
                 onUpdateBatchName={this.props.onUpdateBatchName}
                 onUpdateBatchStartTime={this.props.onUpdateBatchStartTime}
                 onUpdateBatchEndTime={this.props.onUpdateBatchEndTime}
@@ -214,7 +217,6 @@ export default class scheduleSettingsContent extends React.Component {
                 onUpdateBatchIntervalType={this.props.onUpdateBatchIntervalType}
                 onUpdateBatchWindowValue={this.props.onUpdateBatchWindowValue}
                 onUpdateBatchWindowType={this.props.onUpdateBatchWindowType}
-                
             />
         );
     }

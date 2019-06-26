@@ -567,8 +567,6 @@ function isBatchListSettingsComplete(batch) {
             validations.push(batch.properties.delayType && batch.properties.delayType.trim() !== '');
             validations.push(batch.properties.window && batch.properties.window.trim() !== '');
             validations.push(batch.properties.windowType && batch.properties.windowType.trim() !== '');
-            validations.push(batch.properties.startTime && batch.properties.startTime.trim() !== '');
-            validations.push(batch.properties.endTime && batch.properties.endTime.trim() !== '');
             validations.push(Helpers.isValidNumberAboveZero(batch.properties.interval));
             validations.push(Helpers.isValidNumberAboveOrEqualZero(batch.properties.delay));
             validations.push(Helpers.isValidNumberAboveZero(batch.properties.window));

@@ -17,9 +17,10 @@ export default class OneTimeScheduleSettings extends React.Component {
         return (
             <div style={rootStyle}>
                 {this.renderAlias()}
-                {this.renderTimeRange()}
+                {this.renderTypeDisplayName()}
                 {this.renderInterval()}
                 {this.renderWindow()}
+                {this.renderTimeRange()}
             </div>
         );
     }
@@ -38,6 +39,20 @@ export default class OneTimeScheduleSettings extends React.Component {
             </div>
         );
     }
+    
+    renderTypeDisplayName() {
+        return (
+            <div style={batchTypeSection}>
+                <TextField
+                    className="ms-font-m info-settings-textbox"
+                    spellCheck={false}
+                    label="Batch Type"
+                    disabled={true}
+                    value={this.props.batchTypeDisplayName}
+                />
+            </div>
+        );
+    }
 
     renderTimeRange() {
         return (
@@ -52,13 +67,12 @@ export default class OneTimeScheduleSettings extends React.Component {
         return (
             <div style={sectionStyle}>
                 <TextField
-                    className="ms-font-m"
+                    className="ms-font-m info-settings-textbox"
                     spellCheck={false}
                     label="StartTime"
-                    placeholder="required for One Time"
+                    placeholder="required"
                     value={this.props.batch.properties.startTime}
                     onChange={(event, value) => this.props.onUpdateBatchStartTime(value)}
-                    // disabled={!this.props.inputEventHubEnabled}
                 />
             </div>
         );
@@ -68,13 +82,12 @@ export default class OneTimeScheduleSettings extends React.Component {
         return (
             <div style={sectionStyle}>
                 <TextField
-                    className="ms-font-m"
+                    className="ms-font-m info-settings-textbox"
                     spellCheck={false}
                     label="EndTime"
-                    placeholder="required for One Time"
+                    placeholder="required"
                     value={this.props.batch.properties.endTime}
                     onChange={(event, value) => this.props.onUpdateBatchEndTime(value)}
-                    // disabled={!this.props.inputEventHubEnabled}
                 />
             </div>
         );
@@ -82,7 +95,7 @@ export default class OneTimeScheduleSettings extends React.Component {
 
     renderInterval() {
         return (
-            <div style={watermarkContainerStyle}>
+            <div style={sectionContainerStyle}>
                 {this.renderIntervalText()}
                 {this.renderIntervalTypeDropdown()}
             </div>
@@ -91,7 +104,7 @@ export default class OneTimeScheduleSettings extends React.Component {
 
     renderIntervalText() {
         return (
-            <div style={watermarkValueStyle}>
+            <div style={sectionValueStyle}>
                 <TextField
                     className="ms-font-m"
                     spellCheck={false}
@@ -113,7 +126,7 @@ export default class OneTimeScheduleSettings extends React.Component {
         });
 
         return (
-            <div style={watermarkUnitDropdownStyle}>
+            <div style={sectionDropdownStyle}>
                 <Label className="ms-font-m">Unit</Label>
                 <Dropdown
                     className="ms-font-m"
@@ -127,7 +140,7 @@ export default class OneTimeScheduleSettings extends React.Component {
 
     renderWindow() {
         return (
-            <div style={watermarkContainerStyle}>
+            <div style={sectionContainerStyle}>
                 {this.renderWindowText()}
                 {this.renderWindowDropdown()}
             </div>
@@ -137,7 +150,7 @@ export default class OneTimeScheduleSettings extends React.Component {
     renderWindowText() {
         return (
                 
-            <div style={watermarkValueStyle}>
+            <div style={sectionValueStyle}>
                 <TextField
                     className="ms-font-m"
                     spellCheck={false}
@@ -159,7 +172,7 @@ export default class OneTimeScheduleSettings extends React.Component {
         });
 
         return (
-            <div style={watermarkUnitDropdownStyle}>
+            <div style={sectionDropdownStyle}>
                 <Label className="ms-font-m">Unit</Label>
                 <Dropdown
                     className="ms-font-m"
@@ -202,20 +215,23 @@ const sectionStyle = {
     paddingBottom: 15
 };
 
+const batchTypeSection = {
+    paddingBottom: 40
+};
 
-const watermarkContainerStyle = {
+const sectionContainerStyle = {
     display: 'flex',
     flexDirection: 'row'
 };
 
 
-const watermarkValueStyle = {
+const sectionValueStyle = {
     flex: 1,
     marginRight: 10
 };
 
 
-const watermarkUnitDropdownStyle = {
+const sectionDropdownStyle = {
     flex: 1,
     paddingBottom: 15
 };
