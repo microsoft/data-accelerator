@@ -64,24 +64,22 @@ export default class InputSettingsContent extends React.Component {
 
     renderLeftPane() {
         if (this.props.input.mode === Models.inputModeEnum.batching) {
+            let batchData = undefined;
+
+            if (this.props.batchInputs != undefined && this.props.selectedFlowBatchInputIndex != undefined) {
+                batchData = this.props.batchInputs[this.props.selectedFlowBatchInputIndex];
+            }
+
             return (
                 <div style={leftPaneStyle}>
                     <ScrollableContentPane backgroundColor={Colors.neutralLighterAlt}>
                         <div style={leftPaneSectionStyle}>
                             {this.renderModeDropdown()}
                             {this.renderTypeDropdown()}
-                            {this.renderinputPath()}
-                            {this.renderEventHubConnection()}
-                            {this.renderFormatTypeDropdown()}
-                            {this.renderCompressionTypeDropdown()}
-                        </div>
-
-                        <div style={dividerStyle} />
-
-                        <div style={leftPaneSectionStyle}>
-                            {this.renderJobModeToggle()}
-                            {this.renderRecurrenceOffset()}
-                            {this.renderTimeRange()}
+                            {this.renderBlobInputConnection(batchData)}
+                            {this.renderBlobInputPath(batchData)}
+                            {this.renderInputFormatTypeDropdown(batchData)}
+                            {this.renderInputCompressionTypeDropdown(batchData)}
                         </div>
 
                         <div style={dividerStyle} />
@@ -240,27 +238,6 @@ export default class InputSettingsContent extends React.Component {
         }
     }
 
-    renderinputPath() {
-        if (this.props.input.mode !== Models.inputModeEnum.batching) {
-            return null;
-        } else {
-            return (
-                <div style={sectionStyle}>
-                    <TextField
-                        type="password"
-                        className="ms-font-m"
-                        spellCheck={false}
-                        label="Blob Path"
-                        value={this.props.input.properties.inputPath}
-                        onChange={(event, value) => this.props.onUpdateInputPath(value)}
-                        autoAdjustHeight
-                        resizable={false}
-                    />
-                </div>
-            );
-        }
-    }
-
     renderEventHubConnection() {
         if (this.props.input.type === Models.inputTypeEnum.local) {
             return null;
@@ -294,6 +271,107 @@ export default class InputSettingsContent extends React.Component {
                         autoAdjustHeight
                         resizable={false}
                         disabled={!this.props.inputEventHubConnectionStringEnabled}
+                    />
+                </div>
+            );
+        }
+    }
+
+    renderBlobInputConnection(batchData) {
+        if (this.props.input.type !== Models.inputTypeEnum.blob) {
+            return null;
+        } else {
+            let value = batchData ? batchData.properties.connection : undefined;
+            return (
+                <div style={sectionStyle}>
+                    <TextField
+                        type="password"
+                        className="ms-font-m"
+                        spellCheck={false}
+                        label="Blob Connection String"
+                        value={value}
+                        onChange={(event, value) => this.props.onupdateBatchInputConnection(value)}
+                        autoAdjustHeight
+                        resizable={false}
+                        disabled={!this.props.inputEventHubConnectionStringEnabled}
+                    />
+                </div>
+            );
+        }
+    }
+
+    renderBlobInputPath(batchData) {
+        if (this.props.input.type !== Models.inputTypeEnum.blob) {
+            return null;
+        } else {
+            let value = batchData ? batchData.properties.path : undefined;
+            return (
+                <div style={sectionStyle}>
+                    <TextField
+                        type="password"
+                        className="ms-font-m"
+                        spellCheck={false}
+                        label="Blob Path"
+                        value={value}
+                        onChange={(event, value) => this.props.onUpdateBatchInputPath(value)}
+                        autoAdjustHeight
+                        resizable={false}
+                    />
+                </div>
+            );
+        }
+    }
+
+    renderInputFormatTypeDropdown(batchData) {
+        if (this.props.input.type !== Models.inputTypeEnum.blob) {
+            return null;
+        } else {
+            const options = Models.inputFormatTypes.map(type => {
+                return {
+                    key: type.key,
+                    text: type.name,
+                    disabled: type.disabled
+                };
+            });
+
+            let value = batchData ? batchData.properties.formatType : Models.inputFormatTypeEnum.json;
+
+            return (
+                <div style={sectionStyle}>
+                    <Label className="ms-font-m">Format</Label>
+                    <Dropdown
+                        className="ms-font-m"
+                        options={options}
+                        selectedKey={value}
+                        onChange={(event, selection) => this.props.onUpdateBatchInputFormatType(selection.key)}
+                    />
+                </div>
+            );
+        }
+    }
+
+    renderInputCompressionTypeDropdown(batchData) {
+        if (this.props.input.type !== Models.inputTypeEnum.blob) {
+            return null;
+        } else {
+            const options = Models.inputCompressionTypes.map(type => {
+                return {
+                    key: type.key,
+                    text: type.name,
+                    disabled: type.disabled
+                };
+            });
+
+            let value = batchData ? batchData.properties.compressionType : Models.inputCompressionTypes.none;
+
+            return (
+                <div style={sectionStyle}>
+                    <Label className="ms-font-m">Compression</Label>
+                    <Dropdown
+                        className="ms-font-m"
+                        options={options}
+                        selectedKey={value}
+                        onChange={(event, selection) => this.props.onUpdateBatchInputCompressionType(selection.key)}
                     />
                 </div>
             );
@@ -477,58 +555,6 @@ export default class InputSettingsContent extends React.Component {
         }
     }
 
-    renderFormatTypeDropdown() {
-        if (this.props.input.type === Models.inputTypeEnum.blob || this.props.input.type === Models.inputTypeEnum.blob1) {
-            const options = Models.inputFormatTypes.map(type => {
-                return {
-                    key: type.key,
-                    text: type.name,
-                    disabled: type.disabled
-                };
-            });
-
-            return (
-                <div style={sectionStyle}>
-                    <Label className="ms-font-m">Format</Label>
-                    <Dropdown
-                        className="ms-font-m"
-                        options={options}
-                        selectedKey={this.props.input.properties.inputFormatType}
-                        onChange={(event, selection) => this.props.onUpdateInputFormatType(selection.key)}
-                    />
-                </div>
-            );
-        } else {
-            return null;
-        }
-    }
-
-    renderCompressionTypeDropdown() {
-        if (this.props.input.type === Models.inputTypeEnum.blob || this.props.input.type === Models.inputTypeEnum.blob1) {
-            const options = Models.inputCompressionTypes.map(type => {
-                return {
-                    key: type.key,
-                    text: type.name,
-                    disabled: type.disabled
-                };
-            });
-
-            return (
-                <div style={sectionStyle}>
-                    <Label className="ms-font-m">Compression</Label>
-                    <Dropdown
-                        className="ms-font-m"
-                        options={options}
-                        selectedKey={this.props.input.properties.inputCompressionType}
-                        onChange={(event, selection) => this.props.onUpdateInputCompressionType(selection.key)}
-                    />
-                </div>
-            );
-        } else {
-            return null;
-        }
-    }
-
     renderTimestampColumn() {
         return (
             <div style={sectionStyle}>
@@ -601,12 +627,45 @@ export default class InputSettingsContent extends React.Component {
         );
     }
 
+    renderSamplingInputLabel(mode) {
+        if (mode === Models.inputModeEnum.streaming) {
+            return (
+                <div style={rightSideSettingsStyle}>
+                    <div style={toggleStyle}>
+                        <Label className="ms-font-m">Duration in seconds</Label>
+                    </div>
+                    <div style={toggleStyle}>
+                        <TextField
+                            className="query-pane-TextField ms-font-m"
+                            spellCheck={false}
+                            value={this.props.samplingInputDuration}
+                            onChange={(event, value) => this.props.onUpdateSamplingInputDuration(value)}
+                            onGetErrorMessage={value => this.validateNumber(value)}
+                        />
+                    </div>
+                </div>
+            );
+        } else {
+            return (
+                <div>
+                    <div style={toggleStyle}>
+                        <Label className="ms-font-m">Sampling from the last 3 blobs based on creation time.</Label>
+                    </div>
+                </div>
+            );
+        }
+    }
+
     renderGetInputSchemaButton() {
         const display = 'Get Schema';
         const enableButton =
-            this.props.input.properties.inputEventhubConnection !== '' &&
+            ((this.props.input.mode === Models.inputModeEnum.streaming && this.props.input.properties.inputEventhubConnection !== '') ||
+                (this.props.input.mode === Models.inputModeEnum.batching &&
+                    this.props.batchInputs[this.props.selectedFlowBatchInputIndex].properties.connection !== '')) &&
             !this.props.fetchingInputSchema &&
             this.props.getInputSchemaButtonEnabled;
+
+        const samplingInputLabel = this.renderSamplingInputLabel(this.props.input.mode);
 
         return (
             <div style={rightSideSettingsStyle}>
@@ -623,18 +682,7 @@ export default class InputSettingsContent extends React.Component {
                     />
                     {display}
                 </DefaultButton>
-                <div style={toggleStyle}>
-                    <Label className="ms-font-m">Duration in seconds</Label>
-                </div>
-                <div style={toggleStyle}>
-                    <TextField
-                        className="query-pane-TextField ms-font-m"
-                        spellCheck={false}
-                        value={this.props.samplingInputDuration}
-                        onChange={(event, value) => this.props.onUpdateSamplingInputDuration(value)}
-                        onGetErrorMessage={value => this.validateNumber(value)}
-                    />
-                </div>
+                {samplingInputLabel}
             </div>
         );
     }
@@ -755,23 +803,23 @@ export default class InputSettingsContent extends React.Component {
 // Props
 InputSettingsContent.propTypes = {
     input: PropTypes.object.isRequired,
+    batchInputs: PropTypes.array,
     timer: PropTypes.number.isRequired,
     samplingInputDuration: PropTypes.string.isRequired,
     onGetInputSchema: PropTypes.func.isRequired,
     onUpdateMode: PropTypes.func.isRequired,
     onUpdateType: PropTypes.func.isRequired,
     onUpdateHubName: PropTypes.func.isRequired,
-    onUpdateInputPath: PropTypes.func.isRequired,
+
+    onUpdateBatchInputPath: PropTypes.func.isRequired,
+    onupdateBatchInputConnection: PropTypes.func.isRequired,
+    onUpdateBatchInputFormatType: PropTypes.func.isRequired,
+    onUpdateBatchInputCompressionType: PropTypes.func.isRequired,
+
     onUpdateHubConnection: PropTypes.func.isRequired,
     onUpdateSubscriptionId: PropTypes.func.isRequired,
     onUpdateResourceGroup: PropTypes.func.isRequired,
-    onUpdateJobMode: PropTypes.func.isRequired,
-    onUpdateRecurrence: PropTypes.func.isRequired,
-    onUpdateOffset: PropTypes.func.isRequired,
-    onUpdateStartTime: PropTypes.func.isRequired,
-    onUpdateEndTime: PropTypes.func.isRequired,
-    onUpdateInputFormatType: PropTypes.func.isRequired,
-    onUpdateInputCompressionType: PropTypes.func.isRequired,
+
     onUpdateWindowDuration: PropTypes.func.isRequired,
     onUpdateTimestampColumn: PropTypes.func.isRequired,
     onUpdateWatermarkValue: PropTypes.func.isRequired,

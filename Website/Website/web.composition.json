@@ -185,6 +185,9 @@
       "deleteFunctionButtonEnabled",
       "addOutputSinkButtonEnabled",
       "deleteOutputSinkButtonEnabled",
+      "deleteFunctionButtonEnabled",
+      "addBatchButtonEnabled",
+      "deleteBatchButtonEnabled",
       "scaleNumExecutorsSliderEnabled",
       "scaleExecutorMemorySliderEnabled",
       "jobActionsEnabled"

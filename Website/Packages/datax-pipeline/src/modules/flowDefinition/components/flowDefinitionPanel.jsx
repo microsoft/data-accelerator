@@ -21,6 +21,7 @@ import ReferenceDataSettingsContent from './referenceData/referenceDataSettingsC
 import FunctionSettingsContent from './function/functionSettingsContent';
 import ScaleSettingsContent from './scale/scaleSettingsContent';
 import OutputSettingsContent from './output/outputSettingsContent';
+import ScheduleSettingsContent from './schedule/scheduleSettingsContent';
 import RulesSettingsContent from './rule/rulesSettingsContent';
 import { functionEnabled, isDatabricksSparkType } from '../../../common/api';
 import {
@@ -95,7 +96,10 @@ class FlowDefinitionPanel extends React.Component {
             deleteOutputSinkButtonEnabled: false,
             scaleNumExecutorsSliderEnabled: false,
             scaleExecutorMemorySliderEnabled: false,
-            isDatabricksSparkType: false
+            isDatabricksSparkType: false,
+
+            addBatchButtonEnabled: false,
+            deleteBatchButtonEnabled: false
         };
 
         this.handleWindowClose = this.handleWindowClose.bind(this);
@@ -189,7 +193,10 @@ class FlowDefinitionPanel extends React.Component {
                 addOutputSinkButtonEnabled: response.addOutputSinkButtonEnabled ? true : false,
                 deleteOutputSinkButtonEnabled: response.deleteOutputSinkButtonEnabled ? true : false,
                 scaleNumExecutorsSliderEnabled: response.scaleNumExecutorsSliderEnabled ? true : false,
-                scaleExecutorMemorySliderEnabled: response.scaleExecutorMemorySliderEnabled ? true : false
+                scaleExecutorMemorySliderEnabled: response.scaleExecutorMemorySliderEnabled ? true : false,
+
+                addBatchButtonEnabled: response.addBatchButtonEnabled ? true : false,
+                deleteBatchButtonEnabled: response.deleteBatchButtonEnabled ? true : false
             });
         });
 
@@ -355,6 +362,35 @@ class FlowDefinitionPanel extends React.Component {
         );
     }
 
+    renderScheduleTab() {
+        if (this.props.input.mode === Models.inputModeEnum.streaming) {
+            return null;
+        } else {
+            return (
+                <VerticalTabItem linkText="Schedule" itemCompleted={this.props.scheduleValidated}>
+                    <ScheduleSettingsContent
+                        batchList={this.props.flow.batchList}
+                        selectedBatchIndex={this.props.selectedBatchIndex}
+                        onNewBatch={this.props.onNewBatch}
+                        onDeleteBatch={this.props.onDeleteBatch}
+                        onUpdateSelectedBatchIndex={this.props.onUpdateSelectedBatchIndex}
+                        addBatchButtonEnabled={this.state.addBatchButtonEnabled}
+                        deleteBatchButtonEnabled={this.state.deleteBatchButtonEnabled}
+                        onUpdateBatchName={this.props.onUpdateBatchName}
+                        onUpdateBatchStartTime={this.props.onUpdateBatchStartTime}
+                        onUpdateBatchEndTime={this.props.onUpdateBatchEndTime}
+                        onUpdateBatchIntervalValue={this.props.onUpdateBatchIntervalValue}
+                        onUpdateBatchIntervalType={this.props.onUpdateBatchIntervalType}
+                        onUpdateBatchDelayValue={this.props.onUpdateBatchDelayValue}
+                        onUpdateBatchDelayType={this.props.onUpdateBatchDelayType}
+                        onUpdateBatchWindowValue={this.props.onUpdateBatchWindowValue}
+                        onUpdateBatchWindowType={this.props.onUpdateBatchWindowType}
+                    />
+                </VerticalTabItem>
+            );
+        }
+    }
+
     renderFlow() {
         return (
             <div style={contentStyle}>
@@ -376,6 +412,8 @@ class FlowDefinitionPanel extends React.Component {
                         <VerticalTabItem linkText="Input" itemCompleted={this.props.inputValidated}>
                             <InputSettingsContent
                                 input={this.props.flow.input}
+                                batchInputs={this.props.flow.batchInputs}
+                                selectedFlowBatchInputIndex={this.props.flow.selectedFlowBatchInputIndex}
                                 fetchingInputSchema={this.props.flow.fetchingInputSchema}
                                 samplingInputDuration={this.props.flow.samplingInputDuration}
                                 timer={this.state.counter}
@@ -383,7 +421,10 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateMode={this.props.onUpdateInputMode}
                                 onUpdateType={this.props.onUpdateInputType}
                                 onUpdateHubName={this.props.onUpdateInputHubName}
-                                onUpdateInputPath={this.props.onUpdateInputPath}
+                                onUpdateBatchInputPath={this.props.onUpdateBatchInputPath}
+                                onupdateBatchInputConnection={this.props.onupdateBatchInputConnection}
+                                onUpdateBatchInputFormatType={this.props.onUpdateBatchInputFormatType}
+                                onUpdateBatchInputCompressionType={this.props.onUpdateBatchInputCompressionType}
                                 onUpdateHubConnection={this.props.onUpdateInputHubConnection}
                                 onUpdateSubscriptionId={this.props.onUpdateInputSubscriptionId}
                                 onUpdateResourceGroup={this.props.onUpdateInputResourceGroup}
@@ -392,8 +433,6 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateStartTime={this.props.onUpdateStartTime}
                                 onUpdateEndTime={this.props.onUpdateEndTime}
                                 onUpdateOffset={this.props.onUpdateOffset}
-                                onUpdateInputFormatType={this.props.onUpdateInputFormatType}
-                                onUpdateInputCompressionType={this.props.onUpdateInputCompressionType}
                                 onUpdateWindowDuration={this.props.onUpdateInputWindowDuration}
                                 onUpdateTimestampColumn={this.props.onUpdateInputTimestampColumn}
                                 onUpdateWatermarkValue={this.props.onUpdateInputWatermarkValue}
@@ -552,6 +591,8 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateDatabricksMaxWorkers={this.props.onUpdateDatabricksMaxWorkers}
                             />
                         </VerticalTabItem>
+
+                        {this.renderScheduleTab()}
                     </VerticalTabs>
                 </div>
             </div>
@@ -849,6 +890,8 @@ const mapStateToProps = state => ({
     rules: Selectors.getFlowRules(state),
 
     // State
+    selectedBatchIndex: Selectors.getSelectedBatchIndex(state),
+
     selectedReferenceDataIndex: Selectors.getSelectedReferenceDataIndex(state),
     selectedFunctionIndex: Selectors.getSelectedFunctionIndex(state),
     selectedSinkerIndex: Selectors.getSelectedSinkerIndex(state),
@@ -871,7 +914,8 @@ const mapStateToProps = state => ({
     outputsValidated: Selectors.validateFlowOutputs(state),
     rulesValidated: Selectors.validateFlowRules(state),
     flowValidated: Selectors.validateFlow(state),
-    queryValidated: QuerySelectors.validateQueryTab(state)
+    queryValidated: QuerySelectors.validateQueryTab(state),
+    scheduleValidated: Selectors.validateFlowSchedule(state)
 });
 
 // Dispatch Props
@@ -900,6 +944,12 @@ const mapDispatchToProps = dispatch => ({
     onUpdateEndTime: endTime => dispatch(Actions.updateEndTime(endTime)),
     onUpdateInputFormatType: formatType => dispatch(Actions.updateInputFormatType(formatType)),
     onUpdateInputCompressionType: compressionType => dispatch(Actions.UpdateInputCompressionType(compressionType)),
+
+    onupdateBatchInputConnection: connection => dispatch(Actions.updateBatchInputConnection(connection)),
+    onUpdateBatchInputPath: path => dispatch(Actions.updateBlobInputPath(path)),
+    onUpdateBatchInputFormatType: formatType => dispatch(Actions.updateBatchInputFormatType(formatType)),
+    onUpdateBatchInputCompressionType: compressionType => dispatch(Actions.updateBachInputCompressionType(compressionType)),
+
     onUpdateInputWindowDuration: duration => dispatch(Actions.updateInputWindowDuration(duration)),
     onUpdateInputTimestampColumn: duration => dispatch(Actions.updateInputTimestampColumn(duration)),
     onUpdateInputWatermarkValue: duration => dispatch(Actions.updateInputWatermarkValue(duration)),
@@ -1004,7 +1054,22 @@ const mapDispatchToProps = dispatch => ({
     onDeleteFlow: flow => Actions.deleteFlow(flow),
 
     // enableOneBox Action
-    onUpdateOneBoxMode: enableOneBox => dispatch(Actions.updateOneBoxMode(enableOneBox))
+    onUpdateOneBoxMode: enableOneBox => dispatch(Actions.updateOneBoxMode(enableOneBox)),
+
+    // Schedule Actions
+    onNewBatch: type => dispatch(Actions.newBatch(type)),
+    onDeleteBatch: index => dispatch(Actions.deleteBatch(index)),
+    onUpdateSelectedBatchIndex: index => dispatch(Actions.updateSelectedBatchIndex(index)),
+
+    onUpdateBatchName: value => dispatch(Actions.updateBatchName(value)),
+    onUpdateBatchStartTime: value => dispatch(Actions.updateBatchStartTime(value)),
+    onUpdateBatchEndTime: value => dispatch(Actions.updateBatchEndTime(value)),
+    onUpdateBatchIntervalValue: value => dispatch(Actions.updateBatchIntervalValue(value)),
+    onUpdateBatchIntervalType: value => dispatch(Actions.updateBatchIntervalType(value)),
+    onUpdateBatchDelayValue: value => dispatch(Actions.updateBatchDelayValue(value)),
+    onUpdateBatchDelayType: value => dispatch(Actions.updateBatchDelayType(value)),
+    onUpdateBatchWindowValue: value => dispatch(Actions.updateBatchWindowValue(value)),
+    onUpdateBatchWindowType: value => dispatch(Actions.updateBatchWindowType(value))
 });
 
 // Styles

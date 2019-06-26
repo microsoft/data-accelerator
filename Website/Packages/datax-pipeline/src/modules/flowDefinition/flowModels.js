@@ -7,6 +7,12 @@ export const inputModeEnum = {
     batching: 'batching'
 };
 
+export const batchIntervalTypeEnum = {
+    day: 'day',
+    hour: 'hour',
+    min: 'min'
+};
+
 export const inputTypeEnum = {
     events: 'events',
     iothub: 'iothub',
@@ -64,6 +70,11 @@ export const sinkerTypeEnum = {
     metric: 'metric',
     local: 'local',
     sql: 'sqlServer'
+};
+
+export const batchTypeEnum = {
+    recurring: 'recurring',
+    oneTime: 'oneTime'
 };
 
 export const sinkerCompressionTypeEnum = {
@@ -336,6 +347,37 @@ export const outputSinkerTypes = [
     }
 ];
 
+export const batchTypes = [
+    {
+        key: batchTypeEnum.recurring,
+        name: 'Recurring',
+        disabled: false
+    },
+    {
+        key: batchTypeEnum.oneTime,
+        name: 'One Time',
+        disabled: false
+    }
+];
+
+export const batchIntervalTypes = [
+    {
+        key: batchIntervalTypeEnum.day,
+        name: 'Day',
+        disabled: false
+    },
+    {
+        key: batchIntervalTypeEnum.hour,
+        name: 'Hour',
+        disabled: false
+    },
+    {
+        key: batchIntervalTypeEnum.min,
+        name: 'Min',
+        disabled: false
+    }
+];
+
 export const sinkerCompressionTypes = [
     {
         key: sinkerCompressionTypeEnum.none,
@@ -528,6 +570,18 @@ export const severityTypes = [
     }
 ];
 
+export function getDefaultBatchInputSettings() {
+    return {
+        type: inputTypeEnum.blob,
+        properties: {
+            connection: '',
+            path: '',
+            formatType: inputFormatTypeEnum.json,
+            compressionType: inputCompressionTypeEnum.none
+        }
+    };
+}
+
 export function getDefaultReferenceDataSettings(type) {
     if (type === referenceDataTypeEnum.csv) {
         return {
@@ -589,6 +643,44 @@ export function getMetricSinker() {
         type: sinkerTypeEnum.metric,
         properties: {}
     };
+}
+
+export function getDefaultBatchSettings(type) {
+    if (type === batchTypeEnum.oneTime) {
+        return {
+            id: '',
+            type: type,
+            disabled: false,
+            properties: {
+                interval: '1',
+                intervalType: 'day',
+                delay: '',
+                delayType: '',
+                window: '1',
+                windowType: 'day',
+                startTime: '',
+                endTime: '',
+                lastProcessedTime: ''
+            }
+        };
+    } else {
+        return {
+            id: '',
+            type: type,
+            disabled: false,
+            properties: {
+                interval: '1',
+                intervalType: 'day',
+                delay: '0',
+                delayType: 'day',
+                window: '1',
+                windowType: 'day',
+                startTime: '',
+                endTime: '',
+                lastProcessedTime: ''
+            }
+        };
+    }
 }
 
 export function getDefaultSinkerSettings(type, owner) {
@@ -792,7 +884,7 @@ export const defaultNormalizationSnippet = `SystemProperties AS _SystemPropertie
 Properties AS _Properties
 Raw.*`;
 
-//Default Flow settings
+// Default Flow settings
 export const defaultInput = {
     type: inputTypeEnum.events,
     mode: inputModeEnum.streaming,
@@ -819,30 +911,6 @@ export const defaultInput = {
         normalizationSnippet: defaultNormalizationSnippet
     }
 };
-
-// export const defaultInputBlob = {
-//     type: inputTypeEnum.blob,
-//     mode: inputModeEnum.batching,
-//     properties: {
-//         inputEventhubName: '',
-//         inputEventhubConnection: '',
-//         inputSubscriptionId: '',
-//         inputResourceGroup: '',
-//         recurrence: '',
-//         startTime: '',
-//         endTime: '',
-//         inputFormatType: inputFormatTypeEnum.json,
-//         inputCompressionType: inputCompressionTypeEnum.none,
-//         windowDuration: '30',
-//         timestampColumn: '',
-//         watermarkValue: '0',
-//         watermarkUnit: watermarkUnitEnum.second,
-//         maxRate: '1000',
-//         inputSchemaFile: defaultSchema,
-//         showNormalizationSnippet: false,
-//         normalizationSnippet: defaultNormalizationSnippet
-//     }
-// };
 
 export const defaultInputLocal = {
     type: inputTypeEnum.local,

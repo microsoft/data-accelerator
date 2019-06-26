@@ -44,6 +44,31 @@ export const getFlowInputProperties = createSelector(
     input => input.properties
 );
 
+export const getFlowBatchInput = createSelector(
+    getFlow,
+    flow => flow.batchInputs
+);
+
+export const getSelectedBatchInputIndex = createSelector(
+    getFlow,
+    flow => flow.selectedFlowBatchInputIndex
+);
+
+export const getSelectedBatchInput = createSelector(
+    getFlowBatchInput,
+    getSelectedBatchInputIndex,
+    selectedFlowBatchInput
+);
+
+export const getSelectedBatchInputProperties = createSelector(
+    getSelectedBatchInput,
+    batch => batch.properties
+);
+
+function selectedFlowBatchInput(batchInputs, selectedIndex) {
+    return selectedIndex !== undefined && selectedIndex < batchInputs.length ? batchInputs[selectedIndex] : undefined;
+}
+
 // Settings - Reference Data
 export const getFlowReferenceData = createSelector(
     getFlow,
@@ -107,6 +132,32 @@ export const getFlowOutputs = createSelector(
     getFlow,
     flow => flow.outputs
 );
+
+// Settings - Batch
+export const getFlowBatchList = createSelector(
+    getFlow,
+    flow => flow.batchList
+);
+
+export const getSelectedBatchIndex = createSelector(
+    getFlow,
+    flow => flow.selectedBatchIndex
+);
+
+export const getSelectedBatch = createSelector(
+    getFlowBatchList,
+    getSelectedBatchIndex,
+    selectedBatch
+);
+
+export const getSelectedBatchProperties = createSelector(
+    getSelectedBatch,
+    batch => batch.properties
+);
+
+function selectedBatch(batchList, selectedIndex) {
+    return selectedIndex !== undefined && selectedIndex < batchList.length ? batchList[selectedIndex] : undefined;
+}
 
 export const getSelectedSinkerIndex = createSelector(
     getFlow,
@@ -194,10 +245,24 @@ function validateInfo(displayName) {
 // Validation - Input
 export const validateFlowInput = createSelector(
     getFlowInput,
+    getFlowBatchInput,
     validateInput
 );
 
-function validateInput(input) {
+function validateInput(input, batchInputs) {
+    let validations = [];
+    if (input.mode === Models.inputModeEnum.streaming) {
+        return validateInputStreaming(input);
+    } else if (input.mode === Models.inputModeEnum.batching) {
+        return validateInputBatch(batchInputs);
+    } else {
+        validations.push(false);
+    }
+
+    return validations.every(value => value);
+}
+
+function validateInputStreaming(input) {
     let validations = [];
     validations.push(input && input.properties);
 
@@ -240,9 +305,29 @@ function validateInput(input) {
         }
     } else if (input.mode === Models.inputModeEnum.batching) {
     } else {
-        // future support
-        validation.push(false);
+        validations.push(false);
     }
+
+    return validations.every(value => value);
+}
+
+function validateInputBatch(batchInputs) {
+    return batchInputs && batchInputs.every(isBatchInputSettingsComplete);
+}
+
+function isBatchInputSettingsComplete(batchInput) {
+    let validations = [];
+    validations.push(batchInput && batchInput.properties);
+
+    if (batchInput.type === Models.inputTypeEnum.blob) {
+        validations.push(batchInput.properties.connection && batchInput.properties.connection.trim() !== '');
+        validations.push(batchInput.properties.path && batchInput.properties.path.trim() !== '');
+        validations.push(batchInput.properties.formatType && batchInput.properties.formatType.trim() !== '');
+        validations.push(batchInput.properties.compressionType && batchInput.properties.compressionType.trim() !== '');
+    } else {
+        validations.push(false);
+    }
+
     return validations.every(value => value);
 }
 
@@ -448,7 +533,64 @@ export const validateFlowScale = createSelector(
 );
 
 function validateScale(scale) {
-    return scale && CommonHelpers.isValidNumberAboveZero(scale.jobNumExecutors) && CommonHelpers.isValidNumberAboveZero(scale.jobExecutorMemory);
+    return (
+        scale &&
+        CommonHelpers.isValidNumberAboveZero(scale.jobNumExecutors) &&
+        CommonHelpers.isValidNumberAboveZero(scale.jobExecutorMemory)
+    );
+}
+
+// Validation - Schedule
+export const validateFlowSchedule = createSelector(
+    getFlowInput,
+    getFlowBatchList,
+    validateSchedule
+);
+
+function validateSchedule(flowInput, batchList) {
+    return (
+        (flowInput && flowInput.mode === Models.inputModeEnum.streaming) ||
+        (batchList && batchList.length > 0 && batchList.every(isBatchListSettingsComplete))
+    );
+}
+
+function isBatchListSettingsComplete(batch) {
+    let validations = [];
+    validations.push(batch && batch.properties);
+    validations.push(Helpers.isNumberAndStringOnly(batch.id));
+
+    switch (batch.type) {
+        case Models.batchTypeEnum.recurring:
+            validations.push(batch.properties.interval && batch.properties.interval.trim() !== '');
+            validations.push(batch.properties.intervalType && batch.properties.intervalType.trim() !== '');
+            validations.push(batch.properties.delay && batch.properties.delay.trim() !== '');
+            validations.push(batch.properties.delayType && batch.properties.delayType.trim() !== '');
+            validations.push(batch.properties.window && batch.properties.window.trim() !== '');
+            validations.push(batch.properties.windowType && batch.properties.windowType.trim() !== '');
+            validations.push(batch.properties.startTime && batch.properties.startTime.trim() !== '');
+            validations.push(batch.properties.endTime && batch.properties.endTime.trim() !== '');
+            validations.push(Helpers.isValidNumberAboveZero(batch.properties.interval));
+            validations.push(Helpers.isValidNumberAboveOrEqualZero(batch.properties.delay));
+            validations.push(Helpers.isValidNumberAboveZero(batch.properties.window));
+            break;
+        case Models.batchTypeEnum.oneTime:
+            validations.push(batch.properties.interval && batch.properties.interval.trim() !== '');
+            validations.push(batch.properties.intervalType && batch.properties.intervalType.trim() !== '');
+            validations.push(batch.properties.delay.trim() === '');
+            validations.push(batch.properties.delayType.trim() === '');
+            validations.push(batch.properties.window && batch.properties.window.trim() !== '');
+            validations.push(batch.properties.windowType && batch.properties.windowType.trim() !== '');
+            validations.push(batch.properties.startTime && batch.properties.startTime.trim() !== '');
+            validations.push(batch.properties.endTime && batch.properties.endTime.trim() !== '');
+            validations.push(Helpers.isValidNumberAboveZero(batch.properties.interval));
+            validations.push(Helpers.isValidNumberAboveZero(batch.properties.window));
+            break;
+
+        default:
+            validations.push(false);
+            break;
+    }
+    return validations.every(value => value);
 }
 
 // Validation -  Flow
@@ -461,5 +603,6 @@ export const validateFlow = createSelector(
     validateFlowOutputTemplates,
     validateFlowRules,
     validateFlowScale,
+    validateFlowSchedule,
     (...selectors) => selectors.every(value => value)
 );

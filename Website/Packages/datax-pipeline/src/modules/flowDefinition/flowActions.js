@@ -34,6 +34,12 @@ export const FLOW_DELETE_SINKER = 'FLOW_DELETE_SINKER';
 export const FLOW_UPDATE_SINKER = 'FLOW_UPDATE_SINKER';
 export const FLOW_UPDATE_SELECTED_SINKER_INDEX = 'FLOW_UPDATE_SELECTED_SINKER_INDEX';
 
+// Schedule
+export const FLOW_NEW_BATCH = 'FLOW_NEW_BATCH';
+export const FLOW_DELETE_BATCH = 'FLOW_DELETE_BATCH';
+export const FLOW_UPDATE_BATCHLIST = 'FLOW_UPDATE_BATCHLIST';
+export const FLOW_UPDATE_SELECTED_BATCH_INDEX = 'FLOW_UPDATE_SELECTED_BATCH_INDEX';
+
 // Rules
 export const FLOW_UPDATE_RULES = 'FLOW_UPDATE_RULES';
 export const FLOW_NEW_RULE = 'FLOW_NEW_RULE';
@@ -57,6 +63,7 @@ export const FLOW_UPDATE_SELECTED_FUNCTION_INDEX = 'FLOW_UPDATE_SELECTED_FUNCTIO
 
 // Input
 export const FLOW_UPDATE_INPUT = 'FLOW_UPDATE_INPUT';
+export const FLOW_UPDATE_BATCH_INPUT = 'FLOW_UPDATE_BATCH_INPUT';
 export const FLOW_FETCHING_INPUT_SCHEMA = 'FLOW_FETCHING_INPUT_SCHEMA';
 export const FLOW_UPDATE_SAMPLING_INPUT_DURATION = 'FLOW_UPDATE_SAMPLING_INPUT_DURATION';
 
@@ -134,12 +141,7 @@ export const updateInputMode = mode => (dispatch, getState) => {
         dispatch,
         Object.assign({}, Selectors.getFlowInput(getState()), {
             mode: mode,
-            type: type,
-            properties: Object.assign({}, Selectors.getFlowInputProperties(getState()), {
-                inputFormatType: inputFormatType,
-                inputCompressionType: inputCompressionType,
-                jobMode: jobMode
-            })
+            type: type
         })
     );
 };
@@ -183,47 +185,47 @@ export const updateInputResourceGroup = name => (dispatch, getState) => {
     });
 };
 
-export const updateJobMode = jobMode => (dispatch, getState) => {
-    updateInputProperties(dispatch, getState, {
-        jobMode: jobMode
+export const updateBatchInputConnection = connection => (dispatch, getState) => {
+    updateBatchInputProperties(dispatch, getState, {
+        connection: connection
     });
 };
 
-export const updateRecurrence = recurrence => (dispatch, getState) => {
-    updateInputProperties(dispatch, getState, {
-        recurrence: recurrence
+export const updateBlobInputPath = path => (dispatch, getState) => {
+    updateBatchInputProperties(dispatch, getState, {
+        path: path
     });
 };
 
-export const updateOffset = offset => (dispatch, getState) => {
-    updateInputProperties(dispatch, getState, {
-        offset: offset
+export const updateBatchInputFormatType = formatType => (dispatch, getState) => {
+    updateBatchInputProperties(dispatch, getState, {
+        formatType: formatType
     });
 };
 
-export const updateStartTime = startTime => (dispatch, getState) => {
-    updateInputProperties(dispatch, getState, {
-        startTime: startTime
+export const updateBachInputCompressionType = compressionType => (dispatch, getState) => {
+    updateBatchInputProperties(dispatch, getState, {
+        compressionType: compressionType
     });
 };
 
-export const updateEndTime = endTime => (dispatch, getState) => {
-    updateInputProperties(dispatch, getState, {
-        endTime: endTime
-    });
-};
+function updateBatchInputProperties(dispatch, getState, propertyMember) {
+    updateBatchInput(
+        dispatch,
+        Selectors.getSelectedBatchInputIndex(getState()),
+        Object.assign({}, Selectors.getSelectedBatchInput(getState()), {
+            properties: Object.assign({}, Selectors.getSelectedBatchInputProperties(getState()), propertyMember)
+        })
+    );
+}
 
-export const updateInputFormatType = formatType => (dispatch, getState) => {
-    updateInputProperties(dispatch, getState, {
-        inputFormatType: formatType
+function updateBatchInput(dispatch, index, batchInput) {
+    return dispatch({
+        type: FLOW_UPDATE_BATCH_INPUT,
+        payload: batchInput,
+        index: index
     });
-};
-
-export const updateInputCompressionType = compressionType => (dispatch, getState) => {
-    updateInputProperties(dispatch, getState, {
-        inputCompressionType: compressionType
-    });
-};
+}
 
 export const updateInputWindowDuration = duration => (dispatch, getState) => {
     updateInputProperties(dispatch, getState, {
@@ -905,3 +907,101 @@ export const updateOneBoxMode = enableLocalOneBox => dispatch => {
         payload: enableLocalOneBox
     });
 };
+
+// Batch
+export const newBatch = type => dispatch => {
+    return dispatch({
+        type: FLOW_NEW_BATCH,
+        payload: type
+    });
+};
+
+export const deleteBatch = index => dispatch => {
+    return dispatch({
+        type: FLOW_DELETE_BATCH,
+        index: index
+    });
+};
+
+export const updateSelectedBatchIndex = index => dispatch => {
+    return dispatch({
+        type: FLOW_UPDATE_SELECTED_BATCH_INDEX,
+        payload: index
+    });
+};
+
+export const updateBatchName = name => (dispatch, getState) => {
+    updateBatchList(
+        dispatch,
+        Selectors.getSelectedBatchIndex(getState()),
+        Object.assign({}, Selectors.getSelectedBatch(getState()), {
+            id: name
+        })
+    );
+};
+
+export const updateBatchStartTime = startTime => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        startTime: startTime
+    });
+};
+
+export const updateBatchEndTime = endTime => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        endTime: endTime
+    });
+};
+
+export const updateBatchIntervalValue = interval => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        interval: interval
+    });
+};
+
+export const updateBatchIntervalType = type => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        intervalType: type
+    });
+};
+
+export const updateBatchDelayValue = delay => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        delay: delay
+    });
+};
+
+export const updateBatchDelayType = type => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        delayType: type
+    });
+};
+
+export const updateBatchWindowValue = window => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        window: window
+    });
+};
+
+export const updateBatchWindowType = type => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        windowType: type
+    });
+};
+
+function updateBatchProperties(dispatch, getState, propertyMember) {
+    updateBatchList(
+        dispatch,
+        Selectors.getSelectedBatchIndex(getState()),
+        Object.assign({}, Selectors.getSelectedBatch(getState()), {
+            properties: Object.assign({}, Selectors.getSelectedBatchProperties(getState()), propertyMember)
+        })
+    );
+}
+
+function updateBatchList(dispatch, index, batch) {
+    return dispatch({
+        type: FLOW_UPDATE_BATCHLIST,
+        payload: batch,
+        index: index
+    });
+}

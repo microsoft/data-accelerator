@@ -440,6 +440,7 @@ export function convertFlowToConfig(flow, query) {
     let sinkers = [...flow.outputs];
     let outputTemplates = [...flow.outputTemplates];
     let rules = [...flow.rules];
+    let batchList = [...flow.batchList];
 
     // sort by name
     referenceData.sort((a, b) => a.id.localeCompare(b.id));
@@ -447,6 +448,8 @@ export function convertFlowToConfig(flow, query) {
     sinkers.sort((a, b) => a.id.localeCompare(b.id));
     outputTemplates.sort((a, b) => a.id.localeCompare(b.id));
     rules.sort((a, b) => a.id.localeCompare(b.id));
+    
+    batchList.sort((b, a) => a.type.localeCompare(b.type));
 
     // return product config
     return {
@@ -455,7 +458,7 @@ export function convertFlowToConfig(flow, query) {
         displayName: flow.displayName.trim(),
         owner: flow.owner,
         databricksToken: flow.databricksToken,
-        input: Object.assign({}, flow.input, { referenceData: flow.referenceData }),
+        input: Object.assign({}, flow.input, { referenceData: flow.referenceData, batch: flow.batchInputs }),
         process: {
             timestampColumn: flow.input.properties.timestampColumn,
             watermark: `${flow.input.properties.watermarkValue} ${flow.input.properties.watermarkUnit}`,
@@ -466,6 +469,7 @@ export function convertFlowToConfig(flow, query) {
         outputs: sinkers,
         outputTemplates: outputTemplates,
         rules: convertFlowToConfigRules(rules),
+        batchList: batchList,
         version: getTimeStamp()
     };
 }
@@ -495,6 +499,8 @@ export function convertConfigToFlow(config) {
         owner: config.owner,
         databricksToken: config.databricksToken,
         input: input,
+        batchInputs: input.batch,
+        batchList: config.batchList,
         referenceData: input.referenceData ? input.referenceData : [],
         functions: config.process.functions ? config.process.functions : [],
         query: config.process.queries[0],
