@@ -4,9 +4,9 @@
 // *********************************************************************
 import { createSelector } from 'reselect';
 
-export const getLayoutSettings = state => state.flowLayoutSettings;
+export const getLayoutSettings = state => state.queryLayoutSettings;
 
 export const getTestQueryOutputPanelVisibility = createSelector(
     getLayoutSettings,
-    flowLayoutSettings => flowLayoutSettings.isTestQueryOutputPanelVisible
+    queryLayoutSettings => queryLayoutSettings.isTestQueryOutputPanelVisible
 );

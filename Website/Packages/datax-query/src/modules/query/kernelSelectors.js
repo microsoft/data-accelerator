@@ -4,19 +4,19 @@
 // *********************************************************************
 import { createSelector } from 'reselect';
 
-export const getKernelInfo = state => state.flowKernel;
+export const getKernelInfo = state => state.queryKernel;
 
 export const getKernelId = createSelector(
     getKernelInfo,
-    flowKernel => flowKernel.kernelId
+    queryKernel => queryKernel.kernelId
 );
 
 export const getKernelVersion = createSelector(
     getKernelInfo,
-    flowKernel => flowKernel.version
+    queryKernel => queryKernel.version
 );
 
 export const getFetchingKernel = createSelector(
     getKernelInfo,
-    flowKernel => flowKernel.fetchingKernel
+    queryKernel => queryKernel.fetchingKernel
 );

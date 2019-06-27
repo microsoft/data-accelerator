@@ -45,7 +45,8 @@ export const sinkerTypeEnum = {
     eventHub: 'eventHub',
     blob: 'blob',
     metric: 'metric',
-    local: 'local'
+    local: 'local',
+    sql: 'sqlServer'
 };
 
 export const sinkerCompressionTypeEnum = {
@@ -56,6 +57,36 @@ export const sinkerCompressionTypeEnum = {
 export const sinkerFormatTypeEnum = {
     json: 'json'
 };
+
+export const sinkerSqlWriteModeEnum = {
+    append: 'append',
+    overwrite: 'overwrite',
+    ignore: 'ignore',
+    errorifexists: 'errorIfExists'
+};
+
+export const sinkerSqlWriteModes = [
+    {
+        key: sinkerSqlWriteModeEnum.append,
+        name: 'Append',
+        disabled: false
+    },
+    {
+        key: sinkerSqlWriteModeEnum.overwrite,
+        name: 'Overwrite',
+        disabled: false
+    },
+    {
+        key: sinkerSqlWriteModeEnum.ignore,
+        name: 'Ignore',
+        disabled: false
+    },
+    {
+        key: sinkerSqlWriteModeEnum.errorIfExists,
+        name: 'Error if exists',
+        disabled: false
+    }
+];
 
 export const ruleTypeEnum = {
     tag: 'tag'
@@ -227,6 +258,11 @@ export const outputSinkerTypes = [
     {
         key: sinkerTypeEnum.eventHub,
         name: 'Event Hub',
+        disabled: false
+    },
+    {
+        key: sinkerTypeEnum.sql,
+        name: 'Azure SQL Database',
         disabled: false
     },
     {
@@ -538,6 +574,17 @@ export function getDefaultSinkerSettings(type, owner) {
                 compressionType: sinkerCompressionTypeEnum.none
             }
         };
+    } else if (type === sinkerTypeEnum.sql) {
+        return {
+            id: '',
+            type: type,
+            properties: {
+                connectionString: '',
+                tableName: '',
+                writeMode: sinkerSqlWriteModeEnum.append,
+                useBulkInsert: false
+            }
+        };
     } else {
         return {
             id: '',
@@ -625,29 +672,6 @@ export function getDefaultInput(enableLocalOneBox) {
     }
 }
 
-export function getDefaultQuery(enableLocalOneBox) {
-    if (enableLocalOneBox) {
-        return defaultQueryLocal;
-    } else {
-        return defaultQuery;
-    }
-}
-
-//User can use the sample or tutorial or intellisense to have starting query. Below allows default to have 5 blank lines.
-export const defaultQuery = `
-
-`;
-
-export const defaultQueryLocal = `--DataXQuery--
-events = SELECT MAX(temperature) as maxTemp
-        FROM
-        DataXProcessedInput;
-
-maxTemperature = CreateMetric(events, maxTemp);
-
-OUTPUT maxTemperature TO Metrics;
-`;
-
 export const defaultSchema = `{
   "type": "struct",
   "fields": [
@@ -698,7 +722,7 @@ export const defaultSchemaLocal = `{
       }
     ]
   }
-  `;
+  `; 
 
 export const defaultNormalizationSnippet = `SystemProperties AS _SystemProperties
 Properties AS _Properties

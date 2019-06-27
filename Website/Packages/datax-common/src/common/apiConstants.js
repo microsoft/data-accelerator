@@ -20,7 +20,7 @@ export const Constants = {
 
 export const ApiNames = {
     FunctionEnabled: 'functionenabled',
-
+    IsDatabricksSparkType: 'isdatabrickssparktype',
     // OneBox
     EnableLocalOneBox: 'enableLocalOneBox'
 };

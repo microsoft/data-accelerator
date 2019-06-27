@@ -12,10 +12,6 @@ import * as Helpers from '../flowHelpers';
 import * as Models from '../flowModels';
 import * as Actions from '../flowActions';
 import * as Selectors from '../flowSelectors';
-import * as LayoutActions from '../layoutActions';
-import * as LayoutSelectors from '../layoutSelectors';
-import * as KernelActions from '../kernelActions';
-import * as KernelSelectors from '../kernelSelectors';
 import { DefaultButton, PrimaryButton, Spinner, SpinnerSize, MessageBar, MessageBarType } from 'office-ui-fabric-react';
 import { Dialog, DialogType, DialogFooter } from 'office-ui-fabric-react/lib/Dialog';
 import { Modal } from 'office-ui-fabric-react/lib/Modal';
@@ -23,11 +19,10 @@ import InfoSettingsContent from './info/infoSettingsContent';
 import InputSettingsContent from './input/inputSettingsContent';
 import ReferenceDataSettingsContent from './referenceData/referenceDataSettingsContent';
 import FunctionSettingsContent from './function/functionSettingsContent';
-import QuerySettingsContent from './query/querySettingsContent';
 import ScaleSettingsContent from './scale/scaleSettingsContent';
 import OutputSettingsContent from './output/outputSettingsContent';
 import RulesSettingsContent from './rule/rulesSettingsContent';
-import { functionEnabled } from '../../../common/api';
+import { functionEnabled, isDatabricksSparkType } from '../../../common/api';
 import {
     Colors,
     Panel,
@@ -39,6 +34,16 @@ import {
     VerticalTabItem,
     getApiErrorMessage
 } from 'datax-common';
+import {
+    QueryApi,
+    KernelActions,
+    KernelSelectors,
+    QueryActions,
+    LayoutActions,
+    LayoutSelectors,
+    QuerySelectors,
+    QuerySettingsContent
+} from 'datax-query';
 
 class FlowDefinitionPanel extends React.Component {
     constructor(props) {
@@ -88,7 +93,8 @@ class FlowDefinitionPanel extends React.Component {
             addOutputSinkButtonEnabled: false,
             deleteOutputSinkButtonEnabled: false,
             scaleNumExecutorsSliderEnabled: false,
-            scaleExecutorMemorySliderEnabled: false
+            scaleExecutorMemorySliderEnabled: false,
+            isDatabricksSparkType: false
         };
 
         this.handleWindowClose = this.handleWindowClose.bind(this);
@@ -101,7 +107,7 @@ class FlowDefinitionPanel extends React.Component {
     }
 
     handleWindowClose() {
-        Api.deleteDiagnosticKernelOnUnload(this.props.kernelId);
+        QueryApi.deleteDiagnosticKernelOnUnload(this.props.kernelId);
         this.sleep(500);
     }
 
@@ -184,6 +190,10 @@ class FlowDefinitionPanel extends React.Component {
                 scaleExecutorMemorySliderEnabled: response.scaleExecutorMemorySliderEnabled ? true : false
             });
         });
+
+        isDatabricksSparkType().then(response => {
+            this.setState({ isDatabricksSparkType: response });
+        });
     }
 
     render() {
@@ -208,8 +218,8 @@ class FlowDefinitionPanel extends React.Component {
     }
 
     renderBackButton() {
-        const buttonTooltip = this.props.flow.isDirty ? 'Discard Changes' : 'Go Back';
-        let buttonText = this.props.flow.isDirty ? 'Cancel' : 'Back';
+        const buttonTooltip = this.props.flow.isDirty || this.props.isQueryDirty ? 'Discard Changes' : 'Go Back';
+        let buttonText = this.props.flow.isDirty || this.props.isQueryDirty ? 'Cancel' : 'Back';
         let buttonIcon = <i style={IconButtonStyles.neutralStyle} className="ms-Icon ms-Icon--NavigateBack" />;
 
         if (this.state.loading) {
@@ -228,7 +238,8 @@ class FlowDefinitionPanel extends React.Component {
 
     renderSaveButton() {
         if (!this.state.loading) {
-            const enableButton = this.props.flow.isDirty && this.props.flowValidated && this.state.saveFlowButtonEnabled;
+            const enableButton =
+                (this.props.flow.isDirty || this.props.isQueryDirty) && this.props.flowValidated && this.state.saveFlowButtonEnabled;
             return (
                 <DefaultButton
                     key="deploy"
@@ -323,8 +334,11 @@ class FlowDefinitionPanel extends React.Component {
                                 displayName={this.props.flow.displayName}
                                 name={this.props.flow.name}
                                 owner={this.props.flow.owner}
+                                databricksToken={this.props.flow.databricksToken}
                                 onUpdateDisplayName={this.props.onUpdateDisplayName}
+                                onUpdateDatabricksToken={this.props.onUpdateDatabricksToken}
                                 flowNameTextboxEnabled={this.state.flowNameTextboxEnabled}
+                                isDatabricksSparkType={this.state.isDatabricksSparkType}
                             />
                         </VerticalTabItem>
 
@@ -477,6 +491,10 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateBlobPartitionFormat={this.props.onUpdateBlobPartitionFormat}
                                 onUpdateFormatType={this.props.onUpdateFormatType}
                                 onUpdateCompressionType={this.props.onUpdateCompressionType}
+                                onUpdateSqlConnection={this.props.onUpdateSqlConnection}
+                                onUpdateSqlTableName={this.props.onUpdateSqlTableName}
+                                onUpdateSqlWriteMode={this.props.onUpdateSqlWriteMode}
+                                onUpdateSqlUseBulkInsert={this.props.onUpdateSqlUseBulkInsert}
                                 addOutputSinkButtonEnabled={this.state.addOutputSinkButtonEnabled}
                                 deleteOutputSinkButtonEnabled={this.state.deleteOutputSinkButtonEnabled}
                             />
@@ -489,6 +507,10 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateExecutorMemory={this.props.onUpdateExecutorMemory}
                                 scaleNumExecutorsSliderEnabled={this.state.scaleNumExecutorsSliderEnabled}
                                 scaleExecutorMemorySliderEnabled={this.state.scaleExecutorMemorySliderEnabled}
+                                isDatabricksSparkType={this.state.isDatabricksSparkType}
+                                onUpdateDatabricksAutoScale={this.props.onUpdateDatabricksAutoScale}
+                                onUpdateDatabricksMinWorkers={this.props.onUpdateDatabricksMinWorkers}
+                                onUpdateDatabricksMaxWorkers={this.props.onUpdateDatabricksMaxWorkers}
                             />
                         </VerticalTabItem>
                     </VerticalTabs>
@@ -581,7 +603,7 @@ class FlowDefinitionPanel extends React.Component {
         });
 
         this.props
-            .onSaveFlow(this.props.flow)
+            .onSaveFlow(this.props.flow, this.props.query)
             .then(name => {
                 this.setState({
                     isSaving: false,
@@ -654,7 +676,7 @@ class FlowDefinitionPanel extends React.Component {
         console.log(this.props.flow);
 
         console.log('Config object');
-        const config = Helpers.convertFlowToConfig(this.props.flow);
+        const config = Helpers.convertFlowToConfig(this.props.flow, this.props.query);
         console.log(config);
 
         console.log('Flow object from Config');
@@ -688,11 +710,11 @@ class FlowDefinitionPanel extends React.Component {
     }
 
     onGetTableSchemas() {
-        return this.props.onGetTableSchemas(this.props.flow);
+        return this.props.onGetTableSchemas(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query));
     }
 
     onGetCodeGenQuery() {
-        return this.props.onGetCodeGenQuery(this.props.flow);
+        return this.props.onGetCodeGenQuery(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query));
     }
 
     getKernel() {
@@ -702,14 +724,23 @@ class FlowDefinitionPanel extends React.Component {
         ) {
             const version = this.props.kernelVersion + 1;
             this.props.onUpdateKernelVersion(version);
-            this.props.onGetKernel(this.props.flow, version, Actions.updateErrorMessage);
+            this.props.onGetKernel(
+                Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query),
+                version,
+                QueryActions.updateErrorMessage
+            );
         }
     }
 
     refreshKernel(kernelId) {
         const version = this.props.kernelVersion + 1;
         this.props.onUpdateKernelVersion(version);
-        this.props.onRefreshKernel(this.props.flow, kernelId, version, Actions.updateErrorMessage);
+        this.props.onRefreshKernel(
+            Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query),
+            kernelId,
+            version,
+            QueryActions.updateErrorMessage
+        );
     }
 
     onDeleteKernel(kernelId) {
@@ -721,11 +752,11 @@ class FlowDefinitionPanel extends React.Component {
     onResampleInput(kernelId) {
         const version = this.props.kernelVersion + 1;
         this.props.onUpdateKernelVersion(version);
-        this.props.onResampleInput(this.props.flow, kernelId, version);
+        this.props.onResampleInput(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query), kernelId, version);
     }
 
     onExecuteQuery(selectedQuery, kernelId) {
-        return this.props.onExecuteQuery(this.props.flow, selectedQuery, kernelId);
+        return this.props.onExecuteQuery(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query), selectedQuery, kernelId);
     }
 }
 
@@ -741,7 +772,8 @@ const mapStateToProps = state => ({
     input: Selectors.getFlowInput(state),
     referenceData: Selectors.getFlowReferenceData(state),
     functions: Selectors.getFlowFunctions(state),
-    query: Selectors.getFlowQuery(state),
+    query: QuerySelectors.getQueryContent(state),
+    isQueryDirty: QuerySelectors.getQueryDirty(state),
     scale: Selectors.getFlowScale(state),
     outputs: Selectors.getFlowOutputs(state),
     outputTemplates: Selectors.getFlowOutputTemplates(state),
@@ -766,23 +798,23 @@ const mapStateToProps = state => ({
     inputValidated: Selectors.validateFlowInput(state),
     referenceDataValidated: Selectors.validateFlowReferenceData(state),
     functionsValidated: Selectors.validateFlowFunctions(state),
-    queryValidated: Selectors.validateFlowQuery(state),
     scaleValidated: Selectors.validateFlowScale(state),
     outputsValidated: Selectors.validateFlowOutputs(state),
     rulesValidated: Selectors.validateFlowRules(state),
-    flowValidated: Selectors.validateFlow(state)
+    flowValidated: Selectors.validateFlow(state),
+    queryValidated: QuerySelectors.validateQueryTab(state)
 });
 
 // Dispatch Props
 const mapDispatchToProps = dispatch => ({
     // Init Actions
     initFlow: context => dispatch(Actions.initFlow(context)),
-
     // Message Actions
     onUpdateWarningMessage: message => dispatch(Actions.updateWarningMessage(message)),
 
     // Info Actions
     onUpdateDisplayName: displayName => dispatch(Actions.updateDisplayName(displayName)),
+    onUpdateDatabricksToken: databricksToken => dispatch(Actions.updateDatabricksToken(databricksToken)),
 
     // Input Actions
     onUpdateInputMode: mode => dispatch(Actions.updateInputMode(mode)),
@@ -827,16 +859,17 @@ const mapDispatchToProps = dispatch => ({
     onUpdateAzureFunctionParams: params => dispatch(Actions.updateAzureFunctionParams(params)),
 
     // Query Actions
-    onUpdateQuery: query => dispatch(Actions.updateQuery(query)),
-    onGetCodeGenQuery: flow => Actions.getCodeGenQuery(flow),
-    onExecuteQuery: (flow, selectedQuery, kernelId) => dispatch(Actions.executeQuery(flow, selectedQuery, kernelId)),
-    onGetKernel: (flow, version, updateErrorMessage) => dispatch(KernelActions.getKernel(flow, version, updateErrorMessage)),
+    onUpdateQuery: query => dispatch(QueryActions.updateQuery(query)),
+    onGetCodeGenQuery: queryMetadata => QueryActions.getCodeGenQuery(queryMetadata),
+    onExecuteQuery: (queryMetadata, selectedQuery, kernelId) => dispatch(QueryActions.executeQuery(queryMetadata, selectedQuery, kernelId)),
+    onGetKernel: (queryMetadata, version, updateErrorMessage) =>
+        dispatch(KernelActions.getKernel(queryMetadata, version, updateErrorMessage)),
     onUpdateKernelVersion: version => dispatch(KernelActions.updateKernelVersion(version)),
-    onRefreshKernel: (flow, kernelId, version, updateErrorMessage) =>
-        dispatch(KernelActions.refreshKernel(flow, kernelId, version, updateErrorMessage)),
+    onRefreshKernel: (queryMetadata, kernelId, version, updateErrorMessage) =>
+        dispatch(KernelActions.refreshKernel(queryMetadata, kernelId, version, updateErrorMessage)),
     onDeleteKernel: (kernelId, version) => dispatch(KernelActions.deleteKernel(kernelId, version)),
-    onResampleInput: (flow, kernelId, version) => dispatch(Actions.resampleInput(flow, kernelId, version)),
-    onUpdateResamplingInputDuration: duration => dispatch(Actions.updateResamplingInputDuration(duration)),
+    onResampleInput: (queryMetadata, kernelId, version) => dispatch(QueryActions.resampleInput(queryMetadata, kernelId, version)),
+    onUpdateResamplingInputDuration: duration => dispatch(QueryActions.updateResamplingInputDuration(duration)),
     onDeleteAllKernels: updateErrorMessage => dispatch(KernelActions.deleteAllKernels(updateErrorMessage)),
 
     // Query Pane Layout Actions
@@ -845,6 +878,9 @@ const mapDispatchToProps = dispatch => ({
     // Scale Actions
     onUpdateNumExecutors: numExecutors => dispatch(Actions.updateNumExecutors(numExecutors)),
     onUpdateExecutorMemory: executorMemory => dispatch(Actions.updateExecutorMemory(executorMemory)),
+    onUpdateDatabricksAutoScale: databricksAutoScale => dispatch(Actions.updateDatabricksAutoScale(databricksAutoScale)),
+    onUpdateDatabricksMinWorkers: databricksMinWorkers => dispatch(Actions.updateDatabricksMinWorkers(databricksMinWorkers)),
+    onUpdateDatabricksMaxWorkers: databricksMaxWorkers => dispatch(Actions.updateDatabricksMaxWorkers(databricksMaxWorkers)),
 
     // Output Actions
     onNewSinker: type => dispatch(Actions.newSinker(type)),
@@ -862,6 +898,11 @@ const mapDispatchToProps = dispatch => ({
     onUpdateFormatType: type => dispatch(Actions.updateFormatType(type)),
     onUpdateCompressionType: type => dispatch(Actions.updateCompressionType(type)),
 
+    onUpdateSqlConnection: connection => dispatch(Actions.updateSqlConnection(connection)),
+    onUpdateSqlTableName: name => dispatch(Actions.updateSqlTableName(name)),
+    onUpdateSqlWriteMode: mode => dispatch(Actions.updateSqlWriteMode(mode)),
+    onUpdateSqlUseBulkInsert: useBulkInsert => dispatch(Actions.updateSqlUseBulkInsert(useBulkInsert)),
+
     // Rule Actions
     onNewRule: type => dispatch(Actions.newRule(type)),
     onDeleteRule: index => dispatch(Actions.deleteRule(index)),
@@ -877,10 +918,10 @@ const mapDispatchToProps = dispatch => ({
     onUpdateTagAggregates: aggregates => dispatch(Actions.updateTagAggregates(aggregates)),
     onUpdateTagPivots: pivots => dispatch(Actions.updateTagPivots(pivots)),
     onUpdateSchemaTableName: name => dispatch(Actions.updateSchemaTableName(name)),
-    onGetTableSchemas: flow => Actions.getTableSchemas(flow),
+    onGetTableSchemas: queryMetadata => QueryActions.getTableSchemas(queryMetadata),
 
     // Save and Delete Actions
-    onSaveFlow: flow => Actions.saveFlow(flow),
+    onSaveFlow: (flow, query) => Actions.saveFlow(flow, query),
     onDeleteFlow: flow => Actions.deleteFlow(flow),
 
     // enableOneBox Action

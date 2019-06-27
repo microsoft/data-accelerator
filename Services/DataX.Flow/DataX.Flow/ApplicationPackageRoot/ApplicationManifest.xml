@@ -30,7 +30,7 @@ Licensed under the MIT License
        should match the Name and Version attributes of the ServiceManifest element defined in the 
        ServiceManifest.xml file. -->
   <ServiceManifestImport>
-    <ServiceManifestRef ServiceManifestName="Flow.LiveDataServicePkg" ServiceManifestVersion="1.0.0" />
+    <ServiceManifestRef ServiceManifestName="Flow.LiveDataServicePkg" ServiceManifestVersion="1.0.1" />
     <ConfigOverrides>
       <ConfigOverride Name="Config">
         <Settings>
@@ -53,7 +53,7 @@ Licensed under the MIT License
     </EnvironmentOverrides>
   </ServiceManifestImport>
   <ServiceManifestImport>
-    <ServiceManifestRef ServiceManifestName="Flow.SchemaInferenceServicePkg" ServiceManifestVersion="1.0.0" />
+    <ServiceManifestRef ServiceManifestName="Flow.SchemaInferenceServicePkg" ServiceManifestVersion="1.0.1" />
     <ConfigOverrides>
       <ConfigOverride Name="Config">
         <Settings>
@@ -76,7 +76,7 @@ Licensed under the MIT License
     </EnvironmentOverrides>
   </ServiceManifestImport>
   <ServiceManifestImport>
-    <ServiceManifestRef ServiceManifestName="Flow.InteractiveQueryServicePkg" ServiceManifestVersion="1.0.0" />
+    <ServiceManifestRef ServiceManifestName="Flow.InteractiveQueryServicePkg" ServiceManifestVersion="1.0.1" />
     <ConfigOverrides>
       <ConfigOverride Name="Config">
         <Settings>
@@ -98,7 +98,7 @@ Licensed under the MIT License
     </EnvironmentOverrides>
   </ServiceManifestImport>
   <ServiceManifestImport>
-    <ServiceManifestRef ServiceManifestName="Flow.ManagementServicePkg" ServiceManifestVersion="1.0.0" />
+    <ServiceManifestRef ServiceManifestName="Flow.ManagementServicePkg" ServiceManifestVersion="1.0.1" />
     <ConfigOverrides>
       <ConfigOverride Name="Config">
         <Settings>

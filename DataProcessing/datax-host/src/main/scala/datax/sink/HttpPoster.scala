@@ -75,6 +75,7 @@ object HttpPoster extends SinkOperatorFactory {
     SinkOperator(
       name = SinkName,
       isEnabled = conf!=null,
+      sinkAsJson = true,
       flagColumnExprGenerator = () => conf.filter,
       generator = (flagColumnIndex)=>getRowsSinkerGenerator(conf, flagColumnIndex)
     )
