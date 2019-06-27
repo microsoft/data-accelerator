@@ -32,6 +32,6 @@ namespace DataX.Config
         /// <param name="uriPrefix">value of the uriPrefix</param>
         /// <param name="hashSuffix">specify whether the generated secret uri has a hashed suffix, by default it is false</param>
         /// <returns>secret id</returns>
-        Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, string uriPrefix, bool hashSuffix = false);
+        Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, string sparkType, bool hashSuffix = false);
     }
 }

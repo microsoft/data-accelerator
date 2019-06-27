@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using DataX.Config.ConfigDataModel;
 using DataX.Config.KeyVault;
 using System;
 using System.Collections.Generic;
@@ -32,8 +33,9 @@ namespace DataX.Config.Test.Mock
             return secretUri;
         }
 
-        public async Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, string uriPrefix, bool hashSuffix = false)
+        public async Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, string sparkType, bool hashSuffix = false)
         {
+            var uriPrefix = (sparkType != null && sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
             var finalSecretName = hashSuffix ? (secretName + "-" + HashGenerator.GetHashCode(secretValue)) : secretName;
             await Task.Yield();
             return $"{uriPrefix}://{keyvaultName}/{finalSecretName}";

@@ -68,8 +68,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             var filePath = ResourcePathUtil.Combine(runtimeConfigBaseFolder, $"{config.Name}-combined.txt");
             var transformFilePath = await RuntimeStorage.SaveFile(filePath, rulesCode.Code);
             var secretName = $"{config.Name}-transform";
-            var uriPrefix = (Configuration[Constants.ConfigSettingName_SparkType].Length > 0 && Configuration[Constants.ConfigSettingName_SparkType] == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
-            var transformFileSecret = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, transformFilePath, uriPrefix);
+            var transformFileSecret = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, transformFilePath, Configuration[Constants.ConfigSettingName_SparkType]);
             flowToDeploy.SetStringToken(TokenName_TransformFile, transformFileSecret);
 
             return "done";
