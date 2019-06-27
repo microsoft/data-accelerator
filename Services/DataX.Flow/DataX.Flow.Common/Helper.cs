@@ -56,7 +56,7 @@ namespace DataX.Flow.Common
         /// <returns>true if it is a secret, otherwise false</returns>
         public static bool IsKeyVault(string value)
         {
-            return value.StartsWith(GetKeyValutNamePrefix());
+            return (value.StartsWith(GetKeyValutNamePrefix()) || value.StartsWith(GetSecretScopePrefix()));
         }
 
         /// <summary>
@@ -67,14 +67,14 @@ namespace DataX.Flow.Common
         /// <param name="value"></param>
         /// <param name="postfix"></param>
         /// <returns>keyVault uri</returns>
-        public static string GetKeyVaultName(string keyvaultName, string key, string value = "", bool postfix = true)
+        public static string GetKeyVaultName(string keyvaultName, string key, string sparkType, string value = "", bool postfix = true)
         {
             if (postfix)
             {
                 key = key + $"-{Helper.GetHashCode(value)}";
             }
 
-            return $"{GetKeyValutNamePrefix()}{keyvaultName}/{key}";
+            return (sparkType == Config.ConfigDataModel.Constants.SparkTypeDataBricks) ? $"{GetSecretScopePrefix()}{keyvaultName}/{key}" : $"{GetKeyValutNamePrefix()}{keyvaultName}/{key}";
         }
 
         /// <summary>
@@ -86,9 +86,9 @@ namespace DataX.Flow.Common
         /// <param name="value"></param>
         /// <param name="postfix"></param>
         /// <returns>secret name</returns>
-        public static string GenerateNewSecret(Dictionary<string, string> keySecretList, string keyvaultName, string key, string value, bool postfix = true)
+        public static string GenerateNewSecret(Dictionary<string, string> keySecretList, string keyvaultName, string key, string sparkType, string value, bool postfix = true)
         {
-            key = GetKeyVaultName(keyvaultName, key, value, postfix);
+            key = GetKeyVaultName(keyvaultName, key, sparkType, value, postfix);
 
             keySecretList.TryAdd(key, value);
 
@@ -102,9 +102,17 @@ namespace DataX.Flow.Common
         public static string GetKeyValutNamePrefix()
         {
             return "keyvault://";
-        }     
-    
-        
+        }
+
+        /// <summary>
+        /// Get the prefix for secretscope uri
+        /// </summary>
+        /// <returns>the prefix for keyvault uri</returns>
+        public static string GetSecretScopePrefix()
+        {
+            return "secretscope://";
+        }
+
         /// <summary>
         /// Parses the eventhub namespace from connection string
         /// </summary>
@@ -300,7 +308,7 @@ namespace DataX.Flow.Common
         {
             if (path != null && Config.Utility.KeyVaultUri.IsSecretUri(path))
             {
-                Regex r = new Regex(@"^((keyvault:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
+                Regex r = new Regex(@"^((keyvault|secretscope:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
                 var keyvault = string.Empty;
 
                 var secret = string.Empty;

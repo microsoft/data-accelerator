@@ -53,6 +53,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                             keyvaultName: RuntimeKeyVaultName.Value,
                             secretName: secretName,
                             secretValue: code,
+                            sparkType: Configuration[Constants.ConfigSettingName_SparkType],
                             hashSuffix: true);
 
                         func.Properties.Code = secretUri;

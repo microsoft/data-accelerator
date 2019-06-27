@@ -81,6 +81,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                             keyvaultName: RuntimeKeyVaultName.Value,
                             secretName: secretName,
                             secretValue: connStr,
+                            sparkType: Configuration[Constants.ConfigSettingName_SparkType],
                             hashSuffix: true);
 
                         rd.Properties.ConnectionString = secretUri;
@@ -203,8 +204,8 @@ namespace DataX.Config.ConfigGeneration.Processor
                 var accountName = ParseBlobAccountName(connectionString);
                 var blobPath = $"wasbs://{uiOutput.Properties.ContainerName}@{accountName}.blob.core.windows.net/{uiOutput.Properties.BlobPrefix}/%1$tY/%1$tm/%1$td/%1$tH/${{quarterBucket}}/${{minuteBucket}}";
                 var secretId = $"{configName}-output";
-                var blobPathSecret = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, secretId, blobPath, true);
-                await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, $"datax-sa-{accountName}", ParseBlobAccountKey(connectionString), false);
+                var blobPathSecret = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, secretId, blobPath, Configuration[Constants.ConfigSettingName_SparkType], true);
+                await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, $"{Constants.AccountSecretPrefix}{accountName}", ParseBlobAccountKey(connectionString), Configuration[Constants.ConfigSettingName_SparkType], false);
 
                 FlowBlobOutputSpec blobOutput = new FlowBlobOutputSpec()
                 {
@@ -253,7 +254,7 @@ namespace DataX.Config.ConfigGeneration.Processor
 
                 FlowEventHubOutputSpec eventhubOutput = new FlowEventHubOutputSpec()
                 {
-                    ConnectionStringRef = KeyVaultUri.ComposeUri(sparkKeyVaultName, metricsEhConnectionStringKey),
+                    ConnectionStringRef = KeyVaultUri.ComposeUri(sparkKeyVaultName, metricsEhConnectionStringKey, Configuration[Constants.ConfigSettingName_SparkType]),
                     CompressionType = "none",
                     Format = "json"
                 };
@@ -342,10 +343,10 @@ namespace DataX.Config.ConfigGeneration.Processor
 
                 // Save password and url in keyvault
                 var pwdSecretId = $"{configName}-outSqlPassword";
-                var pwdRef = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, pwdSecretId, pwd, true).ConfigureAwait(false);
+                var pwdRef = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, pwdSecretId, pwd, Configuration[Constants.ConfigSettingName_SparkType], true).ConfigureAwait(false);
 
                 var urlSecretId = $"{configName}-outSqlUrl";
-                var urlRef = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, urlSecretId, url, true).ConfigureAwait(false);
+                var urlRef = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, urlSecretId, url, Configuration[Constants.ConfigSettingName_SparkType], true).ConfigureAwait(false);
 
                 FlowSqlOutputSpec sqlOutput = new FlowSqlOutputSpec()
                 {

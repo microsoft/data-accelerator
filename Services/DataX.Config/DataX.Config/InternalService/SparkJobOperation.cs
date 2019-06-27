@@ -46,7 +46,7 @@ namespace DataX.Config
             Ensure.NotNull(jobName, "jobName");
             Logger.LogInformation($"starting job '{jobName}'");
             var job = await EnsureJobState(jobName, JobState.Idle);
-            var sparkJobClient = await ClusterManager.GetSparkJobClient(job.Cluster);
+            var sparkJobClient = await ClusterManager.GetSparkJobClient(job.Cluster, job.DatabricksToken);
             var result = await sparkJobClient.SubmitJob(job.Options);
 
             // Update job state
@@ -83,7 +83,7 @@ namespace DataX.Config
             {
                 case JobState.Starting:
                 case JobState.Running:
-                    var sparkJobClient = await ClusterManager.GetSparkJobClient(job.Cluster);
+                    var sparkJobClient = await ClusterManager.GetSparkJobClient(job.Cluster, job.DatabricksToken);
                     var result = await sparkJobClient.StopJob(job.SyncResult.ClientCache);
                     job.SyncResult = result;
                     return await this.JobData.UpdateSyncResultByName(jobName, result);
@@ -166,7 +166,7 @@ namespace DataX.Config
             
             if (state.ClientCache != null && state.ClientCache.Type != JTokenType.Null)
             {
-                var sparkJobClient = await ClusterManager.GetSparkJobClient(job.Cluster);
+                var sparkJobClient = await ClusterManager.GetSparkJobClient(job.Cluster, job.DatabricksToken);
                 var newResult = await sparkJobClient.GetJobInfo(state.ClientCache);
                 state = newResult;
                 Logger.LogInformation($"got state for job '{jobName}'");

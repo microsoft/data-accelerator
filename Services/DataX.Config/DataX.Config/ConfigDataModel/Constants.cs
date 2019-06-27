@@ -29,6 +29,7 @@ namespace DataX.Config.ConfigDataModel
         public const string ConfigSettingName_CosmosDBConfigDatabaseName = "CosmosDBConfigDatabaseName";
         public const string ConfigSettingName_CosmosDBConfigCollectionName = "CosmosDBConfigCollectionName";
         public const string ConfigSettingName_AppInsightsIntrumentationKey = "AppInsightsIntrumentationKey";
+        public const string ConfigSettingName_SparkType = "sparkType";
 
         public const string TokenName_SparkJobConfigFilePath = "sparkJobConfigFilePath";
         public const string TokenName_SparkJobName = "sparkJobName";
@@ -39,5 +40,15 @@ namespace DataX.Config.ConfigDataModel
         public const string InputType_IoTHub = "iothub";
         public const string InputType_EventHub = "events";
         public const string InputType_KafkaEventHub = "kafkaeventhub";
+
+        public const string SparkTypeDataBricks = "databricks";
+        public const string SparkTypeHDInsight = "HDInsight";
+
+        public const string PrefixSecretScope = "secretscope";
+        public const string PrefixKeyVault = "keyvault";
+        public const string PrefixHdfs = "hdfs://";
+        public const string PrefixDbfs = "dbfs:/";
+
+        public const string AccountSecretPrefix = "datax-sa-";
     }
 }

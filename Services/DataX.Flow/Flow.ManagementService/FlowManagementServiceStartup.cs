@@ -68,8 +68,8 @@ namespace Flow.ManagementService
                     typeof(DataX.Config.ConfigurationProviders.CosmosDbConfigurationProvider).Assembly,
                     typeof(DataX.Config.Storage.CosmosDBConfigStorage).Assembly,
                     typeof(DataX.Config.KeyVault.KeyVaultClient).Assembly,
-                    typeof(DataX.Config.LivyClient.LivyClientFactory).Assembly,
-                    typeof(DataX.Config.Input.EventHub.Processor.CreateEventHubConsumerGroup).Assembly
+                    typeof(DataX.Config.Input.EventHub.Processor.CreateEventHubConsumerGroup).Assembly,
+                    Settings.SparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks ? typeof(DataX.Config.DatabricksClient.DatabricksClientFactory).Assembly : typeof(DataX.Config.LivyClient.LivyClientFactory).Assembly
                 };
 
         // Get all the dependencies needed to fulfill the ConfigGen

@@ -28,6 +28,7 @@ namespace DataX.Contract.Settings
         public string ConfigFolderHost { get; set; }
         public string MetricsHttpEndpoint { get; set; }
         public string AppInsightsIntrumentationKey { get; set; }
+        public string SparkType { get; set; }
 
         public string MefStorageAccountName { get; set; }
         public string MefContainerName { get; set; }

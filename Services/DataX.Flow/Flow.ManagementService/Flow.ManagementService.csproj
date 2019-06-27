@@ -43,6 +43,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\DataX.Config\DataX.Config.ConfigurationProviders\DataX.Config.ConfigurationProviders.csproj" />
+    <ProjectReference Include="..\..\DataX.Config\DataX.Config.DatabricksClient\DataX.Config.DatabricksClient.csproj" />
     <ProjectReference Include="..\..\DataX.Config\DataX.Config.Input.EventHub\DataX.Config.Input.EventHub.csproj" />
     <ProjectReference Include="..\..\DataX.Config\DataX.Config.KeyVault\DataX.Config.KeyVault.csproj" />
     <ProjectReference Include="..\..\DataX.Config\DataX.Config.LivyClient\DataX.Config.LivyClient.csproj" />

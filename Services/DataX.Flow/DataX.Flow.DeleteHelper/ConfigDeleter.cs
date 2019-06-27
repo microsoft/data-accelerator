@@ -96,7 +96,7 @@ namespace DataX.Flow.DeleteHelper
             _logger.LogInformation($"For FlowId: {ConfigName} Deleting flow specific consumer group.. ");
             var inputEventhubConnection = Helper.GetSecretFromKeyvaultIfNeeded(diag.EventhubConnectionString);
 
-            _inputEventhubConnectionStringRef = Helper.IsKeyVault(diag.EventhubConnectionString) ? diag.EventhubConnectionString : Helper.GenerateNewSecret(_keySecretList, _engineEnvironment.EngineFlowConfig.SparkKeyVaultName, ConfigName + "-input-eventhubconnectionstring", diag.EventhubConnectionString, false);
+            _inputEventhubConnectionStringRef = Helper.IsKeyVault(diag.EventhubConnectionString) ? diag.EventhubConnectionString : Helper.GenerateNewSecret(_keySecretList, _engineEnvironment.EngineFlowConfig.SparkKeyVaultName, ConfigName + "-input-eventhubconnectionstring", _engineEnvironment.EngineFlowConfig.SparkType, diag.EventhubConnectionString, false);
             diag.EventhubConnectionString = _inputEventhubConnectionStringRef;
 
             if (diag.InputType == Constants.InputType_EventHub)

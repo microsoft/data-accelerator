@@ -730,8 +730,8 @@ namespace DataX.Flow.InteractiveQuery
         private string UDFPathResolver(string path)
         {
             if (path != null && Config.Utility.KeyVaultUri.IsSecretUri(path))
-            {                
-                Regex r = new Regex(@"^((keyvault:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
+            {
+                Regex r = new Regex(@"^((keyvault|secretscope:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
                 var keyvault = string.Empty;
 
                 var secret = string.Empty;
