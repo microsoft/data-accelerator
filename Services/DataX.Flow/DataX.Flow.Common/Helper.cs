@@ -56,7 +56,7 @@ namespace DataX.Flow.Common
         /// <returns>true if it is a secret, otherwise false</returns>
         public static bool IsKeyVault(string value)
         {
-            return (value.StartsWith(GetKeyValutNamePrefix()) || value.StartsWith(GetSecretScopePrefix()));
+            return value.StartsWith(GetKeyValutNamePrefix()) || value.StartsWith(GetSecretScopePrefix());
         }
 
         /// <summary>
