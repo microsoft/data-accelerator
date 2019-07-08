@@ -9,15 +9,15 @@ Licensed under the MIT License
     <Parameter Name="Auth_MinReplicaSetSize" Value="2" />
     <Parameter Name="Auth_TargetReplicaSetSize" Value="3" />
     <Parameter Name="Api_InstanceCount" Value="-1" />
-    <Parameter Name="SSL_Cert_Thumbprint" Value="62BEBAE76C57023F7B0B807F9C8836A12FB530DA" />
-    <Parameter Name="ClientId" Value="04bb8511-6bdc-4672-bc00-f2eed7670789" />
-    <Parameter Name="Audience" Value="https://microsoft.onmicrosoft.com/configgenprod" />
-    <Parameter Name="ReverseProxySslThumbprint" Value="631675C2DC01747E3A973A21FF8A0197E104C0BA" />
-    <Parameter Name="AllowedUserRoles" Value="DataXReader,DataXWriter" />
+    <Parameter Name="SSL_Cert_Thumbprint" Value="" />
+    <Parameter Name="ClientId" Value="" />
+    <Parameter Name="Audience" Value="" />
+    <Parameter Name="ReverseProxySslThumbprint" Value="" />
+    <Parameter Name="AllowedUserRoles" Value="" />
     <Parameter Name="AzureServicesAuthConnectionString" Value="" />
-    <Parameter Name="Tenant" Value="microsoft.onmicrosoft.com" />
-    <Parameter Name="ServiceKeyvaultName" Value="kvServicesdxstaging" />
-    <Parameter Name="AppInsightsIntrumentationKey" Value="configgen-aiInstrumentationKey" />
+    <Parameter Name="Tenant" Value="" />
+    <Parameter Name="ServiceKeyvaultName" Value="" />
+    <Parameter Name="AppInsightsIntrumentationKey" Value="" />
     <Parameter Name="EnableUserInfoLogging" Value="" />
   </Parameters>
 </Application>

@@ -20,9 +20,9 @@ Licensed under the MIT License
                                     StoreName="My" />
 
   -->
-  <ClusterConnectionParameters ConnectionEndpoint="dxstaging-sf.westus2.cloudapp.azure.com:19000" X509Credential="true" ServerCertThumbprint="0EB927AF526D9B4583FAB8593A59BE4992C2E6F5" FindType="FindByThumbprint" FindValue="0EB927AF526D9B4583FAB8593A59BE4992C2E6F5" StoreLocation="CurrentUser" StoreName="My" />
+  <ClusterConnectionParameters />
   <ApplicationParameterFile Path="..\ApplicationParameters\Cloud.xml" />
-  <UpgradeDeployment Mode="Monitored" Enabled="false">
+  <UpgradeDeployment Mode="Monitored" Enabled="true">
     <Parameters FailureAction="Rollback" Force="True" />
   </UpgradeDeployment>
 </PublishProfile>
