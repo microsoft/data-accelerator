@@ -22,7 +22,7 @@ export default class Card extends React.Component {
 
     renderImage() {
         return (
-            <a style={imageClickStyle} target="_blank" href={this.props.url}>
+            <a style={imageClickStyle} target="_blank" href={this.props.url} rel="noopener noreferrer">
                 <div style={imageContainerStyle}>
                     <img style={imageStyle} src={this.props.src} />
                 </div>
@@ -49,7 +49,7 @@ export default class Card extends React.Component {
     renderLink() {
         return (
             <div className="ms-fontSize-m" style={footerContainerStyle}>
-                <Link style={linkStyle} target="_blank" href={this.props.url}>
+                <Link style={linkStyle} target="_blank" href={this.props.url} rel="noopener noreferrer">
                     {this.props.linkText}
                 </Link>
             </div>

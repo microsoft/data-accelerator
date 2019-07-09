@@ -35,12 +35,12 @@ namespace DataX.Metrics.Ingestor
     /// <summary>
     /// The FabricRuntime creates an instance of this class for each service type instance. 
     /// </summary>
-    internal sealed class Ingestor : StatefulService
+    internal sealed class Ingestor : StatelessService
     {
         private ServiceState _serviceState = ServiceState.Idle;
         private ILogger _logger;
 
-        public Ingestor(StatefulServiceContext context)
+        public Ingestor(StatelessServiceContext context)
             : base(context)
         {
         }       
@@ -49,11 +49,11 @@ namespace DataX.Metrics.Ingestor
         /// Optional override to create listeners (like tcp, http) for this service instance.
         /// </summary>
         /// <returns>The collection of listeners.</returns>
-        protected override IEnumerable<ServiceReplicaListener> CreateServiceReplicaListeners()
+        protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
         {
-            return new ServiceReplicaListener[]
+            return new ServiceInstanceListener[]
             {
-                new ServiceReplicaListener(serviceContext =>
+                new ServiceInstanceListener(serviceContext =>
                     new KestrelCommunicationListener(serviceContext, (url, listener) =>
                     {
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
@@ -62,8 +62,7 @@ namespace DataX.Metrics.Ingestor
                                     .UseKestrel()
                                     .ConfigureServices(
                                         services => services
-                                            .AddSingleton<StatefulServiceContext>(serviceContext)
-                                            .AddSingleton<IReliableStateManager>(StateManager))
+                                            .AddSingleton<StatelessServiceContext>(serviceContext))
                                     .UseContentRoot(Directory.GetCurrentDirectory())
                                     .UseStartup<Startup>()                                    
                                     .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.UseUniqueServiceUrl)
@@ -134,8 +133,8 @@ namespace DataX.Metrics.Ingestor
         private async Task<EventProcessorHost> InitalizeEventProcessorHostAsync()
         {
             // start listening to the event hub 
-            var eventHubName = Utility.GetConfigValue("EventHubName");
-            var consumerGroup = Utility.GetConfigValue("ConsumerGroupName");
+            var eventHubName = ServiceFabricUtil.GetServiceFabricConfigSetting("EventHubName").Result?.ToString();
+            var consumerGroup = ServiceFabricUtil.GetServiceFabricConfigSetting("ConsumerGroupName").Result?.ToString();
 
             var eventProcessorHost = new EventProcessorHost(
                     eventHubName,

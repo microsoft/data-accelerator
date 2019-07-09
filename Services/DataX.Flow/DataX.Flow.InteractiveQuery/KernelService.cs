@@ -23,17 +23,11 @@ using System.Xml.Serialization;
 
 namespace DataX.Flow.InteractiveQuery
 {
-    public class KernelService : IDisposable
+    public abstract class KernelService 
     {
         private steps _steps = null;
-        private readonly string _username = string.Empty;
-        private readonly string _password = string.Empty;
-        private readonly string _keyvaultName = "";
-        private readonly HttpClient _client = new HttpClient();
-        private string _baseUrl = "https://$name.azurehdinsight.net/jupyter";
         private const int _MaxCount = 20;        
         private string _setupStepsXml = "";
-        private ILogger _logger;
         private const string _QuerySeparator = "--DataXQuery--";
 
         /// <summary>
@@ -43,18 +37,20 @@ namespace DataX.Flow.InteractiveQuery
         /// <param name="keyvault">keyvault to use</param>
         /// <param name="secretPrefix">secret name prefix</param>
         /// <param name="logger">logger object passed so that telemetry can be added</param>
-        public KernelService(string jobURLBase, string keyvault, string secretPrefix, SparkConnectionInfo connectionInfo, ILogger logger)
+        public KernelService(FlowConfigObject flowConfig, SparkConnectionInfo connectionInfo, ILogger logger)
         {
-            _logger = logger;
-            _baseUrl = _baseUrl.Replace("$name", jobURLBase);
-            _keyvaultName = keyvault;
-            _username = connectionInfo.UserName;
-            _password = connectionInfo.Password;          
-
-            string token = Base64Encode($"{_username}:{_password}");
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", token);
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));//ACCEPT header
+            SparkType = flowConfig.SparkType;
+            Logger = logger;
         }
+
+        protected FlowConfigObject FlowConfig { get; set; }
+
+        protected SparkConnectionInfo SparkConnectionInfo { get; set; }
+
+        protected ILogger Logger { get; set; }
+
+        protected string SparkType { get; set; }
+
 
         /// <summary>
         /// CreateandInitializeKernelAsync - this the function that does the actual work of creating and initializing the kernel for the interactive query experience
@@ -72,7 +68,7 @@ namespace DataX.Flow.InteractiveQuery
             if (response.Error.HasValue && response.Error.Value)
             {
                 await DeleteKernelAsync(kernelId);
-                _logger.LogError(response.Message);
+                Logger.LogError(response.Message);
                 return ApiResult.CreateError(response.Message);
             }
             else
@@ -85,26 +81,14 @@ namespace DataX.Flow.InteractiveQuery
         /// CreateKernelAsync - calls into the Rest api for creating the kernel
         /// </summary>
         /// <returns>ApiResult which contains kernelid</returns>
-        public async Task<ApiResult> CreateKernelAsync()
-        {
-            try
-            {
-                // Set body
-                string body = "{\"name\":\"sparkkernel\"}";
-                var content = new StringContent(body);
+        public abstract Task<ApiResult> CreateKernelAsync();
 
-                // Call service
-                var response = await _client.PostAsync($"{_baseUrl}/api/kernels", content);
-                var responseString = await response.Content.ReadAsStringAsync();
-                string id = JsonConvert.DeserializeObject<CreateKernelResponse>(responseString).Id;
-                return ApiResult.CreateSuccess(id);
-            }
-            catch(Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                return ApiResult.CreateError(ex.ToString());
-            }
-        }
+        /// <summary>
+        /// Returns the kernel given kernelId
+        /// </summary>
+        /// <param name="kernelId">Id of the kernel to return</param>
+        /// <returns></returns>
+        public abstract IKernel GetKernel(string kernelId);
 
         /// <summary>
         /// InitializeKernelAsync - this the helper function that does the actual work of creating and initializing the kernel for the interactive query experience
@@ -119,10 +103,7 @@ namespace DataX.Flow.InteractiveQuery
             try
             {
                 // Attach to kernel
-                Dictionary<string, string> hs = new Dictionary<string, string>();
-                string token = Base64Encode($"{_username}:{_password}");
-                hs.Add("Authorization", $"Basic {token}");
-                Kernel kernel = new Kernel(kernelId, _baseUrl, null, null, null, hs);
+                IKernel kernel = GetKernel(kernelId);
 
                 // Load and run the initialization steps
                 var result = await Task.Run(() => LoadandRunSteps(kernel, isReSample, referenceDatas, functions));
@@ -137,7 +118,7 @@ namespace DataX.Flow.InteractiveQuery
             }
             catch(Exception ex)
             {
-                _logger.LogError(ex, ex.Message);
+                Logger.LogError(ex, ex.Message);
                 return ApiResult.CreateError(ex.ToString());
             }
         }
@@ -211,7 +192,7 @@ namespace DataX.Flow.InteractiveQuery
                         var response = await DeleteKernelAsync(kernelId);
                         if (response.Error.HasValue && response.Error.Value)
                         {
-                            if (!response.Message.Contains($@"Kernel does not exist: {kernelId}"))
+                            if (!response.Message.Contains($@"Kernel does not exist: {kernelId}") && !response.Message.Contains("404 : Not Found"))
                             {
                                 return ApiResult.CreateError(response.Message);
                             }
@@ -230,7 +211,7 @@ namespace DataX.Flow.InteractiveQuery
             }
         }
 
-        private ApiResult LoadandRunSteps(Kernel kernel, bool isReSample, List<ReferenceDataObject> referenceDatas, List<FunctionObject> functions)
+        private ApiResult LoadandRunSteps(IKernel kernel, bool isReSample, List<ReferenceDataObject> referenceDatas, List<FunctionObject> functions)
         {
             try
             {
@@ -251,7 +232,7 @@ namespace DataX.Flow.InteractiveQuery
                     // Run the steps
                     for (int i = 0; i < _steps.Items.Count(); i++)
                     {
-                        _logger.LogInformation($"steps.Items[{i}] ran successfully");
+                        Logger.LogInformation($"steps.Items[{i}] ran successfully");
                         result = kernel.ExecuteCode(_steps.Items[i].Value);
                         LogErrors(result, _steps.Items[i].Value, $"InitializationStep[{i}]");
                         _steps.Items[i].Value = NormalizationSnippetHelper(ref i, ref normalizationWarning, result, _steps.Items);
@@ -262,12 +243,12 @@ namespace DataX.Flow.InteractiveQuery
                     // Run the resample steps
                     for (int i = _steps.Items.Count() - 2; i < _steps.Items.Count(); i++)
                     {
-                        _logger.LogInformation($"steps.Items[i].Value: _steps.Items[{i}]");
+                        Logger.LogInformation($"steps.Items[i].Value: _steps.Items[{i}]");
                         result = kernel.ExecuteCode(_steps.Items[i].Value);
                         var errors = CheckErrors(result);
                         if (!string.IsNullOrEmpty(errors))
                         {
-                            _logger.LogError($"Initialization step: {_steps.Items[i].Value}. Resulting Error: {result}");
+                            Logger.LogError($"Initialization step: {_steps.Items[i].Value}. Resulting Error: {result}");
                         }
                         _steps.Items[i].Value = NormalizationSnippetHelper(ref i, ref normalizationWarning, result, _steps.Items);                        
                     }
@@ -304,12 +285,12 @@ namespace DataX.Flow.InteractiveQuery
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"ErrorMessage: {ex.Message} SetupSteps: {_setupStepsXml}");
+                Logger.LogError(ex, $"ErrorMessage: {ex.Message} SetupSteps: {_setupStepsXml}");
                 return ApiResult.CreateError(ex.ToString());
             }
         }
 
-        private void LoadReferenceData(Kernel kernel, List<ReferenceDataObject> referenceDatas)
+        private void LoadReferenceData(IKernel kernel, List<ReferenceDataObject> referenceDatas)
         {
             if (referenceDatas == null || referenceDatas.Count <= 0)
             {
@@ -330,7 +311,7 @@ namespace DataX.Flow.InteractiveQuery
         /// </summary>
         /// <param name="kernel">Kernel to load functions into</param>
         /// <param name="functions">List of functions to load. These include UDFs, UDAFs and Azure functions</param>
-        private void LoadFunctions(Kernel kernel, List<FunctionObject> functions)
+        private void LoadFunctions(IKernel kernel, List<FunctionObject> functions)
         {
             if (functions == null || functions.Count <= 0)
             {
@@ -417,7 +398,7 @@ namespace DataX.Flow.InteractiveQuery
                         }
                         catch (Exception)
                         {
-                            _logger.LogError(new Exception("'selectExpr' not found in the normalization snippet in the Input tab"), "'selectExpr' not found in the normalization snippet in the Input tab");
+                            Logger.LogError(new Exception("'selectExpr' not found in the normalization snippet in the Input tab"), "'selectExpr' not found in the normalization snippet in the Input tab");
                             throw new Exception("'selectExpr' not found in the normalization snippet in the Input tab");
                         }
                     }
@@ -456,10 +437,7 @@ namespace DataX.Flow.InteractiveQuery
                 }
 
                 // Attach to kernel
-                Dictionary<string, string> hs = new Dictionary<string, string>();
-                string token = Base64Encode($"{_username}:{_password}");
-                hs.Add("Authorization", $"Basic {token}");
-                Kernel kernel = new Kernel(kernelId, _baseUrl, null, null, null, hs);
+                IKernel kernel = GetKernel(kernelId);
 
                 // Remove Timewindow
                 Regex timeRegex = new Regex(@"TIMEWINDOW\s{0,}\(\s{0,}.*\s{0,}\)", RegexOptions.IgnoreCase);
@@ -546,10 +524,7 @@ namespace DataX.Flow.InteractiveQuery
                 }
 
                 // Attach to kernel
-                Dictionary<string, string> hs = new Dictionary<string, string>();
-                string token = Base64Encode($"{_username}:{_password}");
-                hs.Add("Authorization", $"Basic {token}");
-                Kernel kernel = new Kernel(kernelId, _baseUrl, null, null, null, hs);
+                IKernel kernel = GetKernel(kernelId);
 
                 // Prep code to execute
                 Regex r = new Regex(@"FROM\s*(\w+)");
@@ -624,27 +599,7 @@ namespace DataX.Flow.InteractiveQuery
         /// </summary>
         /// <param name="kernelId">KernelId</param>
         /// <returns>Returns success or error as the case maybe as ApiResult</returns>
-        public async Task<ApiResult> DeleteKernelAsync(string kernelId)
-        {
-            try
-            {
-                // Application killed by user.
-                var response = await _client.DeleteAsync($"{_baseUrl}/api/kernels/{kernelId}");
-                if (response.IsSuccessStatusCode)
-                {
-                    return ApiResult.CreateSuccess("Success");
-                }
-                else
-                {
-                    var result = await response.Content.ReadAsStringAsync();
-                    return ApiResult.CreateError(result);
-                }
-            }
-            catch(Exception ex)
-            {
-                return ApiResult.CreateError(ex.ToString());
-            }
-        }
+        public abstract Task<ApiResult> DeleteKernelAsync(string kernelId);
 
         /// <summary>
         /// This is a helper function that can be used for updating the blob both when delete and create kernels are called
@@ -706,7 +661,7 @@ namespace DataX.Flow.InteractiveQuery
             var errors = CheckErrors(result);
             if (!string.IsNullOrEmpty(errors))
             {
-                _logger.LogError($"Initialization step - {step}: Resulting Error: {errors}");
+                Logger.LogError($"Initialization step - {step}: Resulting Error: {errors}");
             }
         }
         
@@ -775,8 +730,8 @@ namespace DataX.Flow.InteractiveQuery
         private string UDFPathResolver(string path)
         {
             if (path != null && Config.Utility.KeyVaultUri.IsSecretUri(path))
-            {                
-                Regex r = new Regex(@"^((keyvault:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
+            {
+                Regex r = new Regex(@"^((keyvault|secretscope:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
                 var keyvault = string.Empty;
 
                 var secret = string.Empty;
@@ -796,19 +751,6 @@ namespace DataX.Flow.InteractiveQuery
             return path;
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _client.Dispose();
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
     }
     /// <summary>
     /// Kernel Properties that are entered in the blob for garbage collection
@@ -831,13 +773,5 @@ namespace DataX.Flow.InteractiveQuery
         public string Message { get; set; }
     }
 
-    /// <summary>
-    /// This is the object that is returned from the Kernel. This helps extract out the kernelID 
-    /// </summary>
-    public class CreateKernelResponse
-    {
-        public string Id { get; set; }
-        public string Name { get; set; }
-    }
 
 }

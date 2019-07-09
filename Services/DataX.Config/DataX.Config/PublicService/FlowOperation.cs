@@ -82,9 +82,16 @@ namespace DataX.Config.PublicService
             if (existingFlow != null)
             {
                 existingFlow.Gui = config.Gui;
+                existingFlow.CommonProcessor.Template = config.CommonProcessor.Template;
+                existingFlow.CommonProcessor.SparkJobTemplateRef = config.CommonProcessor.SparkJobTemplateRef;
                 existingFlow.DisplayName = config.DisplayName;
                 config = existingFlow;
                 result = await FlowData.UpdateGuiForFlow(config.Name, config.Gui);
+
+                if (result.IsSuccess)
+                {
+                    result = await FlowData.UpdateCommonProcessorForFlow(config.Name, config.CommonProcessor);
+                }
             }
             else
             {

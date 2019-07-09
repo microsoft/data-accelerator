@@ -3,13 +3,11 @@
 // Licensed under the MIT License
 // *********************************************************************
 import Q from 'q';
-import { UserSelectors, getApiErrorMessage } from 'datax-common';
-
 import * as Api from './api';
-import * as Helpers from './flowHelpers';
 import * as Selectors from './flowSelectors';
-import * as KernelActions from './kernelActions';
-import * as KernelSelectors from './kernelSelectors';
+import { UserSelectors, getApiErrorMessage } from 'datax-common';
+import { QueryActions } from 'datax-query';
+import * as Helpers from './flowHelpers';
 
 /**
  *
@@ -24,9 +22,7 @@ export const FLOW_NEW = 'FLOW_NEW';
 // Info
 export const FLOW_UPDATE_DISPLAY_NAME = 'FLOW_UPDATE_DISPLAY_NAME';
 export const FLOW_UPDATE_OWNER = 'FLOW_UPDATE_OWNER';
-
-// Query
-export const FLOW_UPDATE_QUERY = 'FLOW_UPDATE_QUERY';
+export const FLOW_UPDATE_DATABRICKSTOKEN = 'FLOW_UPDATE_DATABRICKSTOKEN';
 
 // Scale
 export const FLOW_UPDATE_SCALE = 'FLOW_UPDATE_SCALE';
@@ -63,7 +59,6 @@ export const FLOW_UPDATE_SELECTED_FUNCTION_INDEX = 'FLOW_UPDATE_SELECTED_FUNCTIO
 export const FLOW_UPDATE_INPUT = 'FLOW_UPDATE_INPUT';
 export const FLOW_FETCHING_INPUT_SCHEMA = 'FLOW_FETCHING_INPUT_SCHEMA';
 export const FLOW_UPDATE_SAMPLING_INPUT_DURATION = 'FLOW_UPDATE_SAMPLING_INPUT_DURATION';
-export const FLOW_UPDATE_RESAMPLING_INPUT_DURATION = 'FLOW_UPDATE_RESAMPLING_INPUT_DURATION';
 
 // Message
 export const FLOW_UPDATE_ERROR_MESSAGE = 'FLOW_UPDATE_ERROR_MESSAGE';
@@ -88,6 +83,9 @@ export const initFlow = context => (dispatch, getState) => {
                     type: FLOW_INIT,
                     payload: flow
                 });
+            })
+            .then(flow => {
+                dispatch(QueryActions.initQuery(flow.payload.query));
             })
             .catch(error => {
                 const message = getApiErrorMessage(error);
@@ -115,6 +113,13 @@ export const updateOwner = () => (dispatch, getState) => {
     return dispatch({
         type: FLOW_UPDATE_OWNER,
         payload: UserSelectors.getUserAlias(getState())
+    });
+};
+
+export const updateDatabricksToken = databricksToken => dispatch => {
+    return dispatch({
+        type: FLOW_UPDATE_DATABRICKSTOKEN,
+        payload: databricksToken
     });
 };
 
@@ -206,13 +211,6 @@ export const updateNormalizationSnippet = snippet => (dispatch, getState) => {
 export const updateSamplingInputDuration = duration => dispatch => {
     return dispatch({
         type: FLOW_UPDATE_SAMPLING_INPUT_DURATION,
-        duration: duration
-    });
-};
-
-export const updateResamplingInputDuration = duration => dispatch => {
-    return dispatch({
-        type: FLOW_UPDATE_RESAMPLING_INPUT_DURATION,
         duration: duration
     });
 };
@@ -455,68 +453,6 @@ function updateFunction(dispatch, index, functionItem) {
     });
 }
 
-// Query Actions
-export const updateQuery = query => dispatch => {
-    return dispatch({
-        type: FLOW_UPDATE_QUERY,
-        payload: query
-    });
-};
-
-export const getTableSchemas = flow => {
-    return Api.getTableSchemas(flow).then(tables => {
-        let tableToSchemaMap = {};
-        tables.forEach(table => {
-            tableToSchemaMap[table.name] = table;
-        });
-
-        return tableToSchemaMap;
-    });
-};
-
-export const getCodeGenQuery = flow => {
-    return Api.getCodeGenQuery(flow).then(query => {
-        return query;
-    });
-};
-
-export const executeQuery = (flow, selectedQuery, kernelId) => dispatch => {
-    updateErrorMessage(dispatch, undefined);
-    return Api.executeQuery(flow, selectedQuery, kernelId)
-        .then(result => {
-            return result;
-        })
-        .catch(error => {
-            const message = getApiErrorMessage(error);
-            updateErrorMessage(dispatch, message);
-            return Q.reject({ error: true, message: message });
-        });
-};
-
-export const resampleInput = (flow, kernelId, version) => (dispatch, getState) => {
-    updateErrorMessage(dispatch, undefined);
-    KernelActions.fetchingKernel(dispatch, true);
-    return Api.resampleInput(flow, kernelId)
-        .then(response => {
-            const kernelId = response.result;
-            const warning = response.message;
-
-            const curVersion = KernelSelectors.getKernelVersion(getState());
-
-            if (version >= curVersion) {
-                return KernelActions.updateKernel(dispatch, kernelId, version, warning);
-            } else {
-                return Api.deleteDiagnosticKernel(kernelId);
-            }
-        })
-        .catch(error => {
-            const message = getApiErrorMessage(error);
-            updateErrorMessage(dispatch, message);
-            KernelActions.fetchingKernel(dispatch, false);
-            return Q.reject({ error: true, message: message });
-        });
-};
-
 // Output Actions
 export const updateOutputs = outputs => dispatch => {
     return dispatch({
@@ -637,6 +573,31 @@ function updateSinker(dispatch, index, sinker) {
         index: index
     });
 }
+
+// Sql Sinker
+export const updateSqlConnection = connection => (dispatch, getState) => {
+    updateSinkerProperties(dispatch, getState, {
+        connectionString: connection
+    });
+};
+
+export const updateSqlTableName = name => (dispatch, getState) => {
+    updateSinkerProperties(dispatch, getState, {
+        tableName: name
+    });
+};
+
+export const updateSqlWriteMode = mode => (dispatch, getState) => {
+    updateSinkerProperties(dispatch, getState, {
+        writeMode: mode
+    });
+};
+
+export const updateSqlUseBulkInsert = bulkInsert => (dispatch, getState) => {
+    updateSinkerProperties(dispatch, getState, {
+        useBulkInsert: bulkInsert
+    });
+};
 
 // Rule Actions
 export const updateRules = rules => dispatch => {
@@ -782,6 +743,33 @@ export const updateExecutorMemory = executorMemory => (dispatch, getState) => {
     );
 };
 
+export const updateDatabricksAutoScale = databricksAutoScale => (dispatch, getState) => {
+    updateScale(
+        dispatch,
+        Object.assign({}, Selectors.getFlowScale(getState()), {
+            jobDatabricksAutoScale: databricksAutoScale
+        })
+    );
+};
+
+export const updateDatabricksMinWorkers = databricksMinWorkers => (dispatch, getState) => {
+    updateScale(
+        dispatch,
+        Object.assign({}, Selectors.getFlowScale(getState()), {
+            jobDatabricksMinWorkers: databricksMinWorkers
+        })
+    );
+};
+
+export const updateDatabricksMaxWorkers = databricksMaxWorkers => (dispatch, getState) => {
+    updateScale(
+        dispatch,
+        Object.assign({}, Selectors.getFlowScale(getState()), {
+            jobDatabricksMaxWorkers: databricksMaxWorkers
+        })
+    );
+};
+
 function updateScale(dispatch, scale) {
     return dispatch({
         type: FLOW_UPDATE_SCALE,
@@ -811,8 +799,8 @@ const rejectWithMessage = (error, msg) =>
     });
 
 // Save and Delete Actions
-export const saveFlow = flow => {
-    return Api.saveFlow(Helpers.convertFlowToConfig(flow)).then(result => {
+export const saveFlow = (flow, query) => {
+    return Api.saveFlow(Helpers.convertFlowToConfig(flow, query)).then(result => {
         const name = result.name;
 
         // generate job configurations for product

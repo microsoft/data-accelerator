@@ -12,6 +12,7 @@ using System.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DataX.Config.ConfigDataModel;
 
 namespace DataX.Config.ConfigGeneration.Processor
 {
@@ -23,7 +24,14 @@ namespace DataX.Config.ConfigGeneration.Processor
     public class ResolveStateTable: ProcessorBase
     {
         public const string TokenName_StateTables = "processStateTables";
-        
+
+        [ImportingConstructor]
+        public ResolveStateTable(ConfigGenConfiguration conf)
+        {
+            Configuration = conf;
+        }
+        private ConfigGenConfiguration Configuration { get; }
+
         public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
         {
             var config = flowToDeploy.Config;
@@ -58,7 +66,8 @@ namespace DataX.Config.ConfigGeneration.Processor
 
         private string ConstructStateTablePath(string flowName, string tableName)
         {
-            return $"hdfs://mycluster/datax/{flowName}/{tableName}/";
+            var prefix = (Configuration[Constants.ConfigSettingName_SparkType].Length > 0 && Configuration[Constants.ConfigSettingName_SparkType] == Constants.SparkTypeDataBricks) ? Constants.PrefixDbfs : Constants.PrefixHdfs;
+            return $"{prefix}mycluster/datax/{flowName}/{tableName}/";
         }
     }
 }

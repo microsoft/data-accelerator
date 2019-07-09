@@ -13,7 +13,7 @@ import org.apache.spark.rdd.RDD
 import scala.concurrent.duration.Duration
 
 class JsonProcessor(processJson: (RDD[String], Timestamp, Duration, Timestamp) => Map[String, Double])
-  extends EventHubStreamingProcessor{
+  extends StreamingProcessor[EventData]{
   override val process = (rdd: RDD[EventData], batchTime: Timestamp, batchInterval: Duration) => {
     val outputPartitionTime = DateTimeUtil.getCurrentTime()
     processJson(rdd.map(w=>new String(w.getBytes)), batchTime, batchInterval, outputPartitionTime)

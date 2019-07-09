@@ -23,12 +23,14 @@ namespace DataX.Config.ConfigGeneration.Processor
         public const string TokenName_ProjectionFiles = "processProjections";
 
         [ImportingConstructor]
-        public GenerateProjectionFile(IRuntimeConfigStorage runtimeStorage, IKeyVaultClient keyvaultClient)
+        public GenerateProjectionFile(IRuntimeConfigStorage runtimeStorage, IKeyVaultClient keyvaultClient, ConfigGenConfiguration conf)
         {
             RuntimeStorage = runtimeStorage;
             KeyVaultClient = keyvaultClient;
+            Configuration = conf;
         }
 
+        private ConfigGenConfiguration Configuration { get; }
         private IRuntimeConfigStorage RuntimeStorage { get; }
         private IKeyVaultClient KeyVaultClient { get; }
         
@@ -54,7 +56,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             var filePath = ResourcePathUtil.Combine(runtimeConfigBaseFolder, "projection.txt");
             var savedFile = await RuntimeStorage.SaveFile(filePath, finalProjections);
             var secretName = $"{config.Name}-projectionfile";
-            var savedSecretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, savedFile);
+            var savedSecretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, savedFile, Configuration[Constants.ConfigSettingName_SparkType]);
             flowToDeploy.SetObjectToken(TokenName_ProjectionFiles, new string[] {savedSecretId});
 
             return "done";

@@ -106,5 +106,14 @@ namespace DataX.Flow.Common.Models
 
         [JsonProperty("sparkConnectionString")]
         public string SparkConnectionString;
+
+        [JsonProperty("sparkType")]
+        public string SparkType;
+
+        [JsonProperty("sparkUserToken")]
+        public string SparkUserToken;
+
+        [JsonProperty("sparkRegion")]
+        public string SparkRegion;
     }
 }

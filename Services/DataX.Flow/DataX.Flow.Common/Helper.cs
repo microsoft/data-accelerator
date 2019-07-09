@@ -6,6 +6,7 @@ using DataX.Contract.Exception;
 using DataX.Utilities.KeyVault;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -55,7 +56,7 @@ namespace DataX.Flow.Common
         /// <returns>true if it is a secret, otherwise false</returns>
         public static bool IsKeyVault(string value)
         {
-            return value.StartsWith(GetKeyValutNamePrefix());
+            return value.StartsWith(GetKeyValutNamePrefix()) || value.StartsWith(GetSecretScopePrefix());
         }
 
         /// <summary>
@@ -66,14 +67,14 @@ namespace DataX.Flow.Common
         /// <param name="value"></param>
         /// <param name="postfix"></param>
         /// <returns>keyVault uri</returns>
-        public static string GetKeyVaultName(string keyvaultName, string key, string value = "", bool postfix = true)
+        public static string GetKeyVaultName(string keyvaultName, string key, string sparkType, string value = "", bool postfix = true)
         {
             if (postfix)
             {
                 key = key + $"-{Helper.GetHashCode(value)}";
             }
 
-            return $"{GetKeyValutNamePrefix()}{keyvaultName}/{key}";
+            return (sparkType == Config.ConfigDataModel.Constants.SparkTypeDataBricks) ? $"{GetSecretScopePrefix()}{keyvaultName}/{key}" : $"{GetKeyValutNamePrefix()}{keyvaultName}/{key}";
         }
 
         /// <summary>
@@ -85,9 +86,9 @@ namespace DataX.Flow.Common
         /// <param name="value"></param>
         /// <param name="postfix"></param>
         /// <returns>secret name</returns>
-        public static string GenerateNewSecret(Dictionary<string, string> keySecretList, string keyvaultName, string key, string value, bool postfix = true)
+        public static string GenerateNewSecret(Dictionary<string, string> keySecretList, string keyvaultName, string key, string sparkType, string value, bool postfix = true)
         {
-            key = GetKeyVaultName(keyvaultName, key, value, postfix);
+            key = GetKeyVaultName(keyvaultName, key, sparkType, value, postfix);
 
             keySecretList.TryAdd(key, value);
 
@@ -101,9 +102,17 @@ namespace DataX.Flow.Common
         public static string GetKeyValutNamePrefix()
         {
             return "keyvault://";
-        }     
-    
-        
+        }
+
+        /// <summary>
+        /// Get the prefix for secretscope uri
+        /// </summary>
+        /// <returns>the prefix for keyvault uri</returns>
+        public static string GetSecretScopePrefix()
+        {
+            return "secretscope://";
+        }
+
         /// <summary>
         /// Parses the eventhub namespace from connection string
         /// </summary>
@@ -124,6 +133,45 @@ namespace DataX.Flow.Common
             }
 
             return null;            
+        }
+
+        /// <summary>
+        /// Get BootstrapServers from connection string
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <returns>bootstrapservers</returns>
+        public static string TryGetBootstrapServers(string connectionString)
+        {
+            var bootstrapServers = connectionString;
+
+            if (connectionString.StartsWith("Endpoint=sb", StringComparison.OrdinalIgnoreCase))
+            {
+                Regex reg = new Regex(@"sb?:\/\/([\w\d\.]+).*", RegexOptions.IgnoreCase);
+                var m = reg.Match(connectionString);
+
+                if (m != null && m.Success)
+                {
+                    bootstrapServers = m.Groups[1].Value + ":9093";
+                }
+            }
+
+            return bootstrapServers;
+        }
+
+        /// <summary>
+        /// Parses and generate a string array from a raw eventhub name string
+        /// </summary>
+        /// <param name="eventHubNames"></param>
+        /// <returns>string array of eventhub names</returns>
+        public static List<string> ParseEventHubNames(string eventHubNames)
+        {
+            if (string.IsNullOrWhiteSpace(eventHubNames))
+            {
+                return new List<string>();
+            }
+
+            var names = eventHubNames.Split(',').Select(s => s.Trim()).ToList();
+            return names;
         }
 
         /// <summary>
@@ -260,7 +308,7 @@ namespace DataX.Flow.Common
         {
             if (path != null && Config.Utility.KeyVaultUri.IsSecretUri(path))
             {
-                Regex r = new Regex(@"^((keyvault:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
+                Regex r = new Regex(@"^((keyvault|secretscope:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
                 var keyvault = string.Empty;
 
                 var secret = string.Empty;
