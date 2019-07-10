@@ -3,11 +3,8 @@
 // Licensed under the MIT License
 // *********************************************************************
 using Newtonsoft.Json;
-using DataX.Config.ConfigDataModel;
 using DataX.Contract;
 using DataX.Utility.CosmosDB;
-using DataX.Utility.KeyVault;
-using System;
 using System.Collections.Generic;
 using System.Composition;
 using System.Linq;

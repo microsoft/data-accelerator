@@ -5,3 +5,11 @@
 /.vs
 /v15
 npm-debug.log
+/DataProcessing/DataX.Utilities/DataX.Utility.CodeSign/obj/Release/netcoreapp2.1
+/DataProcessing/DataX.Utilities/DataX.Utility.CodeSign/obj/Debug/netcoreapp2.1/DataX.Utility.CodeSign.AssemblyInfoInputs.cache
+/DataProcessing/DataX.Utilities/DataX.Utility.CodeSign/obj/Debug/netcoreapp2.1/DataX.Utility.CodeSign.AssemblyInfo.cs
+/DataProcessing/DataX.Utilities/DataX.Utility.CodeSign/obj/Debug/netcoreapp2.1
+/DataProcessing/.vs/VSWorkspaceState.json
+/DataProcessing/.vs/slnx.sqlite
+/DataProcessing/.vs/ProjectSettings.json
+/DataProcessing/.vs/DataProcessing/v15/.suo

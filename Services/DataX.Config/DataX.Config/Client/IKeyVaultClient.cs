@@ -12,7 +12,7 @@ namespace DataX.Config
         /// Resolve the keyvault secret uri in format 'keyvault://{keyvaultname}/{secretname}'
         /// </summary>
         /// <param name="secretUri">secret uri</param>
-        /// <returns>value of the secert if the given id matches the keyvault id format, or else return the given string</returns>
+        /// <returns>value of the secret if the given id matches the keyvault id format, or else return the given string</returns>
         Task<string> ResolveSecretUriAsync(string secretUri);
 
         /// <summary>

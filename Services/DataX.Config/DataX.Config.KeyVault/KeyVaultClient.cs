@@ -3,10 +3,9 @@
 // Licensed under the MIT License
 // *********************************************************************
 using DataX.Contract;
-using DataX.Utility.KeyVault;
-using System;
 using System.Composition;
 using System.Threading.Tasks;
+using DataX.Utilities.KeyVault;
 
 namespace DataX.Config.KeyVault
 {
@@ -17,11 +16,17 @@ namespace DataX.Config.KeyVault
         {
         }
 
-        public KeyVaultUtility GetKeyVault()
+        public KeyVaultManager GetKeyVault()
         {
-            return new KeyVaultUtility();
+            return new KeyVaultManager();
         }
 
+        /// <summary>
+        /// Get Secret
+        /// </summary>
+        /// <param name="keyvaultName"></param>
+        /// <param name="secretName"></param>
+        /// <returns></returns>
         public Task<string> GetSecretFromKeyVaultAsync(string keyvaultName, string secretName)
         {
             Ensure.NotNull(keyvaultName, "keyvaultName");
@@ -30,17 +35,37 @@ namespace DataX.Config.KeyVault
         }
 
 
+        /// <summary>
+        /// Get secret from URI
+        /// </summary>
+        /// <param name="secretUri"></param>
+        /// <returns></returns>
         public Task<string> ResolveSecretUriAsync(string secretUri)
         {
-            return GetKeyVault().GetSecretFromKeyvaultAsync(secretUri);
+            return GetKeyVault().GetSecretStringAsync( secretUri );
         }
 
+        /// <summary>
+        /// Save secret
+        /// </summary>
+        /// <param name="keyvaultName">KV name</param>
+        /// <param name="secretUri">Secret uri</param>
+        /// <param name="secret">Secret</param>
+        /// <returns></returns>
         public async Task<string> SaveSecretAsync(string keyvaultName, string secretUri, string secret)
         {
             await GetKeyVault().SaveSecretStringAsync(keyvaultName, secretUri, secret);
             return SecretUriParser.ComposeUri(keyvaultName, secretUri);
         }
 
+        /// <summary>
+        /// Save Secret async by kevault name, secretname.  
+        /// </summary>
+        /// <param name="keyvaultName">KV name</param>
+        /// <param name="secretName">Secret name</param>
+        /// <param name="secretValue">Secret</param>
+        /// <param name="hashSuffix">Append this string to make secret unique</param>
+        /// <returns></returns>
         public async Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, bool hashSuffix = false)
         {
             var finalSecretName = hashSuffix ? (secretName + "-" + HashGenerator.GetHashCode(secretValue)) : secretName;

@@ -35,7 +35,6 @@
     <ProjectReference Include="..\..\DataX.Contract\DataX.Contract.csproj" />
     <ProjectReference Include="..\..\DataX.Utilities\DataX.Utility.Blob\DataX.Utility.Blob.csproj" />
     <ProjectReference Include="..\..\DataX.Utilities\DataX.Utility.CosmosDB\DataX.Utility.CosmosDB.csproj" />
-    <ProjectReference Include="..\..\DataX.Utilities\DataX.Utility.KeyVault\DataX.Utility.KeyVault.csproj" />
     <ProjectReference Include="..\DataX.Config\DataX.Config.csproj" />
   </ItemGroup>
 

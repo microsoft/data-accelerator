@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\DataX.Utilities\DataX.Utility.KeyVault\DataX.Utility.KeyVault.csproj" />
+    <ProjectReference Include="..\..\DataX.Utilities\DataX.Utilities.KeyVault\DataX.Utilities.KeyVault.csproj" />
     <ProjectReference Include="..\DataX.Config\DataX.Config.csproj" />
   </ItemGroup>
 

@@ -12,16 +12,12 @@ using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using DataX.Metrics.Ingestor.Helper;
-using DataX.Utilities.KeyVault;
-using DataX.ServiceHost.ServiceFabric;
 using System;
 using System.Collections.Generic;
 using System.Fabric;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.ApplicationInsights;
-using Microsoft.ApplicationInsights.Extensibility;
 
 namespace DataX.Metrics.Ingestor
 {
@@ -134,8 +130,8 @@ namespace DataX.Metrics.Ingestor
         private async Task<EventProcessorHost> InitalizeEventProcessorHostAsync()
         {
             // start listening to the event hub 
-            var eventHubName = Utility.GetConfigValue("EventHubName");
-            var consumerGroup = Utility.GetConfigValue("ConsumerGroupName");
+            var eventHubName = DataX.Metrics.Ingestor.Helper.Utility.GetConfigValue("EventHubName");
+            var consumerGroup = DataX.Metrics.Ingestor.Helper.Utility.GetConfigValue("ConsumerGroupName");
 
             var eventProcessorHost = new EventProcessorHost(
                     eventHubName,

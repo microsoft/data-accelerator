@@ -25,7 +25,7 @@ namespace DataX.Utilities.KeyVault
         }
 
         /// <summary>
-        /// Get a secret from Key Vault
+        /// Get a secret from Key Vault building the URL
         /// </summary>
         /// <param name="keyvaultName">ID of the secret</param>
         /// <returns>secret value</returns>
@@ -35,6 +35,25 @@ namespace DataX.Utilities.KeyVault
             {
                 var secretUrl = GetKeyVaultSecretUrl(keyvaultName) + $"/secrets/{secretName}";
 
+                var secret = await GetSecretStringAsync(secretUrl);
+                return secret.ToString();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+
+        /// <summary>
+        /// Get a secret from Key Vault using fully qualified url
+        /// </summary>
+        /// <param name="secretUrl">uri of the secret</param>
+        /// <returns>secret value</returns>
+        public async Task<string> GetSecretStringAsync(string secretUrl)
+        {
+            try
+            {
                 var secret = await _keyVaultClient.GetSecretAsync(secretUrl);
                 return secret.Value;
             }
