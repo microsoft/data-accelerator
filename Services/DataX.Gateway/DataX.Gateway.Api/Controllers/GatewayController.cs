@@ -41,6 +41,7 @@ namespace DataX.Gateway.Api.Controllers
         private const int _DefaultHttpTimeoutSecs = Constants.DefaultHttpTimeoutSecs;
         private static readonly string _ReverseProxySslThumbprint;
         private static readonly string[] _AllowedUserRoles;
+        private static readonly HashSet<string> _ClientWhitelist;
         private static readonly ILogger _StaticLogger;
         private static readonly bool _IsUserInfoLoggingEnabled;
 
@@ -87,8 +88,18 @@ namespace DataX.Gateway.Api.Controllers
             var configPackage = FabricRuntime.GetActivationContext().GetConfigurationPackageObject("Config");
             var serviceEnvironmenConfig = configPackage.Settings.Sections["ServiceEnvironment"];
             var appInsightsIntrumentationKey = serviceEnvironmenConfig.Parameters["AppInsightsIntrumentationKey"].Value;
+            var testClientId = serviceEnvironmenConfig.Parameters["TestClientId"].Value;
             _IsUserInfoLoggingEnabled = IsUserInfoLoggingEnabled();
             _StaticLogger = new ApplicationInsightsLogger("GatewayILogger", new Microsoft.ApplicationInsights.TelemetryClient(new TelemetryConfiguration(KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, appInsightsIntrumentationKey))), new ApplicationInsightsLoggerOptions());
+            try
+            {
+                _ClientWhitelist = new HashSet<string>() { KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, testClientId) };
+            }
+            catch (Exception e)
+            {
+                // Do nothing in case the TestClientId is not set in the keyvault. This is set for testing purposes.
+                var message = e.Message;
+            }            
         }
 
         private async Task<ApiResult> Query(HttpRequestMessage request, string application, string service, string method, HttpMethod httpMethod)
@@ -97,7 +108,9 @@ namespace DataX.Gateway.Api.Controllers
                 .Where(c => c.Type == ClaimTypes.Role)
                 .Select(c => c.Value).ToList();
 
-            if (roles.Intersect(_AllowedUserRoles).Any())
+            var clientId = ((ClaimsIdentity)User.Identity).Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;            
+
+            if (roles.Intersect(_AllowedUserRoles).Any() || _ClientWhitelist.Contains(clientId))
             {
                 // Merge original headers with custom headers
                 // Note: currently gets only the first value for a particular header
@@ -153,7 +166,7 @@ namespace DataX.Gateway.Api.Controllers
         private Dictionary<string, string> FetchUserHeaders()
         {
             var headers = new Dictionary<string, string>();
-            var userName = ClaimsPrincipal.Current.FindFirst(ClaimTypes.Upn) != null ? ClaimsPrincipal.Current.FindFirst(ClaimTypes.Upn).Value : (ClaimsPrincipal.Current.FindFirst(ClaimTypes.Email)?.Value);
+            var userName = ClaimsPrincipal.Current.FindFirst(ClaimTypes.Upn) != null ? ClaimsPrincipal.Current.FindFirst(ClaimTypes.Upn).Value : ClaimsPrincipal.Current.FindFirst(ClaimTypes.Email)?.Value;
             headers.Add(_UserNameHeader, userName ?? string.Empty);
             var userId = ClaimsPrincipal.Current.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
             headers.Add(_UserIdHeader, userId ?? string.Empty);
