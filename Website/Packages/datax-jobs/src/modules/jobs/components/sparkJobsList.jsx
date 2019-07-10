@@ -18,7 +18,7 @@ function renderLinks(links) {
 
     return Object.keys(links)
         .map(name => (
-            <Link href={links[name]} key={name} target="_blank">
+            <Link href={links[name]} key={name} target="_blank" rel="noopener noreferrer">
                 {name}
             </Link>
         ))

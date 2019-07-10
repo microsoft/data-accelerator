@@ -85,11 +85,56 @@
 		},
 		"certType": {
 			"type": "String"
-		}
+		},
+        "virtualNetworkName": {
+            "type": "string"
+        },
+        "addressPrefix": {
+            "type": "string"
+        },
+        "computeLocation": {
+            "type": "string"
+        },
+        "subnet0Name": {
+            "type": "string"
+        },
+        "subnet0Prefix": {
+            "type": "string"
+        },
+        "clusterName": {
+            "type": "string"
+        }
 	},
 	"variables": {
+        "vNetApiVersion": "2015-06-15"
 	},
 	"resources": [
+        {
+            "apiVersion": "[variables('vNetApiVersion')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('virtualNetworkName')]",
+            "location": "[parameters('computeLocation')]",
+            "dependsOn": [],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('subnet0Name')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('subnet0Prefix')]"
+                        }
+                    }
+                ]
+            },
+            "tags": {
+                "resourceType": "Service Fabric",
+                "clusterName": "[parameters('clusterName')]"
+            }
+        },
 		{
 			"type": "Microsoft.Cache/Redis",
 			"name": "[parameters('redis_name')]",

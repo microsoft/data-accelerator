@@ -55,11 +55,8 @@
 		},
 		"adminPassword": {
 			"type": "securestring"
-		},
-        "virtualNetworkName": {
-            "type": "string"
         },
-        "addressPrefix": {
+        "virtualNetworkName": {
             "type": "string"
         },
         "dnsName": {
@@ -180,7 +177,6 @@
     "variables": {
         "vmssApiVersion": "2017-03-30",
         "lbApiVersion": "2015-06-15",
-        "vNetApiVersion": "2015-06-15",
         "storageApiVersion": "2016-01-01",
         "publicIPApiVersion": "2015-06-15",
         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
@@ -229,32 +225,6 @@
                 "clusterName": "[parameters('clusterName')]"
             }
         },
-        {
-            "apiVersion": "[variables('vNetApiVersion')]",
-            "type": "Microsoft.Network/virtualNetworks",
-            "name": "[parameters('virtualNetworkName')]",
-            "location": "[parameters('computeLocation')]",
-            "dependsOn": [],
-            "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "[parameters('addressPrefix')]"
-                    ]
-                },
-                "subnets": [
-                    {
-                        "name": "[parameters('subnet0Name')]",
-                        "properties": {
-                            "addressPrefix": "[parameters('subnet0Prefix')]"
-                        }
-                    }
-                ]
-            },
-            "tags": {
-                "resourceType": "Service Fabric",
-                "clusterName": "[parameters('clusterName')]"
-            }
-        },        
         {
             "apiVersion": "[variables('publicIPApiVersion')]",
             "type": "Microsoft.Network/publicIPAddresses",
@@ -385,7 +355,6 @@
                 "type": "SystemAssigned"
             },
             "dependsOn": [
-                "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]",
                 "[concat('Microsoft.Network/loadBalancers/', concat('LB','-', parameters('clusterName'),'-',parameters('vmNodeType0Name')))]",
                 "[concat('Microsoft.Storage/storageAccounts/', variables('supportLogStorageAccountName'))]",
                 "[concat('Microsoft.Storage/storageAccounts/', variables('applicationDiagnosticsStorageAccountName'))]"

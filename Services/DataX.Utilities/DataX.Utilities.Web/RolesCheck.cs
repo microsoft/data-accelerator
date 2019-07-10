@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using DataX.Contract;
 using System;
 using DataX.Gateway.Contract;
+using DataX.ServiceHost;
 
 namespace DataX.Utilities.Web
 {
@@ -25,7 +26,14 @@ namespace DataX.Utilities.Web
         }
 
         public static void EnsureWriter(HttpRequest request)
-        {         
+        {
+            // Ensure* methods only work when auth is handled at the Gateway in Service Fabric setup
+            // Otherwise ASP.NET Core is used and does not require this check
+            if(!HostUtil.InServiceFabric)
+            {
+                return;
+            }
+
             var userrole = request.Headers[Constants.UserRolesHeader];
             Ensure.NotNull(userrole, "userrole");
 
@@ -46,6 +54,13 @@ namespace DataX.Utilities.Web
 
         public static void EnsureReader(HttpRequest request)
         {
+            // Ensure* methods only work when auth is handled at the Gateway in Service Fabric setup
+            // Otherwise ASP.NET Core is used and does not require this check
+            if (!HostUtil.InServiceFabric)
+            {
+                return;
+            }
+
             var userrole = request.Headers[Constants.UserRolesHeader];
             Ensure.NotNull(userrole, "userrole");
 

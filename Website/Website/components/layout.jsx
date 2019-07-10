@@ -51,7 +51,7 @@ class Layout extends React.Component {
         if (page.external) {
             return (
                 <TopNavPageLink key={label} selected={this.props.location.pathname == route}>
-                    <a href={route} target="_blank">
+                    <a href={route} target="_blank" rel="noopener noreferrer">
                         {label}
                     </a>
                 </TopNavPageLink>

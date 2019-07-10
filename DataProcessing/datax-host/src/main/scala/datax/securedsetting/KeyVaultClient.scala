@@ -9,7 +9,7 @@ import datax.constants.JobArgument
 import datax.exception.EngineException
 import datax.keyvault.KeyVaultMsiAuthenticatorClient
 import org.apache.log4j.LogManager
-
+import com.databricks.dbutils_v1.DBUtilsHolder.dbutils
 import scala.collection.mutable
 
 
@@ -18,7 +18,7 @@ import scala.collection.mutable
   */
 object KeyVaultClient {
   private val logger = LogManager.getLogger(this.getClass)
-  private val secretRegex = "^keyvault:\\/\\/([a-zA-Z0-9-_]+)\\/([a-zA-Z0-9-_]+)$".r
+  private val secretRegex = "^(keyvault|secretscope):\\/\\/([a-zA-Z0-9-_]+)\\/([a-zA-Z0-9-_]+)$".r
 
   private val kvc = KeyVaultMsiAuthenticatorClient.getKeyVaultClient()
   private val cache = new mutable.HashMap[String, String]
@@ -33,19 +33,27 @@ object KeyVaultClient {
       return Option(secretId)
 
     secretRegex.findFirstMatchIn(secretId) match {
-      case Some(secretInfo) => val vaultName = secretInfo.group(1)
-        val secretName = secretInfo.group(2)
+      case Some(secretInfo) => val secretType = secretInfo.group(1)
+        val vaultName = secretInfo.group(2)
+		val secretName = secretInfo.group(3)
 
         cache.synchronized{
           cache.get(secretId) match {
             case Some(value) => Some(value)
             case None =>
-              val secret = kvc.synchronized{
-                kvc.getSecret(s"https://$vaultName.vault.azure.net",secretName)
-              }
+              var value = ""
+			  if(secretType == "secretscope"){
+				value = dbutils.synchronized{
+					dbutils.secrets.get(scope = vaultName, key = secretName)
+				}
+			  }
+			  else{
+				value = kvc.synchronized{
+				  kvc.getSecret(s"https://$vaultName.vault.azure.net",secretName)
+				}.value()
+			  }
 
               logger.warn(s"resolved secret:'$secretId'")
-              val value = secret.value()
               cache(secretId) = value
               Some(value)
           }

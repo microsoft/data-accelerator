@@ -29,7 +29,7 @@ namespace DataX.Metrics.Ingestor
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public static void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<CookiePolicyOptions>(options =>
             {
@@ -37,7 +37,7 @@ namespace DataX.Metrics.Ingestor
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
-            StartUpUtil.ConfigureServices(services);            
+            StartUpUtil.ConfigureServices(services, Configuration);            
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }

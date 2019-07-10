@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.28307.271
+VisualStudioVersion = 15.0.28307.645
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Contract", "DataX.Contract\DataX.Contract.csproj", "{0F0A8226-E416-4796-B6BB-817B14E25AE4}"
 EndProject
@@ -106,6 +106,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Config.Local.Test", "DataX.Config\DataX.Config.Local.Test\DataX.Config.Local.Test.csproj", "{9E338FCC-793F-4048-9672-048270C856C4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Utility.Extensions", "DataX.Config\DataX.Utility.Extensions\DataX.Utility.Extensions.csproj", "{D5D3DD2D-760A-4818-A74F-C0061719841C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Config.DatabricksClient", "DataX.Config\DataX.Config.DatabricksClient\DataX.Config.DatabricksClient.csproj", "{128BBA82-876A-461F-BEE4-5637CEFD54FA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataX.Utilities.Tests", "DataX.Utilities.Tests\DataX.Utilities.Tests.csproj", "{072E3220-2EFD-4ECA-ABB0-31ACB433095D}"
 EndProject
@@ -483,6 +485,14 @@ Global
 		{D5D3DD2D-760A-4818-A74F-C0061719841C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D5D3DD2D-760A-4818-A74F-C0061719841C}.Release|x64.ActiveCfg = Release|Any CPU
 		{D5D3DD2D-760A-4818-A74F-C0061719841C}.Release|x64.Build.0 = Release|Any CPU
+		{128BBA82-876A-461F-BEE4-5637CEFD54FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{128BBA82-876A-461F-BEE4-5637CEFD54FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{128BBA82-876A-461F-BEE4-5637CEFD54FA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{128BBA82-876A-461F-BEE4-5637CEFD54FA}.Debug|x64.Build.0 = Debug|Any CPU
+		{128BBA82-876A-461F-BEE4-5637CEFD54FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{128BBA82-876A-461F-BEE4-5637CEFD54FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{128BBA82-876A-461F-BEE4-5637CEFD54FA}.Release|x64.ActiveCfg = Release|Any CPU
+		{128BBA82-876A-461F-BEE4-5637CEFD54FA}.Release|x64.Build.0 = Release|Any CPU
 		{072E3220-2EFD-4ECA-ABB0-31ACB433095D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{072E3220-2EFD-4ECA-ABB0-31ACB433095D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{072E3220-2EFD-4ECA-ABB0-31ACB433095D}.Debug|x64.ActiveCfg = Debug|Any CPU

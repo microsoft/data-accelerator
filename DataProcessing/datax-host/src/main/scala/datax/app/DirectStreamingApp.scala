@@ -4,13 +4,17 @@
 // *********************************************************************
 package datax.app
 
+import com.microsoft.azure.eventhubs.EventData
 import datax.host.StreamingHost
+import datax.input._
 import datax.processor.CommonProcessorFactory
 
 object DirectStreamingApp {
   def main(inputArguments: Array[String]): Unit = {
-    StreamingHost.runStreamingApp(
+    new StreamingHost[EventData]().runStreamingApp(
       inputArguments,
+      EventHubInputSetting.asInstanceOf[InputSetting[InputConf]],
+      EventHubStreamingFactory,
       config => CommonProcessorFactory.createProcessor(config).asDirectProcessor())
   }
 }

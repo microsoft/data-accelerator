@@ -54,6 +54,10 @@
 
     [ValidateSet("y", "n")]
     [string]
+    $installModules,
+
+    [ValidateSet("y", "n")]
+    [string]
     $resourceCreation,
 
     [ValidateSet("y", "n")]
@@ -123,7 +127,7 @@ function Install-Modules {
         
     $moduleInstalled = $false
     $modules.Keys | foreach {
-            if (!(Get-installedModule -name $_ -requiredversion $modules.Item($_) -ErrorAction SilentlyContinue )) {
+            if (!(Get-installedModule -name $_ -MinimumVersion $modules.Item($_) -ErrorAction SilentlyContinue )) {
     
                 Write-Host "Install Module: " $_
                 $moduleInstalled = $true
@@ -199,7 +203,6 @@ function Get-Tokens {
     }
 
     $tokens.Add('appInsightKey', $aiKey )
-
     $tokens.Add('resourceLocation', $resourceGroupLocation )
     
     $certtype = '' 
@@ -208,6 +211,17 @@ function Get-Tokens {
     }
     
     $tokens.Add('certtype', $certtype )
+    
+    $kafkaNativeConnectionString = ''
+    $kafkaNativeTopics = ''
+
+    if($enableKafkaSample -eq 'y') {
+        $kafkaNativeConnectionString = "datagen-kafkaNativeConnectionString"
+        $kafkaNativeTopics = "kafka1,kafka2"
+    }
+    
+    $tokens.Add('kafkaNativeConnectionString', $kafkaNativeConnectionString)
+    $tokens.Add('kafkaNativeTopics', $kafkaNativeTopics)
 
     $tokens
 }
@@ -264,7 +278,6 @@ function Add-UserAppRole([string]$AppName) {
     catch {}
 }
 
-# Replace token in template
 # Set secret to AAD app
 function Set-AzureAADAppSecret([string]$AppName) {
     $app = Get-AzureRmADApplication -DisplayName $AppName
@@ -279,6 +292,18 @@ function Set-AzureAADAppSecret([string]$AppName) {
     $keyValue
 }
 
+# Set credential to AAD app
+function Set-AzureAADAppCert([string]$AppName) {
+    $app = Get-AzureRmADApplication -DisplayName $AppName
+    if ($app)
+    {
+        $cer = $certPrimary.Certificate
+        $certValue = [System.Convert]::ToBase64String($cer.GetRawCertData())
+
+        az ad app credential reset --append --id $app.ApplicationId --cert $certValue
+    }
+}
+
 # Set secret to AAD app
 function Generate-AADApplication([string]$appName, [string]$websiteName) {
     $app = Get-AzureRmADApplication -DisplayName $appName
@@ -289,11 +314,14 @@ function Generate-AADApplication([string]$appName, [string]$websiteName) {
         }
         else {
             $app = New-AzureRmADApplication  -DisplayName $appName -IdentifierUris "https://$tenantName/$appName" 
-            
-            $cer = $certPrimary.Certificate
-            $certValue = [System.Convert]::ToBase64String($cer.GetRawCertData())
-    
-            New-AzureRmADAppCredential -ApplicationId $app.ApplicationId -CertValue $certValue -StartDate $cer.NotBefore -EndDate $cer.NotAfter
+        }
+    }
+
+    if ($app)
+    {
+        $urls = $app.IdentifierUris
+        if ($urls.Count -eq 0) {
+            Set-AzureRmADApplication -ObjectId $app.ObjectId -IdentifierUris "https://$tenantName/$appName"  -ErrorAction SilentlyContinue        
         }
     }
     
@@ -449,8 +477,8 @@ function Setup-SecretsForSpark {
     $secretName = "sparkclusterloginpassword"
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sparkPwd
 
-    $secretName = "sshuser" 
-    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sshuser
+    $secretName = "sparksshuser" 
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sparksshuser
 
     $secretName = "sparksshpassword" 
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sparkSshPwd
@@ -512,7 +540,10 @@ function Setup-Secrets {
     $secretName = $prefix + "azureservicesauthconnectionstring"    
     $tValue = "<Parameter Name=""AzureServicesAuthConnectionString"" Value=""RunAs=App;AppId=" + $azureADApplicationConfiggenApplicationId + ";TenantId=" + $tenantId + ";CertificateThumbprint=" + $certPrimary.Certificate.Thumbprint + ";CertificateStoreLocation=LocalMachine""/>"
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $tValue
-    
+
+    $secretName = $prefix + "cacertificatelocation"
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $caCertificateLocation
+
     $prefix = "$clientSecretPrefix-"
     $secretName = $prefix + "aiKey"    
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $aiKey
@@ -530,7 +561,7 @@ function Setup-Secrets {
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $tValue
 
     $secretName = $prefix + "serviceResourceId"
-    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value "https://$tenantName/$serviceAppName"
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $azureADApplicationConfiggenResourceId
 
     $secretName = $prefix + "mongoDbUrl"    
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value "test"
@@ -644,7 +675,7 @@ function Open-Port {
 	$port = 443
 	
 	# Get the load balancer resource
-	$resource = Get-AzureRmResource | Where {$_.resourceGroupName -eq $resourceGroupName -and $_.ResourceType -eq "Microsoft.Network/loadBalancers"}
+	$resource = Get-AzureRmResource | Where {$_.resourceGroupName -eq $resourceGroupName -and $_.ResourceType -eq "Microsoft.Network/loadBalancers" -and $_.Name -like "LB-*"}
 	$slb = Get-AzureRmLoadBalancer -Name $resource.Name -resourceGroupName $resourceGroupName
     
 	$probe = Get-AzureRmLoadBalancerProbeConfig -Name $probename -LoadBalancer $slb -ErrorAction SilentlyContinue
@@ -718,7 +749,9 @@ Push-Location $PSScriptRoot
 
 Write-Host -ForegroundColor Green "Total estimated time to complete: 2 to 4 hours"
 
-Install-Modules
+if ($installModules -eq  'y') {
+    Install-Modules
+}
 
 Check-FilePath
 
@@ -807,8 +840,12 @@ $azureADApplicationConfiggen = Generate-AADApplication -appName $serviceAppName
 $azureADApplicationApplicationId = $azureADApplication.ApplicationId.Guid
 $azureADApplicationConfiggenApplicationId = $azureADApplicationConfiggen.ApplicationId.Guid
 
+$azureADApplicationConfiggenResourceId = $azureADApplicationConfiggen.IdentifierUris[0]
+
 $azureADAppSecret = Set-AzureAADAppSecret -AppName $clientAppName
 $azureADAppSecretConfiggen = Set-AzureAADAppSecret -AppName $serviceAppName
+
+Set-AzureAADAppCert -AppName $serviceAppName
 
 $azureADAppSecretValue = $azureADAppSecret.Value 
 $azureADAppSecretConfiggenValue = $azureADAppSecretConfiggen.Value

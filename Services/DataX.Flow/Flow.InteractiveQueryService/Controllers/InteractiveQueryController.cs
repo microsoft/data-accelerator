@@ -2,28 +2,33 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using DataX.Contract;
+using DataX.Flow.InteractiveQuery;
+using DataX.ServiceHost.AspNetCore.Authorization.Roles;
+using DataX.Utilities.Web;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using DataX.Contract;
-//using DataX.Flow.Common;
-using DataX.Flow.InteractiveQuery;
 using System;
 using System.Threading.Tasks;
-using DataX.Utilities.Web;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Flow.InteractiveQueryService.Controllers
 {
     [Route("api")]
+    [DataXWriter]
     public class InteractiveQueryController : Controller
     {
         private readonly ILogger<InteractiveQueryController> _logger;
-        public InteractiveQueryController(ILogger<InteractiveQueryController> logger)
+        private readonly IConfiguration _configuration;
+        public InteractiveQueryController(ILogger<InteractiveQueryController> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
         }
+
         [HttpPost]
         [Route("kernel")] // diag
         public async Task<ApiResult> CreateAndInitializeKernel([FromBody]JObject jObject)
@@ -31,7 +36,7 @@ namespace Flow.InteractiveQueryService.Controllers
             try
             {
                 RolesCheck.EnsureWriter(Request);
-                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger);
+                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger, _configuration);
                 ApiResult response = await iqm.CreateAndInitializeKernel(jObject);
 
                 //Logging information / success
@@ -54,7 +59,7 @@ namespace Flow.InteractiveQueryService.Controllers
             {
                 RolesCheck.EnsureWriter(Request);
 
-                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger);
+                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger, _configuration);
                 return await iqm.RecycleKernel(jObject);
 
             }
@@ -74,7 +79,7 @@ namespace Flow.InteractiveQueryService.Controllers
                 RolesCheck.EnsureWriter(Request);
 
 
-                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger);
+                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger, _configuration);
                 return await iqm.DeleteKernelList(kernels).ConfigureAwait(false);
             }
             catch (Exception e)
@@ -93,7 +98,7 @@ namespace Flow.InteractiveQueryService.Controllers
                 RolesCheck.EnsureWriter(Request);
 
 
-                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger);
+                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger, _configuration);
                 return await iqm.DeleteKernel(kernelId).ConfigureAwait(false);
 
             }
@@ -112,7 +117,7 @@ namespace Flow.InteractiveQueryService.Controllers
             {
                 RolesCheck.EnsureWriter(Request);
 
-                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger);
+                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger, _configuration);
                 return await iqm.DeleteKernels().ConfigureAwait(false);
 
             }
@@ -131,7 +136,7 @@ namespace Flow.InteractiveQueryService.Controllers
             {
                 RolesCheck.EnsureWriter(Request);
 
-                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger);
+                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger, _configuration);
                 return await iqm.DeleteAllKernels().ConfigureAwait(false);
             }
             catch (Exception e)
@@ -150,7 +155,7 @@ namespace Flow.InteractiveQueryService.Controllers
             {
                 RolesCheck.EnsureWriter(Request);
 
-                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger);
+                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger, _configuration);
                 return await iqm.GetSampleInputFromQuery(jObject);
 
             }
@@ -168,7 +173,7 @@ namespace Flow.InteractiveQueryService.Controllers
             try
             {
                 RolesCheck.EnsureWriter(Request);
-                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger);
+                InteractiveQueryManager iqm = new InteractiveQueryManager(_logger, _configuration);
                 return await iqm.ExecuteQuery(jObject);
 
             }

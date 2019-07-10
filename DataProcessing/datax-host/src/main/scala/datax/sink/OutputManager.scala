@@ -24,7 +24,7 @@ object OutputManager {
   val SettingOutputProcessedSchemaPath = "processedschemapath"
 
   val sinkFactories = Seq[SinkOperatorFactory](
-    BlobSinker, EventHubStreamPoster, HttpPoster, CosmosDBSinkerManager
+    BlobSinker, EventHubStreamPoster, HttpPoster, CosmosDBSinkerManager, SqlSinker
   ).map(f=>f.getSettingNamespace()->f).toMap
 
   def getOperatators(dict: SettingDictionary): Seq[OutputOperator] ={
@@ -41,33 +41,33 @@ object OutputManager {
 
     val processedSchemaPath = dict.get(SettingOutputProcessedSchemaPath).orNull
     val sinkOperators = dict
-        .groupBySubNamespace()
-        .map { case (k, v) => sinkFactories.get(k).map(_.getSinkOperator(v, k))}
+      .groupBySubNamespace()
+      .map { case (k, v) => sinkFactories.get(k).map(_.getSinkOperator(v, k))}
       .filter(o => o match {
         case Some(oper) =>
           logger.info(s"Output '$name':${oper.name} is ${SinkerUtil.boolToOnOff(oper.isEnabled)}")
           oper.isEnabled
         case None => false
       }).map(o=>{
-        val oper = o.get
-        val flagColumnExpr = oper.flagColumnExprGenerator()
-        if(flagColumnExpr==null){
-          logger.warn(s"Output type:'${oper.name}': no flag column")
-          (oper.name, (null, null), oper.generator(-1), oper.onBatch, oper.onInitialization)
-        }
-        else{
-          val appendColumn = (flagColumnExpr, s"_${ProductConstant.ProductOutputFilter}_${oper.name}")
-          logger.warn(s"Output type:'${oper.name}': append column:$appendColumn")
-          flagColumnIndex+=1
-          (oper.name, appendColumn, oper.generator(flagColumnIndex), oper.onBatch, oper.onInitialization)
-        }
-      }).toSeq
+      val oper = o.get
+      val flagColumnExpr = oper.flagColumnExprGenerator()
+      if(flagColumnExpr==null){
+        logger.warn(s"Output type:'${oper.name}': no flag column")
+        (oper.name, (null, null), oper.generator(-1), oper.onBatch, oper.onInitialization, oper.sinkAsJson)
+      }
+      else{
+        val appendColumn = (flagColumnExpr, s"_${ProductConstant.ProductOutputFilter}_${oper.name}")
+        logger.warn(s"Output type:'${oper.name}': append column:$appendColumn")
+        flagColumnIndex+=1
+        (oper.name, appendColumn, oper.generator(flagColumnIndex), oper.onBatch, oper.onInitialization, oper.sinkAsJson)
+      }
+    }).toSeq
 
     if(sinkOperators.length==0)throw new EngineException(s"no sink is defined for output '$name'!")
     logger.warn(s"Output '$name' to ${sinkOperators.length} sinkers: ${sinkOperators.map(s=>s"'${s._1}'").mkString(",")}")
 
     val flagColumns = sinkOperators.map(_._2).filter(_._1!=null)
-    val sinkers = sinkOperators.map(o=>o._1 -> o._3).toMap
+    val sinkers = sinkOperators.map(o=>(o._1, o._3, o._6))
     val onBatchHandlers = sinkOperators.map(_._4).filter(_!=null)
     val onInitHandlers = sinkOperators.map(_._5).filter(_!=null)
     var shouldGeneratorProcessedSchema = processedSchemaPath!=null && !processedSchemaPath.isEmpty
@@ -95,60 +95,67 @@ object OutputManager {
         val outputColumnNames = outputColumns.map(c=>DataNormalization.sanitizeColumnName(c.name))
         outputLogger.warn(s"Output fields: ${outputColumnNames.mkString(",")}")
 
-        sink(df, outputColumnNames, partitionTime, flagColumns, sinkers)
+        sink(name, df, outputColumnNames, partitionTime, flagColumns, sinkers)
       }
     )
   }
 
-  def sink(df: DataFrame,
+  def sink(sinkerName:String,
+           df: DataFrame,
            outputFieldNames: Seq[String],
            partitionTime: Timestamp,
            flagColumns: Seq[(String, String)],
-           outputOperators: Map[String, SinkDelegate]) = {
-    val amendDf = if(df.schema.fieldNames.contains(ColumnName.InternalColumnFileInfo))df
+           outputOperators: Seq[(String, SinkDelegate, Boolean)]) = {
+
+    // Create json'ified dataframe for sinking to outputs that expect json data
+    val amendDf = if (df.schema.fieldNames.contains(ColumnName.InternalColumnFileInfo)) df
     else {
       df.withColumn(ColumnName.InternalColumnFileInfo, FileInternal.udfEmptyInternalInfo())
     }
 
-    val query = amendDf.selectExpr("*" +: flagColumns.map(c => c._1 + " AS " + c._2): _*)
+    val jsonDf = amendDf.selectExpr("*" +: flagColumns.map(c => c._1 + " AS " + c._2): _*)
       .select(Seq(col(ColumnName.InternalColumnFileInfo), to_json(struct(outputFieldNames.map(col): _*))) ++
         flagColumns.map(_._2).map(col): _*)
 
-    //query.explain will dump the execution plan of sql to stdout
-    //query.explain(true)
-    query
-      .rdd
-      .mapPartitions(it => {
-        val partitionId = TaskContext.getPartitionId()
-        val loggerSuffix = SparkEnvVariables.getLoggerSuffix()
-        val logger = LogManager.getLogger(s"EventsSinker${loggerSuffix}")
-        //val path = outputFileFolder+"/part-"+tc.partitionId().toString + ".json.gz"
 
-        val t1 = System.nanoTime()
-        var timeLast = t1
-        var timeNow: Long = 0
-        logger.info(s"$timeNow:Partition started")
+    val count = df.count().toInt
+    val inputMetric = Map(s"${MetricName.MetricSinkPrefix}InputEvents" -> count)
 
-        val dataAll = it.toArray
-        val count = dataAll.length
-        timeNow = System.nanoTime()
-        logger.info(s"$timeNow:Collected $count events, spent time=${(timeNow - timeLast) / 1E9} seconds")
-        timeLast = timeNow
+    val logger = LogManager.getLogger(s"EventsSinker-${sinkerName}")
+    logger.warn(s"Dataframe sinker ${sinkerName} started to sink ${count} events")
 
-        val inputMetric = Map(s"${MetricName.MetricSinkPrefix}InputEvents" -> count)
-        Seq(if (count > 0) {
-          val rowInfo = dataAll(0).getAs[Row](0)
-          if(outputOperators.size==0)
-            throw new EngineException("no output operators are found!")
-          outputOperators
-            .par
-            .map(_._2(rowInfo, dataAll, partitionTime, partitionId, loggerSuffix))
-            .reduce(DataMerger.mergeMapOfCounts) ++ inputMetric
+
+    // Get the output operators that sink JSON and non-JSON data and call the output sinkers in parallel
+    val jsonOutputOperators = outputOperators.filter(_._3)
+    val nonJsonOutputOperators = outputOperators.filter(!_._3)
+
+    if (count > 0) {
+      Seq("json", "nonjson").par.map {
+        case "json" =>
+          if (jsonOutputOperators.size > 0) {
+            jsonOutputOperators
+              .par
+              .map(_._2(jsonDf, partitionTime, sinkerName))
+              .reduce(DataMerger.mergeMapOfCounts)
+          }
+          else {
+            Map.empty[String,Int]
+          }
+
+        case "nonjson" => {
+          if (nonJsonOutputOperators.size > 0) {
+            nonJsonOutputOperators
+              .par
+              .map(_._2(df, partitionTime, sinkerName))
+              .reduce(DataMerger.mergeMapOfCounts)
+          }
+          else {
+            Map.empty[String,Int]
+          }
         }
-        else
-          inputMetric
-        ).iterator
-      })
-      .reduce(DataMerger.mergeMapOfCounts)
+      }.reduce(DataMerger.mergeMapOfCounts) ++ inputMetric
+    }
+    else
+      inputMetric
   }
 }

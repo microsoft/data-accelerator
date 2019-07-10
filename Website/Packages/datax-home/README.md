@@ -1,7 +1,13 @@
-# NPM Package: datax-home
+# datax-home
+Contains Data Accelerator's home page experience (tutorials, samples, and references links). 
+This package is used to add additional features to the Data Accelerator website.
+
+### Install Package to Accelerator Website or another package
+1. At root folder of your consumer project, run ```npm install datax-home@1.1.1``` (or whatever version you want). 
+This will install the package under the ```node_modules``` folder and automatically update the ```package.json``` file of your project. 
+You can also manually input it into the ```package.json``` yourself and then run ```npm install```.
 
 ### Quick start to developing this package
-
 1. Run ```npm install``` to install all dependency package of this NPM package.
 
 2. Run ```npm run dev``` to build non-optimized bundles. While the packages tend to be larger in size and slow down your web experience, you benefit
@@ -13,11 +19,6 @@ this by getting a better development experience when debugging the sources on th
 faster performance for production consumption.
 
 5. Run ```npm publish```
-
-### Install Package to Consumer Website or Package
-1. At root folder of your consumer project, run ```npm install datax-common@1.2.0``` (or whatever version you want). 
-This will install the package under the ```node_modules``` folder and automatically update the ```package.json``` file of your project. 
-You can also manually input it into the ```package.json``` yourself and then run ```npm install```.
 
 ### Tips and Tricks
 1. For your website, run ```npm run devwatch``` which will put your website into listening mode for file changes. Every time a file that the website

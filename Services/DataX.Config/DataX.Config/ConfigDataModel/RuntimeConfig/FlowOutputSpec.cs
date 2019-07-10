@@ -26,5 +26,8 @@ namespace DataX.Config.ConfigDataModel.RuntimeConfig
         [JsonProperty("httppost", NullValueHandling = NullValueHandling.Ignore)]
         public FlowHttpOutputSpec HttpOutput { get; set; }
 
+        [JsonProperty("sqlServer", NullValueHandling = NullValueHandling.Ignore)]
+        public FlowSqlOutputSpec SqlOutput { get; set; }
+
     }
 }

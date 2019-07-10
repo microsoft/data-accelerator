@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace DataX.Flow.InteractiveQuery
 {
@@ -22,11 +23,18 @@ namespace DataX.Flow.InteractiveQuery
     {
         private string _flowContainerName => _engineEnvironment.EngineFlowConfig.FlowContainerName;
         private const string _GarbageCollectBlobName = "kernelList.json";
-        private EngineEnvironment _engineEnvironment = new EngineEnvironment();
+        private EngineEnvironment _engineEnvironment;
         private readonly ILogger _logger;
-        public InteractiveQueryManager(ILogger logger)
+        private const string _HDInsight = Config.ConfigDataModel.Constants.SparkTypeHDInsight;
+        private const string _DataBricks = Config.ConfigDataModel.Constants.SparkTypeDataBricks;
+        private readonly string _sparkType = _HDInsight;
+        private readonly IConfiguration _configuration;
+
+        public InteractiveQueryManager(ILogger logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
+            _engineEnvironment = new EngineEnvironment(_configuration);
         }
 
         private string SetupSteps { get; set; } = string.Empty;
@@ -59,7 +67,7 @@ namespace DataX.Flow.InteractiveQuery
             var hashValue = Helper.GetHashCode(diag.UserName);
             string sampleDataPath = Path.Combine(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json");
 
-            response = await CreateAndInitializeKernelHelper(diag.InputSchema, diag.UserName, diag.Name, sampleDataPath, diag.NormalizationSnippet, diag.ReferenceDatas, diag.Functions);
+            response = await CreateAndInitializeKernelHelper(diag.InputSchema, diag.UserName, diag.Name, sampleDataPath, diag.NormalizationSnippet, diag.ReferenceDatas, diag.Functions, diag.DatabricksToken);
             if (response.Error.HasValue && response.Error.Value)
             {
                 _logger.LogError(response.Message);
@@ -203,7 +211,7 @@ namespace DataX.Flow.InteractiveQuery
                     diag.Name = await _engineEnvironment.GetUniqueName(Helper.GetSecretFromKeyvaultIfNeeded(_engineEnvironment.EngineFlowConfig.SubscriptionId), diag.DisplayName);
                 }
 
-                KernelService kernelService = new KernelService(_engineEnvironment.EngineFlowConfig.JobURLBase, _engineEnvironment.EngineFlowConfig.ServiceKeyVaultName, _engineEnvironment.EngineFlowConfig.ConfiggenSecretPrefix, _engineEnvironment.SparkConnInfo, _logger);
+                KernelService kernelService = CreateKernelService(diag.DatabricksToken);
 
                 //Create the xml with the scala steps to execute to initialize the kernel
                 var hashValue = Helper.GetHashCode(diag.UserName);
@@ -221,6 +229,18 @@ namespace DataX.Flow.InteractiveQuery
             }
         }
 
+        private KernelService CreateKernelService(string databricksToken = null)
+        {
+            if (_engineEnvironment.EngineFlowConfig.SparkType == _DataBricks)
+            {
+                return new Databricks.DatabricksKernelService(_engineEnvironment.EngineFlowConfig, _engineEnvironment.SparkConnInfo, _logger, Helper.GetSecretFromKeyvaultIfNeeded(databricksToken));
+            }
+            else
+            {
+                return new HDInsight.HDInsightKernelService(_engineEnvironment.EngineFlowConfig, _engineEnvironment.SparkConnInfo, _logger);
+            }
+        }
+
         /// <summary>
         /// This is the API method that gets called from the front end on a regular cadence and will delete all the kernels that are more than 3 hours old
         /// </summary>
@@ -235,7 +255,7 @@ namespace DataX.Flow.InteractiveQuery
                 _logger.LogError(response.Message);
                 return ApiResult.CreateError(response.Message);
             }
-            KernelService kernelService = new KernelService(_engineEnvironment.EngineFlowConfig.JobURLBase, _engineEnvironment.EngineFlowConfig.ServiceKeyVaultName, _engineEnvironment.EngineFlowConfig.ConfiggenSecretPrefix, _engineEnvironment.SparkConnInfo, _logger);
+            KernelService kernelService = CreateKernelService();
             response = await kernelService.GarbageCollectListOfKernels(_engineEnvironment.OpsBlobConnectionString, Path.Combine(_engineEnvironment.OpsDiagnosticPath, _GarbageCollectBlobName)).ConfigureAwait(false);
 
             if (response.Error.HasValue && response.Error.Value)
@@ -253,14 +273,14 @@ namespace DataX.Flow.InteractiveQuery
         /// <param name="jObject">jObject</param>
         /// <returns>Returns the result whether the list of kernels were deleted or not. We don't fail if one of the kernels fails to delete because it just does not exist</returns>
         public async Task<ApiResult> DeleteAllKernels()
-        {            
+        {
             var response = await _engineEnvironment.GetEnvironmentVariables().ConfigureAwait(false);
             if (response.Error.HasValue && response.Error.Value)
             {
                 _logger.LogError(response.Message);
                 return ApiResult.CreateError(response.Message);
             }
-            KernelService kernelService = new KernelService(_engineEnvironment.EngineFlowConfig.JobURLBase, _engineEnvironment.EngineFlowConfig.ServiceKeyVaultName, _engineEnvironment.EngineFlowConfig.ConfiggenSecretPrefix, _engineEnvironment.SparkConnInfo, _logger);
+            KernelService kernelService = CreateKernelService();
             _logger.LogInformation("Deleting all Kernels...");
             response = await kernelService.GarbageCollectListOfKernels(_engineEnvironment.OpsBlobConnectionString, Path.Combine(_engineEnvironment.OpsDiagnosticPath, _GarbageCollectBlobName), true).ConfigureAwait(false);
 
@@ -285,14 +305,14 @@ namespace DataX.Flow.InteractiveQuery
         /// <param name="referenceDatas">referenceDatas as passed in from the frontend</param>
         /// <param name="functions">functions as passed in from the frontend</param>
         /// <returns></returns>
-        private async Task<ApiResult> CreateAndInitializeKernelHelper(string rawSchema, string userId, string flowId, string sampleDataPath, string normalizationSnippet, List<ReferenceDataObject> referenceDatas, List<FunctionObject> functions)
+        private async Task<ApiResult> CreateAndInitializeKernelHelper(string rawSchema, string userId, string flowId, string sampleDataPath, string normalizationSnippet, List<ReferenceDataObject> referenceDatas, List<FunctionObject> functions, string databricksToken)
         {
             try
             {
                 //Create the xml with the scala steps to execute to initialize the kernel                
                 DiagnosticInputhelper(rawSchema, sampleDataPath, normalizationSnippet, flowId);
 
-                KernelService kernelService = new KernelService(_engineEnvironment.EngineFlowConfig.JobURLBase, _engineEnvironment.EngineFlowConfig.ServiceKeyVaultName, _engineEnvironment.EngineFlowConfig.ConfiggenSecretPrefix, _engineEnvironment.SparkConnInfo, _logger);
+                KernelService kernelService = CreateKernelService(databricksToken);
                 var response = await kernelService.GarbageCollectListOfKernels(_engineEnvironment.OpsBlobConnectionString, Path.Combine(_engineEnvironment.OpsDiagnosticPath, _GarbageCollectBlobName));
 
                 response = await kernelService.CreateKernelAsync();
@@ -357,7 +377,7 @@ namespace DataX.Flow.InteractiveQuery
 
             try
             {
-                KernelService kernelService = new KernelService(_engineEnvironment.EngineFlowConfig.JobURLBase, _engineEnvironment.EngineFlowConfig.ServiceKeyVaultName, _engineEnvironment.EngineFlowConfig.ConfiggenSecretPrefix, _engineEnvironment.SparkConnInfo, _logger);
+                KernelService kernelService = CreateKernelService(query.DatabricksToken);
                 var result = await kernelService.ExecuteQueryAsync(query.Query, query.KernelId);
                 return result;
             }
@@ -385,7 +405,7 @@ namespace DataX.Flow.InteractiveQuery
             var query = jObject.ToObject<InteractiveQueryObject>();
             try
             {
-                KernelService kernelService = new KernelService(_engineEnvironment.EngineFlowConfig.JobURLBase, _engineEnvironment.EngineFlowConfig.ServiceKeyVaultName, _engineEnvironment.EngineFlowConfig.ConfiggenSecretPrefix, _engineEnvironment.SparkConnInfo, _logger);
+                KernelService kernelService = CreateKernelService(query.DatabricksToken);
                 var result = await kernelService.GetSampleInputFromQueryAsync(query.Query, query.KernelId);
                 return result;
             }
@@ -414,7 +434,7 @@ namespace DataX.Flow.InteractiveQuery
 
             try
             {
-                KernelService kernelService = new KernelService(_engineEnvironment.EngineFlowConfig.JobURLBase, _engineEnvironment.EngineFlowConfig.ServiceKeyVaultName, _engineEnvironment.EngineFlowConfig.ConfiggenSecretPrefix, _engineEnvironment.SparkConnInfo, _logger);
+                KernelService kernelService = CreateKernelService();
                 var result = await kernelService.DeleteKernelAsync(kernelId);
                 if (!(result.Error.HasValue && result.Error.Value))
                 {

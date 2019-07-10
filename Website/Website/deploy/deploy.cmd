@@ -1,7 +1,7 @@
 @rem node deploy/zipsite.js
 set webappName=%1
 set subscriptionName=%2
-set resourceGroup=DataX
+if [%3] == [] (set resourceGroup=DataX) else (set resourceGroup=%3)
 
 :deploy
 cmd /c az account set -s %subscriptionName%
