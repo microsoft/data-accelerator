@@ -41,7 +41,7 @@ namespace DataX.Gateway.Api.Controllers
         private const int _DefaultHttpTimeoutSecs = Constants.DefaultHttpTimeoutSecs;
         private static readonly string _ReverseProxySslThumbprint;
         private static readonly string[] _AllowedUserRoles;
-        private static readonly HashSet<string> _ClientWhitelist;
+        private static readonly HashSet<string> _ClientWhitelist = new HashSet<string>();
         private static readonly ILogger _StaticLogger;
         private static readonly bool _IsUserInfoLoggingEnabled;
 
@@ -99,7 +99,7 @@ namespace DataX.Gateway.Api.Controllers
             {
                 // Do nothing in case the TestClientId is not set in the keyvault. This is set for testing purposes.
                 var message = e.Message;
-            }            
+            }
         }
 
         private async Task<ApiResult> Query(HttpRequestMessage request, string application, string service, string method, HttpMethod httpMethod)
@@ -107,9 +107,9 @@ namespace DataX.Gateway.Api.Controllers
             var roles = ((ClaimsIdentity)User.Identity).Claims
                 .Where(c => c.Type == ClaimTypes.Role)
                 .Select(c => c.Value).ToList();
-
-            var clientId = ((ClaimsIdentity)User.Identity).Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;            
-
+            
+            var clientId = ((ClaimsIdentity)User.Identity).Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            
             if (roles.Intersect(_AllowedUserRoles).Any() || _ClientWhitelist.Contains(clientId))
             {
                 // Merge original headers with custom headers
