@@ -29,7 +29,12 @@ namespace DataX.Utilities.Web
                 EnsureWriter(request);
             }
         }
-        private static void ScenarioTestHelper()
+
+        /// <summary>
+        /// A helper method that Adds the test client user id to the white list from keyvault if it exists
+        /// TODO: Support adding this whitelist on Kubernetes using IConfiguration object
+        /// </summary>
+        private static void AddWhitelistedTestClientUserId()
         {
             if (HostUtil.InServiceFabric)
             {                
@@ -60,7 +65,7 @@ namespace DataX.Utilities.Web
 
             var userrole = request.Headers[Constants.UserRolesHeader];
             var userID = request.Headers[Constants.UserIdHeader];
-            ScenarioTestHelper();
+            AddWhitelistedTestClientUserId();
             
             Ensure.NotNull(userrole, "userrole");
 
@@ -90,7 +95,7 @@ namespace DataX.Utilities.Web
 
             var userrole = request.Headers[Constants.UserRolesHeader];
             var userID = request.Headers[Constants.UserIdHeader];
-            ScenarioTestHelper();
+            AddWhitelistedTestClientUserId();
             Ensure.NotNull(userrole, "userrole");
 
             if (!userrole.ToString().Contains(ReaderRoleName) && !userrole.ToString().Contains(WriterRoleName) && !string.IsNullOrEmpty(userID) && !_ClientWhitelist.Contains(userID))
