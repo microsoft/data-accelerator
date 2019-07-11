@@ -93,7 +93,7 @@ namespace DataX.Gateway.Api.Controllers
             _StaticLogger = new ApplicationInsightsLogger("GatewayILogger", new Microsoft.ApplicationInsights.TelemetryClient(new TelemetryConfiguration(KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, appInsightsIntrumentationKey))), new ApplicationInsightsLoggerOptions());
             try
             {
-                _ClientWhitelist = new HashSet<string>() { KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, testClientId) };
+                _ClientWhitelist.Add(KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, testClientId));
             }
             catch (Exception e)
             {

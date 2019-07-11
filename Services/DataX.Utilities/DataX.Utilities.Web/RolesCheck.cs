@@ -29,7 +29,7 @@ namespace DataX.Utilities.Web
                 EnsureWriter(request);
             }
         }
-        public static void TestHelper()
+        private static void ScenarioTestHelper()
         {
             if (HostUtil.InServiceFabric)
             {                
@@ -37,7 +37,15 @@ namespace DataX.Utilities.Web
                 var configPackage = FabricRuntime.GetActivationContext().GetConfigurationPackageObject("Config");
                 var serviceEnvironmenConfig = configPackage.Settings.Sections["ServiceEnvironment"];                
                 var testClientId = serviceEnvironmenConfig.Parameters["TestClientId"].Value;
-                _ClientWhitelist.Add(KeyVault.KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, testClientId));
+                try
+                {
+                    _ClientWhitelist.Add(KeyVault.KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, testClientId));
+                }
+                catch(Exception e)
+                {
+                    // Do nothing in case the secret does not exist
+                    var message = e.Message;
+                }
             }            
         }
 
@@ -52,7 +60,7 @@ namespace DataX.Utilities.Web
 
             var userrole = request.Headers[Constants.UserRolesHeader];
             var userID = request.Headers[Constants.UserIdHeader];
-            TestHelper();
+            ScenarioTestHelper();
             
             Ensure.NotNull(userrole, "userrole");
 
@@ -82,7 +90,7 @@ namespace DataX.Utilities.Web
 
             var userrole = request.Headers[Constants.UserRolesHeader];
             var userID = request.Headers[Constants.UserIdHeader];
-            TestHelper();
+            ScenarioTestHelper();
             Ensure.NotNull(userrole, "userrole");
 
             if (!userrole.ToString().Contains(ReaderRoleName) && !userrole.ToString().Contains(WriterRoleName) && !string.IsNullOrEmpty(userID) && !_ClientWhitelist.Contains(userID))
