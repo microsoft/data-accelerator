@@ -93,12 +93,18 @@ namespace DataX.Gateway.Api.Controllers
             _StaticLogger = new ApplicationInsightsLogger("GatewayILogger", new Microsoft.ApplicationInsights.TelemetryClient(new TelemetryConfiguration(KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, appInsightsIntrumentationKey))), new ApplicationInsightsLoggerOptions());
             try
             {
-                _ClientWhitelist.Add(KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, testClientId));
+                // Each secret needs to be a list of unique Ids in the format {ObjectId}.{TenantId}
+                List<string> userIdList = KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, testClientId).Split(new char[] { ',' }).ToList();
+                foreach(string userId in userIdList)
+                {
+                    _ClientWhitelist.Add(userId);                    
+                }
             }
             catch (Exception e)
             {
                 // Do nothing in case the TestClientId is not set in the keyvault. This is set for testing purposes.
                 var message = e.Message;
+                _StaticLogger.LogError(e.Message);
             }
         }
 
@@ -107,8 +113,7 @@ namespace DataX.Gateway.Api.Controllers
             var roles = ((ClaimsIdentity)User.Identity).Claims
                 .Where(c => c.Type == ClaimTypes.Role)
                 .Select(c => c.Value).ToList();
-            
-            var clientId = ((ClaimsIdentity)User.Identity).Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var clientId = $"{ClaimsPrincipal.Current.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value}.{ClaimsPrincipal.Current.FindFirst("http://schemas.microsoft.com/identity/claims/tenantid")?.Value}";
             
             if (roles.Intersect(_AllowedUserRoles).Any() || _ClientWhitelist.Contains(clientId))
             {
@@ -167,8 +172,8 @@ namespace DataX.Gateway.Api.Controllers
         {
             var headers = new Dictionary<string, string>();
             var userName = ClaimsPrincipal.Current.FindFirst(ClaimTypes.Upn) != null ? ClaimsPrincipal.Current.FindFirst(ClaimTypes.Upn).Value : ClaimsPrincipal.Current.FindFirst(ClaimTypes.Email)?.Value;
-            headers.Add(_UserNameHeader, userName ?? string.Empty);
-            var userId = ClaimsPrincipal.Current.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
+            headers.Add(_UserNameHeader, userName ?? string.Empty);            
+            var userId = $"{ClaimsPrincipal.Current.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value}.{ClaimsPrincipal.Current.FindFirst("http://schemas.microsoft.com/identity/claims/tenantid")?.Value}";
             headers.Add(_UserIdHeader, userId ?? string.Empty);
             var roles = ((ClaimsIdentity)User.Identity).Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
             headers.Add(_UserRolesHeader, JArray.FromObject(roles).ToString(Formatting.None));

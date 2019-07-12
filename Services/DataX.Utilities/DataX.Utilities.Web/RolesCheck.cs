@@ -10,6 +10,7 @@ using DataX.ServiceHost;
 using DataX.ServiceHost.ServiceFabric;
 using System.Collections.Generic;
 using System.Fabric;
+using System.Linq;
 
 namespace DataX.Utilities.Web
 {
@@ -44,11 +45,16 @@ namespace DataX.Utilities.Web
                 var testClientId = serviceEnvironmenConfig.Parameters["TestClientId"].Value;
                 try
                 {
-                    _ClientWhitelist.Add(KeyVault.KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, testClientId));
+                    // Each secret needs to be in the format {ObjectId}.{TenantId}
+                    List<string> userIdList = KeyVault.KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, testClientId).Split(new char[] { ',' }).ToList();
+                    foreach (string userId in userIdList)
+                    {
+                        _ClientWhitelist.Add(userId);
+                    }                    
                 }
                 catch(Exception e)
                 {
-                    // Do nothing in case the secret does not exist
+                    // Do nothing in case the secret does not exist. 
                     var message = e.Message;
                 }
             }            
@@ -69,7 +75,7 @@ namespace DataX.Utilities.Web
             
             Ensure.NotNull(userrole, "userrole");
 
-            if (!userrole.ToString().Contains(WriterRoleName) && !string.IsNullOrEmpty(userID) && !_ClientWhitelist.Contains(userID))
+            if (!userrole.ToString().Contains(WriterRoleName) && !_ClientWhitelist.Contains(userID))
             {
                 throw new System.Exception($"{WriterRoleName} role needed to perform this action.  User has the following roles: {userrole}");
             }
@@ -98,7 +104,7 @@ namespace DataX.Utilities.Web
             AddWhitelistedTestClientUserId();
             Ensure.NotNull(userrole, "userrole");
 
-            if (!userrole.ToString().Contains(ReaderRoleName) && !userrole.ToString().Contains(WriterRoleName) && !string.IsNullOrEmpty(userID) && !_ClientWhitelist.Contains(userID))
+            if (!userrole.ToString().Contains(ReaderRoleName) && !userrole.ToString().Contains(WriterRoleName) && !_ClientWhitelist.Contains(userID))
             {
                 throw new System.Exception($"{ReaderRoleName} role needed to perform this action.  User has the following roles: {userrole}");
             }
