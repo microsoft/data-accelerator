@@ -18,6 +18,7 @@ Licensed under the MIT License
     <Parameter Name="Tenant" DefaultValue="" />
     <Parameter Name="ServiceKeyvaultName" DefaultValue="" />
     <Parameter Name="AppInsightsIntrumentationKey" DefaultValue="" />
+    <Parameter Name="TestClientId" DefaultValue="" />
     <Parameter Name="EnableUserInfoLogging" DefaultValue="" />
   </Parameters>
   <ServiceManifestImport>
@@ -38,6 +39,7 @@ Licensed under the MIT License
           <Section Name="ServiceEnvironment">
             <Parameter Name="ServiceKeyvaultName" Value="[ServiceKeyvaultName]" />
             <Parameter Name="AppInsightsIntrumentationKey" Value="[AppInsightsIntrumentationKey]" />
+            <Parameter Name="TestClientId" Value="[TestClientId]" />
             <Parameter Name="EnableUserInfoLogging" Value="[EnableUserInfoLogging]" />
           </Section>
         </Settings>
