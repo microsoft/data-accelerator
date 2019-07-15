@@ -7,7 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 
-namespace Microsoft.TestCommon.Utilities.ScenarioTester
+namespace ScenarioTester
 {
     /// <summary>
     /// Shared context for all the scenario steps. Could be used to pass in parameters

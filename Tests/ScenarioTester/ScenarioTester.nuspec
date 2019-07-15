@@ -15,7 +15,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="..\applicationpackage\*.sfpkg" target="lib" />
     <file src="..\dlls\*.dll" target="lib/netcoreapp2.2" />
   </files>
 </package>

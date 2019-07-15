@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Microsoft.TestCommon.Utilities.ScenarioTester
+namespace ScenarioTester
 {
     /// <summary>
     /// Identifies a scenario step method. Must be static <see cref="ScenarioStep"/>

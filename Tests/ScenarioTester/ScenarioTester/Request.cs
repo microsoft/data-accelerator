@@ -10,7 +10,7 @@ using System.Net;
 using System.Text;
 using static System.FormattableString;
 
-namespace Microsoft.TestCommon.Utilities.ScenarioTester
+namespace ScenarioTester
 {
     /// <summary>
     /// Content to be sent to the Request

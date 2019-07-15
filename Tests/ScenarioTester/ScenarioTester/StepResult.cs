@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Microsoft.TestCommon.Utilities.ScenarioTester
+namespace ScenarioTester
 {
     /// <summary>
     /// Result of the <see cref="ScenarioStep"/> execution.

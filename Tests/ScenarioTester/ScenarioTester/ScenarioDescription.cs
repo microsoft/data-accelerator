@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Microsoft.TestCommon.Utilities.ScenarioTester
+namespace ScenarioTester
 {
     /// <summary>
     /// Describes a scenario of different "actions" sharing the same context.

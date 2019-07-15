@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Microsoft.TestCommon.Utilities.ScenarioTester
+namespace ScenarioTester
 {
     /// <summary>
     /// Attribute to identity which steps to skip time reporting on.

@@ -3,7 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 
-using Microsoft.TestCommon.Utilities.ScenarioTester;
+using ScenarioTester;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 
