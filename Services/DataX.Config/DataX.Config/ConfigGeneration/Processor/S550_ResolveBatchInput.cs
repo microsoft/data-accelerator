@@ -49,7 +49,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                     if (!string.IsNullOrEmpty(inputConnection) && !KeyVaultUri.IsSecretUri(inputConnection))
                     {
                         var secretName = $"{guiConfig.Name}-input-{i}-inputConnection";
-                        var secretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, inputConnection).ConfigureAwait(false);
+                        var secretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, inputConnection, Configuration[Constants.ConfigSettingName_SparkType]).ConfigureAwait(false);
                         input.Properties.Connection = secretId;
                     }
 
@@ -57,7 +57,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                     if (!string.IsNullOrEmpty(inputPath) && !KeyVaultUri.IsSecretUri(inputPath))
                     {
                         var secretName = $"{guiConfig.Name}-input-{i}-inputPath";
-                        var secretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, inputPath).ConfigureAwait(false);
+                        var secretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, inputPath, Configuration[Constants.ConfigSettingName_SparkType]).ConfigureAwait(false);
                         input.Properties.Path = secretId;
                     }
                 }
