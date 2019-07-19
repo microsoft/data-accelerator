@@ -45,6 +45,9 @@ namespace DataX.Config.ConfigDataModel
         public const string InputMode_Streaming = "streaming";
         public const string InputMode_Batching = "batching";
 
+        public const string Batch_Recurring = "recurring";
+        public const string Batch_OneTime = "oneTime";
+
         public const string SparkTypeDataBricks = "databricks";
         public const string SparkTypeHDInsight = "HDInsight";
 

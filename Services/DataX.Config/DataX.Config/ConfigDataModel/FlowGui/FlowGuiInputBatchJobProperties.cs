@@ -3,30 +3,37 @@
 // Licensed under the MIT License
 // *********************************************************************
 using Newtonsoft.Json;
+using System;
 
 namespace DataX.Config.ConfigDataModel
 {
-    public class FlowGuiInputBatchingJob
+    public class FlowGuiInputBatchJobProperties
     {
         [JsonProperty("interval")]
         public string Interval { get; set; }
 
-        [JsonProperty("offset")]
-        public string Offset { get; set; }
+        [JsonProperty("intervalType")]
+        public string IntervalType { get; set; }
+
+        [JsonProperty("delay")]
+        public string Delay { get; set; }
+
+        [JsonProperty("delayType")]
+        public string DelayType { get; set; }
 
         [JsonProperty("window")]
         public string Window { get; set; }
 
+        [JsonProperty("windowType")]
+        public string WindowType { get; set; }
+
         [JsonProperty("startTime")]
-        public string StartTime { get; set; }
+        public DateTime? StartTime { get; set; }
 
         [JsonProperty("endTime")]
-        public string EndTime { get; set; }
+        public DateTime? EndTime { get; set; }
 
         [JsonProperty("lastProcessedTime")]
         public string LastProcessedTime { get; set; }
-
-        [JsonProperty("disabled")]
-        public bool Disabled { get; set; }
     }
 }

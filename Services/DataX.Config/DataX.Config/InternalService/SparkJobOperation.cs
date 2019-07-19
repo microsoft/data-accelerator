@@ -2,14 +2,12 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using DataX.Config.ConfigDataModel;
-using DataX.Config.Utility;
 using DataX.Contract;
 using DataX.Contract.Exception;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
 using System.Threading.Tasks;
@@ -45,7 +43,7 @@ namespace DataX.Config
         {
             Ensure.NotNull(jobName, "jobName");
             Logger.LogInformation($"starting job '{jobName}'");
-            var job = await EnsureJobState(jobName, JobState.Idle);
+            var job = await EnsureJobState(jobName);
             var sparkJobClient = await ClusterManager.GetSparkJobClient(job.Cluster, job.DatabricksToken);
             var result = await sparkJobClient.SubmitJob(job.Options);
 
@@ -225,14 +223,13 @@ namespace DataX.Config
         /// Make sure a job is in the specified state within 
         /// </summary>
         /// <param name="jobName">job name</param>
-        /// <param name="state">desired state</param>
         /// <param name="retries">retries to check for state</param>
         /// <param name="intervalInMs">interval in milliseconds to start perform next check</param>
         /// <returns>the job config</returns>
-        private async Task<SparkJobConfig> EnsureJobState(string jobName, JobState state, int retries = _DefaultRetries, int intervalInMs = _DefaultIntervalInMs)
+        private async Task<SparkJobConfig> EnsureJobState(string jobName, int retries = _DefaultRetries, int intervalInMs = _DefaultIntervalInMs)
         {
             Ensure.NotNull(jobName, "jobName");
-            Logger.LogInformation($"ensuring job '{jobName}' state to be '{state}'");
+            Logger.LogInformation($"ensuring job '{jobName}' state to be idle or success");
             int i = 0;
             while (i < retries)
             {
@@ -240,7 +237,7 @@ namespace DataX.Config
                 {
                     //Get Job data
                     var job = await SyncJobState(jobName);
-                    if (job.SyncResult.JobState == state)
+                    if (job.SyncResult.JobState == JobState.Idle || job.SyncResult.JobState == JobState.Success)
                     {
                         return job;
                     }
@@ -255,7 +252,7 @@ namespace DataX.Config
                 i++;
             }
 
-            throw new GeneralException($"Job '{jobName}' failed to get to state '{state}' after '{retries}' sync attempts");
+            throw new GeneralException($"Job '{jobName}' failed to get to state idle or success after '{retries}' sync attempts");
         }
 
         public async Task<T> RetryInCaseOfException<T>(Func<Task<T>> func, DateTime timeout, TimeSpan interval)

@@ -42,6 +42,8 @@ namespace DataX.Config.ConfigDataModel
         public FlowGuiOutputTemplate[] OutputTemplates { get; set; }
         [JsonProperty("rules")]
         public FlowGuiRule[] Rules { get; set; }
+        [JsonProperty("batchList")]
+        public FlowGuiInputBatchJob[] BatchList { get; set; }
         [JsonProperty("subscription")]
         public string Subscription { get; set; }
         #endregion

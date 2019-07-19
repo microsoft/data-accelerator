@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Composition;
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -22,13 +21,13 @@ namespace DataX.Config.ConfigGeneration.Processor
     /// </summary>
     [Shared]
     [Export(typeof(IFlowDeploymentProcessor))]
-    public class GenerateJobConfigBatching : ProcessorBase
+    public class GenerateJobConfigBatch : ProcessorBase
     {
         public const string TokenName__DefaultJobConfig = "defaultJobConfig";
         public const string TokenName_InputBatching = "inputBatching";
 
         [ImportingConstructor]
-        public GenerateJobConfigBatching(JobDataManager jobs, FlowDataManager flowData, IKeyVaultClient keyVaultClient)
+        public GenerateJobConfigBatch(JobDataManager jobs, FlowDataManager flowData, IKeyVaultClient keyVaultClient)
         {
             this.JobData = jobs;
             this.FlowData = flowData;
@@ -85,104 +84,117 @@ namespace DataX.Config.ConfigGeneration.Processor
 
             var jcons = new List<JobConfig>();
 
-
-            job.JobConfigs.AddRange(await GetJobConfig(job, inputConfig.Input.Batching, inputConfig.Input.Batching.Recurring, destFolder, defaultJobConfig).ConfigureAwait(false));
-
-            foreach (var item in inputConfig.Input.Batching.Onetime)
+            for (int i = 0; i < inputConfig.BatchList.Length; i++)
             {
-                job.JobConfigs.AddRange(await GetJobConfig(job, inputConfig.Input.Batching, item, destFolder, defaultJobConfig, true).ConfigureAwait(false));
+                job.JobConfigs.AddRange(await GetJobConfig(job, inputConfig.BatchList[i], destFolder, defaultJobConfig, i).ConfigureAwait(false));
             }
         }
 
-        private async Task<List<JobConfig>> GetJobConfig(JobDeploymentSession job, FlowGuiInputBatching flowGuiInputBatching, FlowGuiInputBatchingJob batchingJob,
+
+        private async Task<List<JobConfig>> GetJobConfig(JobDeploymentSession job, FlowGuiInputBatchJob batchingJob,
           string destFolder,
           JsonConfig defaultJobConfig,
-          bool isOneTime = false)
+          int index)
         {
+            bool isOneTime = batchingJob.Type == Constants.Batch_OneTime;
             var jQueue = new List<JobConfig>();
-            var schedulerStartTime = DateTime.Parse(batchingJob.StartTime);
-            var schedulerEndTime = DateTime.Parse(batchingJob.EndTime);
-            var interval = TranslateInterval(batchingJob.Interval);
-            var delay = TranslateDelay(batchingJob.Offset);
-            var window = TranslateWindow(batchingJob.Window);
+            var batchProps = batchingJob.Properties;
 
-            DateTime processedTime;
-
-            if (batchingJob.Disabled)
+            if (batchingJob.Disabled || batchProps.StartTime == null || (isOneTime && batchProps.EndTime == null))
             {
                 return jQueue;
             }
 
+            var configStartTime = (DateTime)batchProps.StartTime;
+            var configEndTime = batchProps.EndTime;
+
+            var interval = TranslateInterval(batchProps.Interval, batchProps.IntervalType);
+            var delay = TranslateDelay(batchProps.Delay, batchProps.DelayType);
+            var window = TranslateWindow(batchProps.Window, batchProps.WindowType);
+
+            var currentTime = DateTime.UtcNow;
+
             if (!isOneTime)
             {
-                if (schedulerEndTime < DateTime.Now)
+                if (currentTime < configStartTime || (configEndTime != null && configEndTime < currentTime))
                 {
-                    DisableBatchConfig(job.Flow.Config, isOneTime).ConfigureAwait(false);
+                    await DisableBatchConfig(job.Flow.Config, index).ConfigureAwait(false);
                     return jQueue;
                 }
+            }
 
-                // Recurring New
-                if (string.IsNullOrEmpty(batchingJob.LastProcessedTime))
+            DateTime startTime;
+            DateTime? endTime;
+
+            var prefix = "";
+
+            if (!isOneTime)
+            {
+                if (string.IsNullOrEmpty(batchProps.LastProcessedTime))
                 {
-                    var processingTime = schedulerStartTime;
-                    var scheduledTime = NormalizeTimeBasedOnInterval(schedulerStartTime, batchingJob.Interval, delay);
-
-                    JobConfig jc = await ScheduleSingleJob(job, destFolder, defaultJobConfig, isOneTime, interval, window, scheduledTime, processingTime).ConfigureAwait(false);
-                    processedTime = processingTime;
-                    jQueue.Add(jc);
-
+                    startTime = configStartTime;
+                    endTime = currentTime;
                 }
                 else
                 {
-                    // Recurring Existing 
+                    var lastProcessedTimeFromConfig = UnixTimestampToDateTime(batchProps.LastProcessedTime);
+                    var startTimeBasedOnLastProcessedTImeFromConfig = lastProcessedTimeFromConfig.Add(interval);
 
-                    var lastProcessedTime = UnixTimestampToDateTime(batchingJob.LastProcessedTime);
-                    var processTime = lastProcessedTime.AddMinutes(interval);
-
-                    var processingTime = processTime;
-                    var scheduledTime = NormalizeTimeBasedOnInterval(processTime, batchingJob.Interval, delay);
-
-                    JobConfig jc = await ScheduleSingleJob(job, destFolder, defaultJobConfig, isOneTime, interval, window, scheduledTime, processingTime).ConfigureAwait(false);
-                    processedTime = processingTime;
-                    jQueue.Add(jc);
+                    startTime = startTimeBasedOnLastProcessedTImeFromConfig;
+                    endTime = currentTime;
                 }
+            }
+            else
+            {
+                prefix = "-OneTime";
 
-                var uTimestamp = DateTimeToUnixTimestamp(processedTime);
-                var ret = await this.FlowData.UpdateLastProcessedTimeForFlow(job.Name, uTimestamp).ConfigureAwait(false);
-                if (!ret.IsSuccess)
+                startTime = configStartTime;
+                endTime = configEndTime;
+            }
+
+            DateTime lastProcessingTime = new DateTime();
+            for (var processingTime = startTime; processingTime <= endTime; processingTime += interval)
+            {
+                lastProcessingTime = processingTime;
+                var processingTimeBasedOnInterval = NormalizeTimeBasedOnInterval(processingTime, batchProps.IntervalType, new TimeSpan());
+                var processingTimeBasedOnDelay = NormalizeTimeBasedOnInterval(processingTime, batchProps.IntervalType, delay);
+                JobConfig jc = await ScheduleSingleJob(job, destFolder, defaultJobConfig, isOneTime, interval, window, processingTimeBasedOnDelay, processingTimeBasedOnInterval, prefix).ConfigureAwait(false);
+                jQueue.Add(jc);
+            }
+
+            if (!isOneTime)
+            {
+                if (lastProcessingTime != DateTime.MinValue)
                 {
-                    throw new ConfigGenerationException(ret.Message);
+                    var uTimestamp = DateTimeToUnixTimestamp(lastProcessingTime);
+                    if (uTimestamp > 0)
+                    {
+                        var ret = await UpdateLastProcessedTime(job.Flow.Config, index, uTimestamp).ConfigureAwait(false);
+                        if (!ret.IsSuccess)
+                        {
+                            throw new ConfigGenerationException(ret.Message);
+                        }
+                    }
                 }
-
-
             }
             else
             {
                 // OneTime
-                var processTime = schedulerStartTime;
-                while (processTime <= schedulerEndTime)
-                {
-                    var processingTime = processTime;
-                    var scheduledTime = NormalizeTimeBasedOnInterval(processTime, batchingJob.Interval, delay);
-                    var prefix = "-OneTime";
-                    JobConfig jc = await ScheduleSingleJob(job, destFolder, defaultJobConfig, isOneTime, interval, window, processTime, processingTime, prefix).ConfigureAwait(false);
-                    processTime = processTime.AddMinutes(interval);
-                    jQueue.Add(jc);
-                }
-
-                var ret = await DisableBatchConfig(job.Flow.Config, isOneTime).ConfigureAwait(false);
+                var ret = await DisableBatchConfig(job.Flow.Config, index).ConfigureAwait(false);
                 if (!ret.IsSuccess)
                 {
                     throw new ConfigGenerationException(ret.Message);
                 }
+
             }
+
             return jQueue;
         }
 
-        private async Task<JobConfig> ScheduleSingleJob(JobDeploymentSession job, string destFolder, JsonConfig defaultJobConfig, bool isOneTime, long interval, TimeSpan window, DateTime processTime, DateTime scheduledTime, string prefix = "")
+        private async Task<JobConfig> ScheduleSingleJob(JobDeploymentSession job, string destFolder, JsonConfig defaultJobConfig, bool isOneTime, TimeSpan interval, TimeSpan window, DateTime processTime, DateTime scheduledTime, string prefix = "")
         {
             var ps_s = processTime;
-            var ps_e = processTime.AddMinutes(interval).AddMilliseconds(-1); //ENDTIME
+            var ps_e = processTime.Add(interval).AddMilliseconds(-1); //ENDTIME
 
             var pe_s = ps_s.Add(-window);
             var pe_e = ps_e.Add(-window); // STARTTIME
@@ -192,15 +204,14 @@ namespace DataX.Config.ConfigGeneration.Processor
             var jobName = job.Name + suffix;
             job.SetStringToken("name", jobName);
 
-            var newJobConfig = job.Tokens.Resolve(defaultJobConfig);
-            Ensure.NotNull(newJobConfig, "newJobConfig");
+            Ensure.NotNull(defaultJobConfig, "defaultJobConfig");
 
             var processStartTime = ConvertDateToString(pe_e);
             var processEndTime = ConvertDateToString(ps_e);
 
             var jc = new JobConfig
             {
-                Content = await GetBatchConfigContent(job.Flow.Config.GetGuiConfig(), job, newJobConfig.ToString(), processStartTime, processEndTime).ConfigureAwait(false),
+                Content = await GetBatchConfigContent(job, defaultJobConfig.ToString(), processStartTime, processEndTime).ConfigureAwait(false),
                 FilePath = ResourcePathUtil.Combine(destFolder, job.Name + ".json"),
                 Name = jobName,
                 SparkJobName = job.SparkJobName + suffix,
@@ -213,29 +224,17 @@ namespace DataX.Config.ConfigGeneration.Processor
             return jc;
         }
 
-        private async Task<string> GetBatchConfigContent(FlowGuiConfig inputConfig, JobDeploymentSession job, string content, string processStartTime, string processEndTime)
+        private async Task<string> GetBatchConfigContent(JobDeploymentSession job, string content, string processStartTime, string processEndTime)
         {
-            var inputBatching = inputConfig.Input.Batching.Inputs ?? Array.Empty<FlowGuiInputBatchingInput>();
-            var specsTasks = inputBatching.Select(async rd =>
+            var specsBackup = job.GetAttachment<InputBatchingSpec[]>(TokenName_InputBatching);
+
+            foreach (var spec in specsBackup)
             {
-                var connectionString = await KeyVaultClient.ResolveSecretUriAsync(rd.InputConnection).ConfigureAwait(false);
-                var inputPath = await KeyVaultClient.ResolveSecretUriAsync(rd.InputPath).ConfigureAwait(false);
+                spec.ProcessStartTime = processStartTime;
+                spec.ProcessEndTime = processEndTime;
+            }
 
-                return new InputBatchingSpec()
-                {
-                    Name = ParseBlobAccountName(connectionString),
-                    Path = rd.InputPath,
-                    Format = "JSON",
-                    CompressionType = "None",
-                    ProcessStartTime = processStartTime,
-                    ProcessEndTime = processEndTime,
-                    PartitionIncrement = GetPartitionIncrement(inputPath).ToString(CultureInfo.InvariantCulture),
-                };
-            }).ToArray();
-
-            var specs = await Task.WhenAll(specsTasks).ConfigureAwait(false);
-
-            job.SetObjectToken(TokenName_InputBatching, specs);
+            job.SetObjectToken(TokenName_InputBatching, specsBackup);
 
             var jsonContent = job.Tokens.Resolve(content);
 
@@ -252,7 +251,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             return await this.JobData.DeleteConfigs(folderToDelete);
         }
         
-        private static DateTime NormalizeTimeBasedOnInterval(DateTime dateTime, string interval, TimeSpan delay)
+        private static DateTime NormalizeTimeBasedOnInterval(DateTime dateTime, string intervalType, TimeSpan delay)
         {
             dateTime = dateTime.Add(-delay);
             int second = dateTime.Second;
@@ -262,33 +261,22 @@ namespace DataX.Config.ConfigGeneration.Processor
             int month = dateTime.Month;
             int year = dateTime.Year;
 
-            switch (interval)
+            switch (intervalType)
             {
-                case "m":
+                case "min":
                     {
                         second = 0;
                         break;
                     }
-                case "h":
+                case "hour":
                     {
+                        second = 0;
                         minute = 0;
-                        break;
-                    }
-                case "d":
-                    {
-                        minute = 0;
-                        hour = 0;
-                        break;
-                    }
-                case "mm":
-                    {
-                        minute = 0;
-                        hour = 0;
-                        day = 0;
                         break;
                     }
                 default:
                     {
+                        second = 0;
                         minute = 0;
                         hour = 0;
                         break;
@@ -298,63 +286,43 @@ namespace DataX.Config.ConfigGeneration.Processor
             return new DateTime(year, month, day, hour, minute, second);
         }
 
-        private static int TranslateIntervalHelper(string value)
+        private static int TranslateIntervalHelper(string unit)
         {
-            switch (value)
+            switch (unit)
             {
-                case "m":
+                case "min":
                     return 1;
-                case "h":
+                case "hour":
                     return 60;
-                case "d":
-                    return 60 * 24;
-                case "mm":
-                    return 60 * 24 * 30;
                 default:
-                    return 1;
+                    return 60 * 24;
             }
         }
 
-        private static int TranslateInterval(string interval)
+        private static TimeSpan TranslateInterval(string value, string unit)
         {
-            return TranslateIntervalHelper(interval);
+            var translatedValue = TranslateIntervalHelper(unit);
+            int multiplier = Convert.ToInt32(value, CultureInfo.InvariantCulture);
+            translatedValue = translatedValue * multiplier;
+
+            var timeSpan = new TimeSpan(0, 0, translatedValue, 0, 0);
+            return timeSpan;
         }
 
-        private static TimeSpan TranslateWindow(string window)
+        private static TimeSpan TranslateWindow(string value, string unit)
         {
-            if (string.IsNullOrEmpty(window))
-            {
-                return new TimeSpan();
-            }
-
-            var values = window.Split(' ');
-            if (values == null || values.Length < 2)
-            {
-                throw new ConfigGenerationException($"Batching window value is not correct");
-            }
-
-            var translatedValue = TranslateIntervalHelper(values[1]);
-            int multiplier = Convert.ToInt32(values[0], CultureInfo.InvariantCulture);
+            var translatedValue = TranslateIntervalHelper(unit);
+            int multiplier = Convert.ToInt32(value, CultureInfo.InvariantCulture);
             translatedValue = translatedValue * multiplier;
 
             var timeSpan = new TimeSpan(0, 0, translatedValue - 1, 59, 59);
             return timeSpan;
         }
 
-        private static TimeSpan TranslateDelay(string offset)
+        private static TimeSpan TranslateDelay(string value, string unit)
         {
-            if (string.IsNullOrEmpty(offset))
-            {
-                return new TimeSpan();
-            }
-            var values = offset.Split(' ');
-            if (values == null || values.Length < 2)
-            {
-                throw new ConfigGenerationException($"Batching offset value is not correct");
-            }
-
-            var translatedValue = TranslateIntervalHelper(values[1]);
-            int multiplier = Convert.ToInt32(values[0], CultureInfo.InvariantCulture);
+            var translatedValue = TranslateIntervalHelper(unit);
+            int multiplier = Convert.ToInt32(value, CultureInfo.InvariantCulture);
             translatedValue = translatedValue * multiplier;
 
             var timeSpan = new TimeSpan(0, 0, translatedValue, 0, 0);
@@ -380,7 +348,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             return unixStart.AddSeconds(uTime);
         }
         
-        private async Task<Result> DisableBatchConfig(FlowConfig config, bool isOneTime)
+        private async Task<Result> DisableBatchConfig(FlowConfig config, int index)
         {
             var existingFlow = await FlowData.GetByName(config.Name).ConfigureAwait(false);
             Result result = null;
@@ -388,21 +356,26 @@ namespace DataX.Config.ConfigGeneration.Processor
             {
                 var gui = config.GetGuiConfig();
 
-                if (isOneTime)
-                {
-                    var jobs = gui.Input.Batching.Onetime;
+                var batch = gui.BatchList[index];
+                batch.Disabled = true;
+                
+                config.Gui = JObject.FromObject(gui);
+                result = await FlowData.UpdateGuiForFlow(config.Name, config.Gui).ConfigureAwait(false);
+            }
 
-                    foreach (var job in jobs)
-                    {
-                        job.Disabled = true;
-                    }
-                }
-                else
-                {
-                    var job = gui.Input.Batching.Recurring;
+            return result;
+        }
 
-                    job.Disabled = true;
-                }
+        private async Task<Result> UpdateLastProcessedTime(FlowConfig config, int index, long value)
+        {
+            var existingFlow = await FlowData.GetByName(config.Name).ConfigureAwait(false);
+            Result result = null;
+            if (existingFlow != null)
+            {
+                var gui = config.GetGuiConfig();
+
+                var batch = gui.BatchList[index];
+                batch.Properties.LastProcessedTime = value.ToString(CultureInfo.InvariantCulture);
 
                 config.Gui = JObject.FromObject(gui);
                 result = await FlowData.UpdateGuiForFlow(config.Name, config.Gui).ConfigureAwait(false);
@@ -442,21 +415,5 @@ namespace DataX.Config.ConfigGeneration.Processor
 
             return 1;
         }
-
-        private static string ParseBlobAccountName(string connectionString)
-        {
-            string matched;
-            try
-            {
-                matched = Regex.Match(connectionString, @"(?<=AccountName=)(.*)(?=;AccountKey)").Value;
-            }
-            catch (Exception)
-            {
-                return "The connectionString does not have AccountName";
-            }
-
-            return matched;
-        }
-
     }
 }

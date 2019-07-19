@@ -61,7 +61,7 @@ namespace DataX.Config.ConfigGeneration.Processor
 
                     var jsonContent = job.Tokens.Resolve(jc.Content);
                     var destFolder = job.GetTokenString(PrepareJobConfigVariables.TokenName_RuntimeConfigFolder);
-                    destFolder = this.GetJobConfigFilePath(jc.IsOneTime, jc.ProcessingTime, destFolder);
+                    destFolder = this.GetJobConfigFilePath(inputConfig.Input.Mode, jc.IsOneTime, jc.ProcessingTime, destFolder);
 
                     if (jsonContent != null)
                     {
@@ -79,13 +79,20 @@ namespace DataX.Config.ConfigGeneration.Processor
 
             return "done";
         }
-        private string GetJobConfigFilePath(bool isOneTime, string partitionName, string baseFolder)
+        private string GetJobConfigFilePath(string mode, bool isOneTime, string partitionName, string baseFolder)
         {
             var oneTimeFolderName = "";
 
-            if (isOneTime)
+            if (mode == Constants.InputMode_Batching)
             {
-                oneTimeFolderName = $"OneTime/{Regex.Replace(partitionName, "[^0-9]", "")}";
+                if (isOneTime)
+                {
+                    oneTimeFolderName = $"OneTime/{Regex.Replace(partitionName, "[^0-9]", "")}";
+                }
+                else 
+                {
+                    oneTimeFolderName = $"Recurring/{Regex.Replace(partitionName, "[^0-9]", "")}";
+                }
             }
 
             return ResourcePathUtil.Combine(baseFolder, oneTimeFolderName);
