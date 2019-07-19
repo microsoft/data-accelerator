@@ -1,4 +1,7 @@
-﻿using DataX.Contract;
+﻿// *********************************************************************
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License
+// *********************************************************************
 using DataX.Utility.ServiceCommunication;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -40,8 +43,8 @@ namespace DataX.Flow.Scheduler
 
                 await StartBatchJobs();
 
-                await Task.Delay(20 * 1000, stoppingToken);
-                //await Task.Delay(_schedulerWakeupFrequencyInMin * _oneMinInMilliSeconds, stoppingToken);
+                //await Task.Delay(20 * 1000, stoppingToken);
+                await Task.Delay(_schedulerWakeupFrequencyInMin * _oneMinInMilliSeconds, stoppingToken);
             }
 
             _logger.LogInformation($"{DateTime.UtcNow}: TimedScheduler background task is stopping.");
