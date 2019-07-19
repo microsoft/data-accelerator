@@ -43,7 +43,6 @@ namespace DataX.Flow.Scheduler
 
                 await StartBatchJobs();
 
-                //await Task.Delay(20 * 1000, stoppingToken);
                 await Task.Delay(_schedulerWakeupFrequencyInMin * _oneMinInMilliSeconds, stoppingToken);
             }
 

@@ -39,11 +39,19 @@ namespace DataX.Utility.ServiceCommunication
             };
         }
 
+        /// <summary>
+        /// Make request using reverse proxy
+        /// </summary>
+        /// <returns></returns>
         public virtual async Task<ApiResult> InvokeServiceAsync(HttpMethod httpMethod, string application, string service, string method, string content = null)
         {
             return await InvokeServiceAsAsyncHelper(httpMethod, application, service, method, content);
         }
 
+        /// <summary>
+        /// Make request Helper
+        /// </summary>
+        /// <returns></returns>
         private async Task<ApiResult> InvokeServiceAsAsyncHelper(HttpMethod httpMethod, string application, string service, string method, string content)
         {
             var serviceUri = new Uri($"http://localhost:{_ReverseProxyPort}/{application}/{service}/");
@@ -76,6 +84,10 @@ namespace DataX.Utility.ServiceCommunication
             return result;
         }
 
+        /// <summary>
+        /// Proxy response message
+        /// </summary>
+        /// <returns></returns>
         private async void ProxyResponse(ApiResult result, HttpResponseMessage response)
         {
             var content = await response.Content.ReadAsStringAsync();

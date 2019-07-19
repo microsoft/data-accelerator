@@ -79,6 +79,11 @@ namespace DataX.Config.ConfigGeneration.Processor
 
             return "done";
         }
+
+        /// <summary>
+        /// Get the job config path based on the job type
+        /// </summary>
+        /// <returns></returns>
         private string GetJobConfigFilePath(string mode, bool isOneTime, string partitionName, string baseFolder)
         {
             var oneTimeFolderName = "";

@@ -75,6 +75,10 @@ namespace DataX.Config.ConfigGeneration.Processor
             }
         }
 
+        /// <summary>
+        /// Generate job config with the jobs scheduled
+        /// </summary>
+        /// <returns></returns>
         private async Task GenerateJobConfigContent(JobDeploymentSession job, string destFolder, JsonConfig defaultJobConfig)
         {
             Ensure.NotNull(destFolder, "destFolder");
@@ -90,7 +94,11 @@ namespace DataX.Config.ConfigGeneration.Processor
             }
         }
 
-
+        /// <summary>
+        /// Prepare for scheduling batch jobs
+        /// e.g. Calculate the processTime and startTime and endTime
+        /// </summary>
+        /// <returns></returns>
         private async Task<List<JobConfig>> GetJobConfig(JobDeploymentSession job, FlowGuiInputBatchJob batchingJob,
           string destFolder,
           JsonConfig defaultJobConfig,
@@ -191,6 +199,10 @@ namespace DataX.Config.ConfigGeneration.Processor
             return jQueue;
         }
 
+        /// <summary>
+        /// Schedule a batch job
+        /// </summary>
+        /// <returns></returns>
         private async Task<JobConfig> ScheduleSingleJob(JobDeploymentSession job, string destFolder, JsonConfig defaultJobConfig, bool isOneTime, TimeSpan interval, TimeSpan window, DateTime processTime, DateTime scheduledTime, string prefix = "")
         {
             var ps_s = processTime;
@@ -224,6 +236,10 @@ namespace DataX.Config.ConfigGeneration.Processor
             return jc;
         }
 
+        /// <summary>
+        /// Get a batch job config
+        /// </summary>
+        /// <returns></returns>
         private async Task<string> GetBatchConfigContent(JobDeploymentSession job, string content, string processStartTime, string processEndTime)
         {
             var specsBackup = job.GetAttachment<InputBatchingSpec[]>(TokenName_InputBatching);
@@ -250,7 +266,11 @@ namespace DataX.Config.ConfigGeneration.Processor
             var folderToDelete = flowToDelete.GetTokenString(PrepareJobConfigVariables.TokenName_RuntimeConfigFolder);
             return await this.JobData.DeleteConfigs(folderToDelete);
         }
-        
+
+        /// <summary>
+        /// Normalize the datetime base on interval and delay
+        /// </summary>
+        /// <returns></returns>
         private static DateTime NormalizeTimeBasedOnInterval(DateTime dateTime, string intervalType, TimeSpan delay)
         {
             dateTime = dateTime.Add(-delay);
@@ -286,6 +306,10 @@ namespace DataX.Config.ConfigGeneration.Processor
             return new DateTime(year, month, day, hour, minute, second);
         }
 
+        /// <summary>
+        /// Translate Interval to a timespan value
+        /// </summary>
+        /// <returns></returns>
         private static int TranslateIntervalHelper(string unit)
         {
             switch (unit)
@@ -299,6 +323,10 @@ namespace DataX.Config.ConfigGeneration.Processor
             }
         }
 
+        /// <summary>
+        /// Generate a timespan for Interval
+        /// </summary>
+        /// <returns></returns>
         private static TimeSpan TranslateInterval(string value, string unit)
         {
             var translatedValue = TranslateIntervalHelper(unit);
@@ -309,6 +337,10 @@ namespace DataX.Config.ConfigGeneration.Processor
             return timeSpan;
         }
 
+        /// <summary>
+        /// Generate a timespan for Window
+        /// </summary>
+        /// <returns></returns>
         private static TimeSpan TranslateWindow(string value, string unit)
         {
             var translatedValue = TranslateIntervalHelper(unit);
@@ -319,6 +351,10 @@ namespace DataX.Config.ConfigGeneration.Processor
             return timeSpan;
         }
 
+        /// <summary>
+        /// Generate a timespan for Delay
+        /// </summary>
+        /// <returns></returns>
         private static TimeSpan TranslateDelay(string value, string unit)
         {
             var translatedValue = TranslateIntervalHelper(unit);
@@ -329,11 +365,20 @@ namespace DataX.Config.ConfigGeneration.Processor
             return timeSpan;
         }
 
+        /// <summary>
+        /// Convert a datetime to string in an expected format
+        /// Implement this specific helper function since using "o" doesn't work
+        /// </summary>
+        /// <returns></returns>
         private static string ConvertDateToString(DateTime dateTime)
         {
             return dateTime.ToString("s", CultureInfo.InvariantCulture) + "Z";
         }
 
+        /// <summary>
+        /// Convert a datetime to an epoch timestamp
+        /// </summary>
+        /// <returns></returns>
         public static long DateTimeToUnixTimestamp(DateTime dateTime)
         {
             DateTime unixStart = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
@@ -341,13 +386,21 @@ namespace DataX.Config.ConfigGeneration.Processor
             return (long)elapsedTime.TotalSeconds;
         }
 
+        /// <summary>
+        /// Convert an epoch timestamp to a datetime
+        /// </summary>
+        /// <returns></returns>
         public static DateTime UnixTimestampToDateTime(string unixTime)
         {
             double uTime = Convert.ToDouble(unixTime, CultureInfo.InvariantCulture);
             DateTime unixStart = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
             return unixStart.AddSeconds(uTime);
         }
-        
+
+        /// <summary>
+        /// Disable a batch job in the config
+        /// </summary>
+        /// <returns></returns>
         private async Task<Result> DisableBatchConfig(FlowConfig config, int index)
         {
             var existingFlow = await FlowData.GetByName(config.Name).ConfigureAwait(false);
@@ -366,6 +419,10 @@ namespace DataX.Config.ConfigGeneration.Processor
             return result;
         }
 
+        /// <summary>
+        /// Update the last processed time for a batch job in the config
+        /// </summary>
+        /// <returns></returns>
         private async Task<Result> UpdateLastProcessedTime(FlowConfig config, int index, long value)
         {
             var existingFlow = await FlowData.GetByName(config.Name).ConfigureAwait(false);
@@ -384,6 +441,10 @@ namespace DataX.Config.ConfigGeneration.Processor
             return result;
         }
 
+        /// <summary>
+        /// Get a partition increment value using the given blob path
+        /// </summary>
+        /// <returns></returns>
         private static long GetPartitionIncrement(string path)
         {
             Regex regex = new Regex(@"\{([yMdHhmsS\-\/.,: ]+)\}*", RegexOptions.IgnoreCase);
