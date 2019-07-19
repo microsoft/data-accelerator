@@ -35,6 +35,8 @@ export const getInputSchema = flow =>
         inputResourceGroup: flow.input.properties.inputResourceGroup,
         eventHubNames: flow.input.properties.inputEventhubName,
         inputType: flow.input.type,
+        inputMode: flow.input.mode,
+        batchInputs: flow.batchInputs,
         seconds: flow.samplingInputDuration
     });
 

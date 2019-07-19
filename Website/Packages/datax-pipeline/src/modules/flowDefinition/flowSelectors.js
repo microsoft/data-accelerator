@@ -567,6 +567,7 @@ function isBatchListSettingsComplete(batch) {
             validations.push(batch.properties.delayType && batch.properties.delayType.trim() !== '');
             validations.push(batch.properties.window && batch.properties.window.trim() !== '');
             validations.push(batch.properties.windowType && batch.properties.windowType.trim() !== '');
+            validations.push(batch.properties.startTime && batch.properties.startTime !== '');
             validations.push(Helpers.isValidNumberAboveZero(batch.properties.interval));
             validations.push(Helpers.isValidNumberAboveOrEqualZero(batch.properties.delay));
             validations.push(Helpers.isValidNumberAboveZero(batch.properties.window));
@@ -574,8 +575,8 @@ function isBatchListSettingsComplete(batch) {
         case Models.batchTypeEnum.oneTime:
             validations.push(batch.properties.interval && batch.properties.interval.trim() !== '');
             validations.push(batch.properties.intervalType && batch.properties.intervalType.trim() !== '');
-            validations.push(batch.properties.delay.trim() === '');
-            validations.push(batch.properties.delayType.trim() === '');
+            validations.push(batch.properties.delay && batch.properties.delay == 0);
+            validations.push(batch.properties.delayType && batch.properties.delayType.trim() !== '');
             validations.push(batch.properties.window && batch.properties.window.trim() !== '');
             validations.push(batch.properties.windowType && batch.properties.windowType.trim() !== '');
             validations.push(batch.properties.startTime && batch.properties.startTime !== '');

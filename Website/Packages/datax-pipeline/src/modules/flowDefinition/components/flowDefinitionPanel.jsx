@@ -21,7 +21,7 @@ import ReferenceDataSettingsContent from './referenceData/referenceDataSettingsC
 import FunctionSettingsContent from './function/functionSettingsContent';
 import ScaleSettingsContent from './scale/scaleSettingsContent';
 import OutputSettingsContent from './output/outputSettingsContent';
-import ScheduleSettingsContent from './schedule/scheduleSettingsContent';
+import ScheduleSettingsContent from './schedule/ScheduleSettingsContent';
 import RulesSettingsContent from './rule/rulesSettingsContent';
 import { functionEnabled, isDatabricksSparkType } from '../../../common/api';
 import {
@@ -421,7 +421,7 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateType={this.props.onUpdateInputType}
                                 onUpdateHubName={this.props.onUpdateInputHubName}
                                 onUpdateBatchInputPath={this.props.onUpdateBatchInputPath}
-                                onupdateBatchInputConnection={this.props.onupdateBatchInputConnection}
+                                onUpdateBatchInputConnection={this.props.onUpdateBatchInputConnection}
                                 onUpdateBatchInputFormatType={this.props.onUpdateBatchInputFormatType}
                                 onUpdateBatchInputCompressionType={this.props.onUpdateBatchInputCompressionType}
                                 onUpdateHubConnection={this.props.onUpdateInputHubConnection}
@@ -689,7 +689,9 @@ class FlowDefinitionPanel extends React.Component {
                     showMessageBar: true,
                     messageBarIsError: false,
                     messageBarStatement:
-                        'Flow definition is saved. If there are any scheduled batch jobs in thie flow, they will be created and started by the scheduler.'
+                        this.props.input.mode === Models.inputModeEnum.streaming
+                            ? 'Flow definition is saved'
+                            : 'Flow definition is saved. If there are any scheduled batch jobs in this flow, they will be created and started by the scheduler.'
                 });
 
                 this.props.initFlow({ id: name });
@@ -937,15 +939,8 @@ const mapDispatchToProps = dispatch => ({
     onUpdateInputHubConnection: connection => dispatch(Actions.updateInputHubConnection(connection)),
     onUpdateInputSubscriptionId: id => dispatch(Actions.updateInputSubscriptionId(id)),
     onUpdateInputResourceGroup: name => dispatch(Actions.updateInputResourceGroup(name)),
-    onUpdateJobMode: jobMode => dispatch(Actions.updateJobMode(jobMode)),
-    onUpdateRecurrence: recurrence => dispatch(Actions.updateRecurrence(recurrence)),
-    onUpdateOffset: offset => dispatch(Actions.updateOffset(offset)),
-    onUpdateStartTime: startTime => dispatch(Actions.updateStartTime(startTime)),
-    onUpdateEndTime: endTime => dispatch(Actions.updateEndTime(endTime)),
-    onUpdateInputFormatType: formatType => dispatch(Actions.updateInputFormatType(formatType)),
-    onUpdateInputCompressionType: compressionType => dispatch(Actions.UpdateInputCompressionType(compressionType)),
 
-    onupdateBatchInputConnection: connection => dispatch(Actions.updateBatchInputConnection(connection)),
+    onUpdateBatchInputConnection: connection => dispatch(Actions.updateBatchInputConnection(connection)),
     onUpdateBatchInputPath: path => dispatch(Actions.updateBlobInputPath(path)),
     onUpdateBatchInputFormatType: formatType => dispatch(Actions.updateBatchInputFormatType(formatType)),
     onUpdateBatchInputCompressionType: compressionType => dispatch(Actions.updateBachInputCompressionType(compressionType)),

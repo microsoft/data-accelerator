@@ -22,17 +22,19 @@ const batchColumns = [
         key: 'columnBatchType',
         name: 'Type',
         fieldName: 'typeDisplay',
-        isResizable: true
+        isResizable: true,
+        minWidth: 100
     },
     {
         key: 'columnBatchStatus',
         name: 'Status',
         fieldName: 'status',
-        isResizable: true
+        isResizable: true,
+        minWidth: 100
     }
 ];
 
-export default class scheduleSettingsContent extends React.Component {
+export default class ScheduleSettingsContent extends React.Component {
     constructor(props) {
         super(props);
 
@@ -78,7 +80,7 @@ export default class scheduleSettingsContent extends React.Component {
         const batchList = this.props.batchList;
         batchList.forEach(item => {
             item.typeDisplay = this.batchTypeToDisplayMap[item.type];
-            item.status = !item.disabled ? "Active" : "Disabled";
+            item.status = !item.disabled ? 'Active' : 'Disabled';
         });
 
         return (
@@ -120,22 +122,22 @@ export default class scheduleSettingsContent extends React.Component {
     }
 
     renderAddBatchButton() {
-        let recurringExists = this.props.batchList.filter(b => b.type  === Models.batchTypeEnum.recurring);
+        let recurringExists = this.props.batchList.filter(b => b.type === Models.batchTypeEnum.recurring);
 
-        const menuItems = (recurringExists === undefined || recurringExists.length < 1)
-            ? Models.batchTypes
-                  .map(batchType => {
+        const menuItems =
+            !recurringExists || recurringExists.length < 1
+                ? Models.batchTypes.map(batchType => {
                       return Object.assign({}, batchType, {
                           onClick: () => this.props.onNewBatch(batchType.key)
                       });
                   })
-            : Models.batchTypes
-                  .filter(batchType => batchType.key != Models.batchTypeEnum.recurring)
-                  .map(batchType => {
-                      return Object.assign({}, batchType, {
-                          onClick: () => this.props.onNewBatch(batchType.key)
+                : Models.batchTypes
+                      .filter(batchType => batchType.key != Models.batchTypeEnum.recurring)
+                      .map(batchType => {
+                          return Object.assign({}, batchType, {
+                              onClick: () => this.props.onNewBatch(batchType.key)
+                          });
                       });
-                  });
 
         return (
             <DefaultButton
@@ -194,18 +196,15 @@ export default class scheduleSettingsContent extends React.Component {
             <RecurringScheduleSettings
                 batch={batch}
                 batchTypeDisplayName={this.batchTypeToDisplayMap[batch.type]}
-
                 onUpdateBatchName={this.props.onUpdateBatchName}
                 onUpdateBatchStartTime={this.props.onUpdateBatchStartTime}
                 onUpdateBatchEndTime={this.props.onUpdateBatchEndTime}
-
                 onUpdateBatchIntervalValue={this.props.onUpdateBatchIntervalValue}
                 onUpdateBatchIntervalType={this.props.onUpdateBatchIntervalType}
                 onUpdateBatchDelayValue={this.props.onUpdateBatchDelayValue}
                 onUpdateBatchDelayType={this.props.onUpdateBatchDelayType}
                 onUpdateBatchWindowValue={this.props.onUpdateBatchWindowValue}
                 onUpdateBatchWindowType={this.props.onUpdateBatchWindowType}
-                
             />
         );
     }
@@ -215,11 +214,9 @@ export default class scheduleSettingsContent extends React.Component {
             <OneTimeScheduleSettings
                 batch={batch}
                 batchTypeDisplayName={this.batchTypeToDisplayMap[batch.type]}
-
                 onUpdateBatchName={this.props.onUpdateBatchName}
                 onUpdateBatchStartTime={this.props.onUpdateBatchStartTime}
                 onUpdateBatchEndTime={this.props.onUpdateBatchEndTime}
-
                 onUpdateBatchIntervalValue={this.props.onUpdateBatchIntervalValue}
                 onUpdateBatchIntervalType={this.props.onUpdateBatchIntervalType}
                 onUpdateBatchWindowValue={this.props.onUpdateBatchWindowValue}
@@ -255,17 +252,17 @@ export default class scheduleSettingsContent extends React.Component {
 }
 
 // Props
-scheduleSettingsContent.propTypes = {
+ScheduleSettingsContent.propTypes = {
     batchList: PropTypes.array.isRequired,
     selectedBatchIndex: PropTypes.number,
-    
+
     onNewBatch: PropTypes.func.isRequired,
     onDeleteBatch: PropTypes.func.isRequired,
     onUpdateSelectedBatchIndex: PropTypes.func.isRequired,
 
     addBatchButtonEnabled: PropTypes.bool.isRequired,
     deleteBatchButtonEnabled: PropTypes.bool.isRequired,
- 
+
     // Schedule Settings
     onUpdateBatchName: PropTypes.func.isRequired,
     onUpdateBatchStartTime: PropTypes.func.isRequired,
@@ -275,7 +272,7 @@ scheduleSettingsContent.propTypes = {
     onUpdateBatchDelayValue: PropTypes.func.isRequired,
     onUpdateBatchDelayType: PropTypes.func.isRequired,
     onUpdateBatchWindowValue: PropTypes.func.isRequired,
-    onUpdateBatchWindowType: PropTypes.func.isRequired,
+    onUpdateBatchWindowType: PropTypes.func.isRequired
 };
 
 // Styles

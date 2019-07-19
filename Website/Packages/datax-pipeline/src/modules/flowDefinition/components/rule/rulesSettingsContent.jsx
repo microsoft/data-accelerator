@@ -319,7 +319,8 @@ const rightPaneStyle = {
 const listContainerStyle = {
     backgroundColor: Colors.white,
     border: `1px solid ${Colors.neutralTertiaryAlt}`,
-    flex: 1
+    flex: 1,
+    overflowY: 'auto'
 };
 
 const messageBarStyle = {

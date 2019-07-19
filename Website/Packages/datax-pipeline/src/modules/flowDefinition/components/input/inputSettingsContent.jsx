@@ -65,11 +65,9 @@ export default class InputSettingsContent extends React.Component {
     renderLeftPane() {
         if (this.props.input.mode === Models.inputModeEnum.batching) {
             let batchData = undefined;
-
             if (this.props.batchInputs != undefined && this.props.selectedFlowBatchInputIndex != undefined) {
                 batchData = this.props.batchInputs[this.props.selectedFlowBatchInputIndex];
             }
-
             return (
                 <div style={leftPaneStyle}>
                     <ScrollableContentPane backgroundColor={Colors.neutralLighterAlt}>
@@ -290,7 +288,7 @@ export default class InputSettingsContent extends React.Component {
                         spellCheck={false}
                         label="Blob Connection String"
                         value={value}
-                        onChange={(event, value) => this.props.onupdateBatchInputConnection(value)}
+                        onChange={(event, value) => this.props.onUpdateBatchInputConnection(value)}
                         autoAdjustHeight
                         resizable={false}
                         disabled={!this.props.inputEventHubConnectionStringEnabled}
@@ -425,137 +423,6 @@ export default class InputSettingsContent extends React.Component {
         }
     }
 
-    renderJobModeToggle() {
-        if (this.props.input.mode !== Models.inputModeEnum.batching) {
-            return null;
-        } else {
-            const options = Models.jobModes.map(mode => {
-                return {
-                    key: mode.key,
-                    text: mode.name,
-                    disabled: mode.disabled
-                };
-            });
-
-            return (
-                <div style={typeDropdownStyle}>
-                    <Label className="ms-font-m">JobMode</Label>
-                    <Dropdown
-                        className="ms-font-m"
-                        options={options}
-                        selectedKey={this.props.input.properties.jobMode}
-                        onChange={(event, selection) => this.props.onUpdateJobMode(selection.key)}
-                    />
-                </div>
-            );
-        }
-    }
-
-    renderRecurrenceOffset() {
-        if (
-            this.props.input.mode === Models.inputModeEnum.batching &&
-            this.props.input.properties.jobMode === Models.jobModeEnum.recurrence
-        ) {
-            return (
-                <div style={watermarkContainerStyle}>
-                    {this.renderRecurrence()}
-                    {this.renderOffset()}
-                </div>
-            );
-        } else {
-            return null;
-        }
-    }
-
-    renderRecurrence() {
-        if (this.props.input.mode === Models.inputModeEnum.batching) {
-            return (
-                <div style={watermarkValueStyle}>
-                    <TextField
-                        className="ms-font-m"
-                        spellCheck={false}
-                        label="Recurrence In Mins"
-                        value={this.props.input.properties.recurrence}
-                        onChange={(event, value) => this.props.onUpdateRecurrence(value)}
-                    />
-                </div>
-            );
-        } else {
-            return null;
-        }
-    }
-
-    renderOffset() {
-        if (this.props.input.mode === Models.inputModeEnum.batching) {
-            return (
-                <div style={watermarkUnitDropdownStyle}>
-                    <TextField
-                        className="ms-font-m"
-                        spellCheck={false}
-                        label="Offset In Mins"
-                        value={this.props.input.properties.offset}
-                        onChange={(event, value) => this.props.onUpdateOffset(value)}
-                    />
-                </div>
-            );
-        } else {
-            return null;
-        }
-    }
-
-    renderTimeRange() {
-        if (this.props.input.mode === Models.inputModeEnum.batching) {
-            return (
-                <div style={watermarkContainerStyle}>
-                    {this.renderStartTime()}
-                    {this.renderEndTime()}
-                </div>
-            );
-        } else {
-            return null;
-        }
-    }
-
-    renderStartTime() {
-        if (this.props.input.mode === Models.inputModeEnum.batching) {
-            return (
-                <div style={watermarkValueStyle}>
-                    <TextField
-                        className="ms-font-m"
-                        spellCheck={false}
-                        label="StartTime"
-                        placeholder="required for backfilling"
-                        value={this.props.input.properties.startTime}
-                        onChange={(event, value) => this.props.onUpdateStartTime(value)}
-                        disabled={!this.props.inputEventHubEnabled}
-                    />
-                </div>
-            );
-        } else {
-            return null;
-        }
-    }
-
-    renderEndTime() {
-        if (this.props.input.mode === Models.inputModeEnum.batching) {
-            return (
-                <div style={watermarkUnitDropdownStyle}>
-                    <TextField
-                        className="ms-font-m"
-                        spellCheck={false}
-                        label="EndTime"
-                        placeholder="required for backfilling"
-                        value={this.props.input.properties.endTime}
-                        onChange={(event, value) => this.props.onUpdateEndTime(value)}
-                        disabled={!this.props.inputEventHubEnabled}
-                    />
-                </div>
-            );
-        } else {
-            return null;
-        }
-    }
-
     renderTimestampColumn() {
         return (
             <div style={sectionStyle}>
@@ -650,7 +517,7 @@ export default class InputSettingsContent extends React.Component {
             return (
                 <div>
                     <div style={toggleStyle}>
-                        <Label className="ms-font-m">Sampling from the last 3 blobs based on creation time.</Label>
+                        <Label className="ms-font-m">Sampling from the last 3 blobs based on the last modified time.</Label>
                     </div>
                 </div>
             );
@@ -813,7 +680,7 @@ InputSettingsContent.propTypes = {
     onUpdateHubName: PropTypes.func.isRequired,
 
     onUpdateBatchInputPath: PropTypes.func.isRequired,
-    onupdateBatchInputConnection: PropTypes.func.isRequired,
+    onUpdateBatchInputConnection: PropTypes.func.isRequired,
     onUpdateBatchInputFormatType: PropTypes.func.isRequired,
     onUpdateBatchInputCompressionType: PropTypes.func.isRequired,
 

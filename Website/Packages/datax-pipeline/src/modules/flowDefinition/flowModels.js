@@ -27,11 +27,6 @@ export const inputCompressionTypeEnum = {
     gzip: 'gzip'
 };
 
-export const jobModeEnum = {
-    recurrence: 'recurrence',
-    nonrecurrence: 'nonrecurrence',
-};
-
 export const inputFormatTypeEnum = {
     json: 'json',
     parquet: 'parquet'
@@ -220,11 +215,6 @@ export const inputCompressionTypes = [
         key: inputCompressionTypeEnum.none,
         name: 'None',
         disabled: false
-    },
-    {
-        key: inputCompressionTypeEnum.gzip,
-        name: 'GZIP',
-        disabled: false
     }
 ];
 
@@ -232,19 +222,6 @@ export const inputFormatTypes = [
     {
         key: inputFormatTypeEnum.json,
         name: 'JSON',
-        disabled: false
-    }
-];
-
-export const jobModes = [
-    {
-        key: jobModeEnum.recurrence,
-        name: 'Recurrence',
-        disabled: false
-    },
-    {
-        key: jobModeEnum.nonrecurrence,
-        name: 'Nonrecurrence',
         disabled: false
     }
 ];
@@ -654,8 +631,8 @@ export function getDefaultBatchSettings(type) {
             properties: {
                 interval: '1',
                 intervalType: 'day',
-                delay: '',
-                delayType: '',
+                delay: '0',
+                delayType: 'day',
                 window: '1',
                 windowType: 'day',
                 startTime: '',
@@ -675,7 +652,7 @@ export function getDefaultBatchSettings(type) {
                 delayType: 'day',
                 window: '1',
                 windowType: 'day',
-                startTime: '',
+                startTime: new Date(),
                 endTime: '',
                 lastProcessedTime: ''
             }
@@ -890,17 +867,9 @@ export const defaultInput = {
     mode: inputModeEnum.streaming,
     properties: {
         inputEventhubName: '',
-        inputPath: '',
         inputEventhubConnection: '',
         inputSubscriptionId: '',
         inputResourceGroup: '',
-        recurrence: '1440',
-        offset: '1440',
-        startTime: '',
-        endTime: '',
-        inputFormatType: '',
-        inputCompressionType: '',
-        jobMode: '',
         windowDuration: '30',
         timestampColumn: '',
         watermarkValue: '0',

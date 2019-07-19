@@ -23,7 +23,7 @@
     "devwatch": "webpack --mode development --config webpack.config.js --bail --progress --display-modules --display-error-details --colors --display-chunks --display-reasons --watch"
   },
   "dependencies": {
-    "react-datetime-picker": "^2.4.0"
+    "react-datetime-picker": "2.4.0"
   },
   "devDependencies": {
     "@babel/core": "7.1.6",

@@ -58,34 +58,40 @@ export default class RecurringScheduleSettings extends React.Component {
 
     renderTimeRange() {
         return (
-            <div >
+            <div>
                 {this.renderStartTime()}
                 {this.renderEndTime()}
             </div>
         );
     }
-    
+
     renderStartTime() {
+        let maxDate = this.props.batch.properties.endTime ? new Date(this.props.batch.properties.endTime) : '';
+
         return (
             <div style={sectionStyle}>
                 <Label className="ms-font-m info-settings-textbox">Start Time</Label>
                 <DateTimePicker
                     className="ms-font-m info-settings-textbox"
-                    value={this.props.batch.properties.startTime}
-                    onChange={(value) => this.props.onUpdateBatchStartTime(value)}
+                    value={this.props.batch.properties.startTime ? new Date(this.props.batch.properties.startTime) : ''}
+                    maxDate={maxDate}
+                    onChange={value => this.props.onUpdateBatchStartTime(value)}
                 />
             </div>
         );
     }
 
     renderEndTime() {
+        let minDate = this.props.batch.properties.startTime ? new Date(this.props.batch.properties.startTime) : '';
+
         return (
             <div style={sectionStyle}>
                 <Label className="ms-font-m info-settings-textbox">End Time</Label>
                 <DateTimePicker
                     className="ms-font-m info-settings-textbox"
-                    value={this.props.batch.properties.endTime}
-                    onChange={(value) => this.props.onUpdateBatchEndTime(value)}
+                    value={this.props.batch.properties.endTime ? new Date(this.props.batch.properties.endTime) : ''}
+                    minDate={minDate}
+                    onChange={value => this.props.onUpdateBatchEndTime(value)}
                 />
             </div>
         );
@@ -94,44 +100,8 @@ export default class RecurringScheduleSettings extends React.Component {
     renderInterval() {
         return (
             <div style={sectionContainerStyle}>
-                {this.renderIntervalText()}
-                {this.renderIntervalTypeDropdown()}
-            </div>
-        );
-    }
-
-    renderIntervalText() {
-        return (
-            <div style={sectionValueStyle}>
-                <TextField
-                    className="ms-font-m"
-                    spellCheck={false}
-                    label="Recurrence"
-                    value={this.props.batch.properties.interval}
-                    onChange={(event, value) => this.props.onUpdateBatchIntervalValue(value)}
-                />
-            </div>
-        );
-    }
-
-    renderIntervalTypeDropdown() {
-        const options = Models.batchIntervalTypes.map(type => {
-            return {
-                key: type.key,
-                text: type.name,
-                disabled: type.disabled
-            };
-        });
-
-        return (
-            <div style={sectionDropdownStyle}>
-                <Label className="ms-font-m">Unit</Label>
-                <Dropdown
-                    className="ms-font-m"
-                    options={options}
-                    selectedKey={this.props.batch.properties.intervalType}
-                    onChange={(event, selection) => this.props.onUpdateBatchIntervalType(selection.key)}
-                />
+                {this.renderBatchSettingValue('Recurrence', this.props.batch.properties.interval, this.props.onUpdateBatchIntervalValue)}
+                {this.renderBatchSettingUnitType(this.props.batch.properties.intervalType, this.props.onUpdateBatchIntervalType)}
             </div>
         );
     }
@@ -139,74 +109,36 @@ export default class RecurringScheduleSettings extends React.Component {
     renderDelay() {
         return (
             <div style={sectionContainerStyle}>
-                {this.renderDelayText()}
-                {this.renderDelayDropdown()}
+                {this.renderBatchSettingValue('Delay', this.props.batch.properties.delay, this.props.onUpdateBatchDelayValue)}
+                {this.renderBatchSettingUnitType(this.props.batch.properties.delayType, this.props.onUpdateBatchDelayType)}
             </div>
         );
     }
 
-    renderDelayText() {
-        return (
-                
-            <div style={sectionValueStyle}>
-                <TextField
-                    className="ms-font-m"
-                    spellCheck={false}
-                    label="Delay"
-                    value={this.props.batch.properties.delay}
-                    onChange={(event, value) => this.props.onUpdateBatchDelayValue(value)}
-                />
-            </div>
-        );
-    }
-
-    renderDelayDropdown() {
-        const options = Models.batchIntervalTypes.map(type => {
-            return {
-                key: type.key,
-                text: type.name,
-                disabled: type.disabled
-            };
-        });
-
-        return (
-            <div style={sectionDropdownStyle}>
-                <Label className="ms-font-m">Unit</Label>
-                <Dropdown
-                    className="ms-font-m"
-                    options={options}
-                    selectedKey={this.props.batch.properties.delayType}
-                    onChange={(event, selection) => this.props.onUpdateBatchDelayType(selection.key)}
-                />
-            </div>
-        );
-    }
-
-    
     renderWindow() {
         return (
             <div style={sectionContainerStyle}>
-                {this.renderWindowText()}
-                {this.renderWindowDropdown()}
+                {this.renderBatchSettingValue('Window', this.props.batch.properties.window, this.props.onUpdateBatchWindowValue)}
+                {this.renderBatchSettingUnitType(this.props.batch.properties.windowType, this.props.onUpdateBatchWindowType)}
             </div>
         );
     }
 
-    renderWindowText() {
+    renderBatchSettingValue(type, value, onUpdateValue) {
         return (
             <div style={sectionValueStyle}>
                 <TextField
                     className="ms-font-m"
                     spellCheck={false}
-                    label="Window"
-                    value={this.props.batch.properties.window}
-                    onChange={(event, value) => this.props.onUpdateBatchWindowValue(value)}
+                    label={type}
+                    value={value}
+                    onChange={(event, value) => onUpdateValue(value)}
                 />
             </div>
         );
     }
 
-    renderWindowDropdown() {
+    renderBatchSettingUnitType(value, onUpdateType) {
         const options = Models.batchIntervalTypes.map(type => {
             return {
                 key: type.key,
@@ -221,8 +153,8 @@ export default class RecurringScheduleSettings extends React.Component {
                 <Dropdown
                     className="ms-font-m"
                     options={options}
-                    selectedKey={this.props.batch.properties.windowType}
-                    onChange={(event, selection) => this.props.onUpdateBatchWindowType(selection.key)}
+                    selectedKey={value}
+                    onChange={(event, selection) => onUpdateType(selection.key)}
                 />
             </div>
         );
@@ -238,17 +170,17 @@ export default class RecurringScheduleSettings extends React.Component {
 RecurringScheduleSettings.propTypes = {
     batch: PropTypes.object.isRequired,
     batchTypeDisplayName: PropTypes.string.isRequired,
-    
+
     // functions
     onUpdateBatchName: PropTypes.func.isRequired,
     onUpdateBatchStartTime: PropTypes.func.isRequired,
     onUpdateBatchEndTime: PropTypes.func.isRequired,
-    onUpdateBatchIntervalType: PropTypes.func.isRequired,
     onUpdateBatchIntervalValue: PropTypes.func.isRequired,
+    onUpdateBatchIntervalType: PropTypes.func.isRequired,
     onUpdateBatchDelayValue: PropTypes.func.isRequired,
     onUpdateBatchDelayType: PropTypes.func.isRequired,
     onUpdateBatchWindowValue: PropTypes.func.isRequired,
-    onUpdateBatchWindowType: PropTypes.func.isRequired,
+    onUpdateBatchWindowType: PropTypes.func.isRequired
 };
 
 // Styles
@@ -268,7 +200,8 @@ const batchTypeSection = {
 
 const sectionContainerStyle = {
     display: 'flex',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    width: 400
 };
 
 const sectionValueStyle = {

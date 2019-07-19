@@ -133,9 +133,6 @@ export const updateDatabricksToken = databricksToken => dispatch => {
 // Input Actions
 export const updateInputMode = mode => (dispatch, getState) => {
     let type = mode === Models.inputModeEnum.streaming ? Models.inputTypeEnum.events : Models.inputTypeEnum.blob;
-    let inputFormatType = mode === Models.inputModeEnum.streaming ? '' : Models.inputFormatTypeEnum.json;
-    let inputCompressionType = mode === Models.inputModeEnum.streaming ? '' : Models.inputCompressionTypeEnum.none;
-    let jobMode = mode === Models.inputModeEnum.streaming ? '' : Models.jobModeEnum.recurrence;
 
     updateInput(
         dispatch,

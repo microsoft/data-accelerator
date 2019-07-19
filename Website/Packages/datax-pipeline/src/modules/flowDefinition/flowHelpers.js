@@ -448,7 +448,6 @@ export function convertFlowToConfig(flow, query) {
     sinkers.sort((a, b) => a.id.localeCompare(b.id));
     outputTemplates.sort((a, b) => a.id.localeCompare(b.id));
     rules.sort((a, b) => a.id.localeCompare(b.id));
-    
     batchList.sort((b, a) => a.type.localeCompare(b.type));
 
     // return product config
@@ -469,14 +468,8 @@ export function convertFlowToConfig(flow, query) {
         outputs: sinkers,
         outputTemplates: outputTemplates,
         rules: convertFlowToConfigRules(rules),
-        batchList: batchList,
-        version: getTimeStamp()
+        batchList: batchList
     };
-}
-
-function getTimeStamp() {
-    let timeStamp = (new Date()).toISOString().slice(0, 19).replace(/-/g, "").replace(/:/g, "").replace("T", "");
-    return timeStamp;
 }
 
 export function convertConfigToFlow(config) {

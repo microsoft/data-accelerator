@@ -119,7 +119,7 @@
 
 .react-datetime-picker__wrapper {
     display: flex;
-    border: thin solid lightgray;
+    border: thin solid #d0d0d0 !important;
     width: 100%;
     height: 32px;
     padding-right: 12px;
