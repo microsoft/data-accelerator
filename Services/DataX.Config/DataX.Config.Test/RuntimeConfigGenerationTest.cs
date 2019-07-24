@@ -30,11 +30,13 @@ namespace DataX.Config.Test
             InitialConfiguration.Set(Constants.ConfigSettingName_ServiceKeyVaultName, "someservicekeyvault");
             InitialConfiguration.Set(Constants.ConfigSettingName_RuntimeKeyVaultName, "somekeyvault");
             InitialConfiguration.Set(Constants.ConfigSettingName_MetricEventHubConnectionKey, "metric-eventhubconnectionstring");
+            InitialConfiguration.Set(Constants.ConfigSettingName_SparkType, "hdinsight");
 
             var conf = new ContainerConfiguration()
                 .WithAssembly(typeof(ConfigGenConfiguration).Assembly)
                 .WithAssembly(typeof(MockBase).Assembly)
-                .WithAssembly(Assembly.GetExecutingAssembly());
+                .WithAssembly(Assembly.GetExecutingAssembly())
+                .WithProvider(new LoggerAndInstanceExportDescriptorProvider(null, new LoggerFactory()));
 
             CompositionHost = conf.CreateContainer();
         }

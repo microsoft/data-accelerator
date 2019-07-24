@@ -17,6 +17,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using DataX.Config.Utility;
 
 namespace DataX.Config.Test
 {
@@ -27,11 +28,13 @@ namespace DataX.Config.Test
         public static void Initialize(TestContext tc)
         {
             InitialConfiguration.Set(Constants.ConfigSettingName_RuntimeKeyVaultName, "somekeyvault");
+            InitialConfiguration.Set(Constants.ConfigSettingName_SparkType, "hdinsight");
 
             var conf = new ContainerConfiguration()
                 .WithAssembly(typeof(ConfigGenConfiguration).Assembly)
                 .WithAssembly(typeof(MockBase).Assembly)
-                .WithAssembly(Assembly.GetExecutingAssembly());
+                .WithAssembly(Assembly.GetExecutingAssembly())
+                .WithProvider(new LoggerAndInstanceExportDescriptorProvider(null, new LoggerFactory()));
 
             CompositionHost = conf.CreateContainer();
         }

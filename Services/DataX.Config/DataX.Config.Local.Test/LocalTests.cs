@@ -33,10 +33,12 @@ namespace DataX.Config.Test
             InitialConfiguration.Set(Constants.ConfigSettingName_ConfigFolderContainerPath, "");
             InitialConfiguration.Set(Constants.ConfigSettingName_ConfigFolderHost, new System.Uri(Environment.CurrentDirectory).AbsoluteUri);
             InitialConfiguration.Set(Constants.ConfigSettingName_LocalMetricsHttpEndpoint, "http://localhost:2020/api/data/upload");
+            InitialConfiguration.Set(Constants.ConfigSettingName_SparkType, "sometype");
 
             var conf = new ContainerConfiguration()
                 .WithAssembly(typeof(ConfigGenConfiguration).Assembly)
-                .WithAssembly(typeof(DataX.Config.Local.LocalDesignTimeStorage).Assembly);
+                .WithAssembly(typeof(DataX.Config.Local.LocalDesignTimeStorage).Assembly)
+                .WithProvider(new LoggerAndInstanceExportDescriptorProvider(null, new LoggerFactory()));
 
             CompositionHost = conf.CreateContainer();
             _TestContext = tc;
