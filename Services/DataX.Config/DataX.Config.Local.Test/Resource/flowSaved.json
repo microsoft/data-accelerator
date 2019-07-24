@@ -56,7 +56,7 @@
         "input": {
           "type": "MetricApi",
           "metricKeys": [
-            "DATAX-localconfiggentest:Input_DataXProcessedInput_Events_Count"
+            "DATAX-${name}:Input_DataXProcessedInput_Events_Count"
           ]
         },
         "output": {
@@ -68,150 +68,6 @@
             "speed": true
           },
           "dynamicOffsetInMs": 300000
-        }
-      },
-      {
-        "name": "HeaterStatus, WindowLockStatus, WindowLockSliding",
-        "input": {
-          "type": "MetricApi",
-          "pollingInterval": 60000,
-          "metricKeys": [
-            {
-              "name": "localconfiggentest:HeaterStatus",
-              "displayName": "HeaterStatus"
-            },
-            {
-              "name": "localconfiggentest:WindowLockStatus",
-              "displayName": "WindowLockStatus"
-            },
-            {
-              "name": "localconfiggentest:WindowLockSliding",
-              "displayName": "WindowLockSliding"
-            }
-          ]
-        },
-        "output": {
-          "type": "DirectTimeChart",
-          "data": {
-            "timechart": true,
-            "current": false,
-            "table": false
-          },
-          "chartTimeWindowInMs": 3600000
-        }
-      },
-      {
-        "name": "WindowOpenWhileHeaterOnAlert",
-        "input": {
-          "type": "MetricDetailsApi",
-          "pollingInterval": 60000,
-          "metricKeys": [
-            {
-              "name": "localconfiggentest:WindowOpenWhileHeaterOnAlert",
-              "displayName": "WindowOpenWhileHeaterOnAlert"
-            }
-          ]
-        },
-        "output": {
-          "type": "DirectTable",
-          "data": {
-            "timechart": false,
-            "current": false,
-            "table": true
-          },
-          "chartTimeWindowInMs": 3600000
-        }
-      },
-      {
-        "name": "DoorLockStatus",
-        "input": {
-          "type": "MetricApi",
-          "pollingInterval": 60000,
-          "metricKeys": [
-            {
-              "name": "localconfiggentest:DoorLockStatus",
-              "displayName": "DoorLockStatus"
-            }
-          ]
-        },
-        "output": {
-          "type": "DirectTimeChart",
-          "data": {
-            "timechart": true,
-            "current": false,
-            "table": false
-          },
-          "chartTimeWindowInMs": 3600000
-        }
-      },
-      {
-        "name": "DoorLockOpenBetween9pmAnd7amUtcAlert",
-        "input": {
-          "type": "MetricDetailsApi",
-          "pollingInterval": 60000,
-          "metricKeys": [
-            {
-              "name": "localconfiggentest:DoorLockOpenBetween9pmAnd7amUtcAlert",
-              "displayName": "DoorLockOpenBetween9pmAnd7amUtcAlert"
-            }
-          ]
-        },
-        "output": {
-          "type": "DirectTable",
-          "data": {
-            "timechart": false,
-            "current": false,
-            "table": true
-          },
-          "chartTimeWindowInMs": 3600000
-        }
-      },
-      {
-        "name": "GarageDoorStatus, GarageDoorSliding",
-        "input": {
-          "type": "MetricApi",
-          "pollingInterval": 60000,
-          "metricKeys": [
-            {
-              "name": "localconfiggentest:GarageDoorStatus",
-              "displayName": "GarageDoorStatus"
-            },
-            {
-              "name": "localconfiggentest:GarageDoorSliding",
-              "displayName": "GarageDoorSliding"
-            }
-          ]
-        },
-        "output": {
-          "type": "DirectTimeChart",
-          "data": {
-            "timechart": true,
-            "current": false,
-            "table": false
-          },
-          "chartTimeWindowInMs": 3600000
-        }
-      },
-      {
-        "name": "GarageOpenFor5MinsInAnHourAlert",
-        "input": {
-          "type": "MetricDetailsApi",
-          "pollingInterval": 60000,
-          "metricKeys": [
-            {
-              "name": "localconfiggentest:GarageOpenFor5MinsInAnHourAlert",
-              "displayName": "GarageOpenFor5MinsInAnHourAlert"
-            }
-          ]
-        },
-        "output": {
-          "type": "DirectTable",
-          "data": {
-            "timechart": false,
-            "current": false,
-            "table": true
-          },
-          "chartTimeWindowInMs": 3600000
         }
       }
     ],
@@ -238,48 +94,6 @@
         "formatter": "longint",
         "position": "FirstRow",
         "type": "SimpleBox"
-      },
-      {
-        "name": "HeaterStatus, WindowLockStatus, WindowLockSliding",
-        "displayName": "HeaterStatus, WindowLockStatus, WindowLockSliding",
-        "data": "HeaterStatus, WindowLockStatus, WindowLockSliding_timechart",
-        "position": "TimeCharts",
-        "type": "MultiLineChart"
-      },
-      {
-        "name": "WindowOpenWhileHeaterOnAlert",
-        "displayName": "WindowOpenWhileHeaterOnAlert",
-        "data": "WindowOpenWhileHeaterOnAlert_table",
-        "position": "TimeCharts",
-        "type": "DetailsList"
-      },
-      {
-        "name": "DoorLockStatus",
-        "displayName": "DoorLockStatus",
-        "data": "DoorLockStatus_timechart",
-        "position": "TimeCharts",
-        "type": "MultiLineChart"
-      },
-      {
-        "name": "DoorLockOpenBetween9pmAnd7amUtcAlert",
-        "displayName": "DoorLockOpenBetween9pmAnd7amUtcAlert",
-        "data": "DoorLockOpenBetween9pmAnd7amUtcAlert_table",
-        "position": "TimeCharts",
-        "type": "DetailsList"
-      },
-      {
-        "name": "GarageDoorStatus, GarageDoorSliding",
-        "displayName": "GarageDoorStatus, GarageDoorSliding",
-        "data": "GarageDoorStatus, GarageDoorSliding_timechart",
-        "position": "TimeCharts",
-        "type": "MultiLineChart"
-      },
-      {
-        "name": "GarageOpenFor5MinsInAnHourAlert",
-        "displayName": "GarageOpenFor5MinsInAnHourAlert",
-        "data": "GarageOpenFor5MinsInAnHourAlert_table",
-        "position": "TimeCharts",
-        "type": "DetailsList"
       }
     ],
     "initParameters": {
@@ -573,6 +387,6 @@
     ],
     "subscription": null
   },
-  "properties": { "foo": "bar" },
-  "jobNames": [ "localconfiggentest" ]
+  "properties": { "k1": "v1" },
+  "jobNames": null
 }

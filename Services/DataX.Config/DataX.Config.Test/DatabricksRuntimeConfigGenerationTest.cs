@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 namespace DataX.Config.Test
 {
     [TestClass]
-    public class RuntimeConfigGenerationTest
+    public class DatabricksRuntimeConfigGenerationTest
     {
         [ClassInitialize]
         public static void Initialize(TestContext tc)
@@ -30,6 +30,7 @@ namespace DataX.Config.Test
             InitialConfiguration.Set(Constants.ConfigSettingName_ServiceKeyVaultName, "someservicekeyvault");
             InitialConfiguration.Set(Constants.ConfigSettingName_RuntimeKeyVaultName, "somekeyvault");
             InitialConfiguration.Set(Constants.ConfigSettingName_MetricEventHubConnectionKey, "metric-eventhubconnectionstring");
+            InitialConfiguration.Set(Constants.ConfigSettingName_SparkType, "databricks");
 
             var conf = new ContainerConfiguration()
                 .WithAssembly(typeof(ConfigGenConfiguration).Assembly)
@@ -52,7 +53,7 @@ namespace DataX.Config.Test
             InitialConfiguration.Clear();
         }
 
-        public RuntimeConfigGenerationTest()
+        public DatabricksRuntimeConfigGenerationTest()
         {
             CompositionHost.SatisfyImports(this);
         }
@@ -70,13 +71,13 @@ namespace DataX.Config.Test
 
         [Import]
         private ICommonDataManager CommonData { get; set; }
-        
+
         [Import]
         private ConfigurationProvider ConfigurationProvider { get; set; }
 
         [Shared]
         [Export(typeof(IFlowDeploymentProcessor))]
-        private class VerifyJsonConfigGenerated : ProcessorBase
+        private class DatabricksVerifyJsonConfigGenerated : ProcessorBase
         {
             public override int GetOrder()
             {
@@ -86,9 +87,9 @@ namespace DataX.Config.Test
 
             public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
             {
-                if(flowToDeploy.Name == "configgentest")
+                if(flowToDeploy.Name == "dbconfiggentest")
                 {
-                    var expectedConfigContent = await File.ReadAllTextAsync(@"Resource\jobConfig.json");
+                    var expectedConfigContent = await File.ReadAllTextAsync(@"Resource\databricksJobConfig.json");
                     var expectedJson = JsonConfig.From(expectedConfigContent);
                     var actualContentContent = flowToDeploy.GetJobs().First().GetTokenString(GenerateJobConfig.TokenName_JobConfigContent);
                     var actualJson = JsonConfig.From(actualContentContent);
@@ -98,17 +99,18 @@ namespace DataX.Config.Test
                         Assert.AreEqual(expected: match.Item2, actual: match.Item3, message: $"path:{match.Item1}");
                     }
                 }
+
                 return "done";
             }
         }
 
         [TestMethod]
-        public async Task TestEndToEndGeneration()
+        public async Task DatabricksTestEndToEndGeneration()
         {
-            var flowName = "configgentest";
+            var flowName = "dbconfiggentest";
 
-            var testingConfig = await File.ReadAllTextAsync(@"Resource\flowSaved.json");
-            await DesignTimeStorage.SaveByName(flowName, testingConfig,  FlowDataManager.DataCollectionName);
+            var testingConfig = await File.ReadAllTextAsync(@"Resource\databricksFlowSaved.json");
+            await DesignTimeStorage.SaveByName(flowName, testingConfig, FlowDataManager.DataCollectionName);
 
             await CommonData.Add("defaultJobTemplate", @"Resource\sparkJobTemplate.json");
             await CommonData.Add(ConfigFlattenerManager.DefaultConfigName, @"Resource\flattenerConfig.json");
@@ -130,18 +132,18 @@ namespace DataX.Config.Test
             }
 
             // verify output projection file is expected
-            var expectedProjection= await File.ReadAllTextAsync(@"Resource\projection.txt");
+            var expectedProjection = await File.ReadAllTextAsync(@"Resource\projection.txt");
             var actualProjection = RuntimeStorage.Cache[ResourcePathUtil.Combine(runtimeConfigFolder.ToString(), "projection.txt")];
             Assert.AreEqual(expected: expectedProjection, actual: actualProjection);
 
             // verify transform file is exepcted
             var expectedTransform = await File.ReadAllTextAsync(@"Resource\configgentest-combined.txt");
-            var actualTransform = RuntimeStorage.Cache[ResourcePathUtil.Combine(runtimeConfigFolder.ToString(), "configgentest-combined.txt")];
+            var actualTransform = RuntimeStorage.Cache[ResourcePathUtil.Combine(runtimeConfigFolder.ToString(), "dbconfiggentest-combined.txt")];
             Assert.AreEqual(expected: expectedTransform, actual: actualTransform);
 
             // Verify output configuration is expected
             var actualConf = PropertiesDictionary.From(this.RuntimeStorage.Cache[ResourcePathUtil.Combine(runtimeConfigFolder.ToString(), $"{flowName}.conf")]);
-            var expectedConf = PropertiesDictionary.From(await File.ReadAllTextAsync(@"Resource\jobConfig.conf"));
+            var expectedConf = PropertiesDictionary.From(await File.ReadAllTextAsync(@"Resource\databricksJobConfig.conf"));
             var matches = PropertiesDictionary.Match(expectedConf, actualConf).ToList();
             foreach (var match in matches)
             {
@@ -154,9 +156,9 @@ namespace DataX.Config.Test
             }
 
             // Verify metrics
-            var expectedConfig = JsonConfig.From(await File.ReadAllTextAsync(@"Resource\flowStarted.json"));
+            var expectedConfig = JsonConfig.From(await File.ReadAllTextAsync(@"Resource\databricksFlowStarted.json"));
             var actualConfig = JsonConfig.From(await this.DesignTimeStorage.GetByName(flowName, FlowDataManager.DataCollectionName));
-                        
+
             foreach (var match in JsonConfig.Match(expectedConfig, actualConfig))
             {
                 Assert.AreEqual(expected: match.Item2, actual: match.Item3, message: $"path:{match.Item1}");

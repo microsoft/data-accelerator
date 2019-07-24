@@ -588,7 +588,7 @@
       "subscription": null
     },
     "properties": {
-      "foo": "bar"
+      "k1": "v1"
     },
     "jobNames": [
       "localconfiggentest"

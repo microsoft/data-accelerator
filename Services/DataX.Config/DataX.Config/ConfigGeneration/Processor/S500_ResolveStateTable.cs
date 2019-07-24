@@ -66,7 +66,8 @@ namespace DataX.Config.ConfigGeneration.Processor
 
         private string ConstructStateTablePath(string flowName, string tableName)
         {
-            var prefix = (Configuration[Constants.ConfigSettingName_SparkType].Length > 0 && Configuration[Constants.ConfigSettingName_SparkType] == Constants.SparkTypeDataBricks) ? Constants.PrefixDbfs : Constants.PrefixHdfs;
+            var sparkType = Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string value) ? value : null;
+            var prefix = (sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixDbfs : Constants.PrefixHdfs;
             return $"{prefix}mycluster/datax/{flowName}/{tableName}/";
         }
     }

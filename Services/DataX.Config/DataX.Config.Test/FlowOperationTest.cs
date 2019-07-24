@@ -28,7 +28,6 @@ namespace DataX.Config.Test
         public static void Initialize(TestContext tc)
         {
             InitialConfiguration.Set(Constants.ConfigSettingName_RuntimeKeyVaultName, "somekeyvault");
-            InitialConfiguration.Set(Constants.ConfigSettingName_SparkType, "hdinsight");
 
             var conf = new ContainerConfiguration()
                 .WithAssembly(typeof(ConfigGenConfiguration).Assembly)
@@ -81,6 +80,8 @@ namespace DataX.Config.Test
             {
                 Assert.AreEqual(expected: match.Item2, actual: match.Item3, message: $"path:{match.Item1}");
             }
+
+            Cleanup();
         }
     }
 }

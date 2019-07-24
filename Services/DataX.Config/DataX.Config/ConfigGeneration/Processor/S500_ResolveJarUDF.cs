@@ -52,7 +52,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                             keyvaultName: RuntimeKeyVaultName.Value,
                             secretName: secretName,
                             secretValue: path,
-                            sparkType: Configuration[Constants.ConfigSettingName_SparkType],
+                            sparkType: Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType) ? sparkType : null,
                             hashSuffix: true);
 
                         func.Properties.Path = secretUri;

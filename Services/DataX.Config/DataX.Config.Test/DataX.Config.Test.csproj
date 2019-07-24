@@ -43,6 +43,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Resource\databricksFlowSaved.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\databricksJobConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\dbconfiggentest-combined.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Resource\Flattener\config.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -55,8 +64,14 @@
     <None Update="Resource\configgentest-combined.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Resource\databricksFlowStarted.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resource\flowStarted.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\databricksJobConfig.conf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Resource\sparkJobTemplate.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

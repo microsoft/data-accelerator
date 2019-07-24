@@ -69,8 +69,8 @@ namespace DataX.Config.ConfigGeneration.Processor
             }
 
             flowToDeploy.SetStringToken(TokenName_SparkJobJobExecutorMemory, $"{jobExecutorMemory}m");
-
-            if (Configuration[Constants.ConfigSettingName_SparkType] == Config.ConfigDataModel.Constants.SparkTypeDataBricks)
+            var sparkType = Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string value) ? value : null;
+            if (sparkType == Config.ConfigDataModel.Constants.SparkTypeDataBricks)
             {
                 // Setting TokenName_SparkJobDatabricksMinWorkers
                 var jobDatabricksMinWorkersString = guiConfig?.Process?.JobConfig?.JobDatabricksMinWorkers;
