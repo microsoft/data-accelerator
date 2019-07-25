@@ -8,6 +8,7 @@
   "gui": {
     "name": "configgentest",
     "displayName": "configgentest",
+    "databricksToken": null,
     "owner": "data-accelerator@microsoft.com",
     "input": {
       "mode": "streaming",
@@ -86,7 +87,10 @@
       ],
       "jobconfig": {
         "jobNumExecutors": "6",
-        "jobExecutorMemory": "8000"
+        "jobExecutorMemory": "8000",
+        "jobDatabricksAutoScale": false,
+        "jobDatabricksMinWorkers": null,
+        "jobDatabricksMaxWorkers": null
       }
     },
     "outputs": [

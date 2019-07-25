@@ -56,7 +56,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             var filePath = ResourcePathUtil.Combine(runtimeConfigBaseFolder, "projection.txt");
             var savedFile = await RuntimeStorage.SaveFile(filePath, finalProjections);
             var secretName = $"{config.Name}-projectionfile";
-            var savedSecretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, savedFile, Configuration[Constants.ConfigSettingName_SparkType]);
+            var savedSecretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, savedFile, (Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType) ? sparkType : null));
             flowToDeploy.SetObjectToken(TokenName_ProjectionFiles, new string[] {savedSecretId});
 
             return "done";

@@ -56,7 +56,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             var filePath = ResourcePathUtil.Combine(runtimeConfigBaseFolder, "inputschema.json");
             var schemaFile = await RuntimeStorage.SaveFile(filePath, schema);
             var secretName = $"{config.Name}-inputschemafile";
-            var schemaFileSecret = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, schemaFile, Configuration[Constants.ConfigSettingName_SparkType]);
+            var schemaFileSecret = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, schemaFile, (Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType) ? sparkType : null));
             flowToDeploy.SetStringToken(TokenName_InputSchemaFilePath, schemaFileSecret);
 
             return "done";

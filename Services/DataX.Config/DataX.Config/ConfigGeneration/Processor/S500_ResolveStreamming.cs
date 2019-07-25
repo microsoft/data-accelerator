@@ -33,8 +33,8 @@ namespace DataX.Config.ConfigGeneration.Processor
         {
             var config = flowToDeploy.Config;
             var guiConfig = config.GetGuiConfig();
-
-            var inputStreamingCheckpointDirPrefix = (Configuration[Constants.ConfigSettingName_SparkType].Length > 0 && Configuration[Constants.ConfigSettingName_SparkType] == Constants.SparkTypeDataBricks) ? Constants.PrefixDbfs : Constants.PrefixHdfs;
+            var sparkType = Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string value) ? value : null;
+            var inputStreamingCheckpointDirPrefix = (sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixDbfs : Constants.PrefixHdfs;
             flowToDeploy.SetStringToken(TokenName_InputStreamingCheckpointDir, $"{inputStreamingCheckpointDirPrefix}mycluster/dataxdirect/{JobMetadata.TokenPlaceHolder_JobName}/streaming/checkpoints");
 
             var intervalInSeconds = guiConfig?.Input?.Properties?.WindowDuration;
