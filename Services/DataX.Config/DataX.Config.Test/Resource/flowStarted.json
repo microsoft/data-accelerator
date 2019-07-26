@@ -39,7 +39,8 @@
           },
           "typeDisplay": "CSV/TSV File"
         }
-      ]
+      ],
+      "batch": null
     },
     "process": {
       "timestampColumn": "eventTime",
@@ -294,6 +295,7 @@
         }
       }
     ],
+    "batchList": "",
     "subscription": null
   },
   "commonProcessor": {
