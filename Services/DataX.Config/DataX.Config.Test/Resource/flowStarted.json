@@ -27,7 +27,6 @@
         "inputSubscriptionId": "acfaaa5f-a581-4375-badb-9ea61ffff0fc",
         "inputResourceGroup": "TestRG"
       },
-      "batching": null,
       "referenceData": [
         {
           "id": "testrd",
