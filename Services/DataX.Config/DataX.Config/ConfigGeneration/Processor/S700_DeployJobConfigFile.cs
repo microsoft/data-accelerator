@@ -39,7 +39,8 @@ namespace DataX.Config.ConfigGeneration.Processor
         {
             // Deploy job configs
             var jobs = flowToDeploy.GetJobs();
-            var deploymentTasks = jobs?.Select(async job => {
+            var deploymentTasks = jobs?.Select(async job =>
+            {
 
                 foreach (var jc in job.JobConfigs)
                 {

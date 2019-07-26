@@ -154,7 +154,7 @@ namespace DataX.Utilities.Blob
             CloudBlobContainer container = cloudBlobClient.GetContainerReference(containerName);
 
             var filteredBlobs = container.ListBlobsSegmentedAsync(prefix: prefix, useFlatBlobListing: true, blobListingDetails: BlobListingDetails.None, maxResults: null, currentToken: null, options: null, operationContext: null).Result.Results.OfType<CloudBlockBlob>()
-                .Where(b => ValidateBlobPath(blobPathPattern, b.Uri.ToString()) && b.Properties.Length > 0)
+                .Where(b => ValidateBlobPath(blobPathPattern, b.Uri.ToString()) && b.Properties.Length > 0 && ValidateJson(b.DownloadTextAsync().Result))
                 .OrderByDescending(m => m.Properties.LastModified).ToList().Take(blobCount);
 
             List<string> blobContents = new List<string>();
@@ -168,6 +168,20 @@ namespace DataX.Utilities.Blob
             }
 
             return blobContents;
+        }
+
+        private static bool ValidateJson(string input)
+        {
+            try
+            {
+                Newtonsoft.Json.Linq.JObject.Parse(input);
+                return true;
+
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static bool ValidateBlobPath(string blobPathPattern, string blobFullPath)

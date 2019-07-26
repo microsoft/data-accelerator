@@ -11,9 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Hosting;
-using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
-using DataX.Flow.Scheduler;
 
 namespace DataX.ServiceHost.AspNetCore
 {
@@ -37,7 +34,6 @@ namespace DataX.ServiceHost.AspNetCore
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             StartUpUtil.ConfigureServices(services, Configuration);
-            services.AddSingleton<IHostedService, TimedScheduler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

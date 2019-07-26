@@ -40,8 +40,13 @@ namespace DataX.Flow.SchemaInference.Blob
                 var connection = Helper.GetSecretFromKeyvaultIfNeeded(batchInput.Properties.Connection);
                 var wasbPath = Helper.GetSecretFromKeyvaultIfNeeded(batchInput.Properties.Path);
 
-                var path = TranslateBlobPath(wasbPath);
-                var containerName = ParseContainerName(path);
+                if (!Uri.TryCreate(wasbPath, UriKind.Absolute, out var uri))
+                {
+                    throw new ArgumentException($"Malformed Uri for the blob path:'{wasbPath}'. The blob path should be a wasbs url. e.g. wasbs://mycontainer@myaccount.blob.core.windows.net/mypath");
+                }
+
+                var path = uri.Host + "/" + uri.UserInfo + uri.LocalPath;
+                var containerName = uri.UserInfo;
                 var prefix = ParsePrefix(path, containerName);
                 var pathPattern = GenerateRegexPatternFromPath(path);
 
@@ -114,37 +119,11 @@ namespace DataX.Flow.SchemaInference.Blob
             return path;
         }
 
-        private static string TranslateBlobPath(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                return path;
-            }
-
-            path = path.Replace("wasbs://", "", StringComparison.OrdinalIgnoreCase);
-            var parts = path.Split(new char[] { '@', '/' });
-            path = parts[1] + "/" + parts[0] + "/" + string.Join("/", parts, 2, parts.Length - 2);
-            return path;
-        }
-
-        private static string ParseContainerName(string blobUri)
-        {
-            var mc = Regex.Matches(blobUri, @"\/(.*?)\/");
-            if (mc == null || mc.Count < 1)
-            {
-                throw new GeneralException("Unable to parse a container name from the blob path. The blob path should be a wasbs url. e.g. wasbs://mycontainer@myaccount.blob.core.windows.net/mypath");
-            }
-
-            var val = mc[0].Value.Replace(@"/", "", StringComparison.InvariantCulture);
-            return val;
-        }
-
-
         private static string ParsePrefix(string blobUri, string containerName)
         {
             var mc = Regex.Match(blobUri, containerName + @"\/(.*?)\/{(.*?)}");
 
-            return mc.Groups[0].Value;
+            return mc.Groups[1].Value;
         }
 
     }

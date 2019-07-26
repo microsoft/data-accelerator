@@ -78,7 +78,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             var jc = new JobConfig
             {
                 Content = newJobConfig.ToString(),
-                FilePath = ResourcePathUtil.Combine(destFolder, job.Name + ".json"),
+                FilePath = ResourcePathUtil.Combine(destFolder, job.Name + ".conf"),
                 SparkJobName = job.SparkJobName,
             };
 

@@ -76,6 +76,22 @@ namespace DataX.Config.Storage
             await BlobUtility.DeleteBlob(connectionString, filePath);
             return destinationPath;
         }
-     
+
+        public async Task<string> DeleteAll(string destinationPath)
+        {
+            string connectionStringRef = Configuration[ConfigSettingName_RuntimeStorageConnectionString];
+            string connectionString = await KeyVaultClient.ResolveSecretUriAsync(connectionStringRef);
+            var filePath = NormalizeFilePath(destinationPath);
+            if (Uri.TryCreate(destinationPath, UriKind.Absolute, out var uri))
+            {
+                await BlobUtility.DeleteAllBlobsInAContainer(connectionString, uri.UserInfo, uri.PathAndQuery.TrimStart('/'));
+            }
+            else
+            {
+                throw new ArgumentException($"Malformed Uri for output:'{destinationPath}'");
+            }
+            return destinationPath;
+        }
+
     }
 }

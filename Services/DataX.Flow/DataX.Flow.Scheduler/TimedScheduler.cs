@@ -2,10 +2,17 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using DataX.Flow.Common;
+using DataX.Gateway.Contract;
 using DataX.Utility.ServiceCommunication;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,19 +22,31 @@ namespace DataX.Flow.Scheduler
     public class TimedScheduler : BackgroundService
     {
         private readonly ILogger _logger;
+        private readonly IConfiguration _configuration;
+        private readonly EngineEnvironment _engineEnvironment;
+
         // Frequency at which to run the scheduler
         private readonly int _schedulerWakeupFrequencyInMin = 60;
         private readonly int _oneMinInMilliSeconds = 60 * 1000;
+        private readonly Dictionary<string, string> _headers;
 
         internal static InterServiceCommunicator Communicator
         {
             private get;
             set;
-        } = new InterServiceCommunicator(new TimeSpan(0, 4, 0));
+        }
 
-        public TimedScheduler(ILogger<TimedScheduler> logger)
+        public TimedScheduler(ILogger<TimedScheduler> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
+            _engineEnvironment = new EngineEnvironment(_configuration);
+
+            Communicator = new InterServiceCommunicator(new TimeSpan(0, 4, 0));
+            _headers = new Dictionary<string, string>();
+
+
+            SetRequestHeader();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -43,10 +62,42 @@ namespace DataX.Flow.Scheduler
 
                 await StartBatchJobs();
 
-                await Task.Delay(_schedulerWakeupFrequencyInMin * _oneMinInMilliSeconds, stoppingToken);
+                await Task.Delay(2 * _schedulerWakeupFrequencyInMin * _oneMinInMilliSeconds, stoppingToken);
             }
 
             _logger.LogInformation($"{DateTime.UtcNow}: TimedScheduler background task is stopping.");
+        }
+
+        private async Task SetRequestHeader()
+        {
+            var response = await _engineEnvironment.GetEnvironmentVariables().ConfigureAwait(false);
+            if (response.Error.HasValue && response.Error.Value)
+            {
+                _logger.LogError(response.Message);
+                throw new Exception("Can't get environment variables.");
+            }
+            var clientId = _engineEnvironment.EngineFlowConfig.ConfiggenClientId;
+            var clientSecret = Helper.GetSecretFromKeyvaultIfNeeded(_engineEnvironment.EngineFlowConfig.ConfiggenClientSecret);
+            var clientResourceId = Helper.GetSecretFromKeyvaultIfNeeded(_engineEnvironment.EngineFlowConfig.ConfiggenClientResourceId);
+            var tenantId = _engineEnvironment.EngineFlowConfig.ConfiggenTenantId;
+
+            var authenticationContext = new AuthenticationContext($"https://login.windows.net/{tenantId}");
+            var credential = new ClientCredential(clientId, clientSecret);
+            var apiToken = authenticationContext.AcquireTokenAsync(clientResourceId, credential).Result.AccessToken;
+
+            var jwtHandler = new JwtSecurityTokenHandler();
+            var readableToken = jwtHandler.CanReadToken(apiToken);
+            if (readableToken == true)
+            {
+                var token = jwtHandler.ReadJwtToken(apiToken);
+
+                var roleValue = token.Claims.FirstOrDefault(c => c.Type == "roles")?.Value;
+                if (!string.IsNullOrEmpty(roleValue))
+                {
+                    _headers.Add(Constants.UserRolesHeader, roleValue);
+
+                }
+            }
         }
 
         private async Task StartBatchJobs()
@@ -55,9 +106,10 @@ namespace DataX.Flow.Scheduler
 
             try
             {
-                await Communicator.InvokeServiceAsync(HttpMethod.Post, "DataX.Flow", "Flow.ManagementService", "flow/schedulebatch");
+
+                await Communicator.InvokeServiceAsync(HttpMethod.Post, "DataX.Flow", "Flow.ManagementService", "flow/schedulebatch", _headers);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 var message = e.InnerException == null ? e.Message : e.InnerException.Message;
                 _logger.LogInformation($"{ DateTime.UtcNow}:TimedScheduler an exception is thrown:" + message);

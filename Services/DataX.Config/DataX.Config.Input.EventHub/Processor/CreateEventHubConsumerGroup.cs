@@ -52,7 +52,7 @@ namespace DataX.Config.Input.EventHub.Processor
 
             // Replace Input Event Hub Connection String
             var eventHubConnectionString = guiConfig?.Input?.Properties?.InputEventhubConnection;
-            if (eventHubConnectionString != null && !KeyVaultUri.IsSecretUri(eventHubConnectionString))
+            if (!string.IsNullOrEmpty(eventHubConnectionString) && !KeyVaultUri.IsSecretUri(eventHubConnectionString))
             {
                 // create new secret
                 var secretName = $"{guiConfig.Name}-input-eventhubconnectionstring";

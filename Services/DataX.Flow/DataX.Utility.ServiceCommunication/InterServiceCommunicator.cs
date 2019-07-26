@@ -3,9 +3,9 @@
 // Licensed under the MIT License
 // *********************************************************************
 using DataX.Contract;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +24,7 @@ namespace DataX.Utility.ServiceCommunication
         {
             var handler = new WinHttpHandler
             {
+                ServerCertificateValidationCallback = (message, cert, chain, errors) => { return true; },
                 // We need to set timeout for handler first
                 // Setting timeout for httpClient alone is not good enough
                 SendTimeout = timeout,
@@ -43,18 +44,18 @@ namespace DataX.Utility.ServiceCommunication
         /// Make request using reverse proxy
         /// </summary>
         /// <returns></returns>
-        public virtual async Task<ApiResult> InvokeServiceAsync(HttpMethod httpMethod, string application, string service, string method, string content = null)
+        public virtual async Task<ApiResult> InvokeServiceAsync(HttpMethod httpMethod, string application, string service, string method, Dictionary<string, string> headers = null, string content = null)
         {
-            return await InvokeServiceAsAsyncHelper(httpMethod, application, service, method, content);
+            return await InvokeServiceAsAsyncHelper(httpMethod, application, service, method, headers, content);
         }
 
         /// <summary>
         /// Make request Helper
         /// </summary>
         /// <returns></returns>
-        private async Task<ApiResult> InvokeServiceAsAsyncHelper(HttpMethod httpMethod, string application, string service, string method, string content)
+        private async Task<ApiResult> InvokeServiceAsAsyncHelper(HttpMethod httpMethod, string application, string service, string method, Dictionary<string, string> headers, string content)
         {
-            var serviceUri = new Uri($"http://localhost:{_ReverseProxyPort}/{application}/{service}/");
+            var serviceUri = new Uri($"https://localhost:{_ReverseProxyPort}/{application}/{service}/");
             var apiUri = new UriBuilder(new Uri(serviceUri, $"api/{method}"));
 
             HttpRequestMessage request = new HttpRequestMessage
@@ -66,6 +67,16 @@ namespace DataX.Utility.ServiceCommunication
             if (!string.IsNullOrEmpty(content))
             {
                 request.Content = new StringContent(content, Encoding.UTF8, "application/json");
+                request.Headers.Add("Content-type", "application/json");
+            }
+
+            if (headers != null)
+            {
+                foreach(var header in headers)
+                {
+                    request.Headers.Add(header.Key, header.Value);
+
+                }
             }
 
             HttpResponseMessage response = null;

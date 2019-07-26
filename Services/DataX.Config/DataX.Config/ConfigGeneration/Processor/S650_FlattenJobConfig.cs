@@ -58,49 +58,17 @@ namespace DataX.Config.ConfigGeneration.Processor
             {
                 foreach (var jc in job.JobConfigs)
                 {
-
                     var jsonContent = job.Tokens.Resolve(jc.Content);
-                    var destFolder = job.GetTokenString(PrepareJobConfigVariables.TokenName_RuntimeConfigFolder);
-                    destFolder = this.GetJobConfigFilePath(inputConfig.Input.Mode, jc.IsOneTime, jc.ProcessingTime, destFolder);
 
                     if (jsonContent != null)
                     {
                         var json = JsonConfig.From(jsonContent);
-                        var name = job.Name;
-                        var destinationPath = ResourcePathUtil.Combine(destFolder, name + ".conf");
-
-
                         jc.Content = flattener.Flatten(json);
-                        jc.FilePath = destinationPath;
-
                     }
                 }
             }
 
             return "done";
-        }
-
-        /// <summary>
-        /// Get the job config path based on the job type
-        /// </summary>
-        /// <returns></returns>
-        private string GetJobConfigFilePath(string mode, bool isOneTime, string partitionName, string baseFolder)
-        {
-            var oneTimeFolderName = "";
-
-            if (mode == Constants.InputMode_Batching)
-            {
-                if (isOneTime)
-                {
-                    oneTimeFolderName = $"OneTime/{Regex.Replace(partitionName, "[^0-9]", "")}";
-                }
-                else 
-                {
-                    oneTimeFolderName = $"Recurring/{Regex.Replace(partitionName, "[^0-9]", "")}";
-                }
-            }
-
-            return ResourcePathUtil.Combine(baseFolder, oneTimeFolderName);
         }
     }
 }

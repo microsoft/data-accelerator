@@ -221,10 +221,11 @@ namespace DataX.Config.ConfigGeneration.Processor
             var processStartTime = ConvertDateToString(pe_e);
             var processEndTime = ConvertDateToString(ps_e);
 
+            destFolder = GetJobConfigFilePath(isOneTime, dateString, destFolder);
             var jc = new JobConfig
             {
                 Content = await GetBatchConfigContent(job, defaultJobConfig.ToString(), processStartTime, processEndTime).ConfigureAwait(false),
-                FilePath = ResourcePathUtil.Combine(destFolder, job.Name + ".json"),
+                FilePath = ResourcePathUtil.Combine(destFolder, job.Name + ".conf"),
                 Name = jobName,
                 SparkJobName = job.SparkJobName + suffix,
                 ProcessStartTime = processStartTime,
@@ -234,6 +235,25 @@ namespace DataX.Config.ConfigGeneration.Processor
             };
 
             return jc;
+        }
+
+        /// <summary>
+        /// Get the job config path based on the job type
+        /// </summary>
+        /// <returns></returns>
+        private static string GetJobConfigFilePath(bool isOneTime, string partitionName, string baseFolder)
+        {
+            var oneTimeFolderName = "";
+            if (isOneTime)
+            {
+                oneTimeFolderName = $"OneTime/{Regex.Replace(partitionName, "[^0-9]", "")}";
+            }
+            else
+            {
+                oneTimeFolderName = $"Recurring/{Regex.Replace(partitionName, "[^0-9]", "")}";
+            }
+
+            return ResourcePathUtil.Combine(baseFolder, oneTimeFolderName);
         }
 
         /// <summary>
