@@ -184,6 +184,8 @@ namespace DataX.Config.Test
             {
                 Assert.AreEqual(expected: match.Item2, actual: match.Item3, message: $"property:{match.Item1}");
             }
+
+            Cleanup();
         }
     }
 }
