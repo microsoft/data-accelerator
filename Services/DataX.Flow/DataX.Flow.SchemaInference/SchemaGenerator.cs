@@ -42,7 +42,11 @@ namespace DataX.Flow.SchemaInference
             _blobDirectory = blobDirectory;
             _checkpointContainerName = checkpointContainerName;
 
-            if (inputMode == Constants.InputMode_Streaming)
+            if (inputMode == Constants.InputMode_Batching)
+            {
+                _messageBus = new BlobMessageBus(batchInputs, logger);
+            }
+            else
             {
                 if (inputType == Constants.InputType_Kafka || inputType == Constants.InputType_KafkaEventHub)
                 {
@@ -53,10 +57,6 @@ namespace DataX.Flow.SchemaInference
                     _messageBus = new EventhubMessageBus(hubNames[0], consumerGroup, connectionString, storageConnectionString, checkpointContainerName, inputType, logger);
                 }
                 BlobHelper.DeleteAllBlobsInAContainer(storageConnectionString, checkpointContainerName, blobDirectory).Wait();
-            }
-            else
-            {
-                _messageBus = new BlobMessageBus(batchInputs, logger);
             }
         }
 

@@ -41,6 +41,8 @@ namespace DataX.Config.ConfigGeneration.Processor
                 var runtimeKeyVaultName = Configuration[Constants.ConfigSettingName_RuntimeKeyVaultName];
                 Ensure.NotNull(runtimeKeyVaultName, "runtimeKeyVaultName");
 
+                var sparkType = Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string value) ? value : null;
+
                 for (int i = 0; i < guiConfig?.Input?.Batch?.Length; i++)
                 {
                     // Replace Input Path
@@ -49,8 +51,11 @@ namespace DataX.Config.ConfigGeneration.Processor
                     if (!string.IsNullOrEmpty(inputConnection) && !KeyVaultUri.IsSecretUri(inputConnection))
                     {
                         var secretName = $"{guiConfig.Name}-input-{i}-inputConnection";
-                        var secretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, inputConnection, Configuration[Constants.ConfigSettingName_SparkType]).ConfigureAwait(false);
+                        var secretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, inputConnection, sparkType).ConfigureAwait(false);
                         input.Properties.Connection = secretId;
+
+                        var accountName = ConfigHelper.ParseBlobAccountName(inputConnection);
+                        await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, $"{Constants.AccountSecretPrefix}{accountName}", ConfigHelper.ParseBlobAccountKey(inputConnection), sparkType, false);
                     }
 
                     var inputPath = input.Properties.Path;
@@ -80,7 +85,7 @@ namespace DataX.Config.ConfigGeneration.Processor
 
                     return new InputBatchingSpec()
                     {
-                        Name = ParseBlobAccountName(connectionString),
+                        Name = ConfigHelper.ParseBlobAccountName(connectionString),
                         Path = rd.Properties.Path,
                         Format = rd.Properties.FormatType,
                         CompressionType = rd.Properties.CompressionType,
@@ -129,21 +134,5 @@ namespace DataX.Config.ConfigGeneration.Processor
 
             return 1;
         }
-
-        private static string ParseBlobAccountName(string connectionString)
-        {
-            string matched;
-            try
-            {
-                matched = Regex.Match(connectionString, @"(?<=AccountName=)(.*)(?=;AccountKey)").Value;
-            }
-            catch (Exception)
-            {
-                return "The connectionString does not have AccountName";
-            }
-
-            return matched;
-        }
-
     }
 }

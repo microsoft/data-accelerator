@@ -67,7 +67,7 @@ namespace DataX.Config.ConfigGeneration.Processor
         }
 
         public override async Task<FlowGuiConfig> HandleSensitiveData(FlowGuiConfig guiConfig)
-        {           
+        {
             var outputsData = guiConfig?.Outputs;
             if (outputsData != null && outputsData.Length > 0)
             {
@@ -178,7 +178,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                             }
                         case "sqlserver":
                             {
-                                var sqlOutput =  await ProcessOutputSql(configName, output);
+                                var sqlOutput = await ProcessOutputSql(configName, output);
                                 Ensure.EnsureNullElseThrowNotSupported(flowOutput.SqlOutput, "Multiple target Sql output for same dataset not supported.");
                                 flowOutput.SqlOutput = sqlOutput;
                                 break;
@@ -202,7 +202,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             foreach (var part in parts)
             {
                 value = "";
-                switch (part.Substring(0,1))
+                switch (part.Substring(0, 1))
                 {
                     case "s":
                         value = "%1$tS";
@@ -242,13 +242,13 @@ namespace DataX.Config.ConfigGeneration.Processor
                 var sparkKeyVaultName = Configuration[Constants.ConfigSettingName_RuntimeKeyVaultName];
 
                 string connectionString = await KeyVaultClient.ResolveSecretUriAsync(uiOutput.Properties.ConnectionString);
-                var accountName = ParseBlobAccountName(connectionString);
+                var accountName = ConfigHelper.ParseBlobAccountName(connectionString);
                 var timeFormat = inputMode != Constants.InputMode_Batching ? $"%1$tY/%1$tm/%1$td/%1$tH/${{quarterBucket}}/${{minuteBucket}}" : $"{TransformPartitionFormat(uiOutput.Properties.BlobPartitionFormat)}";
                 var blobPath = $"wasbs://{uiOutput.Properties.ContainerName}@{accountName}.blob.core.windows.net/{uiOutput.Properties.BlobPrefix}/{timeFormat}";
                 var secretId = $"{configName}-output";
                 var sparkType = Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string value) ? value : null;
                 var blobPathSecret = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, secretId, blobPath, sparkType, true);
-                await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, $"{Constants.AccountSecretPrefix}{accountName}", ParseBlobAccountKey(connectionString), sparkType, false);
+                await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, $"{Constants.AccountSecretPrefix}{accountName}", ConfigHelper.ParseBlobAccountKey(connectionString), sparkType, false);
 
                 FlowBlobOutputSpec blobOutput = new FlowBlobOutputSpec()
                 {
@@ -297,7 +297,7 @@ namespace DataX.Config.ConfigGeneration.Processor
 
                 FlowEventHubOutputSpec eventhubOutput = new FlowEventHubOutputSpec()
                 {
-                    ConnectionStringRef = KeyVaultUri.ComposeUri(sparkKeyVaultName, metricsEhConnectionStringKey, (Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType) ? sparkType : null)),
+                    ConnectionStringRef = KeyVaultUri.ComposeUri(sparkKeyVaultName, metricsEhConnectionStringKey, Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType) ? sparkType : null),
                     CompressionType = "none",
                     Format = "json"
                 };
@@ -379,7 +379,7 @@ namespace DataX.Config.ConfigGeneration.Processor
 
                 string connectionString = await KeyVaultClient.ResolveSecretUriAsync(uiOutput.Properties.ConnectionString).ConfigureAwait(false);
 
-                var database = GetValueFromJdbcConnection(connectionString,"database");
+                var database = GetValueFromJdbcConnection(connectionString, "database");
                 var user = GetValueFromJdbcConnection(connectionString, "user");
                 var pwd = GetValueFromJdbcConnection(connectionString, "password");
                 var url = GetUrlFromJdbcConnection(connectionString);
@@ -412,46 +412,6 @@ namespace DataX.Config.ConfigGeneration.Processor
             }
         }
 
-        /// <summary>
-        /// Parses the account name from connection string
-        /// </summary>
-        /// <param name="connectionString"></param>
-        /// <returns>account name</returns>
-        private string ParseBlobAccountName(string connectionString)
-        {
-            string matched;
-            try
-            {
-                matched = Regex.Match(connectionString, @"(?<=AccountName=)(.*)(?=;AccountKey)").Value;
-            }
-            catch (Exception)
-            {
-                return "The connectionString does not have AccountName";
-            }
-
-            return matched;
-        }
-
-        /// <summary>
-        /// Parses the account key from connection string
-        /// </summary>
-        /// <param name="connectionString"></param>
-        /// <returns>account key</returns>
-        private string ParseBlobAccountKey(string connectionString)
-        {
-            string matched;
-            try
-            {
-                matched = Regex.Match(connectionString, @"(?<=AccountKey=)(.*)(?=;EndpointSuffix)").Value;
-            }
-            catch (Exception)
-            {
-                return "The connectionString does not have AccountKey";
-            }
-
-            return matched;
-        }
-
         private string GetValueFromJdbcConnection(string connectionString, string key)
         {
             try
@@ -462,7 +422,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             }
             catch (Exception)
             {
-                throw new Exception ($"{key} not found in jdbc connection string");
+                throw new Exception($"{key} not found in jdbc connection string");
             }
         }
         private string GetUrlFromJdbcConnection(string connectionString)
