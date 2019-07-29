@@ -29,7 +29,10 @@ namespace DataX.Config.Test.Mock
 
         public async Task<string> ResolveSecretUriAsync(string secretUri)
         {
-            await Task.Yield();
+            if (secretUri == "keyvault://somekeyvault/configgenbatchtest-input-0-inputConnection")
+            {
+                return await Task.FromResult(@"DefaultEndpointsProtocol=https;AccountName=testaccount;AccountKey=testkey;EndpointSuffix=core.windows.net");
+            }
             return secretUri;
         }
 

@@ -80,7 +80,7 @@ namespace DataX.Flow.SchemaInference
             var bootstrapServers = Helper.TryGetBootstrapServers(connectionString);
 
             // Sample events and generate schema
-            SchemaGenerator sg = new SchemaGenerator(bootstrapServers, connectionString, eventHubNames, _engineEnvironment.EngineFlowConfig.ConsumerGroup, _engineEnvironment.OpsBlobConnectionString, checkPointContainerName, _engineEnvironment.EngineFlowConfig.OpsBlobDirectory, diag.InputType, _logger);
+            SchemaGenerator sg = new SchemaGenerator(bootstrapServers, connectionString, eventHubNames, _engineEnvironment.EngineFlowConfig.ConsumerGroup, _engineEnvironment.OpsBlobConnectionString, checkPointContainerName, _engineEnvironment.EngineFlowConfig.OpsBlobDirectory, diag.InputType, diag.InputMode, diag.BatchInputs, _logger);
             SchemaResult schema = await sg.GetSchemaAsync(_engineEnvironment.OpsBlobConnectionString, OpsSamplePath, diag.UserName, diag.Name, diag.Seconds);
 
             return ApiResult.CreateSuccess(JObject.FromObject(schema));
@@ -136,7 +136,7 @@ namespace DataX.Flow.SchemaInference
             var bootstrapServers = Helper.TryGetBootstrapServers(connectionString);
 
             // Sample events and refresh sample
-            SchemaGenerator sg = new SchemaGenerator(bootstrapServers, connectionString, eventHubNames, _engineEnvironment.EngineFlowConfig.ConsumerGroup, _engineEnvironment.OpsBlobConnectionString, checkPointContainerName, _engineEnvironment.EngineFlowConfig.OpsBlobDirectory, diag.InputType, _logger);
+            SchemaGenerator sg = new SchemaGenerator(bootstrapServers, connectionString, eventHubNames, _engineEnvironment.EngineFlowConfig.ConsumerGroup, _engineEnvironment.OpsBlobConnectionString, checkPointContainerName, _engineEnvironment.EngineFlowConfig.OpsBlobDirectory, diag.InputType, diag.InputMode, diag.BatchInputs, _logger);
             await sg.RefreshSample(_engineEnvironment.OpsBlobConnectionString, OpsSamplePath, diag.UserName, diag.Name, diag.Seconds);
             _logger.LogInformation("Refresh Sample worked!");
             return ApiResult.CreateSuccess("success");

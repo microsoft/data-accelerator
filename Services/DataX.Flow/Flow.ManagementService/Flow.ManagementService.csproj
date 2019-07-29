@@ -55,6 +55,7 @@
     <ProjectReference Include="..\..\DataX.Utilities\DataX.Utilities.Telemetry\DataX.Utilities.Telemetry.csproj" />
     <ProjectReference Include="..\..\DataX.Utilities\DataX.Utilities.Web\DataX.Utilities.Web.csproj" />
     <ProjectReference Include="..\DataX.Flow.DeleteHelper\DataX.Flow.DeleteHelper.csproj" />
+    <ProjectReference Include="..\DataX.Flow.Scheduler\DataX.Flow.Scheduler.csproj" />
     <ProjectReference Include="..\DataX.Flow.SqlParser\DataX.Flow.SqlParser.csproj" />
   </ItemGroup>
 

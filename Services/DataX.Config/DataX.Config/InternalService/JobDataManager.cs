@@ -63,5 +63,15 @@ namespace DataX.Config
         {
             return await this.Storage.Delete(destinationPath);
         }
+
+        /// <summary>
+        /// Delete the root folder containing all the job configs
+        /// </summary>
+        /// <param name="destinationPath"></param>
+        /// <returns></returns>
+        public async Task<string> DeleteAll(string destinationPath)
+        {
+            return await this.Storage.DeleteAll(destinationPath);
+        }
     }
 }

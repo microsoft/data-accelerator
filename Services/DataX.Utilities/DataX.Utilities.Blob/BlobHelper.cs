@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace DataX.Utilities.Blob
 {
@@ -144,6 +145,48 @@ namespace DataX.Utilities.Blob
         {
             // TODO Refactor
             blockBlob.UploadTextAsync(content).Wait();
+        }
+
+        public static async Task<List<string>> GetLastModifiedBlobContentsInBlobPath(string connectionString, string containerName, string prefix, string blobPathPattern, int blobCount)
+        {
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
+            CloudBlobClient cloudBlobClient = storageAccount.CreateCloudBlobClient();
+            CloudBlobContainer container = cloudBlobClient.GetContainerReference(containerName);
+
+            var filteredBlobs = container.ListBlobsSegmentedAsync(prefix: prefix, useFlatBlobListing: true, blobListingDetails: BlobListingDetails.None, maxResults: null, currentToken: null, options: null, operationContext: null).Result.Results.OfType<CloudBlockBlob>()
+                .Where(b => ValidateBlobPath(blobPathPattern, b.Uri.ToString()) && b.Properties.Length > 0 && ValidateJson(b.DownloadTextAsync().Result))
+                .OrderByDescending(m => m.Properties.LastModified).ToList().Take(blobCount);
+
+            List<string> blobContents = new List<string>();
+
+            if (filteredBlobs != null && filteredBlobs.Count() > 0)
+            {
+                foreach (CloudBlockBlob blob in filteredBlobs)
+                {
+                    blobContents.Add(blob.DownloadTextAsync().Result);
+                }
+            }
+
+            return blobContents;
+        }
+
+        private static bool ValidateJson(string input)
+        {
+            try
+            {
+                Newtonsoft.Json.Linq.JObject.Parse(input);
+                return true;
+
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool ValidateBlobPath(string blobPathPattern, string blobFullPath)
+        {
+            return Regex.Match(blobFullPath, blobPathPattern).Success;
         }
     }
 }

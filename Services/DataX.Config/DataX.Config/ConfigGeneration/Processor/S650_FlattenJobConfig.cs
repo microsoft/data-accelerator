@@ -3,14 +3,14 @@
 // Licensed under the MIT License
 // *********************************************************************
 using DataX.Config.ConfigDataModel;
-using DataX.Config.ConfigGeneration.Processor;
+using DataX.Config.ConfigDataModel.RuntimeConfig;
 using DataX.Config.Utility;
 using System;
-using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Globalization;
 
 namespace DataX.Config.ConfigGeneration.Processor
 {
@@ -38,6 +38,8 @@ namespace DataX.Config.ConfigGeneration.Processor
         {
             var flowConfig = flowToDeploy.Config;
 
+            var inputConfig = flowConfig?.GetGuiConfig();
+
             // get a flattener
             var flattener = await this.ConfigFlatteners.GetDefault();
             if (flattener == null)
@@ -54,19 +56,18 @@ namespace DataX.Config.ConfigGeneration.Processor
 
             foreach(var job in jobs)
             {
-                var jsonContent = job.GetTokenString(GenerateJobConfig.TokenName_JobConfigContent);
-                var destFolder = job.GetTokenString(PrepareJobConfigVariables.TokenName_RuntimeConfigFolder);
-
-                if (jsonContent != null)
+                foreach (var jc in job.JobConfigs)
                 {
-                    var json = JsonConfig.From(jsonContent);
-                    job.SetStringToken(GenerateJobConfig.TokenName_JobConfigContent, flattener.Flatten(json));
+                    var jsonContent = job.Tokens.Resolve(jc.Content);
 
-                    var destinationPath = ResourcePathUtil.Combine(destFolder, job.Name + ".conf");
-                    job.SetStringToken(GenerateJobConfig.TokenName_JobConfigFilePath, destinationPath);
+                    if (jsonContent != null)
+                    {
+                        var json = JsonConfig.From(jsonContent);
+                        jc.Content = flattener.Flatten(json);
+                    }
                 }
             }
-            
+
             return "done";
         }
     }

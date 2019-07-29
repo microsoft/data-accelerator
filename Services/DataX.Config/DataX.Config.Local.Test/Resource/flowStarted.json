@@ -330,7 +330,8 @@
               "header": true
             }
           }
-        ]
+        ],
+        "batch": null
       },
       "process": {
         "timestampColumn": "eventTime",
@@ -585,6 +586,7 @@
           }
         }
       ],
+      "batchList": "",
       "subscription": null
     },
     "properties": {

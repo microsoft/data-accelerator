@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading.Tasks;
 using DataX.Config.ConfigDataModel;
 using DataX.Flow.Common;
+using DataX.Flow.SchemaInference.Blob;
 using DataX.Flow.SchemaInference.Eventhub;
 using DataX.Flow.SchemaInference.Kafka;
 using DataX.Utilities.Blob;
@@ -35,21 +36,28 @@ namespace DataX.Flow.SchemaInference
         /// <param name="blobDirectory">Destination for where samples are stored</param>
         /// <param name="inputType">Type of MessageBus</param>
         /// <param name="logger">logger for Telemetry</param>
-        public SchemaGenerator(string brokerList, string connectionString, List<string> hubNames, string consumerGroup, string storageConnectionString, string checkpointContainerName, string blobDirectory, string inputType, ILogger logger)
+        public SchemaGenerator(string brokerList, string connectionString, List<string> hubNames, string consumerGroup, string storageConnectionString, string checkpointContainerName, string blobDirectory, string inputType, string inputMode, List<FlowGuiInputBatchInput> batchInputs, ILogger logger)
         {
             _logger = logger;
             _blobDirectory = blobDirectory;
             _checkpointContainerName = checkpointContainerName;
 
-            if (inputType == Constants.InputType_Kafka || inputType == Constants.InputType_KafkaEventHub)
+            if (inputMode == Constants.InputMode_Batching)
             {
-                _messageBus = new KafkaMessageBus(brokerList, connectionString, hubNames, consumerGroup, inputType, logger);
+                _messageBus = new BlobMessageBus(batchInputs, logger);
             }
             else
             {
-                _messageBus = new EventhubMessageBus(hubNames[0], consumerGroup, connectionString, storageConnectionString, checkpointContainerName, inputType, logger);
+                if (inputType == Constants.InputType_Kafka || inputType == Constants.InputType_KafkaEventHub)
+                {
+                    _messageBus = new KafkaMessageBus(brokerList, connectionString, hubNames, consumerGroup, inputType, logger);
+                }
+                else
+                {
+                    _messageBus = new EventhubMessageBus(hubNames[0], consumerGroup, connectionString, storageConnectionString, checkpointContainerName, inputType, logger);
+                }
+                BlobHelper.DeleteAllBlobsInAContainer(storageConnectionString, checkpointContainerName, blobDirectory).Wait();
             }
-            BlobHelper.DeleteAllBlobsInAContainer(storageConnectionString, checkpointContainerName, blobDirectory).Wait();
         }
 
         /// <summary>

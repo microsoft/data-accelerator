@@ -52,7 +52,7 @@ namespace DataX.Config.Input.EventHub.Processor
 
             // Replace Input Event Hub Connection String
             var eventHubConnectionString = guiConfig?.Input?.Properties?.InputEventhubConnection;
-            if (eventHubConnectionString != null && !KeyVaultUri.IsSecretUri(eventHubConnectionString))
+            if (!string.IsNullOrEmpty(eventHubConnectionString) && !KeyVaultUri.IsSecretUri(eventHubConnectionString))
             {
                 // create new secret
                 var secretName = $"{guiConfig.Name}-input-eventhubconnectionstring";
@@ -102,7 +102,7 @@ namespace DataX.Config.Input.EventHub.Processor
                 return "eventhub/iothub input not defined, skipped";
             }
 
-            if (inputType != Constants.InputType_EventHub && inputType != Constants.InputType_IoTHub && inputType != Constants.InputType_KafkaEventHub && inputType != Constants.InputType_Kafka)   
+            if (inputType != Constants.InputType_EventHub && inputType != Constants.InputType_IoTHub && inputType != Constants.InputType_KafkaEventHub && inputType != Constants.InputType_Kafka && inputType != Constants.InputType_Blob)   
             {
                 return $"unsupported inputtype '{inputType}', skipped.";
             }
