@@ -8,34 +8,47 @@ using DataX.Contract;
 using System;
 using System.Collections.Generic;
 using System.Composition;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DataX.Config.ConfigGeneration.Processor
 {
     /// <summary>
-    /// Produce the projection file section
+    /// Produce the schema file section
     /// </summary>
     [Shared]
     [Export(typeof(IFlowDeploymentProcessor))]
-    public class GenerateProjectionFile: ProcessorBase
+    public class GenerateSchemaFile : ProcessorBase
     {
-        public const string TokenName_ProjectionFiles = "processProjections";
+        public const string TokenName_InputSchemaFilePath = "inputSchemaFilePath";
 
         [ImportingConstructor]
-        public GenerateProjectionFile(IRuntimeConfigStorage runtimeStorage, IKeyVaultClient keyvaultClient, ConfigGenConfiguration conf)
+        public GenerateSchemaFile(IKeyVaultClient keyvaultClient, IRuntimeConfigStorage runtimeStorage, ConfigGenConfiguration conf)
         {
-            RuntimeStorage = runtimeStorage;
             KeyVaultClient = keyvaultClient;
+            RuntimeStorage = runtimeStorage;
             Configuration = conf;
         }
 
+        public override int GetOrder()
+        {
+            return 630;
+        }
+
         private ConfigGenConfiguration Configuration { get; }
-        private IRuntimeConfigStorage RuntimeStorage { get; }
         private IKeyVaultClient KeyVaultClient { get; }
-        
+        private IRuntimeConfigStorage RuntimeStorage { get; }
+
         public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
         {
+            var jobs = flowToDeploy.GetJobs();
+            if (jobs == null || !jobs.Where(j => j.JobConfigs.Any()).Any())
+            {
+                return "no jobs, skipped";
+            }
+
             var config = flowToDeploy.Config;
             var guiConfig = config?.GetGuiConfig();
             if (guiConfig == null)
@@ -43,9 +56,8 @@ namespace DataX.Config.ConfigGeneration.Processor
                 return "no gui input, skipped.";
             }
 
-            var projectColumns = guiConfig.Input?.Properties?.NormalizationSnippet?.Trim('\t', ' ', '\r', '\n');
-            //TODO: make the hardcoded "Raw.*" configurable?
-            var finalProjections = string.IsNullOrEmpty(projectColumns) ? "Raw.*" : projectColumns;
+            var schema = guiConfig.Input?.Properties?.InputSchemaFile;
+            Ensure.NotNull(schema, "guiConfig.input.properties.inputschemafile");
 
             var runtimeConfigBaseFolder = flowToDeploy.GetTokenString(PrepareJobConfigVariables.TokenName_RuntimeConfigFolder);
             Ensure.NotNull(runtimeConfigBaseFolder, "runtimeConfigBaseFolder");
@@ -53,11 +65,11 @@ namespace DataX.Config.ConfigGeneration.Processor
             var runtimeKeyVaultName = flowToDeploy.GetTokenString(PortConfigurationSettings.TokenName_RuntimeKeyVaultName);
             Ensure.NotNull(runtimeKeyVaultName, "runtimeKeyVaultName");
 
-            var filePath = ResourcePathUtil.Combine(runtimeConfigBaseFolder, "projection.txt");
-            var savedFile = await RuntimeStorage.SaveFile(filePath, finalProjections);
-            var secretName = $"{config.Name}-projectionfile";
-            var savedSecretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, savedFile, Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType) ? sparkType : null);
-            flowToDeploy.SetObjectToken(TokenName_ProjectionFiles, new string[] {savedSecretId});
+            var filePath = ResourcePathUtil.Combine(runtimeConfigBaseFolder, "inputschema.json");
+            var schemaFile = await RuntimeStorage.SaveFile(filePath, schema);
+            var secretName = $"{config.Name}-inputschemafile";
+            var schemaFileSecret = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, schemaFile, Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType) ? sparkType : null);
+            flowToDeploy.SetStringToken(TokenName_InputSchemaFilePath, schemaFileSecret);
 
             return "done";
         }

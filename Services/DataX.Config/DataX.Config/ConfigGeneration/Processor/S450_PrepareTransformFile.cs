@@ -18,7 +18,7 @@ namespace DataX.Config.ConfigGeneration.Processor
     /// </summary>
     [Shared]
     [Export(typeof(IFlowDeploymentProcessor))]
-    public class GenerateTransformFile : ProcessorBase
+    public class PrepareTransformFile : ProcessorBase
     {
         public const string TokenName_TransformFile = "processTransforms";
         public const string AttachmentName_CodeGenObject = "rulesCode";
@@ -28,7 +28,7 @@ namespace DataX.Config.ConfigGeneration.Processor
         private IRuntimeConfigStorage RuntimeStorage { get; }
 
         [ImportingConstructor]
-        public GenerateTransformFile(IKeyVaultClient keyvaultClient, IRuntimeConfigStorage runtimeStorage, ConfigGenConfiguration conf)
+        public PrepareTransformFile(IKeyVaultClient keyvaultClient, IRuntimeConfigStorage runtimeStorage, ConfigGenConfiguration conf)
         {
             KeyVaultClient = keyvaultClient;
             RuntimeStorage = runtimeStorage;
@@ -51,7 +51,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             }
             string queries = string.Join("\n", guiConfig.Process?.Queries);
 
-            string ruleDefinitions =  RuleDefinitionGenerator.GenerateRuleDefinitions(guiConfig.Rules, config.Name);
+            string ruleDefinitions = RuleDefinitionGenerator.GenerateRuleDefinitions(guiConfig.Rules, config.Name);
             RulesCode rulesCode = CodeGen.GenerateCode(queries, ruleDefinitions, config.Name);
 
             Ensure.NotNull(rulesCode, "rulesCode");
@@ -59,18 +59,17 @@ namespace DataX.Config.ConfigGeneration.Processor
             // Save the rulesCode object for downstream processing
             flowToDeploy.SetAttachment(AttachmentName_CodeGenObject, rulesCode);
 
-            var runtimeConfigBaseFolder = flowToDeploy.GetTokenString(PrepareJobConfigVariables.TokenName_RuntimeConfigFolder);
-            Ensure.NotNull(runtimeConfigBaseFolder, "runtimeConfigBaseFolder");
-
             var runtimeKeyVaultName = flowToDeploy.GetTokenString(PortConfigurationSettings.TokenName_RuntimeKeyVaultName);
             Ensure.NotNull(runtimeKeyVaultName, "runtimeKeyVaultName");
 
-            var filePath = ResourcePathUtil.Combine(runtimeConfigBaseFolder, $"{config.Name}-combined.txt");
-            var transformFilePath = await RuntimeStorage.SaveFile(filePath, rulesCode.Code);
             var secretName = $"{config.Name}-transform";
-            var transformFileSecret = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, transformFilePath, Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType) ? sparkType : null);
+            Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType);
+            var uriPrefix = (sparkType != null && sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
+
+            var transformFileSecret = $"{uriPrefix}://{runtimeKeyVaultName}/{secretName}";
             flowToDeploy.SetStringToken(TokenName_TransformFile, transformFileSecret);
 
+            await Task.CompletedTask;
             return "done";
         }
     }

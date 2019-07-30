@@ -28,7 +28,6 @@ namespace DataX.Flow.Scheduler
         // Frequency at which to run the scheduler
         private readonly int _schedulerWakeupFrequencyInMin = 60;
         private readonly int _oneMinInMilliSeconds = 60 * 1000;
-        private readonly Dictionary<string, string> _headers;
 
         internal static InterServiceCommunicator Communicator
         {
@@ -43,10 +42,6 @@ namespace DataX.Flow.Scheduler
             _engineEnvironment = new EngineEnvironment(_configuration);
 
             Communicator = new InterServiceCommunicator(new TimeSpan(0, 4, 0));
-            _headers = new Dictionary<string, string>();
-
-
-            SetRequestHeader();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -60,15 +55,15 @@ namespace DataX.Flow.Scheduler
             {
                 _logger.LogInformation($"{DateTime.UtcNow}:TimedScheduler task doing background work.");
 
-                await StartBatchJobs();
+                await StartBatchJobs().ConfigureAwait(false);
 
-                await Task.Delay(2 * _schedulerWakeupFrequencyInMin * _oneMinInMilliSeconds, stoppingToken);
+                await Task.Delay(_schedulerWakeupFrequencyInMin * _oneMinInMilliSeconds, stoppingToken).ConfigureAwait(false);
             }
 
             _logger.LogInformation($"{DateTime.UtcNow}: TimedScheduler background task is stopping.");
         }
 
-        private async Task SetRequestHeader()
+        private async Task<Dictionary<string, string>> SetRequestHeader()
         {
             var response = await _engineEnvironment.GetEnvironmentVariables().ConfigureAwait(false);
             if (response.Error.HasValue && response.Error.Value)
@@ -87,6 +82,8 @@ namespace DataX.Flow.Scheduler
 
             var jwtHandler = new JwtSecurityTokenHandler();
             var readableToken = jwtHandler.CanReadToken(apiToken);
+
+            Dictionary<string, string> headers = new Dictionary<string, string>();
             if (readableToken == true)
             {
                 var token = jwtHandler.ReadJwtToken(apiToken);
@@ -94,25 +91,28 @@ namespace DataX.Flow.Scheduler
                 var roleValue = token.Claims.FirstOrDefault(c => c.Type == "roles")?.Value;
                 if (!string.IsNullOrEmpty(roleValue))
                 {
-                    _headers.Add(Constants.UserRolesHeader, roleValue);
+                    headers.Add(Constants.UserRolesHeader, roleValue);
 
                 }
             }
+
+            return headers;
         }
 
         private async Task StartBatchJobs()
         {
-            _logger.LogInformation($"{ DateTime.UtcNow}:TimedScheduler Starting batch jobs");
+            var headers = await SetRequestHeader().ConfigureAwait(false);
+
+            _logger.LogInformation($"{DateTime.UtcNow}:TimedScheduler Starting batch jobs");
 
             try
             {
-
-                await Communicator.InvokeServiceAsync(HttpMethod.Post, "DataX.Flow", "Flow.ManagementService", "flow/schedulebatch", _headers);
+                await Communicator.InvokeServiceAsync(HttpMethod.Post, "DataX.Flow", "Flow.ManagementService", "flow/schedulebatch", headers).ConfigureAwait(false);
             }
             catch (Exception e)
             {
                 var message = e.InnerException == null ? e.Message : e.InnerException.Message;
-                _logger.LogInformation($"{ DateTime.UtcNow}:TimedScheduler an exception is thrown:" + message);
+                _logger.LogInformation($"{DateTime.UtcNow}:TimedScheduler an exception is thrown:" + message);
             }
         }
     }

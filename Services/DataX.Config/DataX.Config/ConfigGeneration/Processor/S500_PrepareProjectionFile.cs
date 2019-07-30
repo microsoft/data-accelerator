@@ -1,0 +1,57 @@
+﻿// *********************************************************************
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License
+// *********************************************************************
+using DataX.Config.ConfigDataModel;
+using DataX.Config.Utility;
+using DataX.Contract;
+using System;
+using System.Collections.Generic;
+using System.Composition;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataX.Config.ConfigGeneration.Processor
+{
+    /// <summary>
+    /// Produce the projection file section
+    /// </summary>
+    [Shared]
+    [Export(typeof(IFlowDeploymentProcessor))]
+    public class PrepareProjectionFile: ProcessorBase
+    {
+        public const string TokenName_ProjectionFiles = "processProjections";
+
+        [ImportingConstructor]
+        public PrepareProjectionFile(IRuntimeConfigStorage runtimeStorage, IKeyVaultClient keyvaultClient, ConfigGenConfiguration conf)
+        {
+            RuntimeStorage = runtimeStorage;
+            KeyVaultClient = keyvaultClient;
+            Configuration = conf;
+        }
+
+        private ConfigGenConfiguration Configuration { get; }
+        private IRuntimeConfigStorage RuntimeStorage { get; }
+        private IKeyVaultClient KeyVaultClient { get; }
+        
+        public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
+        {
+            var config = flowToDeploy.Config;
+            var runtimeConfigBaseFolder = flowToDeploy.GetTokenString(PrepareJobConfigVariables.TokenName_RuntimeConfigFolder);
+            Ensure.NotNull(runtimeConfigBaseFolder, "runtimeConfigBaseFolder");
+
+            var runtimeKeyVaultName = flowToDeploy.GetTokenString(PortConfigurationSettings.TokenName_RuntimeKeyVaultName);
+            Ensure.NotNull(runtimeKeyVaultName, "runtimeKeyVaultName");
+
+            var secretName = $"{config.Name}-projectionfile";
+            Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType);
+            var uriPrefix = (sparkType != null && sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
+
+            var projectionFileSecret = $"{uriPrefix}://{runtimeKeyVaultName}/{secretName}";
+            flowToDeploy.SetObjectToken(TokenName_ProjectionFiles, new string[] { projectionFileSecret });
+
+            await Task.CompletedTask;
+            return "done";
+        }
+    }
+}
