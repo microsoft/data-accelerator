@@ -127,8 +127,15 @@ object HadoopClient {
       case Some(value)=>
         logger.warn(s"Retrieved key for storage account '$sa' with secretid:'$secretId'")
         setStorageAccountKey(sa, value)
-      case None =>
-        logger.warn(s"Failed to find key for storage account '$sa' with secretid:'$secretId'")
+      case None =>	    
+        val databricksSecretId = s"secretscope://$vaultName/${ProductConstant.ProductRoot}-sa-$sa"
+		KeyVaultClient.getSecret(databricksSecretId) match {
+		  case Some(value)=>
+            logger.warn(s"Retrieved key for storage account '$sa' with secretid:'$databricksSecretId'")
+            setStorageAccountKey(sa, value)
+		  case None =>
+		    logger.warn(s"Failed to find key for storage account '$sa' with secretid:'$secretId' and '$databricksSecretId'")
+		}
     }
   }
 

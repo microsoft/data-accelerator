@@ -23,6 +23,7 @@ import scala.collection.mutable.HashMap
 
 object SparkJarLoader {
   val currentJars = new HashMap[String, Long]
+  var fileUrl = ""
 
   def getJavaUDFReturnDataType(t: Class[_]): DataType = {
     val mirror = scala.reflect.runtime.universe.runtimeMirror(ClassLoaderHost.derivedClassLoader)
@@ -48,6 +49,7 @@ object SparkJarLoader {
 
       // Add it to our class loader
       val url = new java.io.File(SparkFiles.getRootDirectory(), localName).toURI.toURL
+	  fileUrl = url.getPath()
       if (!ClassLoaderHost.urlClassLoader.getURLs().contains(url)) {
         logger.info("Adding " + url + " to class loader")
         ClassLoaderHost.urlClassLoader.addURL(url)
@@ -57,7 +59,9 @@ object SparkJarLoader {
 
   def addJar(spark: SparkSession, jarPath: String) = {
     addJarOnDriver(spark, jarPath)
-    spark.sparkContext.addJar(jarPath)
+	val logger = LogManager.getLogger("AddJar to executer")
+    logger.info("fileUrl is " + fileUrl)
+    spark.sparkContext.addJar(fileUrl)
   }
 
   def loadUdf(spark: SparkSession, udfName: String, jarPath: String, mainClass: String, method: String) = {
