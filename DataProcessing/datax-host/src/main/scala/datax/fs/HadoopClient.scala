@@ -122,6 +122,7 @@ object HadoopClient {
     * @param sa name of the storage account
     */
   private def resolveStorageAccount(vaultName: String, sa: String) = {
+    // Fetch secret from keyvault using KeyVaultMsiAuthenticatorClient and if that does not return secret then fetch it using secret scope  
     val secretId = s"keyvault://$vaultName/${ProductConstant.ProductRoot}-sa-$sa"
     KeyVaultClient.getSecret(secretId) match {
       case Some(value)=>
