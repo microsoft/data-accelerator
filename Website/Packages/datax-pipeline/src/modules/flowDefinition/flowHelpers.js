@@ -440,7 +440,7 @@ export function convertFlowToConfig(flow, query) {
     let sinkers = [...flow.outputs];
     let outputTemplates = [...flow.outputTemplates];
     let rules = [...flow.rules];
-    let batchList = [...flow.batchList];
+    let batchList = flow.batchList ? [...flow.batchList] : [];
 
     // sort by name
     referenceData.sort((a, b) => a.id.localeCompare(b.id));
@@ -493,7 +493,7 @@ export function convertConfigToFlow(config) {
         databricksToken: config.databricksToken,
         input: input,
         batchInputs: input.batch,
-        batchList: config.batchList !== undefined ? config.batchList : [],
+        batchList: config.batchList ? config.batchList : [],
         referenceData: input.referenceData ? input.referenceData : [],
         functions: config.process.functions ? config.process.functions : [],
         query: config.process.queries[0],

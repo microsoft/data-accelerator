@@ -58,7 +58,7 @@ export default class ScheduleSettingsContent extends React.Component {
             <div style={rootStyle}>
                 <StatementBox
                     icon="SignOut"
-                    statement="Schedule recurring and/or one time batch jobs. For the jobs scheduled correctly, the scheduler will create and start jobs."
+                    statement="Schedule recurring and/or one time batch jobs. For the jobs scheduled correctly, the scheduler will create and start jobs. And once a job is created, the schedule associated with it will be disabled and read-only."
                 />
                 {this.renderContent()}
             </div>

@@ -855,11 +855,21 @@ export const defaultSchemaLocal = `{
       }
     ]
   }
-  `; 
+  `;
+
+export function getDefaultNormalizationSnippet(inputMode) {
+    if (inputMode === inputModeEnum.batching) {
+        return defaultBatchNormalizationSnippet;
+    } else {
+        return defaultNormalizationSnippet;
+    }
+}
 
 export const defaultNormalizationSnippet = `SystemProperties AS _SystemProperties
 Properties AS _Properties
 Raw.*`;
+
+export const defaultBatchNormalizationSnippet = `Raw.*`;
 
 // Default Flow settings
 export const defaultInput = {

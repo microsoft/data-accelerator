@@ -253,7 +253,7 @@ class FlowDefinitionPanel extends React.Component {
 
     renderSaveButton() {
         if (!this.state.loading) {
-            const enableButton = this.props.flow.isDirty && this.state.saveFlowButtonEnabled;
+            const enableButton = (this.props.flow.isDirty || this.props.isQueryDirty) && this.state.saveFlowButtonEnabled;
             return (
                 <DefaultButton
                     key="save"
@@ -276,7 +276,8 @@ class FlowDefinitionPanel extends React.Component {
 
     renderDeployButton() {
         if (!this.state.loading) {
-            const enableButton = this.props.flow.isDirty && this.props.flowValidated && this.state.deployFlowButtonEnabled;
+            const enableButton =
+                (this.props.flow.isDirty || this.props.isQueryDirty) && this.props.flowValidated && this.state.deployFlowButtonEnabled;
             return (
                 <DefaultButton
                     key="deploy"
@@ -715,7 +716,7 @@ class FlowDefinitionPanel extends React.Component {
         });
 
         this.props
-            .onDeployFlow(this.props.flow)
+            .onDeployFlow(this.props.flow, this.props.query)
             .then(name => {
                 this.setState({
                     isSaving: false,
@@ -951,7 +952,6 @@ const mapDispatchToProps = dispatch => ({
     onUpdateInputWatermarkUnit: duration => dispatch(Actions.updateInputWatermarkUnit(duration)),
     onUpdateInputMaxRate: maxRate => dispatch(Actions.updateInputMaxRate(maxRate)),
     onUpdateInputSchema: schema => dispatch(Actions.updateInputSchema(schema)),
-
     onGetInputSchema: flow => dispatch(Actions.getInputSchema(flow)),
     onUpdateShowNormalizationSnippet: show => dispatch(Actions.updateShowNormalizationSnippet(show)),
     onUpdateNormalizationSnippet: snippet => dispatch(Actions.updateNormalizationSnippet(snippet)),
@@ -1055,7 +1055,6 @@ const mapDispatchToProps = dispatch => ({
     onNewBatch: type => dispatch(Actions.newBatch(type)),
     onDeleteBatch: index => dispatch(Actions.deleteBatch(index)),
     onUpdateSelectedBatchIndex: index => dispatch(Actions.updateSelectedBatchIndex(index)),
-
     onUpdateBatchName: value => dispatch(Actions.updateBatchName(value)),
     onUpdateBatchStartTime: value => dispatch(Actions.updateBatchStartTime(value)),
     onUpdateBatchEndTime: value => dispatch(Actions.updateBatchEndTime(value)),

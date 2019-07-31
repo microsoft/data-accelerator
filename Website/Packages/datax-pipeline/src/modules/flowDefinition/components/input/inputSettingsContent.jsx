@@ -213,7 +213,6 @@ export default class InputSettingsContent extends React.Component {
     }
 
     renderEventHubName() {
-        // if (this.props.input.type !== Models.inputTypeEnum.blob && this.props.input.type !== Models.inputTypeEnum.events && this.props.input.type !== Models.inputTypeEnum.local) {
         if (this.props.input.type !== Models.inputTypeEnum.events && this.props.input.type !== Models.inputTypeEnum.local) {
             const label =
                 this.props.input.type === Models.inputTypeEnum.iothub
@@ -559,7 +558,12 @@ export default class InputSettingsContent extends React.Component {
         let editor;
         if (this.props.fetchingInputSchema) {
             const timer = parseInt(this.props.samplingInputDuration) - this.props.timer;
-            const label = timer > -1 ? `Sampling Data... ${timer}` : 'Generating schema...';
+            const label =
+                this.props.input.mode === Models.inputModeEnum.streaming
+                    ? timer > -1
+                        ? `Sampling Data... ${timer}`
+                        : 'Generating schema...'
+                    : 'Reading blobs...';
 
             editor = <LoadingPanel showImmediately={true} message={label} style={spinnerContainerStyle} />;
         } else {
@@ -687,7 +691,6 @@ InputSettingsContent.propTypes = {
     onUpdateHubConnection: PropTypes.func.isRequired,
     onUpdateSubscriptionId: PropTypes.func.isRequired,
     onUpdateResourceGroup: PropTypes.func.isRequired,
-
     onUpdateWindowDuration: PropTypes.func.isRequired,
     onUpdateTimestampColumn: PropTypes.func.isRequired,
     onUpdateWatermarkValue: PropTypes.func.isRequired,

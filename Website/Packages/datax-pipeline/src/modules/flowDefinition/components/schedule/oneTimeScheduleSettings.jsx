@@ -72,6 +72,7 @@ export default class OneTimeScheduleSettings extends React.Component {
                 <Label className="ms-font-m info-settings-textbox">Start Time</Label>
                 <DateTimePicker
                     className="ms-font-m info-settings-textbox"
+                    disabled={this.props.batch.disabled}
                     value={this.props.batch.properties.startTime ? new Date(this.props.batch.properties.startTime) : ''}
                     maxDate={maxDate}
                     onChange={value => this.props.onUpdateBatchStartTime(value)}
@@ -88,6 +89,7 @@ export default class OneTimeScheduleSettings extends React.Component {
                 <Label className="ms-font-m info-settings-textbox">End Time</Label>
                 <DateTimePicker
                     className="ms-font-m info-settings-textbox"
+                    disabled={this.props.batch.disabled}
                     value={this.props.batch.properties.endTime ? new Date(this.props.batch.properties.endTime) : ''}
                     minDate={minDate}
                     onChange={value => this.props.onUpdateBatchEndTime(value)}
@@ -119,6 +121,7 @@ export default class OneTimeScheduleSettings extends React.Component {
             <div style={sectionValueStyle}>
                 <TextField
                     className="ms-font-m"
+                    disabled={this.props.batch.disabled}
                     spellCheck={false}
                     label={type}
                     value={value}
@@ -141,6 +144,7 @@ export default class OneTimeScheduleSettings extends React.Component {
             <div style={sectionDropdownStyle}>
                 <Label className="ms-font-m">Unit</Label>
                 <Dropdown
+                    disabled={this.props.batch.disabled}
                     className="ms-font-m"
                     options={options}
                     selectedKey={value}
@@ -159,7 +163,6 @@ export default class OneTimeScheduleSettings extends React.Component {
 // Props
 OneTimeScheduleSettings.propTypes = {
     batch: PropTypes.object.isRequired,
-
     // functions
     onUpdateBatchName: PropTypes.func.isRequired,
     onUpdateBatchStartTime: PropTypes.func.isRequired,

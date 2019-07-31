@@ -73,6 +73,7 @@ export default class RecurringScheduleSettings extends React.Component {
                 <Label className="ms-font-m info-settings-textbox">Start Time</Label>
                 <DateTimePicker
                     className="ms-font-m info-settings-textbox"
+                    disabled={this.props.batch.disabled}
                     value={this.props.batch.properties.startTime ? new Date(this.props.batch.properties.startTime) : ''}
                     maxDate={maxDate}
                     onChange={value => this.props.onUpdateBatchStartTime(value)}
@@ -89,6 +90,7 @@ export default class RecurringScheduleSettings extends React.Component {
                 <Label className="ms-font-m info-settings-textbox">End Time</Label>
                 <DateTimePicker
                     className="ms-font-m info-settings-textbox"
+                    disabled={this.props.batch.disabled}
                     value={this.props.batch.properties.endTime ? new Date(this.props.batch.properties.endTime) : ''}
                     minDate={minDate}
                     onChange={value => this.props.onUpdateBatchEndTime(value)}
@@ -129,6 +131,7 @@ export default class RecurringScheduleSettings extends React.Component {
             <div style={sectionValueStyle}>
                 <TextField
                     className="ms-font-m"
+                    disabled={this.props.batch.disabled}
                     spellCheck={false}
                     label={type}
                     value={value}
@@ -152,6 +155,7 @@ export default class RecurringScheduleSettings extends React.Component {
                 <Label className="ms-font-m">Unit</Label>
                 <Dropdown
                     className="ms-font-m"
+                    disabled={this.props.batch.disabled}
                     options={options}
                     selectedKey={value}
                     onChange={(event, selection) => onUpdateType(selection.key)}

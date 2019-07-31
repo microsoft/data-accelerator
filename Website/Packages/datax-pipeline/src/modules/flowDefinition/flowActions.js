@@ -8,7 +8,7 @@ import * as Selectors from './flowSelectors';
 import { UserSelectors, getApiErrorMessage } from 'datax-common';
 import { QueryActions } from 'datax-query';
 import * as Helpers from './flowHelpers';
-
+import * as Models from './flowModels';
 /**
  *
  * REDUX Action Types
@@ -133,12 +133,15 @@ export const updateDatabricksToken = databricksToken => dispatch => {
 // Input Actions
 export const updateInputMode = mode => (dispatch, getState) => {
     let type = mode === Models.inputModeEnum.streaming ? Models.inputTypeEnum.events : Models.inputTypeEnum.blob;
-
+    let snippet = Models.getDefaultNormalizationSnippet(mode);
     updateInput(
         dispatch,
         Object.assign({}, Selectors.getFlowInput(getState()), {
             mode: mode,
-            type: type
+            type: type,
+            properties: Object.assign({}, Selectors.getFlowInputProperties(getState()), {
+                normalizationSnippet: snippet
+            })
         })
     );
 };

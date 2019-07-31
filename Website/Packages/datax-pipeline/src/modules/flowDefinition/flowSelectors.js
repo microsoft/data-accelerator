@@ -266,46 +266,41 @@ function validateInputStreaming(input) {
     let validations = [];
     validations.push(input && input.properties);
 
-    if (input.mode === Models.inputModeEnum.streaming) {
-        if (input.type === Models.inputTypeEnum.events) {
-            validations.push(input.properties.inputEventhubConnection.trim() !== '');
-            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
-            validations.push(
-                input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
-            );
-            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
-            validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
-        } else if (input.type === Models.inputTypeEnum.iothub) {
-            validations.push(input.properties.inputEventhubName.trim() !== '');
-            validations.push(input.properties.inputEventhubConnection.trim() !== '');
-            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
-            validations.push(
-                input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
-            );
-            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
-            validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
-        } else if (input.type === Models.inputTypeEnum.kafkaeventhub || input.type === Models.inputTypeEnum.kafka) {
-            validations.push(input.properties.inputEventhubName.trim() !== '');
-            validations.push(input.properties.inputEventhubConnection.trim() !== '');
-            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
-            validations.push(
-                input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
-            );
-            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
-            validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
-        } else if (input.type === Models.inputTypeEnum.local) {
-            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
-            validations.push(
-                input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
-            );
-            validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
-            validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
-        } else {
-            validation.push(false);
-        }
-    } else if (input.mode === Models.inputModeEnum.batching) {
+    if (input.type === Models.inputTypeEnum.events) {
+        validations.push(input.properties.inputEventhubConnection.trim() !== '');
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
+        validations.push(
+            input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
+        );
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
+        validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
+    } else if (input.type === Models.inputTypeEnum.iothub) {
+        validations.push(input.properties.inputEventhubName.trim() !== '');
+        validations.push(input.properties.inputEventhubConnection.trim() !== '');
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
+        validations.push(
+            input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
+        );
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
+        validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
+    } else if (input.type === Models.inputTypeEnum.kafkaeventhub || input.type === Models.inputTypeEnum.kafka) {
+        validations.push(input.properties.inputEventhubName.trim() !== '');
+        validations.push(input.properties.inputEventhubConnection.trim() !== '');
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
+        validations.push(
+            input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
+        );
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
+        validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
+    } else if (input.type === Models.inputTypeEnum.local) {
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
+        validations.push(
+            input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
+        );
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
+        validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
     } else {
-        validations.push(false);
+        validation.push(false);
     }
 
     return validations.every(value => value);
@@ -325,7 +320,7 @@ function isBatchInputSettingsComplete(batchInput) {
         validations.push(batchInput.properties.formatType && batchInput.properties.formatType.trim() !== '');
         validations.push(batchInput.properties.compressionType && batchInput.properties.compressionType.trim() !== '');
     } else {
-        validations.push(false);
+        validation.push(false);
     }
 
     return validations.every(value => value);
@@ -568,9 +563,9 @@ function isBatchListSettingsComplete(batch) {
             validations.push(batch.properties.window && batch.properties.window.trim() !== '');
             validations.push(batch.properties.windowType && batch.properties.windowType.trim() !== '');
             validations.push(batch.properties.startTime && batch.properties.startTime !== '');
-            validations.push(Helpers.isValidNumberAboveZero(batch.properties.interval));
+            validations.push(CommonHelpers.isValidNumberAboveZero(batch.properties.interval));
             validations.push(Helpers.isValidNumberAboveOrEqualZero(batch.properties.delay));
-            validations.push(Helpers.isValidNumberAboveZero(batch.properties.window));
+            validations.push(CommonHelpers.isValidNumberAboveZero(batch.properties.window));
             break;
         case Models.batchTypeEnum.oneTime:
             validations.push(batch.properties.interval && batch.properties.interval.trim() !== '');
@@ -581,8 +576,8 @@ function isBatchListSettingsComplete(batch) {
             validations.push(batch.properties.windowType && batch.properties.windowType.trim() !== '');
             validations.push(batch.properties.startTime && batch.properties.startTime !== '');
             validations.push(batch.properties.endTime && batch.properties.endTime !== '');
-            validations.push(Helpers.isValidNumberAboveZero(batch.properties.interval));
-            validations.push(Helpers.isValidNumberAboveZero(batch.properties.window));
+            validations.push(CommonHelpers.isValidNumberAboveZero(batch.properties.interval));
+            validations.push(CommonHelpers.isValidNumberAboveZero(batch.properties.window));
             break;
 
         default:
