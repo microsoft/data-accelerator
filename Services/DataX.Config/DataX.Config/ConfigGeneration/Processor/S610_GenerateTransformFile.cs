@@ -40,7 +40,6 @@ namespace DataX.Config.ConfigGeneration.Processor
             return 610;
         }
 
-
         public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
         {
             var jobs = flowToDeploy.GetJobs();
@@ -51,12 +50,9 @@ namespace DataX.Config.ConfigGeneration.Processor
 
             var config = flowToDeploy.Config;
 
-            var rulesCode = flowToDeploy.GetAttachment<RulesCode>(PrepareTransformFile.AttachmentName_CodeGenObject);
+            var rulesCode = flowToDeploy.GetAttachment<RulesCode>(AttachmentName_CodeGenObject);
             Ensure.NotNull(rulesCode, "rulesCode");
             
-            // Save the rulesCode object for downstream processing
-            flowToDeploy.SetAttachment(AttachmentName_CodeGenObject, rulesCode);
-
             var runtimeConfigBaseFolder = flowToDeploy.GetTokenString(PrepareJobConfigVariables.TokenName_RuntimeConfigFolder);
             Ensure.NotNull(runtimeConfigBaseFolder, "runtimeConfigBaseFolder");
 
