@@ -152,10 +152,12 @@ namespace DataX.Utilities.Blob
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
             CloudBlobClient cloudBlobClient = storageAccount.CreateCloudBlobClient();
             CloudBlobContainer container = cloudBlobClient.GetContainerReference(containerName);
+            
+            var allBlobs = await container.ListBlobsSegmentedAsync(prefix: prefix, useFlatBlobListing: true, blobListingDetails: BlobListingDetails.None, maxResults: null, currentToken: null, options: null, operationContext: null).ConfigureAwait(false);
 
-            var filteredBlobs = await Task.Run(() => container.ListBlobsSegmentedAsync(prefix: prefix, useFlatBlobListing: true, blobListingDetails: BlobListingDetails.None, maxResults: null, currentToken: null, options: null, operationContext: null).Result.Results.OfType<CloudBlockBlob>()
+            var filteredBlobs = allBlobs.Results.OfType<CloudBlockBlob>()
                 .Where(b => ValidateBlobPath(blobPathPattern, b.Uri.ToString()) && b.Properties.Length > 0 && ValidateJson(b.DownloadTextAsync().Result))
-                .OrderByDescending(m => m.Properties.LastModified).ToList().Take(blobCount)).ConfigureAwait(false);
+                .OrderByDescending(m => m.Properties.LastModified).ToList().Take(blobCount);
 
             List<string> blobContents = new List<string>();
 

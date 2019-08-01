@@ -22,8 +22,6 @@ namespace DataX.Config.ConfigGeneration.Processor
     [Export(typeof(IFlowDeploymentProcessor))]
     public class GenerateSchemaFile : ProcessorBase
     {
-        public const string TokenName_InputSchemaFilePath = "inputSchemaFilePath";
-
         [ImportingConstructor]
         public GenerateSchemaFile(IKeyVaultClient keyvaultClient, IRuntimeConfigStorage runtimeStorage, ConfigGenConfiguration conf)
         {
@@ -68,8 +66,8 @@ namespace DataX.Config.ConfigGeneration.Processor
             var filePath = ResourcePathUtil.Combine(runtimeConfigBaseFolder, "inputschema.json");
             var schemaFile = await RuntimeStorage.SaveFile(filePath, schema);
             var secretName = $"{config.Name}-inputschemafile";
-            var schemaFileSecret = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, schemaFile, Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType) ? sparkType : null);
-            flowToDeploy.SetStringToken(TokenName_InputSchemaFilePath, schemaFileSecret);
+            var schemaFileSecret = flowToDeploy.GetTokenString(PrepareSchemaFile.TokenName_InputSchemaFilePath);
+            await KeyVaultClient.SaveSecretAsync(schemaFileSecret, schemaFile);
 
             return "done";
         }

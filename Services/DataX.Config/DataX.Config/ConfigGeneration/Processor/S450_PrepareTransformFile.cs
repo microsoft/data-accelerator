@@ -40,7 +40,10 @@ namespace DataX.Config.ConfigGeneration.Processor
             return 450;
         }
 
-
+        /// <summary>
+        /// Generate and set the info for the transform file which will be used to generate JobConfig
+        /// </summary>
+        /// <returns></returns>
         public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
         {
             var config = flowToDeploy.Config;

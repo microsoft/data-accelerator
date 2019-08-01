@@ -5,6 +5,7 @@
 using DataX.Config.ConfigDataModel;
 using DataX.Config.Utility;
 using DataX.Contract;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Composition;
@@ -21,8 +22,6 @@ namespace DataX.Config.ConfigGeneration.Processor
     [Export(typeof(IFlowDeploymentProcessor))]
     public class GenerateProjectionFile : ProcessorBase
     {
-        public const string TokenName_ProjectionFiles = "processProjections";
-
         [ImportingConstructor]
         public GenerateProjectionFile(IRuntimeConfigStorage runtimeStorage, IKeyVaultClient keyvaultClient, ConfigGenConfiguration conf)
         {
@@ -67,9 +66,12 @@ namespace DataX.Config.ConfigGeneration.Processor
 
             var filePath = ResourcePathUtil.Combine(runtimeConfigBaseFolder, "projection.txt");
             var savedFile = await RuntimeStorage.SaveFile(filePath, finalProjections);
-            var secretName = $"{config.Name}-projectionfile";
-            var savedSecretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, savedFile, Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType) ? sparkType : null);
-            flowToDeploy.SetObjectToken(TokenName_ProjectionFiles, new string[] {savedSecretId});
+            var tokenValue = flowToDeploy.GetTokenString(PrepareProjectionFile.TokenName_ProjectionFiles);
+            var projectionFileSecret = JArray.Parse(tokenValue).FirstOrDefault()?.Value<string>();
+            if (!string.IsNullOrEmpty(projectionFileSecret))
+            {
+                await KeyVaultClient.SaveSecretAsync(projectionFileSecret, savedFile);
+            }
 
             return "done";
         }

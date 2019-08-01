@@ -29,5 +29,10 @@ namespace DataX.Config.Local
         {
             return Task.FromResult(secretValue);
         }
+
+        public Task<string> SaveSecretAsync(string secretUri, string secretValue)
+        {
+            return Task.FromResult(secretValue);
+        }
     }
 }

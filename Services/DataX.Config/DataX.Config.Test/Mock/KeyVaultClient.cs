@@ -43,5 +43,11 @@ namespace DataX.Config.Test.Mock
             await Task.Yield();
             return $"{uriPrefix}://{keyvaultName}/{finalSecretName}";
         }
+
+        public async Task<string> SaveSecretAsync(string secretUri, string secretValue)
+        {
+            await Task.Yield();
+            return secretUri;
+        }
     }
 }

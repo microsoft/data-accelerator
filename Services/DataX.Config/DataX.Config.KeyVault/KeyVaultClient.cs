@@ -50,5 +50,12 @@ namespace DataX.Config.KeyVault
             await GetKeyVault().SaveSecretStringAsync(keyvaultName, finalSecretName, secretValue);
             return SecretUriParser.ComposeUri(keyvaultName, finalSecretName, uriPrefix);
         }
+
+        public async Task<string> SaveSecretAsync(string secretUri, string secretValue)
+        {
+            SecretUriParser.ParseSecretUri(secretUri, out string keyvaultName, out string secretName);
+            await GetKeyVault().SaveSecretStringAsync(keyvaultName, secretName, secretValue);
+            return secretUri;
+        }
     }
 }
