@@ -103,6 +103,15 @@
         },
         "clusterName": {
             "value": "$serviceFabricName"
-        }
+        },
+		"sparkType": {
+			"value": "$sparkType"
+		},
+		"storageAccounts_spark_name": {
+			"value": "$sparkBlobAccountName"
+		},
+		"sparkManagedIdentity": {
+			"value": "$sparkManagedIdentityName"
+		}
 	}
 }

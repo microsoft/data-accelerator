@@ -86,6 +86,9 @@
 		"certType": {
 			"type": "String"
 		},
+		"sparkType": {
+			"type": "String"
+		},
         "virtualNetworkName": {
             "type": "string"
         },
@@ -103,10 +106,24 @@
         },
         "clusterName": {
             "type": "string"
-        }
+        },
+		"storageAccounts_spark_name": {
+			"type": "String"
+		},
+		"sparkManagedIdentity": {
+			"type": "string"
+		}
 	},
 	"variables": {
-        "vNetApiVersion": "2015-06-15"
+        "vNetApiVersion": "2015-06-15",
+		"storageAccounts_containerName_defaultdx": "defaultdx",
+		"storageAccounts_containerName_diagnostics": "diagnostics",
+		"storageAccounts_containerName_deployment": "deployment",
+		"storageAccounts_containerName_scripts": "scripts",
+		"storageAccounts_containerName_samples": "samples",
+		"storageAccounts_containerName_usercontent": "usercontent",
+		"storageAccounts_containerName_flow": "flows",
+		"storageAccounts_containerName_checkpoints": "checkpoints"
 	},
 	"resources": [
         {
@@ -598,6 +615,10 @@
 						{
 							"name": "DATAXDEV_CERTTYPE",
 							"value": "[parameters('certType')]"
+						},
+						{
+							"name": "DATAX_SPARK_TYPE",
+							"value": "[parameters('sparkType')]"
 						}
 					]
 				},
@@ -811,6 +832,88 @@
 			},
 			"dependsOn": [
 				"[resourceId('Microsoft.Web/sites', parameters('sites_web_name'))]"
+			]
+		},
+		{
+            "apiVersion": "2015-08-31-preview",
+            "name": "[parameters('sparkManagedIdentity')]",
+			"location": "[parameters('default_resource_location')]",
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+            "properties": {}
+        },
+		{
+			"type": "Microsoft.Storage/storageAccounts",
+			"name": "[parameters('storageAccounts_spark_name')]",			
+			"apiVersion": "2015-05-01-preview",
+			"location": "[parameters('default_resource_location')]",
+			"properties": {
+				"accountType": "Standard_LRS"
+			},
+			"resources": [
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_defaultdx'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				},
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_diagnostics'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				},
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_deployment'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				},
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_scripts'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				},
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_samples'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				},
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_usercontent'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				},
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_flow'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				},
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_checkpoints'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				}
 			]
 		}
 	]

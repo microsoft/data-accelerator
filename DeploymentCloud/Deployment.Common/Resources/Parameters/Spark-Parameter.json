@@ -52,9 +52,6 @@
 		"storageAccounts_spark_name": {
 			"value": "$sparkBlobAccountName"
 		},
-		"sparkManagedIdentity": {
-			"value": "$sparkManagedIdentityName"
-		},
 		"minInstanceCountSparkHeadnode": {
 			"value": $minInstanceCountSparkHeadnode
 		},

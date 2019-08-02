@@ -20,6 +20,9 @@ subscriptionId=
 # ResourceGroupName to generate resources 
 resourceGroupName=DataX
 
+# y if you want to run spark jobs on Databricks, n for running jobs on HDinsight 
+useDatabricks=n
+
 # y if you want to deploy Kafka sample, n otherwise
 # This will deploy the Kafka specific samples and resources such as HDinsight Kafka and EventHub Kafka  
 enableKafkaSample=y

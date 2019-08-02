@@ -41,6 +41,8 @@
     "interactiveQueryDefaultContainer" : "defaultdx",
     "sparkClusterName" : "$sparkName",
     "subscriptionId" : "keyvault://$servicesKVName/$clientSecretPrefix-subscriptionId",
-    "sparkConnectionString" : "keyvault://$servicesKVName/$serviceSecretPrefix-livyconnectionstring-$sparkName"
+    "sparkConnectionString" : "keyvault://$servicesKVName/$serviceSecretPrefix-livyconnectionstring-$sparkName",
+    "sparkRegion" : "$resourceLocation",
+    "sparkType" : "$sparkType"
   }
 ]

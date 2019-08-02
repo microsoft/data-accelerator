@@ -163,6 +163,24 @@ function Get-Tokens {
 
     $tokens.Add('tenantId', $tenantId )
     $tokens.Add('userId', $userId )
+	
+	$sparkType = 'hdinsight'
+    $keyvaultPrefix = 'keyvault'
+	$dataxJobTemplate = 'DataXDirect'
+	$dataxKafkaJobTemplate = 'kafkaDataXDirect'
+	$dataxBatchJobTemplate = 'DataXBatch'
+    if ($useDatabricks -eq 'y') {
+        $sparkType = 'databricks' 
+		$keyvaultPrefix = 'secretscope'
+		$dataxJobTemplate = 'DataXDirectDatabricks'
+		$dataxKafkaJobTemplate = 'kafkaDataXDirectDatabricks'
+		$dataxBatchJobTemplate = 'DataXBatchDatabricks'
+    }
+	$tokens.Add('sparkType', $sparkType)
+	$tokens.Add('keyvaultPrefix', $keyvaultPrefix)
+	$tokens.Add('dataxJobTemplate', $dataxJobTemplate)
+	$tokens.Add('dataxKafkaJobTemplate', $dataxKafkaJobTemplate)
+	$tokens.Add('dataxBatchJobTemplate', $dataxBatchJobTemplate)
     
     # CosmosDB
     $tokens.Add('blobopsconnectionString', $blobopsconnectionString )
@@ -488,6 +506,9 @@ function Setup-SecretsForSpark {
 
     $secretName = $prefix + "livyconnectionstring-" + $sparkName    
     $tValue = "endpoint=https://$sparkName.azurehdinsight.net/livy;username=$sparkLogin;password=$sparkPwd"
+	if ($useDatabricks -eq 'y') {
+        $tValue = "endpoint=https://$resourceGroupLocation.azuredatabricks.net/api/2.0/;dbtoken=" 
+    }
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $tValue
 }
 
@@ -807,12 +828,17 @@ if($resourceCreation -eq 'y') {
 }
 
 if($sparkCreation -eq 'y') {
-    Write-Host -ForegroundColor Green "Deploying resources (2/16 steps): A HDInsight cluster will be deployed"
+    Write-Host -ForegroundColor Green "Deploying resources (2/16 steps): A spark cluster will be deployed"
     Write-Host -ForegroundColor Green "Estimated time to complete: 20 mins"
     Setup-SecretsForSpark
 
     $tokens = Get-Tokens
-    Deploy-Resources -templateName "Spark-Template.json" -paramName "Spark-parameter.json" -templatePath $templatePath -tokens $tokens
+	if ($useDatabricks -eq 'n') {
+		Deploy-Resources -templateName "Spark-Template.json" -paramName "Spark-parameter.json" -templatePath $templatePath -tokens $tokens
+	}
+	else {
+		Deploy-Resources -templateName "Databricks-Template.json" -paramName "Databricks-Parameter.json" -templatePath $templatePath -tokens $tokens
+	}
 }
 
 # Preparing certs...
@@ -892,7 +918,9 @@ if ($setupSecrets -eq 'y') {
 if ($sparkCreation -eq 'y') {
     Write-Host -ForegroundColor Green "Setting up ScriptActions... (6/16 steps)"
     Write-Host -ForegroundColor Green "Estimated time to complete: 2 mins"
-    Add-ScriptActions
+	if ($useDatabricks -eq 'n') {
+        Add-ScriptActions 
+    }
 }
 
 # cosmosDB

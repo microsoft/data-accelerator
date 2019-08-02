@@ -1,0 +1,29 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+	"parameters": {
+		"default_resource_location": {
+			"type": "string"
+		},
+		"sparkClusterName": {
+			"type": "string",
+		}
+	},
+	"variables": {
+		"managedResourceGroupName": "[concat('databricks-rg-', parameters('sparkClusterName'), '-', uniqueString(parameters('sparkClusterName'), resourceGroup().id))]"
+	},
+	"resources": [		
+		{
+            "type": "Microsoft.Databricks/workspaces",
+            "name": "[parameters('sparkClusterName')]",
+            "location": "[parameters('default_resource_location')]",
+            "apiVersion": "2018-04-01",
+            "sku": {
+                "name": "premium"
+            },
+            "properties": {
+                "ManagedResourceGroupId": "[concat(subscription().id, '/resourceGroups/', variables('managedResourceGroupName'))]"
+            }
+        }
+	]
+}
