@@ -10,6 +10,7 @@ using System.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 using DataX.Config.ConfigDataModel;
+using DataX.Utility.KeyVault;
 
 namespace DataX.Config.ConfigGeneration.Processor
 {
@@ -67,9 +68,8 @@ namespace DataX.Config.ConfigGeneration.Processor
 
             var secretName = $"{config.Name}-transform";
             Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType);
-            var uriPrefix = (sparkType != null && sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
-
-            var transformFileSecret = $"{uriPrefix}://{runtimeKeyVaultName}/{secretName}";
+            var uriPrefix = KeyVaultClient.GetUriPrefix(sparkType);
+            var transformFileSecret = SecretUriParser.ComposeUri(runtimeKeyVaultName, secretName, uriPrefix);
             flowToDeploy.SetStringToken(TokenName_TransformFile, transformFileSecret);
 
             await Task.CompletedTask;

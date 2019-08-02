@@ -5,6 +5,7 @@
 using DataX.Config.ConfigDataModel;
 using DataX.Config.Utility;
 using DataX.Contract;
+using DataX.Utility.KeyVault;
 using System;
 using System.Collections.Generic;
 using System.Composition;
@@ -49,9 +50,8 @@ namespace DataX.Config.ConfigGeneration.Processor
 
             var secretName = $"{config.Name}-projectionfile";
             Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType);
-            var uriPrefix = (sparkType != null && sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
-
-            var projectionFileSecret = $"{uriPrefix}://{runtimeKeyVaultName}/{secretName}";
+            var uriPrefix = KeyVaultClient.GetUriPrefix(sparkType);
+            var projectionFileSecret = SecretUriParser.ComposeUri(runtimeKeyVaultName, secretName, uriPrefix);
             flowToDeploy.SetObjectToken(TokenName_ProjectionFiles, new string[] { projectionFileSecret });
 
             await Task.CompletedTask;

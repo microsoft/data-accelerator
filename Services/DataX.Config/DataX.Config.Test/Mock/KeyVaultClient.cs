@@ -38,7 +38,7 @@ namespace DataX.Config.Test.Mock
 
         public async Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, string sparkType, bool hashSuffix = false)
         {
-            var uriPrefix = (sparkType != null && sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
+            var uriPrefix = GetUriPrefix(sparkType);
             var finalSecretName = hashSuffix ? (secretName + "-" + HashGenerator.GetHashCode(secretValue)) : secretName;
             await Task.Yield();
             return $"{uriPrefix}://{keyvaultName}/{finalSecretName}";
@@ -48,6 +48,11 @@ namespace DataX.Config.Test.Mock
         {
             await Task.Yield();
             return secretUri;
+        }
+
+        public string GetUriPrefix(string sparkType)
+        {
+            return (sparkType != null && sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
         }
     }
 }

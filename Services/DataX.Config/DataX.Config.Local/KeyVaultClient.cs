@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using DataX.Config.ConfigDataModel;
 using System.Composition;
 using System.Threading.Tasks;
 
@@ -33,6 +34,11 @@ namespace DataX.Config.Local
         public Task<string> SaveSecretAsync(string secretUri, string secretValue)
         {
             return Task.FromResult(secretValue);
+        }
+
+        public string GetUriPrefix(string sparkType)
+        {
+            return (sparkType != null && sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
         }
     }
 }

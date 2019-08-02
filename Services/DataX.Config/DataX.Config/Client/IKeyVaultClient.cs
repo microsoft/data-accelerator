@@ -41,5 +41,12 @@ namespace DataX.Config
         /// <param name="secretValue">value of the secret</param>
         /// <returns>secret id</returns>
         Task<string> SaveSecretAsync(string secretUri, string secretValue);
+
+        /// <summary>
+        /// Generate a secret uri prefix based on sparkType
+        /// </summary>
+        /// <param name="sparkType">spark type</param>
+        /// <returns></returns>
+        string GetUriPrefix(string sparkType);
     }
 }

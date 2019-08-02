@@ -46,7 +46,7 @@ namespace DataX.Config.KeyVault
         public async Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, string sparkType, bool hashSuffix = false)
         {
             var finalSecretName = hashSuffix ? (secretName + "-" + HashGenerator.GetHashCode(secretValue)) : secretName;
-            var uriPrefix = (sparkType != null && sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
+            var uriPrefix = GetUriPrefix(sparkType);
             await GetKeyVault().SaveSecretStringAsync(keyvaultName, finalSecretName, secretValue);
             return SecretUriParser.ComposeUri(keyvaultName, finalSecretName, uriPrefix);
         }
@@ -56,6 +56,11 @@ namespace DataX.Config.KeyVault
             SecretUriParser.ParseSecretUri(secretUri, out string keyvaultName, out string secretName);
             await GetKeyVault().SaveSecretStringAsync(keyvaultName, secretName, secretValue);
             return secretUri;
+        }
+
+        public string GetUriPrefix(string sparkType)
+        {
+            return (sparkType != null && sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
         }
     }
 }
