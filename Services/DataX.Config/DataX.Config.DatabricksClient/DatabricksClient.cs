@@ -156,6 +156,7 @@ namespace DataX.Config.DatabricksClient
 
         public async Task<SparkJobSyncResult[]> GetJobs()
         {
+            await Task.CompletedTask;
             throw new NotImplementedException();
         }
     }

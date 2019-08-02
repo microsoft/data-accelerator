@@ -36,6 +36,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\DataX.Contract\DataX.Contract.csproj" />
     <ProjectReference Include="..\..\DataX.Flow\DataX.Flow.CodegenRules\DataX.Flow.CodegenRules.csproj" />
+    <ProjectReference Include="..\..\DataX.Utilities\DataX.Utility.KeyVault\DataX.Utility.KeyVault.csproj" />
   </ItemGroup>
 
   <ItemGroup>

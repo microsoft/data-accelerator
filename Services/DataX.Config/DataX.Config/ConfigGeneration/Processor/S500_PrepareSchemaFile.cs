@@ -5,6 +5,7 @@
 using DataX.Config.ConfigDataModel;
 using DataX.Config.Utility;
 using DataX.Contract;
+using DataX.Utility.KeyVault;
 using System;
 using System.Collections.Generic;
 using System.Composition;
@@ -19,12 +20,12 @@ namespace DataX.Config.ConfigGeneration.Processor
     /// </summary>
     [Shared]
     [Export(typeof(IFlowDeploymentProcessor))]
-    public class GenerateSchemaFile: ProcessorBase
+    public class PrepareSchemaFile: ProcessorBase
     {
         public const string TokenName_InputSchemaFilePath = "inputSchemaFilePath";
 
         [ImportingConstructor]
-        public GenerateSchemaFile(IKeyVaultClient keyvaultClient, IRuntimeConfigStorage runtimeStorage, ConfigGenConfiguration conf)
+        public PrepareSchemaFile(IKeyVaultClient keyvaultClient, IRuntimeConfigStorage runtimeStorage, ConfigGenConfiguration conf)
         {
             KeyVaultClient = keyvaultClient;
             RuntimeStorage = runtimeStorage;
@@ -35,30 +36,23 @@ namespace DataX.Config.ConfigGeneration.Processor
         private IKeyVaultClient KeyVaultClient { get; }
         private IRuntimeConfigStorage RuntimeStorage { get; }
 
+        /// <summary>
+        /// Generate and set the info for the input schema file which will be used to generate JobConfig
+        /// </summary>
+        /// <returns></returns>
         public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
         {
             var config = flowToDeploy.Config;
-            var guiConfig = config?.GetGuiConfig();
-            if (guiConfig == null)
-            {
-                return "no gui input, skipped.";
-            }
-
-            var schema = guiConfig.Input?.Properties?.InputSchemaFile;
-            Ensure.NotNull(schema, "guiConfig.input.properties.inputschemafile");
-
-            var runtimeConfigBaseFolder = flowToDeploy.GetTokenString(PrepareJobConfigVariables.TokenName_RuntimeConfigFolder);
-            Ensure.NotNull(runtimeConfigBaseFolder, "runtimeConfigBaseFolder");
-
             var runtimeKeyVaultName = flowToDeploy.GetTokenString(PortConfigurationSettings.TokenName_RuntimeKeyVaultName);
             Ensure.NotNull(runtimeKeyVaultName, "runtimeKeyVaultName");
 
-            var filePath = ResourcePathUtil.Combine(runtimeConfigBaseFolder, "inputschema.json");
-            var schemaFile = await RuntimeStorage.SaveFile(filePath, schema);
             var secretName = $"{config.Name}-inputschemafile";
-            var schemaFileSecret = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, schemaFile, Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType) ? sparkType : null);
+            Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType);
+            var uriPrefix = KeyVaultClient.GetUriPrefix(sparkType);
+            var schemaFileSecret = SecretUriParser.ComposeUri(runtimeKeyVaultName, secretName, uriPrefix);
             flowToDeploy.SetStringToken(TokenName_InputSchemaFilePath, schemaFileSecret);
 
+            await Task.CompletedTask;
             return "done";
         }
     }

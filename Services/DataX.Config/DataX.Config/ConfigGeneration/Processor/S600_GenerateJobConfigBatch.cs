@@ -166,7 +166,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                 lastProcessingTime = processingTime;
                 var processingTimeBasedOnInterval = NormalizeTimeBasedOnInterval(processingTime, batchProps.IntervalType, new TimeSpan());
                 var processingTimeBasedOnDelay = NormalizeTimeBasedOnInterval(processingTime, batchProps.IntervalType, delay);
-                JobConfig jc = await ScheduleSingleJob(job, destFolder, defaultJobConfig, isOneTime, interval, window, processingTimeBasedOnDelay, processingTimeBasedOnInterval, prefix).ConfigureAwait(false);
+                JobConfig jc = ScheduleSingleJob(job, destFolder, defaultJobConfig, isOneTime, interval, window, processingTimeBasedOnDelay, processingTimeBasedOnInterval, prefix);
                 jQueue.Add(jc);
             }
 
@@ -203,7 +203,7 @@ namespace DataX.Config.ConfigGeneration.Processor
         /// Schedule a batch job
         /// </summary>
         /// <returns></returns>
-        private async Task<JobConfig> ScheduleSingleJob(JobDeploymentSession job, string destFolder, JsonConfig defaultJobConfig, bool isOneTime, TimeSpan interval, TimeSpan window, DateTime processTime, DateTime scheduledTime, string prefix = "")
+        private JobConfig ScheduleSingleJob(JobDeploymentSession job, string destFolder, JsonConfig defaultJobConfig, bool isOneTime, TimeSpan interval, TimeSpan window, DateTime processTime, DateTime scheduledTime, string prefix = "")
         {
             var ps_s = processTime;
             var ps_e = processTime.Add(interval).AddMilliseconds(-1); //ENDTIME
@@ -224,7 +224,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             destFolder = GetJobConfigFilePath(isOneTime, dateString, destFolder);
             var jc = new JobConfig
             {
-                Content = await GetBatchConfigContent(job, defaultJobConfig.ToString(), processStartTime, processEndTime).ConfigureAwait(false),
+                Content = GetBatchConfigContent(job, defaultJobConfig.ToString(), processStartTime, processEndTime),
                 FilePath = ResourcePathUtil.Combine(destFolder, job.Name + ".conf"),
                 Name = jobName,
                 SparkJobName = job.SparkJobName + suffix,
@@ -260,7 +260,7 @@ namespace DataX.Config.ConfigGeneration.Processor
         /// Get a batch job config
         /// </summary>
         /// <returns></returns>
-        private async Task<string> GetBatchConfigContent(JobDeploymentSession job, string content, string processStartTime, string processEndTime)
+        private static string GetBatchConfigContent(JobDeploymentSession job, string content, string processStartTime, string processEndTime)
         {
             var specsBackup = job.GetAttachment<InputBatchingSpec[]>(TokenName_InputBatching);
 

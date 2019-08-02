@@ -5,6 +5,7 @@
 using DataX.Config.ConfigDataModel;
 using DataX.Config.Utility;
 using DataX.Contract;
+using DataX.Utility.KeyVault;
 using System;
 using System.Collections.Generic;
 using System.Composition;
@@ -18,12 +19,12 @@ namespace DataX.Config.ConfigGeneration.Processor
     /// </summary>
     [Shared]
     [Export(typeof(IFlowDeploymentProcessor))]
-    public class GenerateProjectionFile: ProcessorBase
+    public class PrepareProjectionFile: ProcessorBase
     {
         public const string TokenName_ProjectionFiles = "processProjections";
 
         [ImportingConstructor]
-        public GenerateProjectionFile(IRuntimeConfigStorage runtimeStorage, IKeyVaultClient keyvaultClient, ConfigGenConfiguration conf)
+        public PrepareProjectionFile(IRuntimeConfigStorage runtimeStorage, IKeyVaultClient keyvaultClient, ConfigGenConfiguration conf)
         {
             RuntimeStorage = runtimeStorage;
             KeyVaultClient = keyvaultClient;
@@ -33,32 +34,27 @@ namespace DataX.Config.ConfigGeneration.Processor
         private ConfigGenConfiguration Configuration { get; }
         private IRuntimeConfigStorage RuntimeStorage { get; }
         private IKeyVaultClient KeyVaultClient { get; }
-        
+
+        /// <summary>
+        /// Generate and set the info for the projection file which will be used to generate JobConfig
+        /// </summary>
+        /// <returns></returns>
         public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
         {
             var config = flowToDeploy.Config;
-            var guiConfig = config?.GetGuiConfig();
-            if (guiConfig == null)
-            {
-                return "no gui input, skipped.";
-            }
-
-            var projectColumns = guiConfig.Input?.Properties?.NormalizationSnippet?.Trim('\t', ' ', '\r', '\n');
-            //TODO: make the hardcoded "Raw.*" configurable?
-            var finalProjections = string.IsNullOrEmpty(projectColumns) ? "Raw.*" : projectColumns;
-
             var runtimeConfigBaseFolder = flowToDeploy.GetTokenString(PrepareJobConfigVariables.TokenName_RuntimeConfigFolder);
             Ensure.NotNull(runtimeConfigBaseFolder, "runtimeConfigBaseFolder");
 
             var runtimeKeyVaultName = flowToDeploy.GetTokenString(PortConfigurationSettings.TokenName_RuntimeKeyVaultName);
             Ensure.NotNull(runtimeKeyVaultName, "runtimeKeyVaultName");
 
-            var filePath = ResourcePathUtil.Combine(runtimeConfigBaseFolder, "projection.txt");
-            var savedFile = await RuntimeStorage.SaveFile(filePath, finalProjections);
             var secretName = $"{config.Name}-projectionfile";
-            var savedSecretId = await KeyVaultClient.SaveSecretAsync(runtimeKeyVaultName, secretName, savedFile, Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType) ? sparkType : null);
-            flowToDeploy.SetObjectToken(TokenName_ProjectionFiles, new string[] {savedSecretId});
+            Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType);
+            var uriPrefix = KeyVaultClient.GetUriPrefix(sparkType);
+            var projectionFileSecret = SecretUriParser.ComposeUri(runtimeKeyVaultName, secretName, uriPrefix);
+            flowToDeploy.SetObjectToken(TokenName_ProjectionFiles, new string[] { projectionFileSecret });
 
+            await Task.CompletedTask;
             return "done";
         }
     }
