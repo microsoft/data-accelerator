@@ -9,6 +9,7 @@ import {QueryModels, QueryActions} from 'datax-query';
 const INITIAL_FLOW_STATE = {
     // Flow Config
     name: '',
+    flowId: '',
     displayName: Models.getDefaultName(),
     owner: '',
     databricksToken: '',
@@ -27,9 +28,14 @@ const INITIAL_FLOW_STATE = {
     outputTemplates: [],
     rules: [],
 
+    batchInputs: [Models.getDefaultBatchInputSettings()],
+    batchList: [],
+
     // State
     isNew: false,
     isDirty: false,
+    selectedFlowBatchInputIndex: undefined,
+    selectedBatchIndex: undefined,
     selectedReferenceDataIndex: undefined,
     selectedFunctionIndex: undefined,
     selectedSinkerIndex: undefined,
@@ -50,6 +56,7 @@ export default (state = INITIAL_FLOW_STATE, action) => {
             return Object.assign({}, INITIAL_FLOW_STATE, flow, {
                 isNew: false,
                 isDirty: false,
+                selectedFlowBatchInputIndex: flow.input.batch && flow.input.batch.length > 0 ? 0 : undefined,
                 selectedReferenceDataIndex: flow.referenceData && flow.referenceData.length > 0 ? 0 : undefined,
                 selectedFunctionIndex: flow.functions && flow.functions.length > 0 ? 0 : undefined,
                 selectedSinkerIndex: flow.outputs && flow.outputs.length > 0 ? 0 : undefined,
@@ -64,6 +71,7 @@ export default (state = INITIAL_FLOW_STATE, action) => {
                 isDirty: true,
                 owner: action.payload,
                 selectedSinkerIndex: 0, // new flow by default contains the metric sinker
+                selectedFlowBatchInputIndex: 0,
                 enableLocalOneBox: state.enableLocalOneBox ? state.enableLocalOneBox : false,
                 input: Models.getDefaultInput(state.enableLocalOneBox),
                 query: QueryModels.getDefaultQuery(state.enableLocalOneBox)
@@ -88,6 +96,14 @@ export default (state = INITIAL_FLOW_STATE, action) => {
             return Object.assign({}, state, {
                 isDirty: true,
                 input: action.payload
+            });
+
+        case Actions.FLOW_UPDATE_BATCH_INPUT:
+            let updatedBatchInputs = [...state.batchInputs];
+            updatedBatchInputs[action.index] = action.payload;
+            return Object.assign({}, state, {
+                isDirty: true,
+                batchInputs: updatedBatchInputs
             });
 
         case Actions.FLOW_UPDATE_SAMPLING_INPUT_DURATION:
@@ -295,6 +311,46 @@ export default (state = INITIAL_FLOW_STATE, action) => {
         case Actions.FLOW_UPDATE_ONEBOX_MODE:
             return Object.assign({}, state, {
                 enableLocalOneBox: action.payload
+            });
+
+        // Batch
+        case Actions.FLOW_NEW_BATCH:
+            const batchList = [...state.batchList, Models.getDefaultBatchSettings(action.payload)];
+            return Object.assign({}, state, {
+                isDirty: true,
+                batchList: batchList,
+                selectedBatchIndex: batchList.length - 1
+            });
+
+        case Actions.FLOW_DELETE_BATCH:
+            const deleteBatchIndex = action.index;
+            let batchListAfterDelete = [...state.batchList];
+            batchListAfterDelete.splice(deleteBatchIndex, 1);
+
+            let nextBatchIndex;
+            if (batchListAfterDelete.length > deleteBatchIndex) {
+                nextBatchIndex = deleteBatchIndex;
+            } else if (batchListAfterDelete.length > 0) {
+                nextBatchIndex = deleteBatchIndex - 1;
+            } else {
+                nextBatchIndex = undefined;
+            }
+
+            return Object.assign({}, state, {
+                isDirty: true,
+                batchList: batchListAfterDelete,
+                selectedBatchIndex: nextBatchIndex
+            });
+
+        case Actions.FLOW_UPDATE_SELECTED_BATCH_INDEX:
+            return Object.assign({}, state, { selectedBatchIndex: action.payload });
+
+        case Actions.FLOW_UPDATE_BATCHLIST:
+            let updatedBatchList = [...state.batchList];
+            updatedBatchList[action.index] = action.payload;
+            return Object.assign({}, state, {
+                isDirty: true,
+                batchList: updatedBatchList
             });
 
         default:

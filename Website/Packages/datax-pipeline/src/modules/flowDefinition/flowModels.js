@@ -3,7 +3,14 @@
 // Licensed under the MIT License
 // *********************************************************************
 export const inputModeEnum = {
-    streaming: 'streaming'
+    streaming: 'streaming',
+    batching: 'batching'
+};
+
+export const batchIntervalTypeEnum = {
+    day: 'day',
+    hour: 'hour',
+    min: 'min'
 };
 
 export const inputTypeEnum = {
@@ -11,7 +18,18 @@ export const inputTypeEnum = {
     iothub: 'iothub',
     kafka: 'kafka',
     kafkaeventhub: 'kafkaeventhub',
+    blob: 'blob',
     local: 'local'
+};
+
+export const inputCompressionTypeEnum = {
+    none: 'none',
+    gzip: 'gzip'
+};
+
+export const inputFormatTypeEnum = {
+    json: 'json',
+    parquet: 'parquet'
 };
 
 export const watermarkUnitEnum = {
@@ -47,6 +65,11 @@ export const sinkerTypeEnum = {
     metric: 'metric',
     local: 'local',
     sql: 'sqlServer'
+};
+
+export const batchTypeEnum = {
+    recurring: 'recurring',
+    oneTime: 'oneTime'
 };
 
 export const sinkerCompressionTypeEnum = {
@@ -143,6 +166,11 @@ export const inputModes = [
         key: inputModeEnum.streaming,
         name: 'Streaming',
         disabled: false
+    },
+    {
+        key: inputModeEnum.batching,
+        name: 'Batching',
+        disabled: false
     }
 ];
 
@@ -170,6 +198,30 @@ export const inputTypes = [
     {
         key: inputTypeEnum.local,
         name: 'Local',
+        disabled: false
+    }
+];
+
+export const inputTypesBatching = [
+    {
+        key: inputTypeEnum.blob,
+        name: 'Azure Blob',
+        disabled: false
+    }
+];
+
+export const inputCompressionTypes = [
+    {
+        key: inputCompressionTypeEnum.none,
+        name: 'None',
+        disabled: false
+    }
+];
+
+export const inputFormatTypes = [
+    {
+        key: inputFormatTypeEnum.json,
+        name: 'JSON',
         disabled: false
     }
 ];
@@ -268,6 +320,37 @@ export const outputSinkerTypes = [
     {
         key: sinkerTypeEnum.local,
         name: 'Local',
+        disabled: false
+    }
+];
+
+export const batchTypes = [
+    {
+        key: batchTypeEnum.recurring,
+        name: 'Recurring',
+        disabled: false
+    },
+    {
+        key: batchTypeEnum.oneTime,
+        name: 'One Time',
+        disabled: false
+    }
+];
+
+export const batchIntervalTypes = [
+    {
+        key: batchIntervalTypeEnum.day,
+        name: 'Day',
+        disabled: false
+    },
+    {
+        key: batchIntervalTypeEnum.hour,
+        name: 'Hour',
+        disabled: false
+    },
+    {
+        key: batchIntervalTypeEnum.min,
+        name: 'Min',
         disabled: false
     }
 ];
@@ -464,6 +547,18 @@ export const severityTypes = [
     }
 ];
 
+export function getDefaultBatchInputSettings() {
+    return {
+        type: inputTypeEnum.blob,
+        properties: {
+            connection: '',
+            path: '',
+            formatType: inputFormatTypeEnum.json,
+            compressionType: inputCompressionTypeEnum.none
+        }
+    };
+}
+
 export function getDefaultReferenceDataSettings(type) {
     if (type === referenceDataTypeEnum.csv) {
         return {
@@ -525,6 +620,44 @@ export function getMetricSinker() {
         type: sinkerTypeEnum.metric,
         properties: {}
     };
+}
+
+export function getDefaultBatchSettings(type) {
+    if (type === batchTypeEnum.oneTime) {
+        return {
+            id: '',
+            type: type,
+            disabled: false,
+            properties: {
+                interval: '1',
+                intervalType: 'day',
+                delay: '0',
+                delayType: 'day',
+                window: '1',
+                windowType: 'day',
+                startTime: '',
+                endTime: '',
+                lastProcessedTime: ''
+            }
+        };
+    } else {
+        return {
+            id: '',
+            type: type,
+            disabled: false,
+            properties: {
+                interval: '1',
+                intervalType: 'day',
+                delay: '0',
+                delayType: 'day',
+                window: '1',
+                windowType: 'day',
+                startTime: new Date(),
+                endTime: '',
+                lastProcessedTime: ''
+            }
+        };
+    }
 }
 
 export function getDefaultSinkerSettings(type, owner) {
@@ -722,13 +855,23 @@ export const defaultSchemaLocal = `{
       }
     ]
   }
-  `; 
+  `;
+
+export function getDefaultNormalizationSnippet(inputMode) {
+    if (inputMode === inputModeEnum.batching) {
+        return defaultBatchNormalizationSnippet;
+    } else {
+        return defaultNormalizationSnippet;
+    }
+}
 
 export const defaultNormalizationSnippet = `SystemProperties AS _SystemProperties
 Properties AS _Properties
 Raw.*`;
 
-//Default Flow settings
+export const defaultBatchNormalizationSnippet = `Raw.*`;
+
+// Default Flow settings
 export const defaultInput = {
     type: inputTypeEnum.events,
     mode: inputModeEnum.streaming,

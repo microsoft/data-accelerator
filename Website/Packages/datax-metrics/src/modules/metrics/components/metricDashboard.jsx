@@ -10,6 +10,7 @@ import metricsDatasource from '../metrics.datasource';
 import ServiceGroup from '../serviceGroup';
 import * as Api from '../api';
 import { LoadingPanel, StatementBox } from 'datax-common';
+import { Constants } from '../apiConstants';
 
 class MetricDashboard extends React.Component {
     constructor() {
@@ -59,6 +60,14 @@ class MetricDashboard extends React.Component {
 
         if (!product) {
             return null;
+        } else if (product.gui.input.mode === Constants.batching) {
+            const message = 'Metrics is not supported for the batch job.';
+            return (
+                <div>
+                    <div style={headerStyle}>{product.displayName} Metrics</div>
+                    <StatementBox icon="IncidentTriangle" overrideRootStyle={messageStyle} statement={message} />
+                </div>
+            );
         } else if (this.state.loading) {
             return <LoadingPanel showImmediately={true} />;
         } else if (!this.state.jobsAllRunning) {

@@ -21,6 +21,7 @@ import ReferenceDataSettingsContent from './referenceData/referenceDataSettingsC
 import FunctionSettingsContent from './function/functionSettingsContent';
 import ScaleSettingsContent from './scale/scaleSettingsContent';
 import OutputSettingsContent from './output/outputSettingsContent';
+import ScheduleSettingsContent from './schedule/ScheduleSettingsContent';
 import RulesSettingsContent from './rule/rulesSettingsContent';
 import { functionEnabled, isDatabricksSparkType } from '../../../common/api';
 import {
@@ -64,6 +65,7 @@ class FlowDefinitionPanel extends React.Component {
             inProgessDialogMessage: '',
             havePermission: true,
             saveFlowButtonEnabled: false,
+            deployFlowButtonEnabled: false,
             deleteFlowButtonEnabled: false,
             getInputSchemaButtonEnabled: false,
             outputSideToolBarEnabled: false,
@@ -94,7 +96,10 @@ class FlowDefinitionPanel extends React.Component {
             deleteOutputSinkButtonEnabled: false,
             scaleNumExecutorsSliderEnabled: false,
             scaleExecutorMemorySliderEnabled: false,
-            isDatabricksSparkType: false
+            isDatabricksSparkType: false,
+
+            addBatchButtonEnabled: false,
+            deleteBatchButtonEnabled: false
         };
 
         this.handleWindowClose = this.handleWindowClose.bind(this);
@@ -158,6 +163,7 @@ class FlowDefinitionPanel extends React.Component {
         functionEnabled().then(response => {
             this.setState({
                 saveFlowButtonEnabled: response.saveFlowButtonEnabled ? true : false,
+                deployFlowButtonEnabled: response.deployFlowButtonEnabled ? true : false,
                 deleteFlowButtonEnabled: response.deleteFlowButtonEnabled ? true : false,
                 getInputSchemaButtonEnabled: response.getInputSchemaButtonEnabled ? true : false,
                 outputSideToolBarEnabled: response.outputSideToolBarEnabled ? true : false,
@@ -187,7 +193,10 @@ class FlowDefinitionPanel extends React.Component {
                 addOutputSinkButtonEnabled: response.addOutputSinkButtonEnabled ? true : false,
                 deleteOutputSinkButtonEnabled: response.deleteOutputSinkButtonEnabled ? true : false,
                 scaleNumExecutorsSliderEnabled: response.scaleNumExecutorsSliderEnabled ? true : false,
-                scaleExecutorMemorySliderEnabled: response.scaleExecutorMemorySliderEnabled ? true : false
+                scaleExecutorMemorySliderEnabled: response.scaleExecutorMemorySliderEnabled ? true : false,
+
+                addBatchButtonEnabled: response.addBatchButtonEnabled ? true : false,
+                deleteBatchButtonEnabled: response.deleteBatchButtonEnabled ? true : false
             });
         });
 
@@ -213,7 +222,13 @@ class FlowDefinitionPanel extends React.Component {
 
     renderButtons() {
         if (this.state.havePermission) {
-            return [this.renderBackButton(), this.renderSaveButton(), this.renderDeleteButton(), this.renderDebugButton()];
+            return [
+                this.renderBackButton(),
+                this.renderSaveButton(),
+                this.renderDeployButton(),
+                this.renderDeleteButton(),
+                this.renderDebugButton()
+            ];
         }
     }
 
@@ -238,19 +253,42 @@ class FlowDefinitionPanel extends React.Component {
 
     renderSaveButton() {
         if (!this.state.loading) {
+            const enableButton = (this.props.flow.isDirty || this.props.isQueryDirty) && this.state.saveFlowButtonEnabled;
+            return (
+                <DefaultButton
+                    key="save"
+                    className="header-button"
+                    disabled={!enableButton}
+                    title="Save the Flow"
+                    onClick={() => this.onSaveDefinition()}
+                >
+                    <i
+                        style={enableButton ? IconButtonStyles.greenStyle : IconButtonStyles.disabledStyle}
+                        className="ms-Icon ms-Icon--Save"
+                    />
+                    Save
+                </DefaultButton>
+            );
+        } else {
+            return null;
+        }
+    }
+
+    renderDeployButton() {
+        if (!this.state.loading) {
             const enableButton =
-                (this.props.flow.isDirty || this.props.isQueryDirty) && this.props.flowValidated && this.state.saveFlowButtonEnabled;
+                (this.props.flow.isDirty || this.props.isQueryDirty) && this.props.flowValidated && this.state.deployFlowButtonEnabled;
             return (
                 <DefaultButton
                     key="deploy"
                     className="header-button"
                     disabled={!enableButton}
                     title="Deploy and restart the Flow"
-                    onClick={() => this.onSaveDefinition()}
+                    onClick={() => this.onDeployDefinition()}
                 >
                     <i
                         style={enableButton ? IconButtonStyles.greenStyle : IconButtonStyles.disabledStyle}
-                        className="ms-Icon ms-Icon--Save"
+                        className="ms-Icon ms-Icon--Deploy"
                     />
                     Deploy
                 </DefaultButton>
@@ -324,6 +362,35 @@ class FlowDefinitionPanel extends React.Component {
         );
     }
 
+    renderScheduleTab() {
+        if (this.props.input.mode === Models.inputModeEnum.streaming) {
+            return null;
+        } else {
+            return (
+                <VerticalTabItem linkText="Schedule" itemCompleted={this.props.scheduleValidated}>
+                    <ScheduleSettingsContent
+                        batchList={this.props.flow.batchList}
+                        selectedBatchIndex={this.props.selectedBatchIndex}
+                        onNewBatch={this.props.onNewBatch}
+                        onDeleteBatch={this.props.onDeleteBatch}
+                        onUpdateSelectedBatchIndex={this.props.onUpdateSelectedBatchIndex}
+                        addBatchButtonEnabled={this.state.addBatchButtonEnabled}
+                        deleteBatchButtonEnabled={this.state.deleteBatchButtonEnabled}
+                        onUpdateBatchName={this.props.onUpdateBatchName}
+                        onUpdateBatchStartTime={this.props.onUpdateBatchStartTime}
+                        onUpdateBatchEndTime={this.props.onUpdateBatchEndTime}
+                        onUpdateBatchIntervalValue={this.props.onUpdateBatchIntervalValue}
+                        onUpdateBatchIntervalType={this.props.onUpdateBatchIntervalType}
+                        onUpdateBatchDelayValue={this.props.onUpdateBatchDelayValue}
+                        onUpdateBatchDelayType={this.props.onUpdateBatchDelayType}
+                        onUpdateBatchWindowValue={this.props.onUpdateBatchWindowValue}
+                        onUpdateBatchWindowType={this.props.onUpdateBatchWindowType}
+                    />
+                </VerticalTabItem>
+            );
+        }
+    }
+
     renderFlow() {
         return (
             <div style={contentStyle}>
@@ -345,6 +412,8 @@ class FlowDefinitionPanel extends React.Component {
                         <VerticalTabItem linkText="Input" itemCompleted={this.props.inputValidated}>
                             <InputSettingsContent
                                 input={this.props.flow.input}
+                                batchInputs={this.props.flow.batchInputs}
+                                selectedFlowBatchInputIndex={this.props.flow.selectedFlowBatchInputIndex}
                                 fetchingInputSchema={this.props.flow.fetchingInputSchema}
                                 samplingInputDuration={this.props.flow.samplingInputDuration}
                                 timer={this.state.counter}
@@ -352,9 +421,18 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateMode={this.props.onUpdateInputMode}
                                 onUpdateType={this.props.onUpdateInputType}
                                 onUpdateHubName={this.props.onUpdateInputHubName}
+                                onUpdateBatchInputPath={this.props.onUpdateBatchInputPath}
+                                onUpdateBatchInputConnection={this.props.onUpdateBatchInputConnection}
+                                onUpdateBatchInputFormatType={this.props.onUpdateBatchInputFormatType}
+                                onUpdateBatchInputCompressionType={this.props.onUpdateBatchInputCompressionType}
                                 onUpdateHubConnection={this.props.onUpdateInputHubConnection}
                                 onUpdateSubscriptionId={this.props.onUpdateInputSubscriptionId}
                                 onUpdateResourceGroup={this.props.onUpdateInputResourceGroup}
+                                onUpdateJobMode={this.props.onUpdateJobMode}
+                                onUpdateRecurrence={this.props.onUpdateRecurrence}
+                                onUpdateStartTime={this.props.onUpdateStartTime}
+                                onUpdateEndTime={this.props.onUpdateEndTime}
+                                onUpdateOffset={this.props.onUpdateOffset}
                                 onUpdateWindowDuration={this.props.onUpdateInputWindowDuration}
                                 onUpdateTimestampColumn={this.props.onUpdateInputTimestampColumn}
                                 onUpdateWatermarkValue={this.props.onUpdateInputWatermarkValue}
@@ -513,6 +591,8 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateDatabricksMaxWorkers={this.props.onUpdateDatabricksMaxWorkers}
                             />
                         </VerticalTabItem>
+
+                        {this.renderScheduleTab()}
                     </VerticalTabs>
                 </div>
             </div>
@@ -599,11 +679,44 @@ class FlowDefinitionPanel extends React.Component {
             isSaving: true,
             showMessageBar: false,
             messageBarIsError: false,
-            inProgessDialogMessage: 'Deployment in progress'
+            inProgessDialogMessage: 'Save in progress'
         });
 
         this.props
             .onSaveFlow(this.props.flow, this.props.query)
+            .then(name => {
+                this.setState({
+                    isSaving: false,
+                    showMessageBar: true,
+                    messageBarIsError: false,
+                    messageBarStatement:
+                        this.props.input.mode === Models.inputModeEnum.streaming
+                            ? 'Flow definition is saved'
+                            : 'Flow definition is saved. If there are any scheduled batch jobs in this flow, they will be created and started by the scheduler.'
+                });
+
+                this.props.initFlow({ id: name });
+            })
+            .catch(error => {
+                this.setState({
+                    isSaving: false,
+                    showMessageBar: true,
+                    messageBarIsError: true,
+                    messageBarStatement: getApiErrorMessage(error)
+                });
+            });
+    }
+
+    onDeployDefinition() {
+        this.setState({
+            isSaving: true,
+            showMessageBar: false,
+            messageBarIsError: false,
+            inProgessDialogMessage: 'Deployment in progress'
+        });
+
+        this.props
+            .onDeployFlow(this.props.flow, this.props.query)
             .then(name => {
                 this.setState({
                     isSaving: false,
@@ -780,6 +893,8 @@ const mapStateToProps = state => ({
     rules: Selectors.getFlowRules(state),
 
     // State
+    selectedBatchIndex: Selectors.getSelectedBatchIndex(state),
+
     selectedReferenceDataIndex: Selectors.getSelectedReferenceDataIndex(state),
     selectedFunctionIndex: Selectors.getSelectedFunctionIndex(state),
     selectedSinkerIndex: Selectors.getSelectedSinkerIndex(state),
@@ -802,7 +917,8 @@ const mapStateToProps = state => ({
     outputsValidated: Selectors.validateFlowOutputs(state),
     rulesValidated: Selectors.validateFlowRules(state),
     flowValidated: Selectors.validateFlow(state),
-    queryValidated: QuerySelectors.validateQueryTab(state)
+    queryValidated: QuerySelectors.validateQueryTab(state),
+    scheduleValidated: Selectors.validateFlowSchedule(state)
 });
 
 // Dispatch Props
@@ -820,9 +936,16 @@ const mapDispatchToProps = dispatch => ({
     onUpdateInputMode: mode => dispatch(Actions.updateInputMode(mode)),
     onUpdateInputType: type => dispatch(Actions.updateInputType(type)),
     onUpdateInputHubName: name => dispatch(Actions.updateInputHubName(name)),
+    onUpdateInputPath: path => dispatch(Actions.updateInputPath(path)),
     onUpdateInputHubConnection: connection => dispatch(Actions.updateInputHubConnection(connection)),
     onUpdateInputSubscriptionId: id => dispatch(Actions.updateInputSubscriptionId(id)),
     onUpdateInputResourceGroup: name => dispatch(Actions.updateInputResourceGroup(name)),
+
+    onUpdateBatchInputConnection: connection => dispatch(Actions.updateBatchInputConnection(connection)),
+    onUpdateBatchInputPath: path => dispatch(Actions.updateBlobInputPath(path)),
+    onUpdateBatchInputFormatType: formatType => dispatch(Actions.updateBatchInputFormatType(formatType)),
+    onUpdateBatchInputCompressionType: compressionType => dispatch(Actions.updateBachInputCompressionType(compressionType)),
+
     onUpdateInputWindowDuration: duration => dispatch(Actions.updateInputWindowDuration(duration)),
     onUpdateInputTimestampColumn: duration => dispatch(Actions.updateInputTimestampColumn(duration)),
     onUpdateInputWatermarkValue: duration => dispatch(Actions.updateInputWatermarkValue(duration)),
@@ -922,10 +1045,25 @@ const mapDispatchToProps = dispatch => ({
 
     // Save and Delete Actions
     onSaveFlow: (flow, query) => Actions.saveFlow(flow, query),
+    onDeployFlow: (flow, query) => Actions.deployFlow(flow, query),
     onDeleteFlow: flow => Actions.deleteFlow(flow),
 
     // enableOneBox Action
-    onUpdateOneBoxMode: enableOneBox => dispatch(Actions.updateOneBoxMode(enableOneBox))
+    onUpdateOneBoxMode: enableOneBox => dispatch(Actions.updateOneBoxMode(enableOneBox)),
+
+    // Schedule Actions
+    onNewBatch: type => dispatch(Actions.newBatch(type)),
+    onDeleteBatch: index => dispatch(Actions.deleteBatch(index)),
+    onUpdateSelectedBatchIndex: index => dispatch(Actions.updateSelectedBatchIndex(index)),
+    onUpdateBatchName: value => dispatch(Actions.updateBatchName(value)),
+    onUpdateBatchStartTime: value => dispatch(Actions.updateBatchStartTime(value)),
+    onUpdateBatchEndTime: value => dispatch(Actions.updateBatchEndTime(value)),
+    onUpdateBatchIntervalValue: value => dispatch(Actions.updateBatchIntervalValue(value)),
+    onUpdateBatchIntervalType: value => dispatch(Actions.updateBatchIntervalType(value)),
+    onUpdateBatchDelayValue: value => dispatch(Actions.updateBatchDelayValue(value)),
+    onUpdateBatchDelayType: value => dispatch(Actions.updateBatchDelayType(value)),
+    onUpdateBatchWindowValue: value => dispatch(Actions.updateBatchWindowValue(value)),
+    onUpdateBatchWindowType: value => dispatch(Actions.updateBatchWindowType(value))
 });
 
 // Styles

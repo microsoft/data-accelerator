@@ -3,7 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 import Q from 'q';
-import { serviceGetApi, servicePostApi, nodeServiceGetApi, Constants, ApiNames} from 'datax-common';
+import { serviceGetApi, servicePostApi, nodeServiceGetApi, Constants, ApiNames } from 'datax-common';
 
 // Flow Service
 export const getFlow = name => getProduct(name).then(f => f.gui);
@@ -21,7 +21,7 @@ export const deleteFlow = flow =>
         inputSubscriptionId: flow.input.properties.inputSubscriptionId,
         inputResourceGroup: flow.input.properties.inputResourceGroup,
         eventHubNames: flow.input.properties.inputEventhubName,
-        inputType: flow.input.type,
+        inputType: flow.input.type
     });
 
 // Schema Inference
@@ -35,6 +35,8 @@ export const getInputSchema = flow =>
         inputResourceGroup: flow.input.properties.inputResourceGroup,
         eventHubNames: flow.input.properties.inputEventhubName,
         inputType: flow.input.type,
+        inputMode: flow.input.mode,
+        batchInputs: flow.batchInputs,
         seconds: flow.samplingInputDuration
     });
 
