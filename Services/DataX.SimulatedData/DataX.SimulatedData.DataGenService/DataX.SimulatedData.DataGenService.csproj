@@ -40,14 +40,14 @@
 
   <ItemGroup>
     <FilesToSign Include="$(IntermediateOutputPath)\**\$(AssemblyName).dll">
-      <Authenticode>Microsoft</Authenticode>
+      <Authenticode>Microsoft400</Authenticode>
       <StrongName>StrongName</StrongName>
     </FilesToSign>
   </ItemGroup>
 
   <ItemGroup>
     <FilesToSign Include="$(IntermediateOutputPath)\**\$(AssemblyName).exe">
-      <Authenticode>Microsoft</Authenticode>
+      <Authenticode>Microsoft400</Authenticode>
       <StrongName>StrongName</StrongName>
     </FilesToSign>
   </ItemGroup>
