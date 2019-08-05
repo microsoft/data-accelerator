@@ -564,7 +564,7 @@ function Set-AzureAADAccessControl([string]$AppId) {
     $ErrorActionPreference = "stop"
 }
 
-function Set-AzureAADApiPermission([string]$ServiceAppId, [string]$ClientAppId, [string]$RoleId) {
+function Set-AzureAADApiPermission([string]$ServiceAppId, [string]$ClientAppId, [string]$RoleName) {
     $ErrorActionPreference = "SilentlyContinue"
 
     Write-Host -ForegroundColor Yellow  "Setting up App Api Permissions. This requires the subscription admin privilege. If this fails, please refer to the manual steps and ask a subscription admin"
@@ -572,11 +572,24 @@ function Set-AzureAADApiPermission([string]$ServiceAppId, [string]$ClientAppId, 
     $aadCommandId = "00000002-0000-0000-c000-000000000000"
     $permissionId = "311a71cc-e848-46a1-bdf8-97ff7156d8e6"
     
-    az ad app permission add --id $ServiceAppId --api $ServiceAppId --api-permissions $RoleId=Role > $null 2>&1
+    if ($RoleName) {
+        $appRoles =  az ad app show --id $ServiceAppId --query appRoles | ConvertFrom-Json
+
+        $role = $appRoles | Where-Object { $_.Value -match $RoleName }
+        if ($role) {
+            $roleId = $role.Id
+            az ad app permission add --id $ServiceAppId --api $ServiceAppId --api-permissions $roleId=Role > $null 2>&1
+            az ad app permission grant --id $ServiceAppId --api $ServiceAppId --scope $roleId > $null 2>&1
+        }
+        else 
+        {
+            Write-Host -ForegroundColor Red  "$RoleName is not defined in the app $ServiceAppId"
+        }
+    }
+    
     az ad app permission add --id $ServiceAppId --api $aadCommandId --api-permissions $permissionId=Scope > $null 2>&1
     az ad app permission add --id $ClientAppId --api $aadCommandId --api-permissions $permissionId=Scope > $null 2>&1
     az ad app permission add --id $ClientAppId --api $ServiceAppId --api-permissions $ServiceAppPermId=Scope > $null 2>&1
-    az ad app permission grant --id $ServiceAppId --api $ServiceAppId --scope $RoleId > $null 2>&1
     az ad app permission grant --id $ServiceAppId --api $aadCommandId --scope $permissionId > $null 2>&1
     az ad app permission grant --id $ClientAppId --api $aadCommandId --scope $permissionId > $null 2>&1
     az ad app permission grant --id $ClientAppId --api $ServiceAppId --scope $ServiceAppPermId > $null 2>&1

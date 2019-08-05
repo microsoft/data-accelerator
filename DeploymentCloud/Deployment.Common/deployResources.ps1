@@ -227,7 +227,7 @@ function Get-Tokens {
 }
 
 # Get appRole definition
-function Create-AppRole([string] $Name, [string] $AppName, [string] $guid, [string] $Description) {
+function Create-AppRole([string] $Name, [string] $AppName, [string] $Description) {
     $appRole = New-Object Microsoft.Open.AzureAD.Model.AppRole
     $appRole.AllowedMemberTypes = New-Object System.Collections.Generic.List[string]
     $appRole.AllowedMemberTypes.Add("User");
@@ -235,7 +235,7 @@ function Create-AppRole([string] $Name, [string] $AppName, [string] $guid, [stri
         $appRole.AllowedMemberTypes.Add("Application");
     }
     $appRole.DisplayName = $Name
-    $appRole.Id = $guid
+    $appRole.Id = New-Guid
     $appRole.IsEnabled = $true
     $appRole.Description = $Description
     $appRole.Value = $Name
@@ -244,10 +244,8 @@ function Create-AppRole([string] $Name, [string] $AppName, [string] $guid, [stri
 
 # Add appRoles to AAD app
 function Set-AzureAADAppRoles([string]$AppName) {
-    $newGuid_reader = New-Guid
-    $newGuid_writer = New-Guid
-    $role_r = Create-AppRole -Name $readerRole -AppName $AppName -guid $newGuid_reader -Description $readerRole + " have ability to view flows"
-    $role_w = Create-AppRole -Name $writerRole -AppName $AppName -guid $newGuid_writer -Description $writerRole + " can manage flows"
+    $role_r = Create-AppRole -Name $readerRole -AppName $AppName -Description $readerRole + " have ability to view flows"
+    $role_w = Create-AppRole -Name $writerRole -AppName $AppName -Description $writerRole + " can manage flows"
     $roles = @($role_r, $role_W)
     
     $app = Get-AzureADApplication -Filter "DisplayName eq '$AppName'"
@@ -270,8 +268,6 @@ function Set-AzureAADAppRoles([string]$AppName) {
     
         Set-AzureADApplication -ObjectId $app.ObjectId -AppRoles $app.AppRoles
     }
-    
-    return $newGuid_writer
 }
 
 # Add user with appRoles to service principal
@@ -858,12 +854,12 @@ $azureADAppSecretValue = $azureADAppSecret.Value
 $azureADAppSecretConfiggenValue = $azureADAppSecretConfiggen.Value
 
 Set-AzureAADAppRoles -AppName $clientAppName
-$serviceRoleId = Set-AzureAADAppRoles -AppName $serviceAppName
+Set-AzureAADAppRoles -AppName $serviceAppName
 Add-UserAppRole -AppName $clientAppName
 Add-UserAppRole -AppName $serviceAppName
 
 Set-AzureAADAccessControl -AppId $azureADApplicationConfiggenApplicationId
-Set-AzureAADApiPermission -ServiceAppId $azureADApplicationConfiggenApplicationId -ClientAppId $azureADApplicationApplicationId -RoleId $serviceRoleId
+Set-AzureAADApiPermission -ServiceAppId $azureADApplicationConfiggenApplicationId -ClientAppId $azureADApplicationApplicationId -RoleName $writerRole
 
 if($serviceFabricCreation -eq 'y') {
     Write-Host -ForegroundColor Green "Deploying resources (4/16 steps): A Service fabric cluster will be deployed"
