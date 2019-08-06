@@ -110,9 +110,6 @@ namespace DataX.Config.DevDiv.Test
             Assert.IsTrue(result.IsSuccess);
             Assert.AreEqual(expected: 2, actual: RuntimeStorage.Cache.Count);
 
-            // Verify the manifest in expected
-            var jobConfigDestinationFolder = runtimeConfigFolder?.ToString().Split("Generation_").First();
-
             // Verify output configuration is expected
             var actualConf = PropertiesDictionary.From(this.RuntimeStorage.Cache[ResourcePathUtil.Combine(runtimeConfigFolder.ToString(), "visualstudio1.conf")]);
             var expectedConf = PropertiesDictionary.From(await File.ReadAllTextAsync(@"Resource\ddJobConfig1.conf"));
