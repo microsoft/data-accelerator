@@ -73,11 +73,10 @@ namespace DataX.Config.ConfigGeneration.Processor
 
         public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
         {
-            if (flowToDeploy.Config.GetGuiConfig().Input?.Mode == Constants.InputMode_Batching)
+            if (flowToDeploy.Config.GetGuiConfig()?.Input?.Mode == Constants.InputMode_Batching)
             {
                 var inputConfig = flowToDeploy.Config.GetGuiConfig();
-
-                var inputBatching = inputConfig.Input.Batch ?? Array.Empty<FlowGuiInputBatchInput>();
+                var inputBatching = inputConfig?.Input?.Batch ?? Array.Empty<FlowGuiInputBatchInput>();
                 var specsTasks = inputBatching.Select(async rd =>
                 {
                     var connectionString = await KeyVaultClient.ResolveSecretUriAsync(rd.Properties.Connection).ConfigureAwait(false);

@@ -43,6 +43,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Resource\ddFlattenerConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\ddJobConfig1.conf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\ddJobConfig2.conf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\ddflow.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Resource\databricksFlowSaved.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
