@@ -227,10 +227,13 @@ function Get-Tokens {
 }
 
 # Get appRole definition
-function Create-AppRole([string] $Name, [string] $Description) {
+function Create-AppRole([string] $Name, [string] $AppName, [string] $Description) {
     $appRole = New-Object Microsoft.Open.AzureAD.Model.AppRole
     $appRole.AllowedMemberTypes = New-Object System.Collections.Generic.List[string]
     $appRole.AllowedMemberTypes.Add("User");
+    if (($Name -eq $writerRole) -and ($AppName -eq $serviceAppName)) {
+        $appRole.AllowedMemberTypes.Add("Application");
+    }
     $appRole.DisplayName = $Name
     $appRole.Id = New-Guid
     $appRole.IsEnabled = $true
@@ -241,8 +244,8 @@ function Create-AppRole([string] $Name, [string] $Description) {
 
 # Add appRoles to AAD app
 function Set-AzureAADAppRoles([string]$AppName) {
-    $role_r = Create-AppRole -Name $readerRole -Description $readerRole + " have ability to view flows"
-    $role_w = Create-AppRole -Name $writerRole -Description $writerRole + " can manage flows"
+    $role_r = Create-AppRole -Name $readerRole -AppName $AppName -Description $readerRole + " have ability to view flows"
+    $role_w = Create-AppRole -Name $writerRole -AppName $AppName -Description $writerRole + " can manage flows"
     $roles = @($role_r, $role_W)
     
     $app = Get-AzureADApplication -Filter "DisplayName eq '$AppName'"
@@ -850,13 +853,13 @@ Set-AzureAADAppCert -AppName $serviceAppName
 $azureADAppSecretValue = $azureADAppSecret.Value 
 $azureADAppSecretConfiggenValue = $azureADAppSecretConfiggen.Value
 
-Set-AzureAADAccessControl -AppId $azureADApplicationConfiggenApplicationId
-Set-AzureAADApiPermission -ServiceAppId $azureADApplicationConfiggenApplicationId -ClientAppId $azureADApplicationApplicationId
-
 Set-AzureAADAppRoles -AppName $clientAppName
 Set-AzureAADAppRoles -AppName $serviceAppName
 Add-UserAppRole -AppName $clientAppName
 Add-UserAppRole -AppName $serviceAppName
+
+Set-AzureAADAccessControl -AppId $azureADApplicationConfiggenApplicationId
+Set-AzureAADApiPermission -ServiceAppId $azureADApplicationConfiggenApplicationId -ClientAppId $azureADApplicationApplicationId -RoleName $writerRole
 
 if($serviceFabricCreation -eq 'y') {
     Write-Host -ForegroundColor Green "Deploying resources (4/16 steps): A Service fabric cluster will be deployed"
