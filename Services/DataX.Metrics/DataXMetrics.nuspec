@@ -16,7 +16,7 @@
   </metadata>
   <files>
     <file src="..\applicationpackage\*.sfpkg" target="lib" />
-    <file src="..\dlls\DataX.*.dll" target="lib/netcoreapp2.1" />
+    <file src="..\dlls\DataX.*.dll" target="lib/netcoreapp2.2" />
     <file src="..\NOTICE.txt" target="" />
   </files>
 </package>
