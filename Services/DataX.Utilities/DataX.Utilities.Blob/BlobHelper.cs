@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using DataX.Contract.Exception;
 
 namespace DataX.Utilities.Blob
 {
@@ -152,24 +153,117 @@ namespace DataX.Utilities.Blob
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
             CloudBlobClient cloudBlobClient = storageAccount.CreateCloudBlobClient();
             CloudBlobContainer container = cloudBlobClient.GetContainerReference(containerName);
-            
-            var allBlobs = await container.ListBlobsSegmentedAsync(prefix: prefix, useFlatBlobListing: true, blobListingDetails: BlobListingDetails.None, maxResults: null, currentToken: null, options: null, operationContext: null).ConfigureAwait(false);
 
-            var filteredBlobs = allBlobs.Results.OfType<CloudBlockBlob>()
-                .Where(b => ValidateBlobPath(blobPathPattern, b.Uri.ToString()) && b.Properties.Length > 0 && ValidateJson(b.DownloadTextAsync().Result))
-                .OrderByDescending(m => m.Properties.LastModified).ToList().Take(blobCount);
+            const int lengthToReadInBytes = 1000000;  // 1 MB
+            var allBlobs = await container.ListBlobsSegmentedAsync(prefix: prefix, useFlatBlobListing: true, blobListingDetails: BlobListingDetails.None, maxResults: null, currentToken: null, options: null, operationContext: null).ConfigureAwait(false);
+            var filteredBlobs = allBlobs.Results.OfType<CloudBlockBlob>().OrderByDescending(m => m.Properties.LastModified);
+
 
             List<string> blobContents = new List<string>();
+            StringBuilder str = new StringBuilder();
 
-            if (filteredBlobs != null && filteredBlobs.Count() > 0)
+            foreach (CloudBlockBlob blob in filteredBlobs)
             {
-                foreach (CloudBlockBlob blob in filteredBlobs)
+                if (ValidateBlobPath(blobPathPattern, blob.Uri.ToString()) && blob.Properties.Length > 0)
                 {
-                    blobContents.Add(blob.DownloadTextAsync().Result);
+                    using (var stream = await blob.OpenReadAsync().ConfigureAwait(false))
+                    {
+                        // For a big blog e.g. the length is > 1 GB, we can't download whole blob (we can't use DownloadTextAsync). It affects the system performance.
+                        // So instead, read the blob 1 MB at a time until we collect enough data (3 documents) to generate the schema.
+                        // If we don't get enough data from one blob, we move to the next one from the filteredBlobs queue.
+                        int offset = 0;
+                        int length = (int)Math.Min(lengthToReadInBytes, blob.Properties.Length);
+
+                        while (blob.Properties.Length > offset)
+                        {
+                            var data = new byte[length];
+                            int ret = await stream.ReadAsync(data, offset, length).ConfigureAwait(false);
+
+                            str.Append(Encoding.UTF8.GetString(data));
+                            var lines = str.ToString().Split("\n");
+                            var filtered = lines.Where(l => ValidateJson(l)).ToList();
+                            if (filtered.Count() >= blobCount)
+                            {
+                                blobContents.AddRange(filtered);
+
+                                return blobContents;
+                            }
+
+                            offset += ret;
+                        }
+
+                        str.Append("\n");
+                    }
                 }
             }
 
             return blobContents;
+        }
+
+        public static string ParsePrefix(string blobUri)
+        {
+            if (!Uri.TryCreate(blobUri, UriKind.Absolute, out var uri))
+            {
+                return blobUri;
+            }
+
+            var prefix = "";
+            foreach (var seg in uri.Segments)
+            {
+                if (seg.StartsWith("%7B")) // "{", '\u007B'
+                {
+                    break;
+                }
+
+                prefix = Path.Combine(prefix, seg);
+            }
+
+            return prefix.TrimStart('/');
+        }
+
+        public static string GenerateRegexPatternFromPath(string path)
+        {
+            path = NormalizeBlobPath(path);
+            var mc = Regex.Matches(path, @"{(.*?)}");
+            if (mc == null || mc.Count < 1)
+            {
+                return path;
+            }
+
+            foreach (Match m in mc)
+            {
+                var r3 = Regex.Match(m.Value, @"^({)*([yMdHhmsS\-\/.,: ]+)(})*$");
+                if (!r3.Success)
+                {
+                    throw new GeneralException("Token in the blob path should be a data time format. e.g. {yyyy-MM-dd}");
+                }
+
+                path = path.Replace(m.Value, @"(\w+)", StringComparison.InvariantCulture);
+            }
+
+            return path;
+        }
+
+        private static string NormalizeBlobPath(string path)
+        {
+            path = path.TrimEnd('/');
+            var mc = Regex.Matches(path, @"{(.*?)}");
+            if (mc == null || mc.Count < 1 || mc.Count > 1)
+            {
+                return path;
+            }
+
+            var tokenValue = mc[0].Value.Trim(new char[] { '{', '}' });
+
+            var mc2 = Regex.Matches(tokenValue, @"[A-Za-z]+");
+            foreach (Match m in mc2)
+            {
+                tokenValue = tokenValue.Replace(m.Value, "{" + m.Value + "}", StringComparison.InvariantCulture);
+            }
+
+            path = path.Replace(mc[0].Value, tokenValue, StringComparison.InvariantCulture);
+
+            return path;
         }
 
         private static bool ValidateJson(string input)
@@ -178,7 +272,6 @@ namespace DataX.Utilities.Blob
             {
                 Newtonsoft.Json.Linq.JObject.Parse(input);
                 return true;
-
             }
             catch
             {
