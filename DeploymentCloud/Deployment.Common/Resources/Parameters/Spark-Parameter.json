@@ -52,6 +52,9 @@
 		"storageAccounts_spark_name": {
 			"value": "$sparkBlobAccountName"
 		},
+		"sparkManagedIdentity": {	
+			"value": "$sparkManagedIdentityName"	
+		},
 		"minInstanceCountSparkHeadnode": {
 			"value": $minInstanceCountSparkHeadnode
 		},
@@ -70,11 +73,11 @@
 		"userAssignedIdentitiesName": {
 			"value": "$sparkManagedIdentityName"
 		},
-        "virtualNetworkName": {
-            "value": "VNet-$serviceFabricName"
-        },
-        "subnet0Name": {
-            "value": "Subnet-0"
-        }
+		"virtualNetworkName": {
+			"value": "VNet-$serviceFabricName"
+		},
+		"subnet0Name": {
+			"value": "Subnet-0"
+		}
 	}
 }

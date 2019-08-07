@@ -32,9 +32,9 @@
 		"vaults_fabricRDPKV_name": {
 			"type": "String"
 		},
-        "sourceVaultValue": {
-            "type": "string"
-        },
+		"sourceVaultValue": {
+			"type": "string"
+		},
 		"redis_name": {
 			"type": "String"
 		},
@@ -89,33 +89,30 @@
 		"sparkType": {
 			"type": "String"
 		},
-        "virtualNetworkName": {
-            "type": "string"
-        },
-        "addressPrefix": {
-            "type": "string"
-        },
-        "computeLocation": {
-            "type": "string"
-        },
-        "subnet0Name": {
-            "type": "string"
-        },
-        "subnet0Prefix": {
-            "type": "string"
-        },
-        "clusterName": {
-            "type": "string"
-        },
+		"virtualNetworkName": {
+			"type": "string"
+		},
+		"addressPrefix": {
+			"type": "string"
+		},
+		"computeLocation": {
+			"type": "string"
+		},
+		"subnet0Name": {
+			"type": "string"
+		},
+		"subnet0Prefix": {
+			"type": "string"
+		},
+		"clusterName": {
+			"type": "string"
+		},
 		"storageAccounts_spark_name": {
 			"type": "String"
-		},
-		"sparkManagedIdentity": {
-			"type": "string"
 		}
 	},
 	"variables": {
-        "vNetApiVersion": "2015-06-15",
+		"vNetApiVersion": "2015-06-15",
 		"storageAccounts_containerName_defaultdx": "defaultdx",
 		"storageAccounts_containerName_diagnostics": "diagnostics",
 		"storageAccounts_containerName_deployment": "deployment",
@@ -834,13 +831,6 @@
 				"[resourceId('Microsoft.Web/sites', parameters('sites_web_name'))]"
 			]
 		},
-		{
-            "apiVersion": "2015-08-31-preview",
-            "name": "[parameters('sparkManagedIdentity')]",
-			"location": "[parameters('default_resource_location')]",
-            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
-            "properties": {}
-        },
 		{
 			"type": "Microsoft.Storage/storageAccounts",
 			"name": "[parameters('storageAccounts_spark_name')]",			

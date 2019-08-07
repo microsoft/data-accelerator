@@ -23,6 +23,15 @@ resourceGroupName=DataX
 # y if you want to run spark jobs on Databricks, n for running jobs on HDinsight 
 useDatabricks=n
 
+#Databricks cluster spark version
+databricksClusterSparkVersion=5.3.x-scala2.11
+
+#Databricks cluster node type id
+databricksClusterNodeType=Standard_DS3_v2
+
+#Databricks SKU
+databricksSku=premium
+
 # y if you want to deploy Kafka sample, n otherwise
 # This will deploy the Kafka specific samples and resources such as HDinsight Kafka and EventHub Kafka  
 enableKafkaSample=y

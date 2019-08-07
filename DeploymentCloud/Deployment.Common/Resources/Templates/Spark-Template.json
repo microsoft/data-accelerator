@@ -55,6 +55,9 @@
 		"storageAccounts_spark_name": {
 			"type": "String"
 		},
+		"sparkManagedIdentity": {	
+			"type": "string"	
+		},
 		"minInstanceCountSparkHeadnode": {
 			"type": "int"
 		},
@@ -73,21 +76,28 @@
 		"userAssignedIdentitiesName": {
 			"type": "string"
 		},
-        "virtualNetworkName": {
-            "type": "string"
-        },
-        "subnet0Name": {
-            "type": "string"
-        }
+		"virtualNetworkName": {
+			"type": "string"
+		},
+		"subnet0Name": {
+			"type": "string"
+		}
 	},
 	"variables": {
 		"storageAccountsURI": "[concat(parameters('storageAccounts_spark_name'),'.blob.core.windows.net')]",
-        "storageAccountsResourceID": "[resourceId('Microsoft.Storage/storageAccounts',parameters('storageAccounts_spark_name'))]",
+		"storageAccountsResourceID": "[resourceId('Microsoft.Storage/storageAccounts',parameters('storageAccounts_spark_name'))]",
 		"userAssignedIdentitiesResourceID": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',parameters('userAssignedIdentitiesName'))]",
-        "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
-        "subnet0Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet0Name'))]"
+		"vnetID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
+		"subnet0Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet0Name'))]"
 	},
-	"resources": [		
+	"resources": [	
+		{	
+			"apiVersion": "2015-08-31-preview",	
+			"name": "[parameters('sparkManagedIdentity')]",	
+			"location": "[parameters('default_resource_location')]",	
+			"type": "Microsoft.ManagedIdentity/userAssignedIdentities",	
+			"properties": {}	
+		},
 		{
 			"apiVersion": "2015-03-01-preview",
 			"name": "[parameters('sparkClusterName')]",

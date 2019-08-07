@@ -187,8 +187,8 @@
 			"options" : {
 				"name" : "${sparkJobName}",
 				"new_cluster" : {
-					"spark_version" : "5.3.x-scala2.11",
-					"node_type_id" : "Standard_DS3_v2",
+					"spark_version" : "$databricksClusterSparkVersion",
+					"node_type_id" : "$databricksClusterNodeType",
 					"autoscale" : {
 						"min_workers" : "${sparkJobDatabricksMinWorkers}",
 						"max_workers" : "${sparkJobDatabricksMaxWorkers}"
@@ -221,19 +221,19 @@
 						"jar" : "dbfs:/datax/azure-keyvault-webkey-1.1.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/datax-core_2.4_2.11-1.2.0-SNAPSHOT.jar"
+						"jar" : "dbfs:/datax/datax-core_2.4_2.11-1.2.0.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/datax-host_2.4_2.11-1.2.0-SNAPSHOT.jar"
+						"jar" : "dbfs:/datax/datax-host_2.4_2.11-1.2.0.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/datax-keyvault_2.4_2.11-1.2.0-SNAPSHOT-with-dependencies.jar"
+						"jar" : "dbfs:/datax/datax-keyvault_2.4_2.11-1.2.0-with-dependencies.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/datax-udf-samples_2.4_2.11-1.2.0-SNAPSHOT.jar"
+						"jar" : "dbfs:/datax/datax-udf-samples_2.4_2.11-1.2.0.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/datax-utility_2.4_2.11-1.2.0-SNAPSHOT.jar"
+						"jar" : "dbfs:/datax/datax-utility_2.4_2.11-1.2.0.jar"
 					}, 
 					{
 						"jar" : "dbfs:/datax/java-uuid-generator-3.1.5.jar"
@@ -686,8 +686,8 @@
 			"options" : {
 				"name" : "${sparkJobName}",
 				"new_cluster" : {
-					"spark_version" : "5.3.x-scala2.11",
-					"node_type_id" : "Standard_DS3_v2",
+					"spark_version" : "$databricksClusterSparkVersion",
+					"node_type_id" : "$databricksClusterNodeType",
 					"autoscale" : {
 						"min_workers" : "${sparkJobDatabricksMinWorkers}",
 						"max_workers" : "${sparkJobDatabricksMaxWorkers}"
@@ -720,19 +720,19 @@
 						"jar" : "dbfs:/datax/azure-keyvault-webkey-1.1.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/datax-core_2.4_2.11-1.2.0-SNAPSHOT.jar"
+						"jar" : "dbfs:/datax/datax-core_2.4_2.11-1.2.0.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/datax-host_2.4_2.11-1.2.0-SNAPSHOT.jar"
+						"jar" : "dbfs:/datax/datax-host_2.4_2.11-1.2.0.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/datax-keyvault_2.4_2.11-1.2.0-SNAPSHOT-with-dependencies.jar"
+						"jar" : "dbfs:/datax/datax-keyvault_2.4_2.11-1.2.0-with-dependencies.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/datax-udf-samples_2.4_2.11-1.2.0-SNAPSHOT.jar"
+						"jar" : "dbfs:/datax/datax-udf-samples_2.4_2.11-1.2.0.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/datax-utility_2.4_2.11-1.2.0-SNAPSHOT.jar"
+						"jar" : "dbfs:/datax/datax-utility_2.4_2.11-1.2.0.jar"
 					}, 
 					{
 						"jar" : "dbfs:/datax/java-uuid-generator-3.1.5.jar"
@@ -1063,8 +1063,8 @@
 			"options" : {
 				"name" : "${sparkJobName}",
 				"new_cluster" : {
-					"spark_version" : "5.3.x-scala2.11",
-					"node_type_id" : "Standard_DS3_v2",
+					"spark_version" : "$databricksClusterSparkVersion",
+					"node_type_id" : "$databricksClusterNodeType",
 					"autoscale" : {
 						"min_workers" : "${sparkJobDatabricksMinWorkers}",
 						"max_workers" : "${sparkJobDatabricksMaxWorkers}"
@@ -1097,19 +1097,19 @@
 						"jar" : "dbfs:/datax/azure-keyvault-webkey-1.1.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/datax-core_2.4_2.11-1.2.0-SNAPSHOT.jar"
+						"jar" : "dbfs:/datax/datax-core_2.4_2.11-1.2.0.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/datax-host_2.4_2.11-1.2.0-SNAPSHOT.jar"
+						"jar" : "dbfs:/datax/datax-host_2.4_2.11-1.2.0.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/datax-keyvault_2.4_2.11-1.2.0-SNAPSHOT-with-dependencies.jar"
+						"jar" : "dbfs:/datax/datax-keyvault_2.4_2.11-1.2.0-with-dependencies.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/datax-udf-samples_2.4_2.11-1.2.0-SNAPSHOT.jar"
+						"jar" : "dbfs:/datax/datax-udf-samples_2.4_2.11-1.2.0.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/datax-utility_2.4_2.11-1.2.0-SNAPSHOT.jar"
+						"jar" : "dbfs:/datax/datax-utility_2.4_2.11-1.2.0.jar"
 					}, 
 					{
 						"jar" : "dbfs:/datax/java-uuid-generator-3.1.5.jar"
