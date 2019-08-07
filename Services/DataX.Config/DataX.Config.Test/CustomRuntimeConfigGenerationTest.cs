@@ -2,13 +2,13 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DataX.Config.ConfigDataModel;
 using DataX.Config.ConfigGeneration.Processor;
 using DataX.Config.Test.Extension;
 using DataX.Config.Test.Mock;
 using DataX.Config.Test.Utility.Mock;
 using DataX.Config.Utility;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Composition;
@@ -17,12 +17,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using DataX.Config.Test;
 
-namespace DataX.Config.DevDiv.Test
+namespace DataX.Config.Test
 {
     [TestClass]
-    public class RuntimeConfigGenerationTest
+    public class RuntimeConfigGenerationTestCustom
     {
         [ClassInitialize]
         public static void Initialize(TestContext tc)
@@ -53,7 +52,7 @@ namespace DataX.Config.DevDiv.Test
             InitialConfiguration.Clear();
         }
 
-        public RuntimeConfigGenerationTest()
+        public RuntimeConfigGenerationTestCustom()
         {
             CompositionHost.SatisfyImports(this);
         }
@@ -92,15 +91,15 @@ namespace DataX.Config.DevDiv.Test
         }
 
         [TestMethod]
-        public async Task EndToEndGeneration()
+        public async Task EndToEndGenerationCustom()
         {
-            var flowName = "visualstudio";
+            var flowName = "customconfiggentest";
 
-            var testingConfig = await File.ReadAllTextAsync(@"Resource\ddflow.json");
+            var testingConfig = await File.ReadAllTextAsync(@"Resource\customflow.json");
             await DesignTimeStorage.SaveByName(flowName, testingConfig, FlowDataManager.DataCollectionName);
 
-            await CommonData.Add("defaultFlowConfig", @"Resource\ddflow.json");
-            await CommonData.Add("flattener", @"Resource\ddFlattenerConfig.json");
+            await CommonData.Add("defaultFlowConfig", @"Resource\customflow.json");
+            await CommonData.Add("flattener", @"Resource\customFlattenerConfig.json");
             await CommonData.Add("defaultJobTemplate", @"Resource\sparkJobTemplate.json");
 
             var result = await this.RuntimeConfigGeneration.GenerateRuntimeConfigs(flowName);
@@ -110,9 +109,11 @@ namespace DataX.Config.DevDiv.Test
             Assert.IsTrue(result.IsSuccess);
             Assert.AreEqual(expected: 2, actual: RuntimeStorage.Cache.Count);
 
+            var jobConfigDestinationFolder = runtimeConfigFolder?.ToString().Split("Generation_").First();
+
             // Verify output configuration is expected
-            var actualConf = PropertiesDictionary.From(this.RuntimeStorage.Cache[ResourcePathUtil.Combine(runtimeConfigFolder.ToString(), "visualstudio1.conf")]);
-            var expectedConf = PropertiesDictionary.From(await File.ReadAllTextAsync(@"Resource\ddJobConfig1.conf"));
+            var actualConf = PropertiesDictionary.From(this.RuntimeStorage.Cache[ResourcePathUtil.Combine(runtimeConfigFolder.ToString(), "customconfiggentest1.conf")]);
+            var expectedConf = PropertiesDictionary.From(await File.ReadAllTextAsync(@"Resource\customJobConfig1.conf"));
             var matches = PropertiesDictionary.Match(expectedConf, actualConf).ToList();
             foreach (var match in matches)
             {
@@ -125,9 +126,9 @@ namespace DataX.Config.DevDiv.Test
             }
 
             //verify second job conf is generated as expected
-            flowName = "visualstudio2";
-            actualConf = PropertiesDictionary.From(this.RuntimeStorage.Cache[ResourcePathUtil.Combine(runtimeConfigFolder.ToString(), "visualstudio2.conf")]);
-            expectedConf = PropertiesDictionary.From(await File.ReadAllTextAsync(@"Resource\ddJobConfig2.conf"));
+            flowName = "customconfiggentest2";
+            actualConf = PropertiesDictionary.From(this.RuntimeStorage.Cache[ResourcePathUtil.Combine(runtimeConfigFolder.ToString(), "customconfiggentest2.conf")]);
+            expectedConf = PropertiesDictionary.From(await File.ReadAllTextAsync(@"Resource\customJobConfig2.conf"));
             matches = PropertiesDictionary.Match(expectedConf, actualConf).ToList();
             foreach (var match in matches)
             {
