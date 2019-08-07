@@ -154,45 +154,38 @@ namespace DataX.Utilities.Blob
             CloudBlobClient cloudBlobClient = storageAccount.CreateCloudBlobClient();
             CloudBlobContainer container = cloudBlobClient.GetContainerReference(containerName);
 
-            const int lengthToReadInBytes = 1000000;  // 1 MB
             var allBlobs = await container.ListBlobsSegmentedAsync(prefix: prefix, useFlatBlobListing: true, blobListingDetails: BlobListingDetails.None, maxResults: null, currentToken: null, options: null, operationContext: null).ConfigureAwait(false);
             var filteredBlobs = allBlobs.Results.OfType<CloudBlockBlob>().OrderByDescending(m => m.Properties.LastModified);
 
-
             List<string> blobContents = new List<string>();
-            StringBuilder str = new StringBuilder();
-
+            int queueCount = 0;
+            
             foreach (CloudBlockBlob blob in filteredBlobs)
             {
                 if (ValidateBlobPath(blobPathPattern, blob.Uri.ToString()) && blob.Properties.Length > 0)
                 {
-                    using (var stream = await blob.OpenReadAsync().ConfigureAwait(false))
+                    using (var stream = blob.OpenReadAsync().Result)
                     {
-                        // For a big blog e.g. the length is > 1 GB, we can't download whole blob (we can't use DownloadTextAsync). It affects the system performance.
-                        // So instead, read the blob 1 MB at a time until we collect enough data (3 documents) to generate the schema.
-                        // If we don't get enough data from one blob, we move to the next one from the filteredBlobs queue.
-                        int offset = 0;
-                        int length = (int)Math.Min(lengthToReadInBytes, blob.Properties.Length);
-
-                        while (blob.Properties.Length > offset)
+                        using (var sr = new StreamReader(stream))
                         {
-                            var data = new byte[length];
-                            int ret = await stream.ReadAsync(data, offset, length).ConfigureAwait(false);
+                            int offset = 0;
 
-                            str.Append(Encoding.UTF8.GetString(data));
-                            var lines = str.ToString().Split("\n");
-                            var filtered = lines.Where(l => ValidateJson(l)).ToList();
-                            if (filtered.Count() >= blobCount)
+                            while (blob.Properties.Length > offset)
                             {
-                                blobContents.AddRange(filtered);
+                                var line = sr.ReadLineAsync().Result;
+                                if (ValidateJson(line))
+                                {
+                                    blobContents.Add(line);
 
-                                return blobContents;
+                                    if (++queueCount >= blobCount)
+                                    {
+                                        return blobContents;
+                                    }
+                                }
+
+                                offset += line.Length;
                             }
-
-                            offset += ret;
                         }
-
-                        str.Append("\n");
                     }
                 }
             }
