@@ -20,16 +20,16 @@ namespace DataX.Flow.SchemaInference.Tests
             List<Tuple<string, string, string, string>> blobPaths = new List<Tuple<string, string, string, string>>
             {
                 new Tuple<string, string, string, string>(
-                    @"wasbs://mycontainer@mysa.blob.core.windows.net/mypath/production/mypath3/{yyyy}/{MM}/{dd}",
+                    @"wasbs://mycontainer@mysa.blob.core.windows.net/mypath/mypath2/mypath3/{yyyy}/{MM}/{dd}",
                     "mycontainer",
-                    @"mypath/production/mypath3/",
-                    @"mysa.blob.core.windows.net/mycontainer/mypath/production/mypath3/(\w+)/(\w+)/(\w+)"
+                    @"mypath/mypath2/mypath3/",
+                    @"mysa.blob.core.windows.net/mycontainer/mypath/mypath2/mypath3/(\w+)/(\w+)/(\w+)"
                 ),
                 new Tuple<string, string, string, string>(
-                    @"wasbs://mycontainer@mysa.blob.core.windows.net/mypath/production/mypath3/2018/07/12/subfolder/00/test",
+                    @"wasbs://mycontainer@mysa.blob.core.windows.net/mypath/mypath2/mypath3/2018/07/12/subfolder/00/test",
                     "mycontainer",
-                    @"mypath/production/mypath3/2018/07/12/subfolder/00/test",
-                    @"mysa.blob.core.windows.net/mycontainer/mypath/production/mypath3/2018/07/12/subfolder/00/test"
+                    @"mypath/mypath2/mypath3/2018/07/12/subfolder/00/test",
+                    @"mysa.blob.core.windows.net/mycontainer/mypath/mypath2/mypath3/2018/07/12/subfolder/00/test"
                 ),
                 new Tuple<string, string, string, string>(
                     @"wasbs://myoutputs@somesa.blob.core.windows.net/Test/{yyyy-MM-dd}",
