@@ -73,6 +73,12 @@ namespace DataX.Flow.SchemaInference.Tests
                     @"mypath/mypath2/mypath3/",
                     @"mysa.blob.core.windows.net/mycontainer/mypath/mypath2/mypath3/(\w+)/(\w+)/(\w+)"
                 ),
+                new Tuple<string, string, string, string>(
+                    @"wasbs://mycontainer@mysa.blob.core.windows.net/mypath/mypath2/mypath3/{yyyy/MM/dd}/test",
+                    "mycontainer",
+                    @"mypath/mypath2/mypath3/",
+                    @"mysa.blob.core.windows.net/mycontainer/mypath/mypath2/mypath3/(\w+)/(\w+)/(\w+)/test"
+                )
             };
 
             foreach (var blobPath in blobPaths)
