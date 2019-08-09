@@ -201,7 +201,7 @@ namespace DataX.Utilities.Blob
                             {
                                 // We can't read the entire blob if a blob is too big (1 > GB)
                                 // So we just read it line by line until we have enough information (500 rows) to generate schema
-                                var line = sr.ReadLineAsync().Result;
+                                var line = await sr.ReadLineAsync().ConfigureAwait(false);
                                 if (!string.IsNullOrEmpty(line))
                                 {
                                     if (ValidateJson(line))
