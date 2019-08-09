@@ -34,6 +34,7 @@ namespace DataX.Flow.SchemaInference.Blob
         public async Task<EventsData> GetSampleEvents(int seconds)
         {
             EventsData eventsData = new EventsData();
+            const int numberOfDocumentsToRead = 500;
 
             foreach (var batchInput in _batchInputs)
             {
@@ -46,11 +47,11 @@ namespace DataX.Flow.SchemaInference.Blob
                 }
 
                 var path = uri.Host + "/" + uri.UserInfo + uri.LocalPath;
+                var pathPattern = BlobHelper.GenerateRegexPatternFromPath(path);
                 var containerName = uri.UserInfo;
-                var prefix = ParsePrefix(path, containerName);
-                var pathPattern = GenerateRegexPatternFromPath(path);
+                var prefix = BlobHelper.ParsePrefix(wasbPath);
 
-                var contents = await BlobHelper.GetLastModifiedBlobContentsInBlobPath(connection, containerName, prefix, pathPattern, 3).ConfigureAwait(false);
+                var contents = await BlobHelper.GetLastModifiedBlobContentsInBlobPath(connection, containerName, prefix, pathPattern, numberOfDocumentsToRead).ConfigureAwait(false);
 
                 foreach (var content in contents)
                 {
@@ -72,59 +73,5 @@ namespace DataX.Flow.SchemaInference.Blob
 
             return eventsData;
         }
-
-        private static string GenerateRegexPatternFromPath(string path)
-        {
-            path = NormalizeBlobPath(path);
-            var mc = Regex.Matches(path, @"{(.*?)}");
-            if (mc == null || mc.Count < 1)
-            {
-                return path;
-            }
-
-            foreach (Match m in mc)
-            {
-                var r3 = Regex.Match(m.Value, @"^({)*([yMdHhmsS\-\/.,: ]+)(})*$");
-                if (!r3.Success)
-                {
-                    throw new GeneralException("Token in the blob path should be a data time format. e.g. {yyyy-MM-dd}");
-                }
-
-                path = path.Replace(m.Value, @"(\w+)", StringComparison.InvariantCulture);
-            }
-
-            return path;
-
-        }
-
-        private static string NormalizeBlobPath(string path)
-        {
-            path = path.TrimEnd('/');
-            var mc = Regex.Matches(path, @"{(.*?)}");
-            if (mc == null || mc.Count < 1 || mc.Count > 1)
-            {
-                return path;
-            }
-
-            var tokenValue = mc[0].Value.Trim(new char[] { '{', '}' });
-
-            var mc2 = Regex.Matches(tokenValue, @"[A-Za-z]+");
-            foreach (Match m in mc2)
-            {
-                tokenValue = tokenValue.Replace(m.Value, "{" + m.Value + "}", StringComparison.InvariantCulture);
-            }
-
-            path = path.Replace(mc[0].Value, tokenValue, StringComparison.InvariantCulture);
-
-            return path;
-        }
-
-        private static string ParsePrefix(string blobUri, string containerName)
-        {
-            var mc = Regex.Match(blobUri, containerName + @"\/(.*?)\/{(.*?)}");
-
-            return mc.Groups[1].Value;
-        }
-
     }
 }
