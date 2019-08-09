@@ -192,7 +192,7 @@ namespace DataX.Utilities.Blob
             {
                 if (ValidateBlobPath(blobPathPattern, blob.Uri.ToString()) && blob.Properties.Length > 0)
                 {
-                    using (var stream = blob.OpenReadAsync().Result)
+                    using (var stream = await blob.OpenReadAsync().ConfigureAwait(false))
                     {
                         using (var sr = new StreamReader(stream))
                         {
