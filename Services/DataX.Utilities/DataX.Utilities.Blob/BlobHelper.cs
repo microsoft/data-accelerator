@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using DataX.Contract.Exception;
@@ -18,6 +17,10 @@ namespace DataX.Utilities.Blob
 {
     public static class BlobHelper
     {
+        /// <summary>
+        /// Get blob content
+        /// </summary>
+        /// <returns></returns>
         public static string GetBlobContent(string connectionString, string blobUri)
         {
             var account = CloudStorageAccount.Parse(connectionString);
@@ -47,6 +50,10 @@ namespace DataX.Utilities.Blob
             return ApiResult.CreateSuccess("Blob Deleted");
         }
 
+        /// <summary>
+        /// Delete all blobs in a container
+        /// </summary>
+        /// <returns></returns>
         public static async Task<ApiResult> DeleteAllBlobsInAContainer(string storageConnectionString, string containerName, string blobDirectory)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnectionString);
@@ -87,7 +94,10 @@ namespace DataX.Utilities.Blob
             return ApiResult.CreateSuccess("Deleted Successfully");
         }
 
-
+        /// <summary>
+        /// Helper to read a blob content
+        /// </summary>
+        /// <returns></returns>
         private static string ReadFromBlob(CloudBlockBlob blockBlob)
         {
             string text = null;
@@ -109,12 +119,19 @@ namespace DataX.Utilities.Blob
             return text;
         }
 
+        /// <summary>
+        /// Save a content to a blob
+        /// </summary>
         public static void SaveContentToBlob(string connectionString, string blobUri, string content)
         {
             CloudBlockBlob blob = GetBlobReference(connectionString, blobUri);
             SaveToBlob(blob, content);
         }
 
+        /// <summary>
+        /// Get the contents of all blobs in a container
+        /// </summary>
+        /// <returns></returns>
         public static Dictionary<string, string> GetBlobsFromContainer(string connectionString, string containerName, string folderPath)
         {
             var account = CloudStorageAccount.Parse(connectionString);
@@ -134,6 +151,10 @@ namespace DataX.Utilities.Blob
             return blobContents;
         }
 
+        /// <summary>
+        /// Helper to get a blob reference
+        /// </summary>
+        /// <returns></returns>
         private static CloudBlockBlob GetBlobReference(string connectionString, string blobUri)
         {
             var account = CloudStorageAccount.Parse(connectionString);
@@ -142,12 +163,19 @@ namespace DataX.Utilities.Blob
             return new CloudBlockBlob(new Uri(blobUri), client.Credentials);
         }
 
+        /// <summary>
+        /// Helper to save a content to a blob
+        /// </summary>
         private static void SaveToBlob(CloudBlockBlob blockBlob, string content)
         {
             // TODO Refactor
             blockBlob.UploadTextAsync(content).Wait();
         }
 
+        /// <summary>
+        /// Get a content of a list of blobs which are sorted by last modified time
+        /// </summary>
+        /// <returns></returns>
         public static async Task<List<string>> GetLastModifiedBlobContentsInBlobPath(string connectionString, string containerName, string prefix, string blobPathPattern, int blobCount)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
@@ -169,21 +197,30 @@ namespace DataX.Utilities.Blob
                         using (var sr = new StreamReader(stream))
                         {
                             int offset = 0;
-
                             while (blob.Properties.Length > offset)
                             {
+                                // We can't read the entire blob if a blob is too big (1 > GB)
+                                // So we just read it line by line until we have enough information (500 rows) to generate schema
                                 var line = sr.ReadLineAsync().Result;
-                                if (ValidateJson(line))
+                                if (!string.IsNullOrEmpty(line))
                                 {
-                                    blobContents.Add(line);
-
-                                    if (++queueCount >= blobCount)
+                                    if (ValidateJson(line))
                                     {
-                                        return blobContents;
+                                        blobContents.Add(line);
+
+                                        if (++queueCount >= blobCount)
+                                        {
+                                            return blobContents;
+                                        }
                                     }
+
+                                    offset += line.Length;
                                 }
 
-                                offset += line.Length;
+                                if (sr.EndOfStream)
+                                {
+                                    break;
+                                }
                             }
                         }
                     }
@@ -193,6 +230,10 @@ namespace DataX.Utilities.Blob
             return blobContents;
         }
 
+        /// <summary>
+        /// Parse and get a prefix for a blob path
+        /// </summary>
+        /// <returns></returns>
         public static string ParsePrefix(string blobUri)
         {
             if (!Uri.TryCreate(blobUri, UriKind.Absolute, out var uri))
@@ -203,6 +244,8 @@ namespace DataX.Utilities.Blob
             var prefix = "";
             foreach (var seg in uri.Segments)
             {
+                // It will keep adding every segment to compose a path prefix until we find the first segment which starts with "{".
+                // e.g. When an input is mycontainer@mysa.blob.core.windows.net/mypath/mypath2/mypath3/{yyyy}/{MM}/{dd}, the output is mypath/mypath2/mypath3/
                 if (seg.StartsWith("%7B")) // "{", '\u007B'
                 {
                     break;
@@ -214,6 +257,12 @@ namespace DataX.Utilities.Blob
             return prefix.TrimStart('/');
         }
 
+        /// <summary>
+        /// Get a regex pattern for a blob path
+        /// when an input is myoutputs@somesa.blob.core.windows.net/Test/{yyyy-MM-dd}
+        /// the output is somesa.blob.core.windows.net/myoutputs/Test/(\w+)-(\w+)-(\w+)
+        /// </summary>
+        /// <returns></returns>
         public static string GenerateRegexPatternFromPath(string path)
         {
             path = NormalizeBlobPath(path);
@@ -237,6 +286,12 @@ namespace DataX.Utilities.Blob
             return path;
         }
 
+        /// <summary>
+        /// Normalize a blob path
+        /// when an input is myoutputs@somesa.blob.core.windows.net/Test/{yyyy-MM-dd}
+        /// the output is myoutputs@somesa.blob.core.windows.net/Test/{yyyy}-{MM}-{dd}
+        /// </summary>
+        /// <returns></returns>
         private static string NormalizeBlobPath(string path)
         {
             path = path.TrimEnd('/');
@@ -259,6 +314,10 @@ namespace DataX.Utilities.Blob
             return path;
         }
 
+        /// <summary>
+        /// Test if the input is a valid json
+        /// </summary>
+        /// <returns></returns>
         private static bool ValidateJson(string input)
         {
             try
@@ -272,6 +331,10 @@ namespace DataX.Utilities.Blob
             }
         }
 
+        /// <summary>
+        /// Test if the blob path matches the expected blob pattern
+        /// </summary>
+        /// <returns></returns>
         private static bool ValidateBlobPath(string blobPathPattern, string blobFullPath)
         {
             return Regex.Match(blobFullPath, blobPathPattern).Success;

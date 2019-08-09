@@ -34,6 +34,7 @@ namespace DataX.Flow.SchemaInference.Blob
         public async Task<EventsData> GetSampleEvents(int seconds)
         {
             EventsData eventsData = new EventsData();
+            const int numberOfDocumentsToRead = 500;
 
             foreach (var batchInput in _batchInputs)
             {
@@ -50,7 +51,7 @@ namespace DataX.Flow.SchemaInference.Blob
                 var containerName = uri.UserInfo;
                 var prefix = BlobHelper.ParsePrefix(wasbPath);
 
-                var contents = await BlobHelper.GetLastModifiedBlobContentsInBlobPath(connection, containerName, prefix, pathPattern, 3).ConfigureAwait(false);
+                var contents = await BlobHelper.GetLastModifiedBlobContentsInBlobPath(connection, containerName, prefix, pathPattern, numberOfDocumentsToRead).ConfigureAwait(false);
 
                 foreach (var content in contents)
                 {
