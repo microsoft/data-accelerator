@@ -24,7 +24,8 @@
                 "cosmosDBConfigDatabaseName": "keyvault://$servicesKVName/$serviceSecretPrefix-configgenconfigsdatabasename",
                 "cosmosDBConfigCollectionName": "configgenConfigs",
                 "AppInsightsIntrumentationKey": "$serviceSecretPrefix-aiInstrumentationKey",
-                "CACertificateLocation": "keyvault://$servicesKVName/$serviceSecretPrefix-cacertificatelocation"
+                "CACertificateLocation": "keyvault://$servicesKVName/$serviceSecretPrefix-cacertificatelocation",
+                "SparkType": "$sparkType"
             }
         }
     }
