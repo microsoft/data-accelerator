@@ -178,6 +178,7 @@ function Get-Tokens {
 		$tokens.Add('databricksClusterSparkVersion', $databricksClusterSparkVersion)
 		$tokens.Add('databricksClusterNodeType', $databricksClusterNodeType)
 		$tokens.Add('databricksSku', $databricksSku)
+		$tokens.Add('dbResourceGroupName', $resourceGroupName)
     }
 	$tokens.Add('sparkType', $sparkType)
 	$tokens.Add('keyvaultPrefix', $keyvaultPrefix)

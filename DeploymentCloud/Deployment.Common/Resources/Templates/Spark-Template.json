@@ -104,7 +104,7 @@
 			"type": "Microsoft.HDInsight/clusters",
 			"location": "[parameters('default_resource_location')]",
 			"dependsOn": [
-				"[variables('storageAccountsResourceID')]"
+				"[variables('userAssignedIdentitiesResourceID')]"
 			],
 			"properties": {
 				"clusterVersion": "[parameters('sparkClusterVersion')]",

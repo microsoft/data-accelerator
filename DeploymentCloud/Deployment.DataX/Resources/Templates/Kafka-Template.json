@@ -136,7 +136,7 @@
                             "name": "zookeepernode",
                             "targetInstanceCount": 3,
                             "hardwareProfile": {
-                                "vmSize": "A5"
+                                "vmSize": "Standard_A4_V2"
                             },
                             "osProfile": {
                                 "linuxOperatingSystemProfile": {

@@ -10,6 +10,24 @@
 		},
 		"databricksSku": {
 			"value": "$databricksSku"
+		},
+		"virtualNetworkName": {
+			"value": "VNet-$serviceFabricName"
+		},
+		"subnetdb1Name": {
+			"value": "subnet-db-1"
+		},
+		"subnetdb1Prefix": {
+			"value": "10.0.1.0/24"
+		},
+		"subnetdb2Name": {
+			"value": "subnet-db-2"
+		},
+		"subnetdb2Prefix": {
+			"value": "10.0.2.0/24"
+		},
+		"dbResourceGroupName": {
+			"value": "$dbResourceGroupName"
 		}
 	}
 }
