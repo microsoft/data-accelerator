@@ -154,13 +154,6 @@
               }
             }
           }
-        },
-        "tagger": {
-          "type": "object",
-          "namespace": "tagger",
-          "fields": {
-            "rulesfilepath": "rulesfilepath"
-          }
         }
       }
     },

@@ -430,12 +430,14 @@ namespace DataX.Config.ConfigGeneration.Processor
             if (existingFlow != null)
             {
                 var gui = config.GetGuiConfig();
+                if (gui != null)
+                {
+                    var batch = gui.BatchList[index];
+                    batch.Disabled = true;
 
-                var batch = gui.BatchList[index];
-                batch.Disabled = true;
-                
-                config.Gui = JObject.FromObject(gui);
-                result = await FlowData.UpdateGuiForFlow(config.Name, config.Gui).ConfigureAwait(false);
+                    config.Gui = JObject.FromObject(gui);
+                    result = await FlowData.UpdateGuiForFlow(config.Name, config.Gui).ConfigureAwait(false);
+                }
             }
 
             return result;

@@ -73,9 +73,14 @@ namespace DataX.Config.ConfigGeneration.Processor
 
         public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
         {
-            if (flowToDeploy.Config.GetGuiConfig()?.Input?.Mode == Constants.InputMode_Batching)
+            var inputConfig = flowToDeploy.Config.GetGuiConfig();
+            if (inputConfig == null)
             {
-                var inputConfig = flowToDeploy.Config.GetGuiConfig();
+                return "no gui input, skipped";
+            }
+
+            if (inputConfig?.Input?.Mode == Constants.InputMode_Batching)
+            {
                 var inputBatching = inputConfig?.Input?.Batch ?? Array.Empty<FlowGuiInputBatchInput>();
                 var specsTasks = inputBatching.Select(async rd =>
                 {

@@ -44,13 +44,7 @@
         "transform": "keyvault://somekeyvault/customconfiggentest-transform.xml",
         "projections": [
           "keyvault://somekeyvault/customconfiggentest-projections.xml"
-        ],
-        "tagger": {
-          "rulesfilepath": "keyvault://somekeyvault/customconfiggentest-tagger.xml"
-        },
-        "udf": {
-          "tagWorkload": "tagger"
-        }
+        ]
       },
       "output": {
         "blob": {
