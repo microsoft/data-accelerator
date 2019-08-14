@@ -64,7 +64,7 @@ namespace DataX.Config.LivyClient.Test
         }
 
         [TestMethod]
-        public async Task TestDeleteJobs()
+        public async Task TestStopJob()
         {
             var appInfoJson = "\"appInfo\":{\"driverLogUrl\":\"http://123.xx.internal.cloudapp.net:3/node/containerlogs/container_123/livy\",\"sparkUiUrl\":\"https://site.azurehdinsight.net/yarnui/hn/proxy/application_123_0101/\"}";
             var logs1 = ",\"log\":[\"\\t user: livy\",\"19/01/30 04:02:31 INFO ShutdownHookManager: Shutdown hook called\",\"\\nYARN Diagnostics: \"]}";
@@ -72,10 +72,7 @@ namespace DataX.Config.LivyClient.Test
 
             var httpClientFactory = new HttpClientFactory();
             httpClientFactory
-                .AddResponse(HttpMethod.Delete, "http://localhost/batches/0", "{\"from\":\"0\",\"total\":\"2\"," + "\"sessions\":["
-                                        + "{\"id\":0,\"state\":\"starting\",\"appId\":\"application_123_0101\"," + appInfoJson + logs1 + ","
-                                        + "{\"id\":0,\"state\":\"starting\",\"appId\":\"application_123_0102\"," + appInfoJson + logs2 + ""
-                                        + "]}");
+                .AddResponse(HttpMethod.Delete, "http://localhost/batches/0", "{\"id\":2,\"state\":\"starting\",\"appId\":\"application_123_0101\"," + appInfoJson + logs1);
 
             var livyClientFactory = new LivyClientFactory(httpClientFactory);
             var livyClient = await livyClientFactory.GetClient("endpoint=http://localhost;username=test;password=test");
