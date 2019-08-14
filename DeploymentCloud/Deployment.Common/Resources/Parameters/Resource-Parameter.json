@@ -32,9 +32,9 @@
 		"vaults_fabricRDPKV_name": {
 			"value": "$fabricRDPKVName"
 		},
-        "sourceVaultValue": {
-            "value": "$sfKVName"
-        },
+		"sourceVaultValue": {
+			"value": "$sfKVName"
+		},
 		"redis_name": {
 			"value": "$redisName"
 		},
@@ -85,6 +85,30 @@
 		},
 		"certType": {
 			"value": "$certtype"
+		},
+		"virtualNetworkName": {
+			"value": "VNet-$serviceFabricName"
+		},
+		"addressPrefix": {
+			"value": "10.0.0.0/16"
+		},
+		"computeLocation": {
+			"value": "$resourceLocationForServiceFabric"
+		},
+		"subnet0Name": {
+			"value": "Subnet-0"
+		},
+		"subnet0Prefix": {
+			"value": "10.0.0.0/24"
+		},
+		"clusterName": {
+			"value": "$serviceFabricName"
+		},
+		"sparkType": {
+			"value": "$sparkType"
+		},
+		"storageAccounts_spark_name": {
+			"value": "$sparkBlobAccountName"
 		}
 	}
 }

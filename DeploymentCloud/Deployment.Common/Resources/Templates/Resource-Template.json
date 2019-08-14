@@ -32,9 +32,9 @@
 		"vaults_fabricRDPKV_name": {
 			"type": "String"
 		},
-        "sourceVaultValue": {
-            "type": "string"
-        },
+		"sourceVaultValue": {
+			"type": "string"
+		},
 		"redis_name": {
 			"type": "String"
 		},
@@ -85,11 +85,98 @@
 		},
 		"certType": {
 			"type": "String"
+		},
+		"sparkType": {
+			"type": "String"
+		},
+		"virtualNetworkName": {
+			"type": "string"
+		},
+		"addressPrefix": {
+			"type": "string"
+		},
+		"computeLocation": {
+			"type": "string"
+		},
+		"subnet0Name": {
+			"type": "string"
+		},
+		"subnet0Prefix": {
+			"type": "string"
+		},
+		"clusterName": {
+			"type": "string"
+		},
+		"storageAccounts_spark_name": {
+			"type": "String"
 		}
 	},
 	"variables": {
+		"vNetApiVersion": "2015-06-15",
+		"storageAccounts_containerName_defaultdx": "defaultdx",
+		"storageAccounts_containerName_diagnostics": "diagnostics",
+		"storageAccounts_containerName_deployment": "deployment",
+		"storageAccounts_containerName_scripts": "scripts",
+		"storageAccounts_containerName_samples": "samples",
+		"storageAccounts_containerName_usercontent": "usercontent",
+		"storageAccounts_containerName_flow": "flows",
+		"storageAccounts_containerName_checkpoints": "checkpoints"
 	},
 	"resources": [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2018-02-01",
+            "name": "[concat(parameters('virtualNetworkName'),'-nsg')]",
+            "location": "[parameters('computeLocation')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "port_443",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "443",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "[variables('vNetApiVersion')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('virtualNetworkName')]",
+            "location": "[parameters('computeLocation')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkSecurityGroups/', concat(parameters('virtualNetworkName'),'-nsg'))]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('subnet0Name')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('subnet0Prefix')]",
+                            "networkSecurityGroup" : {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('virtualNetworkName'),'-nsg'))]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "tags": {
+                "resourceType": "Service Fabric",
+                "clusterName": "[parameters('clusterName')]"
+            }
+        },
 		{
 			"type": "Microsoft.Cache/Redis",
 			"name": "[parameters('redis_name')]",
@@ -553,6 +640,10 @@
 						{
 							"name": "DATAXDEV_CERTTYPE",
 							"value": "[parameters('certType')]"
+						},
+						{
+							"name": "DATAX_SPARK_TYPE",
+							"value": "[parameters('sparkType')]"
 						}
 					]
 				},
@@ -766,6 +857,81 @@
 			},
 			"dependsOn": [
 				"[resourceId('Microsoft.Web/sites', parameters('sites_web_name'))]"
+			]
+		},
+		{
+			"type": "Microsoft.Storage/storageAccounts",
+			"name": "[parameters('storageAccounts_spark_name')]",			
+			"apiVersion": "2015-05-01-preview",
+			"location": "[parameters('default_resource_location')]",
+			"properties": {
+				"accountType": "Standard_LRS"
+			},
+			"resources": [
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_defaultdx'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				},
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_diagnostics'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				},
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_deployment'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				},
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_scripts'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				},
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_samples'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				},
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_usercontent'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				},
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_flow'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				},
+				{
+					"name": "[concat('default/', variables('storageAccounts_containerName_checkpoints'))]",
+					"type": "blobServices/containers",
+					"apiVersion": "2018-03-01-preview",
+					"dependsOn": [
+						"[parameters('storageAccounts_spark_name')]"
+					]
+				}
 			]
 		}
 	]

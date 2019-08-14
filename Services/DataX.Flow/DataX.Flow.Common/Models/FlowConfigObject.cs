@@ -74,6 +74,12 @@ namespace DataX.Flow.Common.Models
         [JsonProperty("configgenClientId")]
         public string ConfiggenClientId;
 
+        [JsonProperty("configgenClientSecret")]
+        public string ConfiggenClientSecret;
+
+        [JsonProperty("configgenClientResourceId")]
+        public string ConfiggenClientResourceId;
+
         [JsonProperty("configgenTenantId")]
         public string ConfiggenTenantId;
 
@@ -106,5 +112,14 @@ namespace DataX.Flow.Common.Models
 
         [JsonProperty("sparkConnectionString")]
         public string SparkConnectionString;
+
+        [JsonProperty("sparkType")]
+        public string SparkType;
+
+        [JsonProperty("sparkUserToken")]
+        public string SparkUserToken;
+
+        [JsonProperty("sparkRegion")]
+        public string SparkRegion;
     }
 }

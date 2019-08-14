@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "iotHubName": {
+			"value": "$iotHubName"
+        },
+        "default_resource_location": {
+			"value": "$resourceLocation"
+        },
+        "sku_name": {
+			"value": "B1"
+        },
+        "sku_units": {
+			"value": "1"
+        },
+        "d2c_partitions": {
+			"value": "4"
+        },
+        "features": {
+			"value": "None"
+        },
+        "consumerGroupName": {
+			"value": "iotsample"
+        },
+        "retentionDays": {
+			"value": "1"
+        },
+		"namespaces_kafkaeventhub_name": {
+			"value": "$kafkaEventHubNamespaceName"
+		}
+    }
+}

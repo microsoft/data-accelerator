@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using DataX.ServiceHost.ServiceFabric.Extensions.Configuration;
+using DataX.Contract.Settings;
 using DataX.Utilities.Telemetry;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -20,7 +22,8 @@ namespace DataX.ServiceHost.AspNetCore
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();            
+                .AddServiceFabricSettings("Config", DataXSettingsConstants.DataX)
+                .AddEnvironmentVariables();
 
             Configuration = builder.Build();
         }
@@ -30,7 +33,7 @@ namespace DataX.ServiceHost.AspNetCore
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-            StartUpUtil.ConfigureServices(services);            
+            StartUpUtil.ConfigureServices(services, Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

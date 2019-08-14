@@ -39,7 +39,7 @@ export default class FooterItem extends React.Component {
     renderLink() {
         return (
             <div className="ms-fontSize-m">
-                <Link style={linkStyle} target="_blank" href={this.props.url}>
+                <Link style={linkStyle} target="_blank" href={this.props.url} rel="noopener noreferrer">
                     {this.props.urlText}
                 </Link>
             </div>

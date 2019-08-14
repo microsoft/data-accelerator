@@ -6,9 +6,7 @@ Licensed under the MIT License
 <ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="DataX.MetricsType" ApplicationTypeVersion="1.0.2" xmlns="http://schemas.microsoft.com/2011/01/fabric">
   <Parameters>
     <Parameter Name="DataX.Metrics.Ingestor_ASPNETCORE_ENVIRONMENT" DefaultValue="" />
-    <Parameter Name="DataX.Metrics.Ingestor_MinReplicaSetSize" DefaultValue="3" />
-    <Parameter Name="DataX.Metrics.Ingestor_PartitionCount" DefaultValue="1" />
-    <Parameter Name="DataX.Metrics.Ingestor_TargetReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="DataX.Metrics.Ingestor_InstanceCount" DefaultValue="-1" />
     <Parameter Name="AzureServicesAuthConnectionString" DefaultValue="" />
     <Parameter Name="ServiceKeyvaultName" DefaultValue="" />
     <Parameter Name="EventHubName" DefaultValue="" />
@@ -50,9 +48,9 @@ Licensed under the MIT License
          
          The attribute ServiceTypeName below must match the name defined in the imported ServiceManifest.xml file. -->
     <Service Name="DataX.Metrics.Ingestor" ServicePackageActivationMode="ExclusiveProcess">
-      <StatefulService ServiceTypeName="DataX.Metrics.IngestorType" TargetReplicaSetSize="[DataX.Metrics.Ingestor_TargetReplicaSetSize]" MinReplicaSetSize="[DataX.Metrics.Ingestor_MinReplicaSetSize]">
-        <UniformInt64Partition PartitionCount="[DataX.Metrics.Ingestor_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
-      </StatefulService>
+      <StatelessService ServiceTypeName="DataX.Metrics.IngestorType" InstanceCount="[DataX.Metrics.Ingestor_InstanceCount]">
+        <SingletonPartition />
+      </StatelessService>
     </Service>
   </DefaultServices>
 </ApplicationManifest>

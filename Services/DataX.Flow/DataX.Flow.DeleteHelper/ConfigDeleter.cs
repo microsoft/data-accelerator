@@ -16,6 +16,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using DataX.Config.ConfigDataModel;
 
 namespace DataX.Flow.DeleteHelper
 {
@@ -24,12 +26,12 @@ namespace DataX.Flow.DeleteHelper
         private const string _Centralprocessing = "centralprocessing";
         private string _flowContainerName => _engineEnvironment.EngineFlowConfig.FlowContainerName;
         private string _eventHubPrimaryKeyListener;
-        private EngineEnvironment _engineEnvironment = new EngineEnvironment();
+        private EngineEnvironment _engineEnvironment;
         private readonly Dictionary<string, string> _keySecretList = new Dictionary<string, string>();
 
         private string ConfigName { get; set; }
 
-        private string _eventHubName;
+        private List<string> _eventHubNames;
         private string _eventHubNamespace;
         private string _eventHubNameRole;
  
@@ -63,10 +65,13 @@ namespace DataX.Flow.DeleteHelper
 
         private string _inputEventhubConnectionStringRef;
         private readonly ILogger _logger;
+        private readonly IConfiguration _configuration;
 
-        public ConfigDeleter(ILogger logger)
+        public ConfigDeleter(ILogger logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
+            _engineEnvironment = new EngineEnvironment(_configuration);
         }
 
         /// This is the function that can be called for deleting all assets created on save of a flow: consumergroup, secrets in Key Vault, cosmosDB products document such that this flow stops showing up in the UI under Flows and blobs
@@ -91,31 +96,33 @@ namespace DataX.Flow.DeleteHelper
             _logger.LogInformation($"For FlowId: {ConfigName} Deleting flow specific consumer group.. ");
             var inputEventhubConnection = Helper.GetSecretFromKeyvaultIfNeeded(diag.EventhubConnectionString);
 
-            _inputEventhubConnectionStringRef = Helper.IsKeyVault(diag.EventhubConnectionString) ? diag.EventhubConnectionString : Helper.GenerateNewSecret(_keySecretList, _engineEnvironment.EngineFlowConfig.SparkKeyVaultName, ConfigName + "-input-eventhubconnectionstring", diag.EventhubConnectionString, false);
+            _inputEventhubConnectionStringRef = Helper.IsKeyVault(diag.EventhubConnectionString) ? diag.EventhubConnectionString : Helper.GenerateNewSecret(_keySecretList, _engineEnvironment.EngineFlowConfig.SparkKeyVaultName, ConfigName + "-input-eventhubconnectionstring", _engineEnvironment.EngineFlowConfig.SparkType, diag.EventhubConnectionString, false);
             diag.EventhubConnectionString = _inputEventhubConnectionStringRef;
 
-            if (!diag.IsIotHub)
-            {
-                _eventHubName = Helper.ParseEventHub(inputEventhubConnection);
+            if (diag.InputType == Constants.InputType_EventHub)
+            { 
+                var ehName = Helper.ParseEventHub(inputEventhubConnection);
                 _eventHubNamespace = Helper.ParseEventHubNamespace(inputEventhubConnection);
                 _eventHubNameRole = Helper.ParseEventHubPolicyName(inputEventhubConnection);
                 _eventHubPrimaryKeyListener = Helper.ParseEventHubAccessKey(inputEventhubConnection);
 
-                if (string.IsNullOrWhiteSpace(_eventHubName) || string.IsNullOrWhiteSpace(_eventHubNamespace) || string.IsNullOrWhiteSpace(_eventHubNameRole) || string.IsNullOrWhiteSpace(_eventHubPrimaryKeyListener))
+                if (string.IsNullOrWhiteSpace(ehName) || string.IsNullOrWhiteSpace(_eventHubNamespace) || string.IsNullOrWhiteSpace(_eventHubNameRole) || string.IsNullOrWhiteSpace(_eventHubPrimaryKeyListener))
                 {
                     string error = "The connection string for Event Hub input type must contain Endpoint, SharedAccessKeyName, SharedAccessKey, and EntityPath";
                     _logger.LogError(error);
                     errorExists = true;
                 }
+
+                _eventHubNames = new List<string>() { ehName };
             }
             else
             {
-                _eventHubName = diag.EventhubName;
+                _eventHubNames = Helper.ParseEventHubNames(diag.EventhubNames);
                 _eventHubNamespace = Helper.ParseEventHubNamespace(inputEventhubConnection);
                 _eventHubNameRole = Helper.ParseEventHubPolicyName(inputEventhubConnection);
                 _eventHubPrimaryKeyListener = Helper.ParseEventHubAccessKey(inputEventhubConnection);
 
-                if (string.IsNullOrWhiteSpace(_eventHubName))
+                if (_eventHubNames.Count < 1)
                 {
                     string error = "The event hub-compatible name for IoT Hub input type must be defined";
                     _logger.LogError(error);
@@ -132,20 +139,23 @@ namespace DataX.Flow.DeleteHelper
 
             // ResourceCreation is one of the environment variables.
             // If you don't want to create resource, you can set this to false.
-            if (_engineEnvironment.ResourceCreation)
+            if (_engineEnvironment.ResourceCreation && (diag.InputType == Constants.InputType_EventHub || diag.InputType == Constants.InputType_IoTHub))
             {
                 var inputSubscriptionId = string.IsNullOrEmpty(diag.InputSubscriptionId) ? Helper.GetSecretFromKeyvaultIfNeeded(_engineEnvironment.EngineFlowConfig.SubscriptionId) : Helper.GetSecretFromKeyvaultIfNeeded(diag.InputSubscriptionId);
                 var inputResourceGroup = string.IsNullOrEmpty(diag.InputResourceGroup) ? _engineEnvironment.EngineFlowConfig.EventHubResourceGroupName : Helper.GetSecretFromKeyvaultIfNeeded(diag.InputResourceGroup);
 
-                var result = EventHub.DeleteConsumerGroup(inputSubscriptionId, _engineEnvironment.EngineFlowConfig.ServiceKeyVaultName, inputResourceGroup, _engineEnvironment.EngineFlowConfig.EventHubResourceGroupLocation, _eventHubNamespace, _eventHubName, ConsumerGroupName, diag.IsIotHub, _engineEnvironment.EngineFlowConfig.ConfiggenClientId, _engineEnvironment.EngineFlowConfig.ConfiggenTenantId, _engineEnvironment.EngineFlowConfig.ConfiggenSecretPrefix);
-                if (result.Error.HasValue && result.Error.Value)
+                foreach (string ehName in _eventHubNames)
                 {
-                    _logger.LogError(result.Message);
-                    errorExists = true;
-                }
-                else
-                {
-                    _logger.LogInformation($"For FlowId: {ConfigName} Successfully deleted flow specific consumer group");
+                    var result = EventHub.DeleteConsumerGroup(inputSubscriptionId, _engineEnvironment.EngineFlowConfig.ServiceKeyVaultName, inputResourceGroup, _engineEnvironment.EngineFlowConfig.EventHubResourceGroupLocation, _eventHubNamespace, ehName, ConsumerGroupName, diag.InputType, _engineEnvironment.EngineFlowConfig.ConfiggenClientId, _engineEnvironment.EngineFlowConfig.ConfiggenTenantId, _engineEnvironment.EngineFlowConfig.ConfiggenSecretPrefix);
+                    if (result.Error.HasValue && result.Error.Value)
+                    {
+                        _logger.LogError(result.Message);
+                        errorExists = true;
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"For FlowId: {ConfigName} Successfully deleted flow specific consumer group");
+                    }
                 }
             }
 

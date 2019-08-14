@@ -27,8 +27,9 @@ namespace DataX.FlowManagement
     {
 
         private const string _MetricsHttpEndpointRelativeUri = "/api/data/upload";
+        private readonly ILoggerFactory _loggerFactory;
 
-        public Startup(IHostingEnvironment env)
+        public Startup(IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -37,6 +38,8 @@ namespace DataX.FlowManagement
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
+
+            _loggerFactory = loggerFactory;
         }
 
         public IConfiguration Configuration { get; }
@@ -51,7 +54,7 @@ namespace DataX.FlowManagement
 
             // Export the Config dependencies
             Type[] exportTypes = new Type[] { typeof(FlowOperation), typeof(RuntimeConfigGeneration), typeof(JobOperation) };
-            services.AddMefExportsFromAssemblies(ServiceLifetime.Scoped, GetOneBoxModeDependencyAssemblies(), exportTypes, new object[] { });
+            services.AddMefExportsFromAssemblies(ServiceLifetime.Scoped, GetOneBoxModeDependencyAssemblies(), exportTypes, null, _loggerFactory, true);
             var result = InitTemplatesForLocal(services);
             Ensure.IsSuccessResult(result);
         }

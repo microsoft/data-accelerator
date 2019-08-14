@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using DataX.Config.ConfigDataModel;
 using DataX.Config.KeyVault;
 using System;
 using System.Collections.Generic;
@@ -28,15 +29,30 @@ namespace DataX.Config.Test.Mock
 
         public async Task<string> ResolveSecretUriAsync(string secretUri)
         {
+            if (secretUri == "keyvault://somekeyvault/configgenbatchtest-input-0-inputConnection")
+            {
+                return await Task.FromResult(@"DefaultEndpointsProtocol=https;AccountName=testaccount;AccountKey=testkey;EndpointSuffix=core.windows.net");
+            }
+            return secretUri;
+        }
+
+        public async Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, string sparkType, bool hashSuffix = false)
+        {
+            var uriPrefix = GetUriPrefix(sparkType);
+            var finalSecretName = hashSuffix ? (secretName + "-" + HashGenerator.GetHashCode(secretValue)) : secretName;
+            await Task.Yield();
+            return $"{uriPrefix}://{keyvaultName}/{finalSecretName}";
+        }
+
+        public async Task<string> SaveSecretAsync(string secretUri, string secretValue)
+        {
             await Task.Yield();
             return secretUri;
         }
 
-        public async Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, bool hashSuffix = false)
+        public string GetUriPrefix(string sparkType)
         {
-            var finalSecretName = hashSuffix ? (secretName + "-" + HashGenerator.GetHashCode(secretValue)) : secretName;
-            await Task.Yield();
-            return $"keyvault://{keyvaultName}/{finalSecretName}";
+            return (sparkType != null && sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
         }
     }
 }

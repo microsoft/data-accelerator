@@ -12,6 +12,7 @@ using System.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DataX.Config.ConfigDataModel;
 
 namespace DataX.Config.ConfigGeneration.Processor
 {
@@ -23,7 +24,14 @@ namespace DataX.Config.ConfigGeneration.Processor
     public class ResolveStateTable: ProcessorBase
     {
         public const string TokenName_StateTables = "processStateTables";
-        
+
+        [ImportingConstructor]
+        public ResolveStateTable(ConfigGenConfiguration conf)
+        {
+            Configuration = conf;
+        }
+        private ConfigGenConfiguration Configuration { get; }
+
         public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
         {
             var config = flowToDeploy.Config;
@@ -33,7 +41,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                 return "no gui input, skipped.";
             }
 
-            var rulesCode = flowToDeploy.GetAttachment<RulesCode>(GenerateTransformFile.AttachmentName_CodeGenObject);
+            var rulesCode = flowToDeploy.GetAttachment<RulesCode>(PrepareTransformFile.AttachmentName_CodeGenObject);
             Ensure.NotNull(rulesCode, "rulesCode");
             Ensure.NotNull(rulesCode.MetricsRoot, "rulesCode.MetricsRoot");
             Ensure.NotNull(rulesCode.MetricsRoot.metrics, "rulesCode.MetricsRoot.metrics");
@@ -58,7 +66,9 @@ namespace DataX.Config.ConfigGeneration.Processor
 
         private string ConstructStateTablePath(string flowName, string tableName)
         {
-            return $"hdfs://mycluster/datax/{flowName}/{tableName}/";
+            var sparkType = Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string value) ? value : null;
+            var prefix = (sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixDbfs : Constants.PrefixHdfs;
+            return $"{prefix}mycluster/datax/{flowName}/{tableName}/";
         }
     }
 }

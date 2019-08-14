@@ -20,6 +20,12 @@ namespace DataX.Config
     {
         public const string DataCollectionName = "flows";
         public const string CommonDataName_DefaultFlowConfig = "defaultFlowConfig";
+        public const string CommonDataName_KafkaFlowConfig = "kafkaFlowConfig";
+        public const string CommonDataName_BlobFlowConfig = "batchFlowConfig";
+
+        public const string GuiInputMode = "gui.input.mode";
+        public const string GuiInputBatchingLastProcessedTime = "gui.input.batching.recurring.lastProcessedTime";
+
 
         [ImportingConstructor]
         public FlowDataManager(ConfigGenConfiguration configuration, IDesignTimeConfigStorage storage, ICommonDataManager commonsData)
@@ -33,16 +39,46 @@ namespace DataX.Config
         private ConfigGenConfiguration Configuration { get; }
         private ICommonDataManager CommonsData { get; }
 
+        private string GetFlowConfigName(string type)
+        {
+            if (!string.IsNullOrEmpty(type))
+            {
+                if (type == Constants.InputType_Kafka || type == Constants.InputType_KafkaEventHub)
+                {
+                    return CommonDataName_KafkaFlowConfig;
+                }
+                else if (type == Constants.InputType_Blob)
+                {
+                    return CommonDataName_BlobFlowConfig;
+                }
+            }
+
+            return CommonDataName_DefaultFlowConfig;
+        }
+
         public async Task<FlowConfig> GetByName(string flowName)
         {
             var json = await this.Storage.GetByName(flowName, DataCollectionName);
             return FlowConfig.From(json);
         }
 
+        public async Task<FlowConfig[]> GetByMode(string mode)
+        {
+            var jsons = await this.Storage.GetByFieldValue(mode, GuiInputMode, DataCollectionName).ConfigureAwait(false);
+            return jsons.Select(FlowConfig.From).ToArray();
+        }
+
         public async Task<FlowConfig> GetDefaultConfig(TokenDictionary tokens = null)
         {
-            var config = await CommonsData.GetByName(CommonDataName_DefaultFlowConfig);
-            if(tokens != null)
+            return await GetFlowConfigByInputType(Constants.InputType_EventHub, tokens);
+        }
+
+        public async Task<FlowConfig> GetFlowConfigByInputType(string inputType, TokenDictionary tokens = null)
+        {
+            var flowConfigName = this.GetFlowConfigName(inputType);
+            var config = await CommonsData.GetByName(flowConfigName);
+
+            if (tokens != null)
             {
                 config = tokens.Resolve(config);
             }
@@ -73,6 +109,12 @@ namespace DataX.Config
             return await this.Storage.UpdatePartialByName(json, FlowConfig.JsonFieldName_JobNames, flowName, DataCollectionName);
         }
 
+        public async Task<Result> UpdateLastProcessedTimeForFlow(string flowName, long lastProcessedTime)
+        {
+            var value = JsonConvert.SerializeObject(lastProcessedTime);
+            return await this.Storage.UpdatePartialByName(value, GuiInputBatchingLastProcessedTime, flowName, DataCollectionName).ConfigureAwait(false);
+        }
+
         public async Task<Result> UpdateMetricsForFlow(string flowName, MetricsConfig metrics)
         {
             return await this.Storage.UpdatePartialByName(metrics.ToString(), FlowConfig.JsonFieldName_Metrics, flowName, DataCollectionName);
@@ -81,6 +123,12 @@ namespace DataX.Config
         public Task<Result> UpdateGuiForFlow(string name, JToken gui)
         {
             return this.Storage.UpdatePartialByName(gui?.ToString(), FlowConfig.JsonFieldName_Gui, name, DataCollectionName);
+        }
+        
+        public Task<Result> UpdateCommonProcessorForFlow(string name, FlowCommonProcessor commonProcessor)
+        {
+            var json = JsonConvert.SerializeObject(commonProcessor);
+            return this.Storage.UpdatePartialByName(json, "commonProcessor", name, DataCollectionName);
         }
 
         public async Task<FlowConfig[]> GetAll()

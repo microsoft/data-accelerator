@@ -87,7 +87,7 @@
       "blob": {
         "groups": {
           "main": {
-            "folder": "keyvault://somekeyvault/configgentest-output-28E0EC24007075915D6909C001EA72BF"
+            "folder": "keyvault://somekeyvault/configgentest-output-D7B7107DC4C5A693C746B31988180C1E"
           }
         },
         "compressionType": "none",

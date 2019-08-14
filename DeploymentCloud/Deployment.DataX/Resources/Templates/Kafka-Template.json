@@ -1,0 +1,157 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"default_resource_location": {
+			"type": "string"
+		},
+		"kafkaClusterName": {
+			"type": "string",
+			"metadata": {
+				"description": "The name of the HDInsight Kafka cluster to create."
+			}
+		},
+		"kafkaClusterLoginUserName": {
+			"type": "string",
+			"metadata": {
+				"description": "These credentials can be used to submit jobs to the cluster and to log into cluster dashboards."
+			}
+		},
+		"kafkaClusterLoginPassword": {
+			"type": "securestring",
+			"metadata": {
+				"description": "The password must be at least 10 characters in length and must contain at least one digit, one non-alphanumeric character, and one upper or lower case letter."			}
+		},
+		"kafkaSshUserName": {
+			"type": "string",
+			"metadata": {
+				"description": "These credentials can be used to remotely access the cluster."
+			}
+		},
+		"kafkaSshPassword": {
+			"type": "securestring",
+			"metadata": {
+				"description": "The password must be at least 10 characters in length and must contain at least one digit, one non-alphanumeric character, and one upper or lower case letter."
+			}
+		},
+		"storageAccounts_spark_name": {
+			"type": "string"
+		},
+        "virtualNetworkName": {
+            "type": "string"
+        },
+        "subnet0Name": {
+            "type": "string"
+        }
+	},
+	"variables": {
+		"storageAccountsURI": "[concat(parameters('storageAccounts_spark_name'),'.blob.core.windows.net')]",
+        "storageAccountsResourceID": "[resourceId('Microsoft.Storage/storageAccounts',parameters('storageAccounts_spark_name'))]",
+        "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
+        "subnet0Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet0Name'))]",
+        "vmSize": "Standard_D3_V2",
+        "targetInstanceCountKafkaHeadnode": 2,
+        "targetInstanceCountKafkaWorkernode": 4,
+		"disksPerWorkerNode": "2"
+	},
+	"resources": [		
+		{
+            "apiVersion": "2018-06-01-preview",
+			"name": "[parameters('kafkaClusterName')]",
+			"type": "Microsoft.HDInsight/clusters",
+			"location": "[parameters('default_resource_location')]",
+			"dependsOn": [],
+			"properties": {
+                "clusterVersion": "3.6",
+                "osType": "Linux",
+                "clusterDefinition": {
+                    "kind": "kafka",
+					"configurations": {
+						"gateway": {
+							"restAuthCredential.isEnabled": true,
+							"restAuthCredential.username": "[parameters('kafkaClusterLoginUserName')]",
+							"restAuthCredential.password": "[parameters('kafkaClusterLoginPassword')]"
+						},
+						"kafka-broker": {
+							"auto.create.topics.enable": "true"
+						}
+					}
+                },
+				"storageProfile": {
+					"storageaccounts": [
+						{
+							"name": "[variables('storageAccountsURI')]",
+							"isDefault": true,
+							"container": "defaultkakfa",
+							"key": "[listKeys(variables('storageAccountsResourceID'), '2015-05-01-preview').key1]"
+						}
+					]
+				},
+				"computeProfile": {
+					"roles": [
+						{
+							"autoscale": null,
+							"name": "headnode",
+							"targetInstanceCount": "[variables('targetInstanceCountKafkaHeadnode')]",
+							"hardwareProfile": {
+								"vmSize": "[variables('vmSize')]"
+							},
+							"osProfile": {
+								"linuxOperatingSystemProfile": {
+									"username": "[parameters('kafkaSshUserName')]",
+									"password": "[parameters('kafkaSshPassword')]"
+								}
+							},
+							"virtualNetworkProfile": {
+                                "id": "[variables('vnetID')]",
+                                "subnet": "[variables('subnet0Ref')]"
+                            },
+							"scriptActions": []
+						},
+						{
+							"autoscale": null,
+							"name": "workernode",
+							"targetInstanceCount": "[variables('targetInstanceCountKafkaWorkernode')]",
+							"hardwareProfile": {
+								"vmSize": "[variables('vmSize')]"
+							},
+							"dataDisksGroups": [
+							  {
+								"disksPerNode": "[variables('disksPerWorkerNode')]"
+							  }
+							],
+							"osProfile": {
+								"linuxOperatingSystemProfile": {
+									"username": "[parameters('kafkaSshUserName')]",
+									"password": "[parameters('kafkaSshPassword')]"
+								}
+							},
+							"virtualNetworkProfile": {
+                                "id": "[variables('vnetID')]",
+                                "subnet": "[variables('subnet0Ref')]"
+                            },
+							"scriptActions": []
+						},
+                        {
+                            "name": "zookeepernode",
+                            "targetInstanceCount": 3,
+                            "hardwareProfile": {
+                                "vmSize": "Standard_A4_V2"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+									"username": "[parameters('kafkaSshUserName')]",
+									"password": "[parameters('kafkaSshPassword')]"
+                                }
+                            },
+                            "virtualNetworkProfile": {
+                                "id": "[variables('vnetID')]",
+                                "subnet": "[variables('subnet0Ref')]"
+                            }
+                        }
+					]
+				}
+			}
+        }
+	]
+}

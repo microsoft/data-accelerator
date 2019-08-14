@@ -26,9 +26,13 @@ namespace Flow.InteractiveQueryService
     /// </summary>
     internal sealed class InteractiveQueryService : StatelessService
     {
-        public InteractiveQueryService(StatelessServiceContext context)
+        private readonly IWebHostBuilder _hostBuilder;
+
+        public InteractiveQueryService(StatelessServiceContext context, IWebHostBuilder hostBuilder)
             : base(context)
-        { }
+        {
+            _hostBuilder = hostBuilder;
+        }
 
         /// <summary>
         /// Optional override to create listeners (like tcp, http) for this service instance.
@@ -42,13 +46,10 @@ namespace Flow.InteractiveQueryService
                     new KestrelCommunicationListener(serviceContext, "ServiceEndpoint", (url, listener) =>
                     {
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
-                        return new WebHostBuilder()
-                                    .UseKestrel()
+                        return _hostBuilder
                                     .ConfigureServices(
                                         services => services
                                             .AddSingleton<StatelessServiceContext>(serviceContext))
-                                    .UseContentRoot(Directory.GetCurrentDirectory())
-                                    .UseStartup<Startup>()
                                     .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
                                     .UseUrls(url)
                                     .Build();

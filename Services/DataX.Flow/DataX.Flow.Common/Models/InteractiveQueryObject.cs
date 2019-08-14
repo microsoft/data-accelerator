@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using DataX.Config.ConfigDataModel;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
@@ -17,6 +18,9 @@ namespace DataX.Flow.Common.Models
 
         [JsonProperty("displayName")]
         public string DisplayName;
+
+        [JsonProperty("databricksToken")]
+        public string DatabricksToken;
 
         [JsonProperty("userName")]
         public string UserName;
@@ -42,11 +46,17 @@ namespace DataX.Flow.Common.Models
         [JsonProperty("inputResourceGroup")]
         public string InputResourceGroup;
 
-        [JsonProperty("eventhubName")]
-        public string EventhubName;
+        [JsonProperty("eventhubNames")]
+        public string EventhubNames;
 
-        [JsonProperty("isIotHub")]
-        public bool IsIotHub;
+        [JsonProperty("inputType")]
+        public string InputType; // "Event", "Iothub", "KafkaEventhub", "Kafka"
+
+        [JsonProperty("inputMode")]
+        public string InputMode;
+
+        [JsonProperty("batchInputs")]
+        public List<FlowGuiInputBatchInput> BatchInputs;
 
         [JsonProperty("seconds")]
         public int Seconds;

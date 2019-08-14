@@ -100,10 +100,10 @@
     ]
   },
   "localServices": {
-    "Flow.ManagementService": "process.env.DATAXDEV_FLOW_MANAGEMENT_LOCAL_SERVICE",
-    "Flow.InteractiveQueryService": "process.env.DATAXDEV_INTERACTIVE_QUERY_LOCAL_SERVICE",
-    "Flow.SchemaInferenceService": "process.env.DATAXDEV_SCHEMA_INFERENCE_LOCAL_SERVICE",
-    "Flow.LiveDataService": "process.env.DATAXDEV_LIVE_DATA_LOCAL_SERVICE"
+    "Flow.ManagementService": "DATAXDEV_FLOW_MANAGEMENT_LOCAL_SERVICE",
+    "Flow.InteractiveQueryService": "DATAXDEV_INTERACTIVE_QUERY_LOCAL_SERVICE",
+    "Flow.SchemaInferenceService": "DATAXDEV_SCHEMA_INFERENCE_LOCAL_SERVICE",
+    "Flow.LiveDataService": "DATAXDEV_LIVE_DATA_LOCAL_SERVICE"
   },
   "api": {
     "DataXWriter": [
@@ -114,6 +114,7 @@
       "^DataX.Flow\/Flow.ManagementService\/job\/getall$",
       "^DataX.Flow\/Flow.ManagementService\/job\/getbynames$",
       "^DataX.Flow\/Flow.ManagementService\/flow\/save$",
+      "^DataX.Flow\/Flow.ManagementService\/flow\/deploy$",
       "^DataX.Flow\/Flow.ManagementService\/flow\/delete$",
       "^DataX.Flow\/Flow.ManagementService\/flow\/generateconfigs$",
       "^DataX.Flow\/Flow.ManagementService\/flow\/startjobs$",
@@ -155,6 +156,7 @@
     "enabledForWriter": [
       "newFlowButtonEnabled",
       "saveFlowButtonEnabled",
+      "deployFlowButtonEnabled",
       "deleteFlowButtonEnabled",
       "getInputSchemaButtonEnabled",
       "outputSideToolBarEnabled",
@@ -183,6 +185,9 @@
       "deleteFunctionButtonEnabled",
       "addOutputSinkButtonEnabled",
       "deleteOutputSinkButtonEnabled",
+      "deleteFunctionButtonEnabled",
+      "addBatchButtonEnabled",
+      "deleteBatchButtonEnabled",
       "scaleNumExecutorsSliderEnabled",
       "scaleExecutorMemorySliderEnabled",
       "jobActionsEnabled"

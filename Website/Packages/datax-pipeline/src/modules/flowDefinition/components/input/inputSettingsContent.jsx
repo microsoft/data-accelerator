@@ -7,15 +7,23 @@ import PropTypes from 'prop-types';
 import * as Helpers from '../../flowHelpers';
 import * as Models from '../../flowModels';
 import { Label, TextField, Toggle, Dropdown, DefaultButton } from 'office-ui-fabric-react';
-import { JsonEditor } from 'jsoneditor-react';
-import 'jsoneditor-react/es/editor.min.css';
 import ace from 'brace';
 import 'brace/mode/json';
 import 'brace/theme/textmate';
-import MonacoEditor from 'react-monaco-editor';
+import 'datax-query/dist/css/index.css';
 import 'brace/mode/sql';
 import 'brace/theme/xcode';
-import { Colors, IconButtonStyles, ScrollableContentPane, StatementBox, LoadingPanel, getApiErrorMessage } from 'datax-common';
+import {
+    Colors,
+    IconButtonStyles,
+    ScrollableContentPane,
+    StatementBox,
+    LoadingPanel,
+    getApiErrorMessage,
+    CommonHelpers
+} from 'datax-common';
+import { JsonEditor } from 'datax-query';
+import { MonacoEditorControl } from 'datax-query';
 
 const inputSchemaExampleWiki = 'https://aka.ms/data-accelerator-input';
 const normalizationExampleWiki = 'https://aka.ms/data-accelerator-normalization';
@@ -26,6 +34,7 @@ export default class InputSettingsContent extends React.Component {
 
         this.state = {
             showNormalizationSnippet: false,
+            isBackfilling: false,
             error: {}
         };
     }
@@ -54,53 +63,78 @@ export default class InputSettingsContent extends React.Component {
     }
 
     renderLeftPane() {
-        return (
-            <div style={leftPaneStyle}>
-                <ScrollableContentPane backgroundColor={Colors.neutralLighterAlt}>
-                    <div style={leftPaneSectionStyle}>
-                        {this.renderModeDropdown()}
-                        {this.renderTypeDropdown()}
-                        {this.renderEventHubName()}
-                        {this.renderEventHubConnection()}
-                        {this.renderSubscriptionId()}
-                        {this.renderResourceGroup()}
-                    </div>
-
-                    <div style={dividerStyle} />
-
-                    <div style={leftPaneSectionStyle}>
-                        <div style={sectionStyle}>
-                            <TextField
-                                className="ms-font-m"
-                                label="Batch Interval in Seconds"
-                                value={this.props.input.properties.windowDuration}
-                                onChange={(event, value) => this.props.onUpdateWindowDuration(value)}
-                                onGetErrorMessage={value => this.validateNumber(value)}
-                                disabled={!this.props.inputWindowDurationTextboxEnabled}
-                            />
+        if (this.props.input.mode === Models.inputModeEnum.batching) {
+            let batchData = undefined;
+            if (this.props.batchInputs != undefined && this.props.selectedFlowBatchInputIndex != undefined) {
+                batchData = this.props.batchInputs[this.props.selectedFlowBatchInputIndex];
+            }
+            return (
+                <div style={leftPaneStyle}>
+                    <ScrollableContentPane backgroundColor={Colors.neutralLighterAlt}>
+                        <div style={leftPaneSectionStyle}>
+                            {this.renderModeDropdown()}
+                            {this.renderTypeDropdown()}
+                            {this.renderBlobInputConnection(batchData)}
+                            {this.renderBlobInputPath(batchData)}
+                            {this.renderInputFormatTypeDropdown(batchData)}
+                            {this.renderInputCompressionTypeDropdown(batchData)}
                         </div>
 
-                        <div style={sectionStyle}>
-                            <TextField
-                                className="ms-font-m"
-                                label="Maximum Events per Batch Interval"
-                                value={this.props.input.properties.maxRate}
-                                onChange={(event, value) => this.props.onUpdateMaxRate(value)}
-                                onGetErrorMessage={value => this.validateNumber(value)}
-                                disabled={!this.props.inputMaxRateTextboxEnabled}
-                            />
+                        <div style={dividerStyle} />
+
+                        <div style={leftPaneSectionStyle}>{this.renderShowNormalizationSnippetToggle()}</div>
+                    </ScrollableContentPane>
+                </div>
+            );
+        } else {
+            return (
+                <div style={leftPaneStyle}>
+                    <ScrollableContentPane backgroundColor={Colors.neutralLighterAlt}>
+                        <div style={leftPaneSectionStyle}>
+                            {this.renderModeDropdown()}
+                            {this.renderTypeDropdown()}
+                            {this.renderEventHubName()}
+                            {this.renderEventHubConnection()}
+                            {this.renderSubscriptionId()}
+                            {this.renderResourceGroup()}
                         </div>
 
-                        {this.renderTimestampColumn()}
-                        {this.renderWatermark()}
-                    </div>
+                        <div style={dividerStyle} />
 
-                    <div style={dividerStyle} />
+                        <div style={leftPaneSectionStyle}>
+                            <div style={sectionStyle}>
+                                <TextField
+                                    className="ms-font-m"
+                                    label="Batch Interval in Seconds"
+                                    value={this.props.input.properties.windowDuration}
+                                    onChange={(event, value) => this.props.onUpdateWindowDuration(value)}
+                                    onGetErrorMessage={value => this.validateNumber(value)}
+                                    disabled={!this.props.inputWindowDurationTextboxEnabled}
+                                />
+                            </div>
 
-                    <div style={leftPaneSectionStyle}>{this.renderShowNormalizationSnippetToggle()}</div>
-                </ScrollableContentPane>
-            </div>
-        );
+                            <div style={sectionStyle}>
+                                <TextField
+                                    className="ms-font-m"
+                                    label="Maximum Events per Batch Interval"
+                                    value={this.props.input.properties.maxRate}
+                                    onChange={(event, value) => this.props.onUpdateMaxRate(value)}
+                                    onGetErrorMessage={value => this.validateNumber(value)}
+                                    disabled={!this.props.inputMaxRateTextboxEnabled}
+                                />
+                            </div>
+
+                            {this.renderTimestampColumn()}
+                            {this.renderWatermark()}
+                        </div>
+
+                        <div style={dividerStyle} />
+
+                        <div style={leftPaneSectionStyle}>{this.renderShowNormalizationSnippetToggle()}</div>
+                    </ScrollableContentPane>
+                </div>
+            );
+        }
     }
 
     renderRightPane() {
@@ -146,7 +180,8 @@ export default class InputSettingsContent extends React.Component {
                           disabled: type.disabled
                       };
                   })
-            : Models.inputTypes
+            : this.props.input.mode === Models.inputModeEnum.streaming
+            ? Models.inputTypes
                   .filter(type => type.name !== 'Local')
                   .map(type => {
                       return {
@@ -154,7 +189,14 @@ export default class InputSettingsContent extends React.Component {
                           text: type.name,
                           disabled: type.disabled
                       };
-                  });
+                  })
+            : Models.inputTypesBatching.map(type => {
+                  return {
+                      key: type.key,
+                      text: type.name,
+                      disabled: type.disabled
+                  };
+              });
 
         return (
             <div style={typeDropdownStyle}>
@@ -171,13 +213,17 @@ export default class InputSettingsContent extends React.Component {
     }
 
     renderEventHubName() {
-        if (this.props.input.type === Models.inputTypeEnum.iothub) {
+        if (this.props.input.type !== Models.inputTypeEnum.events && this.props.input.type !== Models.inputTypeEnum.local) {
+            const label =
+                this.props.input.type === Models.inputTypeEnum.iothub
+                    ? 'Event Hub-Compatible Name'
+                    : 'Topics (Use commas to separate topics)';
             return (
                 <div style={sectionStyle}>
                     <TextField
                         className="ms-font-m"
                         spellCheck={false}
-                        label="Event Hub-Compatible Name"
+                        label={label}
                         value={this.props.input.properties.inputEventhubName}
                         onChange={(event, value) => this.props.onUpdateHubName(value)}
                         disabled={!this.props.inputEventHubEnabled}
@@ -193,7 +239,23 @@ export default class InputSettingsContent extends React.Component {
         if (this.props.input.type === Models.inputTypeEnum.local) {
             return null;
         } else {
-            const label = this.props.input.type === Models.inputTypeEnum.events ? 'Connection String' : 'Event Hub-Compatible Endpoint';
+            let label = 'Connection String';
+
+            switch (this.props.input.type) {
+                case Models.inputTypeEnum.iothub:
+                    label = 'Event Hub-Compatible Endpoint';
+                    break;
+                case Models.inputTypeEnum.kafka:
+                    label = 'Bootstrap Servers (Use commas to separate server IPs/URLs)';
+                    break;
+                case Models.inputTypeEnum.kafkaeventhub:
+                    label = 'Event Hub Namespace Connection String';
+                    break;
+                case Models.inputTypeEnum.blob:
+                    label = 'Blob Connection String';
+                    break;
+            }
+
             return (
                 <div style={sectionStyle}>
                     <TextField
@@ -212,10 +274,110 @@ export default class InputSettingsContent extends React.Component {
         }
     }
 
-    renderSubscriptionId() {
-        if (this.props.input.type === Models.inputTypeEnum.local) {
+    renderBlobInputConnection(batchData) {
+        if (this.props.input.type !== Models.inputTypeEnum.blob) {
             return null;
         } else {
+            let value = batchData ? batchData.properties.connection : undefined;
+            return (
+                <div style={sectionStyle}>
+                    <TextField
+                        type="password"
+                        className="ms-font-m"
+                        spellCheck={false}
+                        label="Blob Connection String"
+                        value={value}
+                        onChange={(event, value) => this.props.onUpdateBatchInputConnection(value)}
+                        autoAdjustHeight
+                        resizable={false}
+                        disabled={!this.props.inputEventHubConnectionStringEnabled}
+                    />
+                </div>
+            );
+        }
+    }
+
+    renderBlobInputPath(batchData) {
+        if (this.props.input.type !== Models.inputTypeEnum.blob) {
+            return null;
+        } else {
+            let value = batchData ? batchData.properties.path : undefined;
+            return (
+                <div style={sectionStyle}>
+                    <TextField
+                        type="password"
+                        className="ms-font-m"
+                        spellCheck={false}
+                        label="Blob Path"
+                        placeholder="e.g. wasbs://<container_name>@<storage_account_name>.blob.core.windows.net/{yyyy-MM-dd}"
+                        value={value}
+                        onChange={(event, value) => this.props.onUpdateBatchInputPath(value)}
+                        autoAdjustHeight
+                        resizable={false}
+                    />
+                </div>
+            );
+        }
+    }
+
+    renderInputFormatTypeDropdown(batchData) {
+        if (this.props.input.type !== Models.inputTypeEnum.blob) {
+            return null;
+        } else {
+            const options = Models.inputFormatTypes.map(type => {
+                return {
+                    key: type.key,
+                    text: type.name,
+                    disabled: type.disabled
+                };
+            });
+
+            let value = batchData ? batchData.properties.formatType : Models.inputFormatTypeEnum.json;
+
+            return (
+                <div style={sectionStyle}>
+                    <Label className="ms-font-m">Format</Label>
+                    <Dropdown
+                        className="ms-font-m"
+                        options={options}
+                        selectedKey={value}
+                        onChange={(event, selection) => this.props.onUpdateBatchInputFormatType(selection.key)}
+                    />
+                </div>
+            );
+        }
+    }
+
+    renderInputCompressionTypeDropdown(batchData) {
+        if (this.props.input.type !== Models.inputTypeEnum.blob) {
+            return null;
+        } else {
+            const options = Models.inputCompressionTypes.map(type => {
+                return {
+                    key: type.key,
+                    text: type.name,
+                    disabled: type.disabled
+                };
+            });
+
+            let value = batchData ? batchData.properties.compressionType : Models.inputCompressionTypes.none;
+
+            return (
+                <div style={sectionStyle}>
+                    <Label className="ms-font-m">Compression</Label>
+                    <Dropdown
+                        className="ms-font-m"
+                        options={options}
+                        selectedKey={value}
+                        onChange={(event, selection) => this.props.onUpdateBatchInputCompressionType(selection.key)}
+                    />
+                </div>
+            );
+        }
+    }
+
+    renderSubscriptionId() {
+        if (this.props.input.type === Models.inputTypeEnum.events || this.props.input.type === Models.inputTypeEnum.iothub) {
             return (
                 <div style={sectionStyle}>
                     <TextField
@@ -232,13 +394,13 @@ export default class InputSettingsContent extends React.Component {
                     />
                 </div>
             );
+        } else {
+            return null;
         }
     }
 
     renderResourceGroup() {
-        if (this.props.input.type === Models.inputTypeEnum.local) {
-            return null;
-        } else {
+        if (this.props.input.type === Models.inputTypeEnum.events || this.props.input.type === Models.inputTypeEnum.iothub) {
             return (
                 <div style={sectionStyle}>
                     <TextField
@@ -255,6 +417,8 @@ export default class InputSettingsContent extends React.Component {
                     />
                 </div>
             );
+        } else {
+            return null;
         }
     }
 
@@ -330,12 +494,45 @@ export default class InputSettingsContent extends React.Component {
         );
     }
 
+    renderSamplingInputLabel(mode) {
+        if (mode === Models.inputModeEnum.streaming) {
+            return (
+                <div style={rightSideSettingsStyle}>
+                    <div style={toggleStyle}>
+                        <Label className="ms-font-m">Duration in seconds</Label>
+                    </div>
+                    <div style={toggleStyle}>
+                        <TextField
+                            className="query-pane-TextField ms-font-m"
+                            spellCheck={false}
+                            value={this.props.samplingInputDuration}
+                            onChange={(event, value) => this.props.onUpdateSamplingInputDuration(value)}
+                            onGetErrorMessage={value => this.validateNumber(value)}
+                        />
+                    </div>
+                </div>
+            );
+        } else {
+            return (
+                <div>
+                    <div style={toggleStyle}>
+                        <Label className="ms-font-m">Sampling from the last 3 blobs based on the last modified time.</Label>
+                    </div>
+                </div>
+            );
+        }
+    }
+
     renderGetInputSchemaButton() {
         const display = 'Get Schema';
         const enableButton =
-            this.props.input.properties.inputEventhubConnection !== '' &&
+            ((this.props.input.mode === Models.inputModeEnum.streaming && this.props.input.properties.inputEventhubConnection !== '') ||
+                (this.props.input.mode === Models.inputModeEnum.batching &&
+                    this.props.batchInputs[this.props.selectedFlowBatchInputIndex].properties.connection !== '')) &&
             !this.props.fetchingInputSchema &&
             this.props.getInputSchemaButtonEnabled;
+
+        const samplingInputLabel = this.renderSamplingInputLabel(this.props.input.mode);
 
         return (
             <div style={rightSideSettingsStyle}>
@@ -352,18 +549,7 @@ export default class InputSettingsContent extends React.Component {
                     />
                     {display}
                 </DefaultButton>
-                <div style={toggleStyle}>
-                    <Label className="ms-font-m">Duration in seconds</Label>
-                </div>
-                <div style={toggleStyle}>
-                    <TextField
-                        className="query-pane-TextField ms-font-m"
-                        spellCheck={false}
-                        value={this.props.samplingInputDuration}
-                        onChange={(event, value) => this.props.onUpdateSamplingInputDuration(value)}
-                        onGetErrorMessage={value => this.validateNumber(value)}
-                    />
-                </div>
+                {samplingInputLabel}
             </div>
         );
     }
@@ -372,7 +558,12 @@ export default class InputSettingsContent extends React.Component {
         let editor;
         if (this.props.fetchingInputSchema) {
             const timer = parseInt(this.props.samplingInputDuration) - this.props.timer;
-            const label = timer > -1 ? `Sampling Data... ${timer}` : 'Generating schema...';
+            const label =
+                this.props.input.mode === Models.inputModeEnum.streaming
+                    ? timer > -1
+                        ? `Sampling Data... ${timer}`
+                        : 'Generating schema...'
+                    : 'Reading blobs...';
 
             editor = <LoadingPanel showImmediately={true} message={label} style={spinnerContainerStyle} />;
         } else {
@@ -401,7 +592,7 @@ export default class InputSettingsContent extends React.Component {
                     <Label className="ms-font-m" style={inlineBlockStyle}>
                         Describe Schema in JSON Format
                     </Label>
-                    <a style={linkStyle} href={inputSchemaExampleWiki} target="_blank">
+                    <a style={linkStyle} href={inputSchemaExampleWiki} target="_blank" rel="noopener noreferrer">
                         View Example
                     </a>
                 </div>
@@ -421,13 +612,12 @@ export default class InputSettingsContent extends React.Component {
                     <Label className="ms-font-m" style={inlineBlockStyle}>
                         Data Schema Normalization (input SQL to run against the schema above)
                     </Label>
-                    <a style={linkStyle} href={normalizationExampleWiki} target="_blank">
+                    <a style={linkStyle} href={normalizationExampleWiki} target="_blank" rel="noopener noreferrer">
                         View Example
                     </a>
                 </div>
-
                 <div style={editorContainerStyle}>
-                    <MonacoEditor
+                    <MonacoEditorControl
                         name="normalizationeditor"
                         height="100%"
                         width="100%"
@@ -449,7 +639,7 @@ export default class InputSettingsContent extends React.Component {
     }
 
     validateNumber(value) {
-        return !Helpers.isValidNumberAboveZero(value) ? 'Numbers only and must be greater than zero' : '';
+        return !CommonHelpers.isValidNumberAboveZero(value) ? 'Numbers only and must be greater than zero' : '';
     }
 
     validateWatermarkValue(value) {
@@ -485,12 +675,19 @@ export default class InputSettingsContent extends React.Component {
 // Props
 InputSettingsContent.propTypes = {
     input: PropTypes.object.isRequired,
+    batchInputs: PropTypes.array,
     timer: PropTypes.number.isRequired,
     samplingInputDuration: PropTypes.string.isRequired,
     onGetInputSchema: PropTypes.func.isRequired,
     onUpdateMode: PropTypes.func.isRequired,
     onUpdateType: PropTypes.func.isRequired,
     onUpdateHubName: PropTypes.func.isRequired,
+
+    onUpdateBatchInputPath: PropTypes.func.isRequired,
+    onUpdateBatchInputConnection: PropTypes.func.isRequired,
+    onUpdateBatchInputFormatType: PropTypes.func.isRequired,
+    onUpdateBatchInputCompressionType: PropTypes.func.isRequired,
+
     onUpdateHubConnection: PropTypes.func.isRequired,
     onUpdateSubscriptionId: PropTypes.func.isRequired,
     onUpdateResourceGroup: PropTypes.func.isRequired,

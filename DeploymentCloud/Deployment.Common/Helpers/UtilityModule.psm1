@@ -133,11 +133,25 @@ else {
     $sparkPwd = $sparkPassword
 }
 
+if (!$kafkaPassword) {
+    $kafkaPwd = Get-Password
+}
+else {
+    $kafkaPwd = $kafkaPassword
+}
+
 if (!$sparkSshPassword) {
     $sparkSshPwd = Get-Password
 }
 else {
     $sparkSshPwd = $sparkSshPassword
+}
+
+if (!$kafkaSshPassword) {
+    $kafkaSshPwd = Get-Password
+}
+else {
+    $kafkaSshPwd = $kafkaSshPassword
 }
 
 if (!$sfPassword) {
@@ -153,7 +167,9 @@ $SANAME_MAX_LENGTH = 24
 $IOTHUBDEVICENAME_MAX_LENGTH = 26
 
 $sparkLogin = "user" + (Get-RandomName -BaseName "user")
-$sshuser = "user" + (Get-RandomName -BaseName "user")
+$sparksshuser = "user" + (Get-RandomName -BaseName "user")
+$kafkaLogin = "user" + (Get-RandomName -BaseName "user")
+$kafkasshuser = "user" + (Get-RandomName -BaseName "user")
 $sfadminuser = "user" + (Get-RandomName -BaseName "user")
  
 $vmNodeTypeName = "vm" + (Get-RandomNameWithLength -BaseName $name -Count 7)
@@ -179,9 +195,11 @@ $docDBName = "$name"
 $appInsightsName = "$name"
 $redisName = "$name"
 $eventHubNamespaceName = "eventhubmetric" + (Get-RandomNameWithLength -BaseName $name -Count ($EVENTHUBNAME_MAX_LENGTH-15))
+$kafkaEventHubNamespaceName = "eventhubkafka" + (Get-RandomNameWithLength -BaseName $name -Count ($EVENTHUBNAME_MAX_LENGTH-15))
 $sparkManagedIdentityName = "SparkManagedIdentity$sparkName"
 
 $iotHubName = "iotDevice" + (Get-RandomNameWithLength -BaseName $name -Count ($IOTHUBDEVICENAME_MAX_LENGTH-10))
+$kafkaName = "kafka$name"
 
 # Paths
 $packagesPath = Join-Path $rootFolderPath "Packages"
@@ -302,6 +320,12 @@ Function Setup-Secret([String]$VaultName = '', [String]$SecretName = '', [String
     Set-AzureKeyVaultSecret -VaultName $VaultName -Name $SecretName -SecretValue $secret -ErrorAction Stop | Out-Null
 }
 
+# Get a secret from Keyvault
+Function Get-Secret([String]$VaultName, [String]$SecretName) {    
+    $secret = Get-AzureKeyVaultSecret -VaultName $VaultName -Name $SecretName -ErrorAction Stop
+    $secret.SecretValueText
+}
+
 # Deploy the service apps
 function Deploy-Services([string[]]$packageNames, [string]$templatePath, [string]$parameterPath) {
     foreach ($packageName in $packageNames) {
@@ -346,7 +370,7 @@ function Install-Packages([system.collections.generic.dictionary[string,string]]
             ..\Deployment.Common\nuget\nuget.exe install $_ -version $version -PreRelease -Source $source -OutputDirectory $path | Out-Null
         }
         else {
-            ..\Deployment.Common\nuget\nuget.exe install $_  -PreRelease -Source $source -OutputDirectory $path | Out-Null
+            ..\Deployment.Common\nuget\nuget.exe install $_ -PreRelease -Source $source -OutputDirectory $path | Out-Null
         }
     }
 }
@@ -540,13 +564,28 @@ function Set-AzureAADAccessControl([string]$AppId) {
     $ErrorActionPreference = "stop"
 }
 
-function Set-AzureAADApiPermission([string]$ServiceAppId, [string]$ClientAppId) {
+function Set-AzureAADApiPermission([string]$ServiceAppId, [string]$ClientAppId, [string]$RoleName) {
     $ErrorActionPreference = "SilentlyContinue"
 
     Write-Host -ForegroundColor Yellow  "Setting up App Api Permissions. This requires the subscription admin privilege. If this fails, please refer to the manual steps and ask a subscription admin"
     $ServiceAppPermId = az ad app show --id $ServiceAppId --query oauth2Permissions[0].id
     $aadCommandId = "00000002-0000-0000-c000-000000000000"
     $permissionId = "311a71cc-e848-46a1-bdf8-97ff7156d8e6"
+    
+    if ($RoleName) {
+        $appRoles =  az ad app show --id $ServiceAppId --query appRoles | ConvertFrom-Json
+
+        $role = $appRoles | Where-Object { $_.Value -match $RoleName }
+        if ($role) {
+            $roleId = $role.Id
+            az ad app permission add --id $ServiceAppId --api $ServiceAppId --api-permissions $roleId=Role > $null 2>&1
+            az ad app permission grant --id $ServiceAppId --api $ServiceAppId --scope $roleId > $null 2>&1
+        }
+        else 
+        {
+            Write-Host -ForegroundColor Red  "$RoleName is not defined in the app $ServiceAppId"
+        }
+    }
     
     az ad app permission add --id $ServiceAppId --api $aadCommandId --api-permissions $permissionId=Scope > $null 2>&1
     az ad app permission add --id $ClientAppId --api $aadCommandId --api-permissions $permissionId=Scope > $null 2>&1
@@ -635,13 +674,19 @@ Export-ModuleMember -Variable "clientAppName"
 Export-ModuleMember -Variable "vmNodeTypeName"
 
 Export-ModuleMember -Variable "iotHubName"
+Export-ModuleMember -Variable "kafkaEventHubNamespaceName"
+Export-ModuleMember -Variable "kafkaName"
 Export-ModuleMember -Variable "sparkPwd"
 Export-ModuleMember -Variable "sparkSshPwd"
+Export-ModuleMember -Variable "kafkaPwd"
+Export-ModuleMember -Variable "kafkaSshPwd"
 Export-ModuleMember -Variable "sfPwd"
 Export-ModuleMember -Variable "certPwd"
 
 Export-ModuleMember -Variable "sparkLogin"
-Export-ModuleMember -Variable "sshuser"
+Export-ModuleMember -Variable "sparksshuser"
+Export-ModuleMember -Variable "kafkaLogin"
+Export-ModuleMember -Variable "kafkasshuser"
 Export-ModuleMember -Variable "sfadminuser"
 
 # Paths
@@ -669,6 +714,7 @@ Export-ModuleMember -Function "Translate-Tokens"
 Export-ModuleMember -Function "Prepare-Template"
 Export-ModuleMember -Function "Prepare-Packages"
 Export-ModuleMember -Function "Setup-Secret"
+Export-ModuleMember -Function "Get-Secret"
 Export-ModuleMember -Function "CleanUp-ExistingSF"
 Export-ModuleMember -Function "Check-Credential"
 Export-ModuleMember -Function "Get-DefaultTokens"

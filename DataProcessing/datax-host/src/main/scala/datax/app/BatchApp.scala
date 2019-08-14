@@ -11,6 +11,6 @@ object BatchApp {
   def main(inputArguments: Array[String]): Unit = {
     BlobBatchingHost.runBatchApp(
       inputArguments,
-      config => CommonProcessorFactory.createProcessor(config).asBlobPointerProcessor())
+      config => CommonProcessorFactory.createProcessor(config).asBatchBlobProcessor())
   }
 }
