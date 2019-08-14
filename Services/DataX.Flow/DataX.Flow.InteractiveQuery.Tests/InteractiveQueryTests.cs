@@ -1,5 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+﻿// *********************************************************************
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License
+// *********************************************************************
+using DataX.Flow.Common;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DataX.Flow.InteractiveQuery.Tests
 {
@@ -12,13 +16,13 @@ namespace DataX.Flow.InteractiveQuery.Tests
             //Test ConvertToDbfsFilePath with both filePath and fileName parameters
             string wasbsPath = "wasbs://mycontainer@mystorageaccount.blob.core.windows.net/";
             string fileName = "testFile.json";
-            string actualValue = InteractiveQueryManager.ConvertToDbfsFilePath(wasbsPath, fileName);
+            string actualValue = Helper.ConvertToDbfsFilePath(wasbsPath, fileName);
             string expectedValue = "dbfs:/mnt/livequery/mycontainer/testFile.json";
             Assert.AreEqual(expectedValue, actualValue, "DBFS file path is incorrect");
 
             //Test ConvertToDbfsFilePath with only filePath parameter
             wasbsPath = "wasbs://mycontainer@mystorageaccount.blob.core.windows.net/testfolder/testFile.json";
-            actualValue = InteractiveQueryManager.ConvertToDbfsFilePath(wasbsPath);
+            actualValue = Helper.ConvertToDbfsFilePath(wasbsPath);
             expectedValue = "dbfs:/mnt/livequery/mycontainer/testfolder/testFile.json";
             Assert.AreEqual(expectedValue, actualValue, "DBFS file path is incorrect");
         }

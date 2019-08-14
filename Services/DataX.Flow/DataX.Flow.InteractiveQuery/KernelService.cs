@@ -303,9 +303,9 @@ namespace DataX.Flow.InteractiveQuery
 
             for (int i = 0; i < referenceDatas.Count; i++)
             {
-                string realPath = InteractiveQueryManager.SetValueBasedOnSparkType(SparkType,
+                string realPath = Helper.SetValueBasedOnSparkType(SparkType,
                     UDFPathResolver(referenceDatas[i].Properties.Path),
-                    InteractiveQueryManager.ConvertToDbfsFilePath(UDFPathResolver(referenceDatas[i].Properties.Path)));
+                    Helper.ConvertToDbfsFilePath(UDFPathResolver(referenceDatas[i].Properties.Path)));
 
                 if (SparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
                 {
@@ -335,9 +335,9 @@ namespace DataX.Flow.InteractiveQuery
                 if(fo.TypeDisplay=="UDF")
                 {
                     PropertiesUD properties = JsonConvert.DeserializeObject<PropertiesUD>(fo.Properties.ToString());
-                    string realPath = InteractiveQueryManager.SetValueBasedOnSparkType(SparkType,
+                    string realPath = Helper.SetValueBasedOnSparkType(SparkType,
                         UDFPathResolver(properties.Path),
-                        InteractiveQueryManager.ConvertToDbfsFilePath(UDFPathResolver(properties.Path)));
+                        Helper.ConvertToDbfsFilePath(UDFPathResolver(properties.Path)));
 
                     if (SparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
                     {
@@ -364,9 +364,9 @@ namespace DataX.Flow.InteractiveQuery
                 else if(fo.TypeDisplay=="UDAF")
                 {
                     PropertiesUD properties = JsonConvert.DeserializeObject<PropertiesUD>(fo.Properties.ToString());
-                    string realPath = InteractiveQueryManager.SetValueBasedOnSparkType(SparkType,
+                    string realPath = Helper.SetValueBasedOnSparkType(SparkType,
                         UDFPathResolver(properties.Path),
-                        InteractiveQueryManager.ConvertToDbfsFilePath(UDFPathResolver(properties.Path)));
+                        Helper.ConvertToDbfsFilePath(UDFPathResolver(properties.Path)));
 
                     if (SparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
                     {
