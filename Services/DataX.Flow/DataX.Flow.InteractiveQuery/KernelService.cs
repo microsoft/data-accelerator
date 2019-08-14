@@ -23,6 +23,9 @@ using System.Xml.Serialization;
 
 namespace DataX.Flow.InteractiveQuery
 {
+    /// <summary>
+    /// This is the class that manages the kernel for interactive queries
+    /// </summary>
     public abstract class KernelService
     {
         private steps _steps = null;
@@ -300,15 +303,12 @@ namespace DataX.Flow.InteractiveQuery
 
             for (int i = 0; i < referenceDatas.Count; i++)
             {
-                string realPath = "";
+                string realPath = InteractiveQueryManager.SetValueBasedOnSparkType(SparkType,
+                    UDFPathResolver(referenceDatas[i].Properties.Path),
+                    InteractiveQueryManager.ConvertToDbfsFilePath(UDFPathResolver(referenceDatas[i].Properties.Path)));
 
-                if (SparkType != DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
+                if (SparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
                 {
-                    realPath = UDFPathResolver(referenceDatas[i].Properties.Path);
-                }
-                else
-                {
-                    realPath = InteractiveQueryManager.ConvertToDbfsFilePath(UDFPathResolver(referenceDatas[i].Properties.Path));
                     MountStorage(FlowConfig, realPath, kernel);
                 }
 
@@ -335,15 +335,12 @@ namespace DataX.Flow.InteractiveQuery
                 if(fo.TypeDisplay=="UDF")
                 {
                     PropertiesUD properties = JsonConvert.DeserializeObject<PropertiesUD>(fo.Properties.ToString());
-                    string realPath = "";
+                    string realPath = InteractiveQueryManager.SetValueBasedOnSparkType(SparkType,
+                        UDFPathResolver(properties.Path),
+                        InteractiveQueryManager.ConvertToDbfsFilePath(UDFPathResolver(properties.Path)));
 
-                    if (SparkType != DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
+                    if (SparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
                     {
-                        realPath = UDFPathResolver(properties.Path);
-                    }
-                    else
-                    {
-                        realPath = InteractiveQueryManager.ConvertToDbfsFilePath(UDFPathResolver(properties.Path));
                         MountStorage(FlowConfig, realPath, kernel);
                     }
 
@@ -367,15 +364,12 @@ namespace DataX.Flow.InteractiveQuery
                 else if(fo.TypeDisplay=="UDAF")
                 {
                     PropertiesUD properties = JsonConvert.DeserializeObject<PropertiesUD>(fo.Properties.ToString());
-                    string realPath = "";
+                    string realPath = InteractiveQueryManager.SetValueBasedOnSparkType(SparkType,
+                        UDFPathResolver(properties.Path),
+                        InteractiveQueryManager.ConvertToDbfsFilePath(UDFPathResolver(properties.Path)));
 
-                    if (SparkType != DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
+                    if (SparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
                     {
-                        realPath = UDFPathResolver(properties.Path);
-                    }
-                    else
-                    {
-                        realPath = InteractiveQueryManager.ConvertToDbfsFilePath(UDFPathResolver(properties.Path));
                         MountStorage(FlowConfig, realPath, kernel);
                     }
 
@@ -785,6 +779,12 @@ namespace DataX.Flow.InteractiveQuery
             return path;
         }
 
+        /// <summary>
+        /// Mount container to DBFS 
+        /// </summary>
+        /// <param name="engineFlowConfig">Flow config</param>
+        /// <param name="dbfsPath">DBFS path. Format dbfs:/mnt/livequery/..</param>
+        /// <param name="kernelId">kernelId</param>
         public void MountStorage(FlowConfigObject engineFlowConfig, string dbfsPath, string kernelId)
         {
             // Attach to kernel
@@ -796,7 +796,7 @@ namespace DataX.Flow.InteractiveQuery
         /// Mount container to DBFS 
         /// </summary>
         /// <param name="engineFlowConfig">Flow config</param>
-        /// <param name="dbfsPath">path</param>
+        /// <param name="dbfsPath">DBFS path. Format dbfs:/mnt/livequery/..</param>
         /// <param name="kernel">kernel</param>
         private void MountStorage(FlowConfigObject engineFlowConfig, string dbfsPath, IKernel kernel)
         {
@@ -809,14 +809,7 @@ namespace DataX.Flow.InteractiveQuery
                 //If container is not mounted then mount it
                 if (string.IsNullOrEmpty(result))
                 {
-                    Regex r = new Regex($"{Config.ConfigDataModel.Constants.PrefixDbfs}{Config.ConfigDataModel.Constants.PrefixDbfsMount}([a-zA-Z0-9-]*)/", RegexOptions.IgnoreCase);
-                    string containerName = r.Match(dbfsPath).Groups[1].Value;
-                    string mountCode = $"dbutils.fs.mount(" +
-                        $"source = \"wasbs://{containerName}@{engineFlowConfig.OpsStorageAccountName}.blob.core.windows.net/\", " +
-                        $"mountPoint = \"/{Config.ConfigDataModel.Constants.PrefixDbfsMount}/{containerName}\", " +
-                        $"extraConfigs = Map(" +
-                            $"\"fs.azure.account.key.{engineFlowConfig.OpsStorageAccountName}.blob.core.windows.net\"->" +
-                            $"dbutils.secrets.get(scope = \"{engineFlowConfig.SparkKeyVaultName}\", key = \"{Config.ConfigDataModel.Constants.AccountSecretPrefix}{engineFlowConfig.OpsStorageAccountName}\")))";
+                    string mountCode = CreateMountCode(dbfsPath, engineFlowConfig.OpsStorageAccountName, engineFlowConfig.SparkKeyVaultName);
                     kernel.ExecuteCode(mountCode);
                 }
             }
@@ -824,6 +817,26 @@ namespace DataX.Flow.InteractiveQuery
             {
                 Logger.LogError(ex, ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Create mount command to execute 
+        /// </summary>
+        /// <param name="dbfsPath">DBFS path. Format dbfs:/mnt/livequery/..</param>
+        /// <param name="opsStorageAccountName">Ops Storage Account Name</param>
+        /// <param name="sparkKeyVaultName">Spark KeyVault Name</param>
+        /// <returns>Returns the mount code </returns>
+        public static string CreateMountCode(string dbfsPath, string opsStorageAccountName, string sparkKeyVaultName)
+        {
+            Regex r = new Regex($"{Config.ConfigDataModel.Constants.PrefixDbfs}{Config.ConfigDataModel.Constants.PrefixDbfsMount}([a-zA-Z0-9-]*)/", RegexOptions.IgnoreCase);
+            string containerName = r.Match(dbfsPath).Groups[1].Value;
+            string mountCode = $"dbutils.fs.mount(" +
+                $"source = \"wasbs://{containerName}@{opsStorageAccountName}.blob.core.windows.net/\", " +
+                $"mountPoint = \"/{Config.ConfigDataModel.Constants.PrefixDbfsMount}/{containerName}\", " +
+                $"extraConfigs = Map(" +
+                    $"\"fs.azure.account.key.{opsStorageAccountName}.blob.core.windows.net\"->" +
+                    $"dbutils.secrets.get(scope = \"{sparkKeyVaultName}\", key = \"{Config.ConfigDataModel.Constants.AccountSecretPrefix}{opsStorageAccountName}\")))";
+            return mountCode;
         }
     }
     /// <summary>

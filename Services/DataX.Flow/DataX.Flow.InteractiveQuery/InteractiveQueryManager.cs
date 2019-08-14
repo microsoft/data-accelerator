@@ -30,7 +30,6 @@ namespace DataX.Flow.InteractiveQuery
         private const string _DataBricks = Config.ConfigDataModel.Constants.SparkTypeDataBricks;
         private readonly string _sparkType = _HDInsight;
         private readonly IConfiguration _configuration;
-        private static readonly Regex _OpsPath = new Regex(@"wasbs:\/\/(.*)@(.*).blob.core.windows.net\/(.*)$", RegexOptions.IgnoreCase);
 
         public InteractiveQueryManager(ILogger logger, IConfiguration configuration)
         {
@@ -49,9 +48,36 @@ namespace DataX.Flow.InteractiveQuery
         /// <returns>Returns dbfs file path</returns>
         public static string ConvertToDbfsFilePath(string filePath, string fileName = "")
         {
-            var match = _OpsPath.Match(filePath);
-            string result = Path.Combine(Config.ConfigDataModel.Constants.PrefixDbfs, Config.ConfigDataModel.Constants.PrefixDbfsMount + match.Groups[1].Value + "/", match.Groups[3].Value, fileName);
-            return result;
+            Regex opsPath = new Regex(@"wasbs:\/\/(.*)@(.*).blob.core.windows.net\/(.*)$", RegexOptions.IgnoreCase);
+            var match = opsPath.Match(filePath);
+            if (match.Success)
+            {
+                string result = Path.Combine(Config.ConfigDataModel.Constants.PrefixDbfs, Config.ConfigDataModel.Constants.PrefixDbfsMount + match.Groups[1].Value + "/", match.Groups[3].Value, fileName);
+                return result;
+            }
+            else
+            {
+                throw new Exception("Cannot convert to DBFS file path");
+            }
+        }
+
+        /// <summary>
+        /// This method returns a string value based on the spark type
+        /// </summary>
+        /// <param name="sparkType">sparkType</param>
+        /// <param name="valueForHDInsightEnv">Value to be used in case of HDInsight environment</param>
+        /// <param name="valueForDatabricksEnv">Value to be used in case of Databricks environment</param>
+        /// <returns>Returns string value based on spark type</returns>
+        public static string SetValueBasedOnSparkType(string sparkType, string valueForHDInsightEnv, string valueForDatabricksEnv)
+        {
+            if (sparkType != Config.ConfigDataModel.Constants.SparkTypeDataBricks)
+            {
+                return valueForHDInsightEnv;
+            }
+            else
+            {
+                return valueForDatabricksEnv;
+            }
         }
 
         /// <summary>
@@ -80,8 +106,9 @@ namespace DataX.Flow.InteractiveQuery
             }
 
             var hashValue = Helper.GetHashCode(diag.UserName);
-            string sampleDataPath = (_engineEnvironment.EngineFlowConfig.SparkType != Config.ConfigDataModel.Constants.SparkTypeDataBricks) ?
-                Path.Combine(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json") : ConvertToDbfsFilePath(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json");
+            string sampleDataPath = SetValueBasedOnSparkType(_engineEnvironment.EngineFlowConfig.SparkType,
+                Path.Combine(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json"),
+                ConvertToDbfsFilePath(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json"));
 
             response = await CreateAndInitializeKernelHelper(diag.InputSchema, diag.UserName, diag.Name, sampleDataPath, diag.NormalizationSnippet, diag.ReferenceDatas, diag.Functions, diag.DatabricksToken);
             if (response.Error.HasValue && response.Error.Value)
@@ -231,8 +258,10 @@ namespace DataX.Flow.InteractiveQuery
 
                 //Create the xml with the scala steps to execute to initialize the kernel
                 var hashValue = Helper.GetHashCode(diag.UserName);
-                var sampleDataPath = (_engineEnvironment.EngineFlowConfig.SparkType != Config.ConfigDataModel.Constants.SparkTypeDataBricks) ?
-                    Path.Combine(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json") : ConvertToDbfsFilePath(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json");
+                var sampleDataPath = SetValueBasedOnSparkType(_engineEnvironment.EngineFlowConfig.SparkType,
+                    Path.Combine(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json"),
+                    ConvertToDbfsFilePath(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json"));
+                
                 DiagnosticInputhelper(diag.InputSchema, sampleDataPath, diag.NormalizationSnippet, diag.Name);
 
                 response = await kernelService.RecycleKernelAsync(diag.KernelId, diag.UserName, diag.Name, _engineEnvironment.OpsBlobConnectionString, Path.Combine(_engineEnvironment.OpsDiagnosticPath, _GarbageCollectBlobName), SetupSteps, isReSample, diag.ReferenceDatas, diag.Functions);
