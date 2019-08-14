@@ -88,7 +88,7 @@ namespace DataX.Config.Test
             public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
             {
                 var guiConfig = flowToDeploy.Config.GetGuiConfig();
-                if (guiConfig.Input.Mode == Constants.InputMode_Batching)
+                if (guiConfig?.Input?.Mode == Constants.InputMode_Batching)
                 {
                     var jobConfigs = flowToDeploy.GetJobs().First().JobConfigs;
                     var reConfigs = jobConfigs.Where(j => !j.IsOneTime).ToList();
