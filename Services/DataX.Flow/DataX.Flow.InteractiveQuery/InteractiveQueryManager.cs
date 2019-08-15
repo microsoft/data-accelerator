@@ -337,7 +337,7 @@ namespace DataX.Flow.InteractiveQuery
 
                 if(_engineEnvironment.EngineFlowConfig.SparkType == Config.ConfigDataModel.Constants.SparkTypeDataBricks)
                 {
-                    kernelService.MountStorage(_engineEnvironment.EngineFlowConfig, sampleDataPath, kernelId);
+                    kernelService.MountStorage(_engineEnvironment.EngineFlowConfig.OpsStorageAccountName, _engineEnvironment.EngineFlowConfig.SparkKeyVaultName, sampleDataPath, kernelId);
                 }
 
                 response = await kernelService.CreateandInitializeKernelAsync(kernelId, SetupSteps, false, referenceDatas, functions);
