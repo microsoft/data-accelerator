@@ -7,7 +7,6 @@
  Microsoft.VisualStudio.TraceCollector, Culture=neutral">
         <Configuration>
           <CodeCoverage>
-            <!-- Match assembly file paths: -->
             <ModulePaths>
               <Include>
                 <ModulePath>.*\DataX.*.dll</ModulePath>
