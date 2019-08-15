@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.156
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioTester", "ScenarioTester\ScenarioTester.csproj", "{AF410B87-CD2C-4C19-947D-CCE64EC0C7DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioTesterTests", "ScenarioTesterTests\ScenarioTesterTests.csproj", "{798D1032-BE6D-4FE1-8692-B238522A5ACE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E2391215-8738-4067-A35E-6AA6667F6DB2}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+		ScenarioTester.nuspec = ScenarioTester.nuspec
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AF410B87-CD2C-4C19-947D-CCE64EC0C7DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF410B87-CD2C-4C19-947D-CCE64EC0C7DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF410B87-CD2C-4C19-947D-CCE64EC0C7DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF410B87-CD2C-4C19-947D-CCE64EC0C7DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{798D1032-BE6D-4FE1-8692-B238522A5ACE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{798D1032-BE6D-4FE1-8692-B238522A5ACE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{798D1032-BE6D-4FE1-8692-B238522A5ACE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{798D1032-BE6D-4FE1-8692-B238522A5ACE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1FAF91B3-08FA-49AB-BEE7-B5FB324B4C30}
+	EndGlobalSection
+EndGlobal

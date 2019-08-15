@@ -6,7 +6,7 @@
 			"icon": "/img/iot.png",
 			"displayName": "###REQUIRED###",
 			"properties": {
-				"inputEventHubSubscriptionId": "keyvault://${serviceKeyVaultName}/$clientSecretPrefix-subscriptionId",
+				"inputEventHubSubscriptionId": "$keyvaultPrefix://${serviceKeyVaultName}/$clientSecretPrefix-subscriptionId",
 				"inputEventHubResourceGroupName": "${eventHubResourceGroupName}"
 			},
 			"commonProcessor": {
@@ -31,7 +31,7 @@
 					},
 					"process": {
 						"metric": {
-							"eventhub": "keyvault://${sparkKeyVaultName}/${metricEventHubConnectionStringKey}"
+							"eventhub": "$keyvaultPrefix://${sparkKeyVaultName}/${metricEventHubConnectionStringKey}"
 						},
 						"timestampColumn": "${processTimestampColumn}",
 						"watermark": "${processWatermark}",
@@ -46,7 +46,7 @@
 					},
 					"outputs": "${outputs}"
 				},
-				"sparkJobTemplateRef": "DataXDirect",
+				"sparkJobTemplateRef": "$dataxJobTemplate",
 				"jobCommonTokens": {
 						"jobName": "${name}",
 						"sparkJobName": "DataXDirect-${name}",
@@ -54,6 +54,10 @@
 						"sparkJobExecutorLogLevel": "INFO",
 						"sparkJobNumExecutors": "${guiSparkJobNumExecutors}",
 						"sparkJobExecutorMemory": "${guiSparkJobExecutorMemory}",
+						"sparkJobDatabricksMinWorkers" : "${guiSparkJobDatabricksMinWorkers}",
+						"sparkJobDatabricksMaxWorkers" : "${guiSparkJobDatabricksMaxWorkers}",
+						"sparkDatabricksToken" : "${guiSparkDatabricksToken}",
+						"sparkJobDatabricksAutoScale" : "${guiSparkJobDatabricksAutoScale}",
 						"processedSchemaPath": null
 				},
 				"jobs": [
@@ -175,6 +179,82 @@
 		}
 	},
 	{
+		"name": "DataXDirectDatabricks",
+		"content": {
+			"name" : "${sparkJobName}",
+			"cluster" : "$sparkName",
+			"databricksToken" : "${sparkDatabricksToken}",
+			"options" : {
+				"name" : "${sparkJobName}",
+				"new_cluster" : {
+					"spark_version" : "$databricksClusterSparkVersion",
+					"node_type_id" : "$databricksClusterNodeType",
+					"autoscale" : {
+						"min_workers" : "${sparkJobDatabricksMinWorkers}",
+						"max_workers" : "${sparkJobDatabricksMaxWorkers}"
+					},
+					"num_workers" : "${sparkJobDatabricksMinWorkers}",
+					"enableAutoscale" : "${sparkJobDatabricksAutoScale}",
+					"spark_conf" : {
+						"spark\uff0edatabricks\uff0edelta\uff0epreview\uff0eenabled" : true,
+						"spark\uff0esql\uff0ehive\uff0emetastore\uff0eversion" : "1.2.1",
+						"spark\uff0esql\uff0ehive\uff0emetastore\uff0ejars" : "builtin"
+					},
+					"spark_env_vars" : {
+						"DATAX_DEFAULTVAULTNAME" : "$sparkKVName"
+					}
+				},
+				"libraries" : [ 
+					{
+						"jar" : "dbfs:/datax/applicationinsights-core-2.2.1.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-documentdb-1.16.1.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-eventhubs-1.2.1.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-eventhubs-spark_2.11-2.3.6.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-keyvault-webkey-1.1.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/datax-core_2.4_2.11-1.2.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/datax-host_2.4_2.11-1.2.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/datax-keyvault_2.4_2.11-1.2.0-with-dependencies.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/datax-udf-samples_2.4_2.11-1.2.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/datax-utility_2.4_2.11-1.2.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/java-uuid-generator-3.1.5.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/proton-j-0.31.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/scala-java8-compat_2.11-0.9.0.jar"
+					}
+				],
+				"spark_jar_task" : {
+					"main_class_name" : "datax.app.DirectStreamingApp",
+					"parameters" : [ 
+						"conf=${sparkJobConfigFilePath}"
+					]
+				}
+			}
+		}
+	},
+	{
 		"name" : "flattener",
 		"content" : {
 			"type" : "object",
@@ -213,6 +293,22 @@
 								"checkpointInterval" : "checkpointinterval",
 								"maxRate" : "maxrate",
 								"flushExistingCheckpoints" : "flushexistingcheckpoints"
+							}
+						},
+						"blob" : {
+							"type" : "array",
+							"namespace" : "blob",
+							"element" : {
+								"type" : "scopedObject",
+								"namespaceField" : "name",
+								"fields" : {
+									"path" : "path",
+									"format" : "format",
+									"compressiontype" : "compressiontype",
+									"processstarttime" : "processstarttime",
+									"processendtime" : "processendtime",
+									"partitionincrement" : "partitionincrement"
+								}
 							}
 						},
 						"streaming" : {
@@ -348,74 +444,88 @@
 					"type" : "scopedObject",
 					"namespace" : "output",
 					"namespaceField" : "name",
-					"fields" : {
-						"blob" : {
-							"type" : "object",
-							"namespace" : "blob",
-							"fields" : {
-								"groupEvaluation" : "groupevaluation",
-								"compressionType" : {
-									"type" : "excludeDefaultValue",
-									"namespace" : "compressiontype",
-									"defaultValue" : "gzip"
-								},
-								"format" : {
-									"type" : "excludeDefaultValue",
-									"namespace" : "format",
-									"defaultValue" : "json"
-								},
-								"groups" : {
-									"type" : "map",
-									"namespace" : "group",
-									"fields" : {
-										"folder" : "folder"
-									}
-								}
-							}
-						},
-						"eventhub" : {
-							"type" : "object",
-							"namespace" : "eventhub",
-							"fields" : {
-								"connectionStringRef" : "connectionstring",
-								"compressionType" : {
-									"type" : "excludeDefaultValue",
-									"namespace" : "compressiontype",
-									"defaultValue" : "gzip"
-								},
-								"format" : {
-									"type" : "excludeDefaultValue",
-									"namespace" : "format",
-									"defaultValue" : "json"
-								},
-								"appendProperties" : {
-									"type" : "mapProps",
-									"namespace" : "appendproperty"
-								}
-							}
-						},
-						"cosmosdb" : {
-							"type" : "object",
-							"namespace" : "cosmosdb",
-							"fields" : {
-								"connectionStringRef" : "connectionstring",
-								"database" : "database",
-								"collection" : "collection"
-							}
-						},
-						"httpPost" : {
-							"type" : "object",
-							"namespace" : "httppost",
-							"fields" : {
-								"endpoint" : "endpoint",
-								"filter" : "filter",
-								"appendHeaders" : {
-									"type" : "mapProps",
-									"namespace" : "header"
-								}
-							}
-						}
-					}
+          "fields": {
+            "blob": {
+              "type": "object",
+              "namespace": "blob",
+              "fields": {
+                "groupEvaluation": "groupevaluation",
+                "compressionType": {
+                  "type": "excludeDefaultValue",
+                  "namespace": "compressiontype",
+                  "defaultValue": "gzip"
+                },
+                "format": {
+                  "type": "excludeDefaultValue",
+                  "namespace": "format",
+                  "defaultValue": "json"
+                },
+                "groups": {
+                  "type": "map",
+                  "namespace": "group",
+                  "fields": {
+                    "folder": "folder"
+                  }
+                }
+              }
+            },
+            "eventhub": {
+              "type": "object",
+              "namespace": "eventhub",
+              "fields": {
+                "connectionStringRef": "connectionstring",
+                "compressionType": {
+                  "type": "excludeDefaultValue",
+                  "namespace": "compressiontype",
+                  "defaultValue": "gzip"
+                },
+                "format": {
+                  "type": "excludeDefaultValue",
+                  "namespace": "format",
+                  "defaultValue": "json"
+                },
+                "appendProperties": {
+                  "type": "mapProps",
+                  "namespace": "appendproperty"
+                }
+              }
+            },
+            "cosmosdb": {
+              "type": "object",
+              "namespace": "cosmosdb",
+              "fields": {
+                "connectionStringRef": "connectionstring",
+                "database": "database",
+                "collection": "collection"
+              }
+            },
+            "httpPost": {
+              "type": "object",
+              "namespace": "httppost",
+              "fields": {
+                "endpoint": "endpoint",
+                "filter": "filter",
+                "appendHeaders": {
+                  "type": "mapProps",
+                  "namespace": "header"
+                }
+              }
+            },
+            "sqlServer": {
+              "type": "object",
+              "namespace": "sql",
+              "fields": {
+                "connectionStringRef": "connectionstring",
+                "databaseName": "databasename",
+                "tableName": "table",
+                "writeMode": "writemode",
+                "useBulkInsert": "usebulkinsert",
+                "url": "url",
+                "user": "user",
+                "password": "password"
+              }
+            }
+          }
 				},
 				"outputs" : {
 					"type" : "array",
@@ -423,74 +533,88 @@
 						"type" : "scopedObject",
 						"namespace" : "output",
 						"namespaceField" : "name",
-						"fields" : {
-							"blob" : {
-								"type" : "object",
-								"namespace" : "blob",
-								"fields" : {
-									"groupEvaluation" : "groupevaluation",
-									"compressionType" : {
-										"type" : "excludeDefaultValue",
-										"namespace" : "compressiontype",
-										"defaultValue" : "gzip"
-									},
-									"format" : {
-										"type" : "excludeDefaultValue",
-										"namespace" : "format",
-										"defaultValue" : "json"
-									},
-									"groups" : {
-										"type" : "map",
-										"namespace" : "group",
-										"fields" : {
-											"folder" : "folder"
-										}
-									}
-								}
-							},
-							"eventhub" : {
-								"type" : "object",
-								"namespace" : "eventhub",
-								"fields" : {
-									"connectionStringRef" : "connectionstring",
-									"compressionType" : {
-										"type" : "excludeDefaultValue",
-										"namespace" : "compressiontype",
-										"defaultValue" : "gzip"
-									},
-									"format" : {
-										"type" : "excludeDefaultValue",
-										"namespace" : "format",
-										"defaultValue" : "json"
-									},
-									"appendProperties" : {
-										"type" : "mapProps",
-										"namespace" : "appendproperty"
-									}
-								}
-							},
-							"cosmosdb" : {
-								"type" : "object",
-								"namespace" : "cosmosdb",
-								"fields" : {
-									"connectionStringRef" : "connectionstring",
-									"database" : "database",
-									"collection" : "collection"
-								}
-							},
-							"httpPost" : {
-								"type" : "object",
-								"namespace" : "httppost",
-								"fields" : {
-									"endpoint" : "endpoint",
-									"filter" : "filter",
-									"appendHeaders" : {
-										"type" : "mapProps",
-										"namespace" : "header"
-									}
-								}
-							}
-						}
+            "fields": {
+              "blob": {
+                "type": "object",
+                "namespace": "blob",
+                "fields": {
+                  "groupEvaluation": "groupevaluation",
+                  "compressionType": {
+                    "type": "excludeDefaultValue",
+                    "namespace": "compressiontype",
+                    "defaultValue": "gzip"
+                  },
+                  "format": {
+                    "type": "excludeDefaultValue",
+                    "namespace": "format",
+                    "defaultValue": "json"
+                  },
+                  "groups": {
+                    "type": "map",
+                    "namespace": "group",
+                    "fields": {
+                      "folder": "folder"
+                    }
+                  }
+                }
+              },
+              "eventhub": {
+                "type": "object",
+                "namespace": "eventhub",
+                "fields": {
+                  "connectionStringRef": "connectionstring",
+                  "compressionType": {
+                    "type": "excludeDefaultValue",
+                    "namespace": "compressiontype",
+                    "defaultValue": "gzip"
+                  },
+                  "format": {
+                    "type": "excludeDefaultValue",
+                    "namespace": "format",
+                    "defaultValue": "json"
+                  },
+                  "appendProperties": {
+                    "type": "mapProps",
+                    "namespace": "appendproperty"
+                  }
+                }
+              },
+              "cosmosdb": {
+                "type": "object",
+                "namespace": "cosmosdb",
+                "fields": {
+                  "connectionStringRef": "connectionstring",
+                  "database": "database",
+                  "collection": "collection"
+                }
+              },
+              "httpPost": {
+                "type": "object",
+                "namespace": "httppost",
+                "fields": {
+                  "endpoint": "endpoint",
+                  "filter": "filter",
+                  "appendHeaders": {
+                    "type": "mapProps",
+                    "namespace": "header"
+                  }
+                }
+              },
+              "sqlServer": {
+                "type": "object",
+                "namespace": "sql",
+                "fields": {
+                  "connectionStringRef": "connectionstring",
+                  "databaseName": "databasename",
+                  "tableName": "table",
+                  "writeMode": "writemode",
+                  "useBulkInsert": "usebulkinsert",
+                  "url": "url",
+                  "user": "user",
+                  "password": "password"
+                }
+              }
+            }
 					}
 				}
 			}
@@ -554,13 +678,95 @@
 		}
 	},
 	{
+		"name" : "kafkaDataXDirectDatabricks",
+		"content" : {
+			"name" : "${sparkJobName}",
+			"cluster" : "$sparkName",
+			"databricksToken" : "${sparkDatabricksToken}",
+			"options" : {
+				"name" : "${sparkJobName}",
+				"new_cluster" : {
+					"spark_version" : "$databricksClusterSparkVersion",
+					"node_type_id" : "$databricksClusterNodeType",
+					"autoscale" : {
+						"min_workers" : "${sparkJobDatabricksMinWorkers}",
+						"max_workers" : "${sparkJobDatabricksMaxWorkers}"
+					},
+					"num_workers" : "${sparkJobDatabricksMinWorkers}",
+					"enableAutoscale" : "${sparkJobDatabricksAutoScale}",
+					"spark_conf" : {
+						"spark\uff0edatabricks\uff0edelta\uff0epreview\uff0eenabled" : true,
+						"spark\uff0esql\uff0ehive\uff0emetastore\uff0eversion" : "1.2.1",
+						"spark\uff0esql\uff0ehive\uff0emetastore\uff0ejars" : "builtin"
+					},
+					"spark_env_vars" : {
+						"DATAX_DEFAULTVAULTNAME" : "$sparkKVName"
+					}
+				},
+				"libraries" : [ 
+					{
+						"jar" : "dbfs:/datax/applicationinsights-core-2.2.1.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-documentdb-1.16.1.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-eventhubs-1.2.1.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-eventhubs-spark_2.11-2.3.6.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-keyvault-webkey-1.1.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/datax-core_2.4_2.11-1.2.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/datax-host_2.4_2.11-1.2.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/datax-keyvault_2.4_2.11-1.2.0-with-dependencies.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/datax-udf-samples_2.4_2.11-1.2.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/datax-utility_2.4_2.11-1.2.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/java-uuid-generator-3.1.5.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/proton-j-0.31.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/scala-java8-compat_2.11-0.9.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/spark-streaming-kafka-0-10_2.11-2.4.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/kafka-clients-2.0.0.jar"
+					}
+				],
+				"spark_jar_task" : {
+					"main_class_name" : "datax.app.DirectKafkaStreamingApp",
+					"parameters" : [ 
+						"conf=${sparkJobConfigFilePath}"
+					]
+				}
+			}
+		}
+	},
+	{
 		"name" : "kafkaFlowConfig",
 		"content" : {
 			"name" : "###REQUIRED###",
 			"icon" : "/img/iot.png",
 			"displayName" : "###REQUIRED###",
 			"properties" : {
-				"inputEventHubSubscriptionId" : "keyvault://${serviceKeyVaultName}/$clientSecretPrefix-subscriptionId",
+				"inputEventHubSubscriptionId" : "$keyvaultPrefix://${serviceKeyVaultName}/$clientSecretPrefix-subscriptionId",
 				"inputEventHubResourceGroupName" : "${eventHubResourceGroupName}"
 			},
 			"commonProcessor" : {
@@ -586,7 +792,7 @@
 					},
 					"process" : {
 						"metric" : {
-							"eventhub" : "keyvault://${sparkKeyVaultName}/${metricEventHubConnectionStringKey}"
+							"eventhub" : "$keyvaultPrefix://${sparkKeyVaultName}/${metricEventHubConnectionStringKey}"
 						},
 						"timestampColumn" : "${processTimestampColumn}",
 						"watermark" : "${processWatermark}",
@@ -601,7 +807,7 @@
 					},
 					"outputs" : "${outputs}"
 				},
-				"sparkJobTemplateRef" : "kafkaDataXDirect",
+				"sparkJobTemplateRef" : "$dataxKafkaJobTemplate",
 				"jobCommonTokens" : {
 					"jobName" : "${name}",
 					"sparkJobName" : "DataXDirect-${name}",
@@ -609,6 +815,10 @@
 					"sparkJobExecutorLogLevel" : "INFO",
 					"sparkJobNumExecutors" : "${guiSparkJobNumExecutors}",
 					"sparkJobExecutorMemory" : "${guiSparkJobExecutorMemory}",
+					"sparkJobDatabricksMinWorkers" : "${guiSparkJobDatabricksMinWorkers}",
+					"sparkJobDatabricksMaxWorkers" : "${guiSparkJobDatabricksMaxWorkers}",
+					"sparkDatabricksToken" : "${guiSparkDatabricksToken}",
+					"sparkJobDatabricksAutoScale" : "${guiSparkJobDatabricksAutoScale}",
 					"processedSchemaPath" : null
 				},
 				"jobs" : [
@@ -670,6 +880,252 @@
 					"jobNames" : {
 						"type" : "getCPSparkJobNames"
 					}
+				}
+			}
+		}
+	},
+	{
+		"name" : "batchFlowConfig",
+		"content" : {
+			"name" : "###REQUIRED###",
+			"icon" : "/img/iot.png",
+			"displayName" : "###REQUIRED###",
+			"properties" : {
+				"inputEventHubSubscriptionId" : "$keyvaultPrefix://${serviceKeyVaultName}/web-subscriptionId",
+				"inputEventHubResourceGroupName" : "${eventHubResourceGroupName}"
+			},
+			"commonProcessor" : {
+				"sparkJobConfigFolder" : "wasbs://flows@${cpConfigFolderBase}/${containerPath}/${name}",
+				"sparkJobConfigFolderBackfilling" : "wasbs://flows@${cpConfigFolderBase}/${containerPath}/${name}",
+				"template" : {
+					"name" : "${name}",
+					"input" : {
+						"blob" : "${inputBatching}",
+						"blobSchemaFile" : "${inputSchemaFilePath}",
+						"referenceData" : "${inputReferenceData}"
+					},
+					"process" : {
+						"metric" : {
+							"eventhub" : 
+							"$keyvaultPrefix://${sparkKeyVaultName}/${metricEventHubConnectionStringKey}"
+						},
+						"timestampColumn" : "${processTimestampColumn}",
+						"watermark" : "${processWatermark}",
+						"jarUDAFs" : "${processJarUDAFs}",
+						"jarUDFs" : "${processJarUDFs}",
+						"azureFunctions" : "${processAzureFunctions}",
+						"projections" : "${processProjections}",
+						"timeWindows" : "${processTimeWindows}",
+						"transform" : "${processTransforms}",
+						"appendEventTags" : {},
+						"accumulationTables" : "${processStateTables}"
+					},
+					"outputs" : "${outputs}"
+				},
+				"sparkJobTemplateRef" : "$dataxBatchJobTemplate",
+				"jobCommonTokens" : {
+					"jobName" : "${name}",
+					"sparkJobName" : "DataXBatch-${name}",
+					"sparkJobDriverLogLevel" : "WARN",
+					"sparkJobExecutorLogLevel" : "INFO",
+					"sparkJobNumExecutors" : "${guiSparkJobNumExecutors}",
+					"sparkJobExecutorMemory" : "${guiSparkJobExecutorMemory}",
+					"sparkJobDatabricksMinWorkers" : "${guiSparkJobDatabricksMinWorkers}",
+					"sparkJobDatabricksMaxWorkers" : "${guiSparkJobDatabricksMaxWorkers}",
+					"sparkDatabricksToken" : "${guiSparkDatabricksToken}",
+					"sparkJobDatabricksAutoScale" : "${guiSparkJobDatabricksAutoScale}",
+					"processedSchemaPath" : null
+				},
+				"jobs" : [ 
+					{
+						"partitionJobNumber" : "1"
+					}
+				]
+			},
+			"metrics" : {
+				"sources" : [ 
+					{
+						"name" : "events",
+						"input" : {
+							"type" : "MetricApi",
+							"metricKeys" : [ 
+								"DATAX-${name}:Input_DataXProcessedInput_Events_Count"
+							]
+						},
+						"output" : {
+							"type" : "SumWithTimeChart",
+							"data" : {
+								"sum" : true,
+								"timechart" : true,
+								"average" : true,
+								"speed" : true
+							}
+						}
+					}
+				],
+				"widgets" : [ 
+					{
+						"name" : "eventsChart",
+						"displayName" : "Events/Second",
+						"data" : "events_timechart",
+						"position" : "TimeCharts",
+						"type" : "StackAreaChart"
+					}, 
+					{
+						"name" : "totalEvents",
+						"displayName" : "Events Ingested Today",
+						"data" : "events_sum",
+						"formatter" : "longint",
+						"type" : "SimpleBox",
+						"position" : "FirstRow"
+					}, 
+					{
+						"name" : "averageEvents",
+						"displayName" : "Avg. Events/Minute",
+						"data" : "events_average",
+						"formatter" : "longint",
+						"type" : "SimpleBox",
+						"position" : "FirstRow"
+					}
+				],
+				"initParameters" : {
+					"widgetSets" : [ 
+						"direct"
+					],
+					"jobNames" : {
+						"type" : "getCPSparkJobNames"
+					}
+				}
+			}
+		}
+	},
+	{
+		"name" : "DataXBatch",
+		"content" : {
+			"name" : "${sparkJobName}",
+			  "cluster": "$sparkName",
+			"options" : {
+				"name" : "${sparkJobName}",
+			"file" : "wasbs:///datax/bin/datax-host_2.3_2.11-1.1.0.jar",
+				"className" : "datax.app.BatchApp",
+				"args" : [ 
+					"conf=${sparkJobConfigFilePath}", 
+					"driverLogLevel=${sparkJobDriverLogLevel}"
+				],
+				"jars" : [ 
+				"wasbs:///datax/bin/datax-core_2.3_2.11-1.1.0.jar",
+				"wasbs:///datax/bin/datax-utility_2.3_2.11-1.1.0.jar",
+					"wasbs:///datax/bin/applicationinsights-core-2.2.1.jar", 
+					"wasbs:///datax/bin/azure-documentdb-1.16.1.jar", 
+					"wasbs:///datax/bin/azure-eventhubs-1.2.1.jar", 
+					"wasbs:///datax/bin/azure-eventhubs-spark_2.11-2.3.6.jar", 
+					"wasbs:///datax/bin/azure-keyvault-webkey-1.1.jar", 
+				"wasbs:///datax/bin/datax-keyvault_2.3_2.11-1.1.0-with-dependencies.jar",
+					"wasbs:///datax/bin/java-uuid-generator-3.1.5.jar", 
+					"wasbs:///datax/bin/proton-j-0.31.0.jar",
+					"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar"
+				],
+				"driverMemory" : "1024m",
+				"executorCores" : 2,
+				"numExecutors" : "${sparkJobNumExecutors}",
+				"driverCores" : 1,
+				"executorMemory" : "${sparkJobExecutorMemory}",
+				"conf" : {
+				  "spark\uff0eexecutor\uff0eextraJavaOptions": "-verbose:gc -XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintFlagsFinal -XX:+PrintReferenceGC -XX:+PrintAdaptiveSizePolicy -XX:+UnlockDiagnosticVMOptions -XX:+G1SummarizeConcMark -XX:+AlwaysPreTouch -XX:+PrintCodeCache -XX:ReservedCodeCacheSize=240m -XX:+UseCodeCacheFlushing",
+				  "spark\uff0eyarn\uff0eam\uff0eattemptFailuresValidityInterval": "1h",
+				  "spark\uff0eyarn\uff0eexecutor\uff0efailuresValidityInterval": "1h",
+				  "spark\uff0eblacklist\uff0eenabled": "true",
+				  "spark\uff0edriver\uff0euserClassPathFirst": true,
+				  "spark\uff0eexecutor\uff0euserClassPathFirst": true,
+				  "spark\uff0especulation": true,
+				  "spark\uff0especulation\uff0emultiplier": 3,
+				  "spark\uff0especulation\uff0equantile": 0.9,
+				  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName",
+				  "spark\uff0eexecutorEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
+				  "spark\uff0eexecutorEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
+				  "spark\uff0eexecutorEnv\uff0eDATAX_LOGLEVEL": "${sparkJobExecutorLogLevel}",
+				  "spark\uff0eexecutorEnv\uff0eDATAX_CHECKPOINTENABLED": "true",
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName", 
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_LOGLEVEL": "${sparkJobDriverLogLevel}",
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_CHECKPOINTENABLED": "true"
+				}
+			}
+		}
+	},
+	{
+		"name" : "DataXBatchDatabricks",
+		"content" : {
+			"name" : "${sparkJobName}",
+			"cluster" : "$sparkName",
+			"databricksToken" : "${sparkDatabricksToken}",
+			"options" : {
+				"name" : "${sparkJobName}",
+				"new_cluster" : {
+					"spark_version" : "$databricksClusterSparkVersion",
+					"node_type_id" : "$databricksClusterNodeType",
+					"autoscale" : {
+						"min_workers" : "${sparkJobDatabricksMinWorkers}",
+						"max_workers" : "${sparkJobDatabricksMaxWorkers}"
+					},
+					"num_workers" : "${sparkJobDatabricksMinWorkers}",
+					"enableAutoscale" : "${sparkJobDatabricksAutoScale}",
+					"spark_conf" : {
+						"spark\uff0edatabricks\uff0edelta\uff0epreview\uff0eenabled" : true,
+						"spark\uff0esql\uff0ehive\uff0emetastore\uff0eversion" : "1.2.1",
+						"spark\uff0esql\uff0ehive\uff0emetastore\uff0ejars" : "builtin"
+					},
+					"spark_env_vars" : {
+						"DATAX_DEFAULTVAULTNAME" : "$sparkKVName"
+					}
+				},
+				"libraries" : [ 
+					{
+						"jar" : "dbfs:/datax/applicationinsights-core-2.2.1.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-documentdb-1.16.1.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-eventhubs-1.2.1.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-eventhubs-spark_2.11-2.3.6.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-keyvault-webkey-1.1.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/datax-core_2.4_2.11-1.2.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/datax-host_2.4_2.11-1.2.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/datax-keyvault_2.4_2.11-1.2.0-with-dependencies.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/datax-udf-samples_2.4_2.11-1.2.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/datax-utility_2.4_2.11-1.2.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/java-uuid-generator-3.1.5.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/proton-j-0.31.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/scala-java8-compat_2.11-0.9.0.jar"
+					}
+				],
+				"spark_jar_task" : {
+					"main_class_name" : "datax.app.BatchApp",
+					"parameters" : [ 
+						"conf=${sparkJobConfigFilePath}"
+					]
 				}
 			}
 		}

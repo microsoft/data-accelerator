@@ -11,7 +11,7 @@ namespace DataX.Utility.KeyVault
 {
     public static class SecretUriParser
     {
-        private static Regex _Reg = new Regex(@"^((keyvault:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
+        private static Regex _Reg = new Regex(@"^((keyvault|secretscope:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
 
         public static void ParseSecretUri(string secretUri, out string keyvaultName, out string secretName)
         {
@@ -45,9 +45,9 @@ namespace DataX.Utility.KeyVault
             }
         }
 
-        public static string ComposeUri(string keyvaultName, string secretName)
+        public static string ComposeUri(string keyvaultName, string secretName, string uriPrefix)
         {
-            return $"keyvault://{keyvaultName}/{secretName}";
+            return $"{uriPrefix}://{keyvaultName}/{secretName}";
         }
     }
 }

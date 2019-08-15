@@ -185,6 +185,12 @@ function Get-Tokens {
     $tokens.Add('kafkaName', $kafkaName)
     $tokens.Add('kafkaEventHubNamespaceName', $kafkaEventHubNamespaceName)
     $tokens.Add('clientSecretPrefix', $clientSecretPrefix)
+	
+	$keyvaultPrefix = 'keyvault'
+	if ($useDatabricks -eq 'y') {
+		$keyvaultPrefix = 'secretscope'
+	}
+	$tokens.Add('keyvaultPrefix', $keyvaultPrefix)
 
     $tokens
 }

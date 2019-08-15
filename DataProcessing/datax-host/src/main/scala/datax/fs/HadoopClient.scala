@@ -122,13 +122,21 @@ object HadoopClient {
     * @param sa name of the storage account
     */
   private def resolveStorageAccount(vaultName: String, sa: String) = {
+    // Fetch secret from keyvault using KeyVaultMsiAuthenticatorClient and if that does not return secret then fetch it using secret scope  
     val secretId = s"keyvault://$vaultName/${ProductConstant.ProductRoot}-sa-$sa"
     KeyVaultClient.getSecret(secretId) match {
       case Some(value)=>
         logger.warn(s"Retrieved key for storage account '$sa' with secretid:'$secretId'")
         setStorageAccountKey(sa, value)
-      case None =>
-        logger.warn(s"Failed to find key for storage account '$sa' with secretid:'$secretId'")
+      case None =>	    
+        val databricksSecretId = s"secretscope://$vaultName/${ProductConstant.ProductRoot}-sa-$sa"
+		KeyVaultClient.getSecret(databricksSecretId) match {
+		  case Some(value)=>
+            logger.warn(s"Retrieved key for storage account '$sa' with secretid:'$databricksSecretId'")
+            setStorageAccountKey(sa, value)
+		  case None =>
+		    logger.warn(s"Failed to find key for storage account '$sa' with secretid:'$secretId' and '$databricksSecretId'")
+		}
     }
   }
 
@@ -432,6 +440,7 @@ object HadoopClient {
     * @return a list of file paths under the folder
     */
   def listFiles(folder: String): Iterator[String] = {
+    resolveStorageAccountKeyForPath(folder)
     val path = new Path(folder)
     val fs = path.getFileSystem(getConf)
 

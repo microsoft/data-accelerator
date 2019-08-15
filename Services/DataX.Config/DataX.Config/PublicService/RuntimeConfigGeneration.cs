@@ -25,7 +25,7 @@ namespace DataX.Config
         /// </summary>
         [ImportingConstructor]
         public RuntimeConfigGeneration(
-            ILogger logger,
+            ILogger<RuntimeConfigGeneration> logger,
             FlowDataManager flows,
             JobDataManager jobData,
             [ImportMany] IEnumerable<IFlowDeploymentProcessor> flowProcessors

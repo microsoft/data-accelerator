@@ -8,6 +8,7 @@
   "gui": {
     "name": "configgentest",
     "displayName": "configgentest",
+    "databricksToken": null,
     "owner": "data-accelerator@microsoft.com",
     "input": {
       "mode": "streaming",
@@ -37,7 +38,8 @@
           },
           "typeDisplay": "CSV/TSV File"
         }
-      ]
+      ],
+      "batch": null
     },
     "process": {
       "timestampColumn": "eventTime",
@@ -86,7 +88,10 @@
       ],
       "jobconfig": {
         "jobNumExecutors": "6",
-        "jobExecutorMemory": "8000"
+        "jobExecutorMemory": "8000",
+        "jobDatabricksAutoScale": false,
+        "jobDatabricksMinWorkers": null,
+        "jobDatabricksMaxWorkers": null
       }
     },
     "outputs": [
@@ -289,6 +294,7 @@
         }
       }
     ],
+    "batchList": "",
     "subscription": null
   },
   "commonProcessor": {

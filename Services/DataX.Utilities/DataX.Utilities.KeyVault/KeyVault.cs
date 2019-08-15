@@ -40,7 +40,7 @@ namespace DataX.Utilities.KeyVault
         {
             try
             {
-                Regex reg = new Regex(@"^((keyvault:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
+                Regex reg = new Regex(@"^((keyvault|secretscope:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
                 MatchCollection m = reg.Matches(secretUri);
                 keyvaultName = m[0].Groups[3].Value;
                 secretName = m[0].Groups[5].Value;

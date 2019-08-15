@@ -129,3 +129,6 @@ BundleArtifacts/
 /DeploymentCloud/Deployment.DataX/Temp
 /DeploymentCloud/Deployment.DataX/Outputs
 /DeploymentCloud/Deployment.DataX/Packages
+
+# Development settings
+appsettings.Development.json

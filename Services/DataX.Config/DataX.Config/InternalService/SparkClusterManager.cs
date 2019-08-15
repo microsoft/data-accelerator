@@ -37,9 +37,9 @@ namespace DataX.Config
         /// </summary>
         /// <param name="clusterName"></param>
         /// <returns></returns>
-        public async Task<ISparkJobClient> GetSparkJobClient(string clusterName)
+        public async Task<ISparkJobClient> GetSparkJobClient(string clusterName, string databricksToken)
         {
-            return await CreateSparkJobClient(clusterName);
+            return await CreateSparkJobClient(clusterName, databricksToken);
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace DataX.Config
         /// </summary>
         /// <param name="clusterName"></param>
         /// <returns></returns>
-        private async Task<ISparkJobClient> CreateSparkJobClient(string clusterName)
+        private async Task<ISparkJobClient> CreateSparkJobClient(string clusterName, string databricksToken)
         {
             var cluster = await this.ClusterData.GetByNameAsync(clusterName);
             if (cluster == null)
@@ -56,6 +56,13 @@ namespace DataX.Config
             }
 
             var connectionString = await this.KeyVaultClient.ResolveSecretUriAsync(cluster.ConnectionString);
+
+            //If databricks token exist then append it to the connection string
+            if(!string.IsNullOrWhiteSpace(databricksToken))
+            {
+                connectionString += await this.KeyVaultClient.ResolveSecretUriAsync(databricksToken);
+            }
+
             return await this.ClientFactory.GetClient(connectionString);
         }
     }

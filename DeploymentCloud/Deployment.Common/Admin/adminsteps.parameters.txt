@@ -11,3 +11,7 @@ clientAppId=$clientAppId
 
 # ResourceGroupName to generate resources 
 resourceGroupName=$resourceGroup
+
+# Role Names
+# Writer can manage flows
+writerRole=$writerRole

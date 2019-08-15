@@ -19,6 +19,7 @@ Licensed under the MIT License
   <Section Name="ServiceEnvironment">
     <Parameter Name="ServiceKeyvaultName" Value="" MustOverride="true"/>
     <Parameter Name="AppInsightsIntrumentationKey" Value="" MustOverride="true" />
+    <Parameter Name="TestClientId" Value="" MustOverride="true" />
     <Parameter Name="EnableUserInfoLogging" Value=""  MustOverride="true"/>
   </Section>  
 </Settings>

@@ -1,0 +1,197 @@
+﻿{
+  "name": "configgenbatchtest",
+  "icon": "/img/iot.png",
+  "displayName": "configgenbatchtest",
+  "properties": {
+    "foo": "bar"
+  },
+  "gui": {
+    "name": "configgenbatchtest",
+    "displayName": "configgenbatchtest",
+    "owner": "data-accelerator@microsoft.com",
+    "input": {
+      "mode": "batching",
+      "type": "blob",
+      "properties": {
+        "inputEventhubName": "",
+        "inputEventhubConnection": "",
+        "windowDuration": "30",
+        "timestampColumn": "",
+        "watermarkValue": "0",
+        "watermarkUnit": "second",
+        "maxRate": "1000",
+        "inputSchemaFile": "{\"type\":\"struct\",\"fields\":[{\"name\":\"deviceDetails\",\"type\":{\"type\":\"struct\",\"fields\":[{\"name\":\"deviceType\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"id\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"deviceId\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"homeId\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"status\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}}]},\"nullable\":true,\"metadata\":{}}]}",
+        "showNormalizationSnippet": false,
+        "normalizationSnippet": "Raw.*",
+        "inputSubscriptionId": "",
+        "inputResourceGroup": ""
+      },
+      "referenceData": [],
+      "batch": [
+        {
+          "type": "blob",
+          "properties": {
+            "connection": "keyvault://somekeyvault/configgenbatchtest-input-0-inputConnection",
+            "path": "keyvault://somekeyvault/configgenbatchtest-input-0-inputPath",
+            "formatType": "json",
+            "compressionType": "none"
+          }
+        }
+      ]
+    },
+    "process": {
+      "timestampColumn": "",
+      "watermark": "0 second",
+      "functions": [],
+      "queries": [
+        "--DataXQuery--\nevents = SELECT\nCOUNT(*) AS eventCount\nFROM \nDataXProcessedInput;\n\n--DataXQuery--\nt1 = SELECT\n*\nFROM \nDataXProcessedInput;\n\nmetricExample = CreateMetric(events, eventCount);\n\nOUTPUT metricExample TO Metrics;\nOUTPUT DataXProcessedInput TO myBlob;"
+      ],
+      "jobconfig": {
+        "jobNumExecutors": "4",
+        "jobExecutorMemory": "1000"
+      }
+    },
+    "outputs": [
+      {
+        "id": "Metrics",
+        "type": "metric",
+        "properties": {},
+        "typeDisplay": "Metrics"
+      }
+    ],
+    "outputTemplates": [],
+    "rules": [],
+    "batchList": [
+      {
+        "id": "r",
+        "type": "recurring",
+        "properties": {
+          "interval": "1",
+          "intervalType": "day",
+          "delay": "0",
+          "delayType": "day",
+          "window": "3",
+          "windowType": "day",
+          "startTime": "${startTime}",
+          "endTime": "${endTime}",
+          "lastProcessedTime": ""
+        },
+        "disabled": false
+      },
+      {
+        "id": "o",
+        "type": "oneTime",
+        "properties": {
+          "interval": "1",
+          "intervalType": "day",
+          "delay": "0",
+          "delayType": "day",
+          "window": "1",
+          "windowType": "day",
+          "startTime": "${startTime}",
+          "endTime": "${endTime}",
+          "lastProcessedTime": ""
+        },
+        "disabled": false
+      }
+    ],
+    "subscription": ""
+  },
+  "commonProcessor": {
+    "sparkJobConfigFolder": "file:///datax/runtime/testjobs/",
+    "template": {
+      "name": "${name}",
+      "input": {
+        "blob": "${inputBatching}",
+        "blobSchemaFile": "${inputSchemaFilePath}",
+        "referenceData": "${inputReferenceData}"
+      },
+      "process": {
+        "metric": {
+          "eventhub": "keyvault://${sparkKeyVaultName}/${metricEventHubConnectionStringKey}"
+        },
+        "timestampColumn": "${processTimestampColumn}",
+        "watermark": "${processWatermark}",
+        "jarUDAFs": "${processJarUDAFs}",
+        "jarUDFs": "${processJarUDFs}",
+        "azureFunctions": "${processAzureFunctions}",
+        "projections": "${processProjections}",
+        "timeWindows": "${processTimeWindows}",
+        "transform": "${processTransforms}",
+        "appendEventTags": {},
+        "accumulationTables": "${processStateTables}"
+      },
+      "outputs": "${outputs}"
+    },
+    "sparkJobTemplateRef": "defaultJobTemplate",
+    "jobCommonTokens": {
+      "jobName": "${name}",
+      "sparkJobName": "DataXBatch-${name}",
+      "sparkJobDriverLogLevel": "WARN",
+      "sparkJobExecutorLogLevel": "INFO",
+      "sparkJobNumExecutors": "${guiSparkJobNumExecutors}",
+      "sparkJobExecutorMemory": "${guiSparkJobExecutorMemory}",
+      "processedSchemaPath": null
+    },
+    "jobs": [
+      {
+        "partitionJobNumber": "1"
+      }
+    ]
+  },
+  "metrics": {
+    "sources": [
+      {
+        "name": "events",
+        "input": {
+          "type": "MetricApi",
+          "metricKeys": [
+            "DATAX-configgenbatchtest:Input_DataXProcessedInput_Events_Count"
+          ]
+        },
+        "output": {
+          "type": "SumWithTimeChart",
+          "data": {
+            "sum": true,
+            "timechart": true,
+            "average": true,
+            "speed": true
+          }
+        }
+      }
+    ],
+    "widgets": [
+      {
+        "name": "eventsChart",
+        "displayName": "Events/Second",
+        "data": "events_timechart",
+        "position": "TimeCharts",
+        "type": "StackAreaChart"
+      },
+      {
+        "name": "totalEvents",
+        "displayName": "Events Ingested Today",
+        "data": "events_sum",
+        "formatter": "longint",
+        "position": "FirstRow",
+        "type": "SimpleBox"
+      },
+      {
+        "name": "averageEvents",
+        "displayName": "Avg. Events/Minute",
+        "data": "events_average",
+        "formatter": "longint",
+        "position": "FirstRow",
+        "type": "SimpleBox"
+      }
+    ],
+    "initParameters": {
+      "widgetSets": [
+        "direct"
+      ],
+      "jobNames": {
+        "type": "getCPSparkJobNames"
+      }
+    }
+  }
+}

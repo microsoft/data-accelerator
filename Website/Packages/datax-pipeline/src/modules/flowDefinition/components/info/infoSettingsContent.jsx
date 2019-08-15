@@ -35,6 +35,20 @@ export default class InfoSettingsContent extends React.Component {
                     />
                 </div>
 
+                {this.props.isDatabricksSparkType && (
+                    <div style={sectionStyle}>
+                        <TextField
+                            type="password"
+                            className="ms-font-m info-settings-textbox"
+                            spellCheck={false}
+                            label="Databricks Token"
+                            disabled={false}
+                            value={this.props.databricksToken}
+                            onChange={(event, databricksToken) => this.props.onUpdateDatabricksToken(databricksToken)}
+                        />
+                    </div>
+                )}
+
                 <div style={sectionStyle}>
                     <TextField
                         className="ms-font-m info-settings-textbox"
@@ -66,8 +80,8 @@ InfoSettingsContent.propTypes = {
     displayName: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     owner: PropTypes.string.isRequired,
-
     onUpdateDisplayName: PropTypes.func.isRequired,
+    onUpdateDatabricksToken: PropTypes.func.isRequired,
     flowNameTextboxEnabled: PropTypes.bool.isRequired
 };
 

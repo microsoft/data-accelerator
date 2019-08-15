@@ -6,3 +6,9 @@
 /v15
 npm-debug.log
 /DataProcessing/DataX.Utilities/DataX.Utility.CodeSign/obj
+/Tests/ScenarioTester/ScenarioTester/bin
+/Tests/ScenarioTester/.vs
+*.suo
+/Tests/ScenarioTester/ScenarioTester/obj
+/Tests/ScenarioTester/ScenarioTesterTests/bin
+/Tests/ScenarioTester/ScenarioTesterTests/obj

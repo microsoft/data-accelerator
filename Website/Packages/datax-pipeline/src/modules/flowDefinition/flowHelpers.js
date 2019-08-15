@@ -4,13 +4,6 @@
 // *********************************************************************
 import * as Models from './flowModels';
 
-export function isValidNumberAboveZero(value) {
-    const number = Number(value);
-    const isNumber = !isNaN(number);
-    const isValid = isNumber && number > 0 && value[0] !== '0';
-    return isValid;
-}
-
 export function isValidNumberAboveOrEqualZero(value) {
     const number = Number(value);
     const isNumber = !isNaN(number);
@@ -441,12 +434,13 @@ export function isMetricSinker(sinker) {
     return sinker.type === Models.sinkerTypeEnum.metric;
 }
 
-export function convertFlowToConfig(flow) {
+export function convertFlowToConfig(flow, query) {
     let referenceData = [...flow.referenceData];
     let functions = [...flow.functions];
     let sinkers = [...flow.outputs];
     let outputTemplates = [...flow.outputTemplates];
     let rules = [...flow.rules];
+    let batchList = flow.batchList ? [...flow.batchList] : [];
 
     // sort by name
     referenceData.sort((a, b) => a.id.localeCompare(b.id));
@@ -454,23 +448,27 @@ export function convertFlowToConfig(flow) {
     sinkers.sort((a, b) => a.id.localeCompare(b.id));
     outputTemplates.sort((a, b) => a.id.localeCompare(b.id));
     rules.sort((a, b) => a.id.localeCompare(b.id));
+    batchList.sort((b, a) => a.type.localeCompare(b.type));
 
     // return product config
     return {
         name: flow.name,
+        flowId: flow.flowId,
         displayName: flow.displayName.trim(),
         owner: flow.owner,
-        input: Object.assign({}, flow.input, { referenceData: flow.referenceData }),
+        databricksToken: flow.databricksToken,
+        input: Object.assign({}, flow.input, { referenceData: flow.referenceData, batch: flow.batchInputs }),
         process: {
             timestampColumn: flow.input.properties.timestampColumn,
             watermark: `${flow.input.properties.watermarkValue} ${flow.input.properties.watermarkUnit}`,
             functions: functions,
-            queries: [flow.query],
+            queries: [query],
             jobconfig: flow.scale
         },
         outputs: sinkers,
         outputTemplates: outputTemplates,
-        rules: convertFlowToConfigRules(rules)
+        rules: convertFlowToConfigRules(rules),
+        batchList: batchList
     };
 }
 
@@ -489,9 +487,13 @@ export function convertConfigToFlow(config) {
     // return flow understood by our website
     let flow = {
         name: config.name,
+        flowId: config.flowId,
         displayName: config.displayName,
         owner: config.owner,
+        databricksToken: config.databricksToken,
         input: input,
+        batchInputs: input.batch,
+        batchList: config.batchList ? config.batchList : [],
         referenceData: input.referenceData ? input.referenceData : [],
         functions: config.process.functions ? config.process.functions : [],
         query: config.process.queries[0],
@@ -502,4 +504,28 @@ export function convertConfigToFlow(config) {
     };
 
     return flow;
+}
+/** This is the contract between the package that is dependent on datax-query package. For example, datax-pipeline package needs to pass in queryMetadata object which contains all the required parameters as needed by various apis in the datax-query package*/
+export function convertFlowToQueryMetadata(flow, query) {
+    // return query metadata
+    let QueryMetadata = {
+        name: flow.name,
+        databricksToken: flow.databricksToken,
+        displayName: flow.displayName,
+        userName: flow.owner,
+        refData: flow.referenceData,
+        inputSchema: flow.input.properties.inputSchemaFile,
+        normalizationSnippet: flow.input.properties.normalizationSnippet,
+        outputTemplates: flow.outputTemplates,
+        functions: flow.functions,
+        rules: convertFlowToConfigRules(flow.rules),
+        eventhubConnection: flow.input.properties.inputEventhubConnection,
+        inputResourceGroup: flow.input.properties.inputResourceGroup,
+        eventhubNames: flow.input.properties.inputEventhubName,
+        inputType: flow.input.type,
+        seconds: flow.resamplingInputDuration,
+        query: query,
+        inputSubscriptionId: flow.input.properties.inputSubscriptionId
+    };
+    return QueryMetadata;
 }

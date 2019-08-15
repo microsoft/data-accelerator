@@ -4,7 +4,7 @@
 		{
 			"dataTypeName": "DeviceData",
 			"simulationPeriodInMinute": 1,
-			"numEventsPerBatch": 100,
+			"numEventsPerBatch": 50,
 			"fields": [
 				{
 					"name": "deviceDetails",
