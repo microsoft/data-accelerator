@@ -23,10 +23,13 @@ using System.Xml.Serialization;
 
 namespace DataX.Flow.InteractiveQuery
 {
-    public abstract class KernelService 
+    /// <summary>
+    /// This is the class that manages the kernel for interactive queries
+    /// </summary>
+    public abstract class KernelService
     {
         private steps _steps = null;
-        private const int _MaxCount = 20;        
+        private const int _MaxCount = 20;
         private string _setupStepsXml = "";
         private const string _QuerySeparator = "--DataXQuery--";
 
@@ -41,6 +44,7 @@ namespace DataX.Flow.InteractiveQuery
         {
             SparkType = flowConfig.SparkType;
             Logger = logger;
+            FlowConfig = flowConfig;
         }
 
         protected FlowConfigObject FlowConfig { get; set; }
@@ -62,7 +66,7 @@ namespace DataX.Flow.InteractiveQuery
         /// <param name="functions">All UDFs and UDAFs as specified by the user</param>
         /// <returns>ApiResult which contains error or the kernelId (along with/without warning) as the case maybe</returns>
         public async Task<ApiResult> CreateandInitializeKernelAsync(string kernelId, string setupStepsXml, bool isReSample, List<ReferenceDataObject> referenceDatas, List<FunctionObject> functions)
-        {            
+        {
             _setupStepsXml = setupStepsXml;
             var response = await InitializeKernelAsync(kernelId, isReSample, referenceDatas, functions);
             if (response.Error.HasValue && response.Error.Value)
@@ -72,7 +76,7 @@ namespace DataX.Flow.InteractiveQuery
                 return ApiResult.CreateError(response.Message);
             }
             else
-            {                
+            {
                 return ApiResult.CreateSuccess(response.Result);
             }
         }
@@ -250,7 +254,7 @@ namespace DataX.Flow.InteractiveQuery
                         {
                             Logger.LogError($"Initialization step: {_steps.Items[i].Value}. Resulting Error: {result}");
                         }
-                        _steps.Items[i].Value = NormalizationSnippetHelper(ref i, ref normalizationWarning, result, _steps.Items);                        
+                        _steps.Items[i].Value = NormalizationSnippetHelper(ref i, ref normalizationWarning, result, _steps.Items);
                     }
                 }
 
@@ -299,7 +303,15 @@ namespace DataX.Flow.InteractiveQuery
 
             for (int i = 0; i < referenceDatas.Count; i++)
             {
-                string realPath = UDFPathResolver(referenceDatas[i].Properties.Path);                
+                string realPath = Helper.SetValueBasedOnSparkType(SparkType,
+                    UDFPathResolver(referenceDatas[i].Properties.Path),
+                    Helper.ConvertToDbfsFilePath(UDFPathResolver(referenceDatas[i].Properties.Path)));
+
+                if (SparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
+                {
+                    MountStorage(FlowConfig, realPath, kernel);
+                }
+
                 string code = $"spark.read.option(\"delimiter\", \"{(string.IsNullOrEmpty(referenceDatas[i].Properties.Delimiter) ? "," : referenceDatas[i].Properties.Delimiter)}\").option(\"header\", \"{referenceDatas[i].Properties.Header.ToString()}\").csv(\"{realPath}\").createOrReplaceTempView(\"{referenceDatas[i].Id}\"); print(\"done\");";
                 string result = kernel.ExecuteCode(code);
                 LogErrors(result, code, "LoadReferenceData");
@@ -323,7 +335,15 @@ namespace DataX.Flow.InteractiveQuery
                 if(fo.TypeDisplay=="UDF")
                 {
                     PropertiesUD properties = JsonConvert.DeserializeObject<PropertiesUD>(fo.Properties.ToString());
-                    string realPath = UDFPathResolver(properties.Path);
+                    string realPath = Helper.SetValueBasedOnSparkType(SparkType,
+                        UDFPathResolver(properties.Path),
+                        Helper.ConvertToDbfsFilePath(UDFPathResolver(properties.Path)));
+
+                    if (SparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
+                    {
+                        MountStorage(FlowConfig, realPath, kernel);
+                    }
+
                     string code = $"val jarPath = \"{realPath}\"\n";
                     code += $"val mainClass = \"{properties.ClassName}\"\n";
                     code += $"datax.host.SparkJarLoader.addJarOnDriver(spark, jarPath, 0, false)\n";
@@ -344,7 +364,15 @@ namespace DataX.Flow.InteractiveQuery
                 else if(fo.TypeDisplay=="UDAF")
                 {
                     PropertiesUD properties = JsonConvert.DeserializeObject<PropertiesUD>(fo.Properties.ToString());
-                    string realPath = UDFPathResolver(properties.Path);
+                    string realPath = Helper.SetValueBasedOnSparkType(SparkType,
+                        UDFPathResolver(properties.Path),
+                        Helper.ConvertToDbfsFilePath(UDFPathResolver(properties.Path)));
+
+                    if (SparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
+                    {
+                        MountStorage(FlowConfig, realPath, kernel);
+                    }
+
                     string code = $"val jarPath = \"{realPath}\"\n";
                     code += $"val mainClass = \"{properties.ClassName}\"\n";
                     code += $"datax.host.SparkJarLoader.addJarOnDriver(spark, jarPath, 0, false)\n";
@@ -577,7 +605,7 @@ namespace DataX.Flow.InteractiveQuery
                         var deleteResult = await DeleteKernelAsync(kernelId);
                     }
                     var response = await GarbageCollectListOfKernels(connectionString, blobUri);
-                    
+
                     response = await CreateKernelAsync();
                     if (response.Error.HasValue && response.Error.Value)
                     {
@@ -664,7 +692,7 @@ namespace DataX.Flow.InteractiveQuery
                 Logger.LogError($"Initialization step - {step}: Resulting Error: {errors}");
             }
         }
-        
+
         /// <summary>
         /// Returning a json object
         /// </summary>
@@ -675,7 +703,7 @@ namespace DataX.Flow.InteractiveQuery
         {
             var error = CheckErrors(result);
             if (!string.IsNullOrEmpty(error))
-            {               
+            {
                 return ApiResult.CreateError("{\"Error\": \"" + error + "\"}");
             }
             else
@@ -751,6 +779,65 @@ namespace DataX.Flow.InteractiveQuery
             return path;
         }
 
+        /// <summary>
+        /// Mount container to DBFS 
+        /// </summary>
+        /// <param name="engineFlowConfig">Flow config</param>
+        /// <param name="dbfsPath">DBFS path. Format dbfs:/mnt/livequery/..</param>
+        /// <param name="kernelId">kernelId</param>
+        public void MountStorage(FlowConfigObject engineFlowConfig, string dbfsPath, string kernelId)
+        {
+            // Attach to kernel
+            IKernel kernel = GetKernel(kernelId);
+            MountStorage(engineFlowConfig, dbfsPath, kernel);
+        }
+
+        /// <summary>
+        /// Mount container to DBFS 
+        /// </summary>
+        /// <param name="engineFlowConfig">Flow config</param>
+        /// <param name="dbfsPath">DBFS path. Format dbfs:/mnt/livequery/..</param>
+        /// <param name="kernel">kernel</param>
+        private void MountStorage(FlowConfigObject engineFlowConfig, string dbfsPath, IKernel kernel)
+        {
+            try
+            {
+                //Verify the container has been mounted to DBFS
+                string verifyCode = $"dbutils.fs.ls(\"{dbfsPath}\")";
+                var result = kernel.ExecuteCode(verifyCode);
+
+                //If container is not mounted then mount it
+                if (string.IsNullOrEmpty(result))
+                {
+                    string mountCode = CreateMountCode(dbfsPath, engineFlowConfig.OpsStorageAccountName, engineFlowConfig.SparkKeyVaultName);
+                    kernel.ExecuteCode(mountCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Create mount command to execute 
+        /// </summary>
+        /// <param name="dbfsPath">DBFS path. Format dbfs:/mnt/livequery/..</param>
+        /// <param name="opsStorageAccountName">Ops Storage Account Name</param>
+        /// <param name="sparkKeyVaultName">Spark KeyVault Name</param>
+        /// <returns>Returns the mount code </returns>
+        public static string CreateMountCode(string dbfsPath, string opsStorageAccountName, string sparkKeyVaultName)
+        {
+            Regex r = new Regex($"{Config.ConfigDataModel.Constants.PrefixDbfs}{Config.ConfigDataModel.Constants.PrefixDbfsMount}([a-zA-Z0-9-]*)/", RegexOptions.IgnoreCase);
+            string containerName = r.Match(dbfsPath).Groups[1].Value;
+            string mountCode = $"dbutils.fs.mount(" +
+                $"source = \"wasbs://{containerName}@{opsStorageAccountName}.blob.core.windows.net/\", " +
+                $"mountPoint = \"/{Config.ConfigDataModel.Constants.PrefixDbfsMount}/{containerName}\", " +
+                $"extraConfigs = Map(" +
+                    $"\"fs.azure.account.key.{opsStorageAccountName}.blob.core.windows.net\"->" +
+                    $"dbutils.secrets.get(scope = \"{sparkKeyVaultName}\", key = \"{Config.ConfigDataModel.Constants.AccountSecretPrefix}{opsStorageAccountName}\")))";
+            return mountCode;
+        }
     }
     /// <summary>
     /// Kernel Properties that are entered in the blob for garbage collection
