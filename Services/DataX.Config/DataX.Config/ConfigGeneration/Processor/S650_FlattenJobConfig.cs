@@ -36,10 +36,6 @@ namespace DataX.Config.ConfigGeneration.Processor
 
         public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
         {
-            var flowConfig = flowToDeploy.Config;
-
-            var inputConfig = flowConfig?.GetGuiConfig();
-
             // get a flattener
             var flattener = await this.ConfigFlatteners.GetDefault();
             if (flattener == null)

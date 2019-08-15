@@ -6,6 +6,7 @@ using DataX.Contract.Exception;
 using DataX.Utilities.KeyVault;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -352,7 +353,47 @@ namespace DataX.Flow.Common
                 UserName = match.Groups[2].Value,
                 Password = match.Groups[3].Value
             };
-        }        
+        }
+
+        /// <summary>
+        /// This method converts wasbs path to dbfs file path
+        /// </summary>
+        /// <param name="filePath">wasbs file path</param>
+        /// <param name="fileName">file name</param>
+        /// <returns>Returns dbfs file path</returns>
+        public static string ConvertToDbfsFilePath(string filePath, string fileName = "")
+        {
+            Regex opsPath = new Regex(@"wasbs:\/\/(.*)@(.*).blob.core.windows.net\/(.*)$", RegexOptions.IgnoreCase);
+            var match = opsPath.Match(filePath);
+            if (match.Success)
+            {
+                string result = Path.Combine(Config.ConfigDataModel.Constants.PrefixDbfs, Config.ConfigDataModel.Constants.PrefixDbfsMount + match.Groups[1].Value + "/", match.Groups[3].Value, fileName);
+                return result;
+            }
+            else
+            {
+                throw new Exception("Cannot convert to DBFS file path");
+            }
+        }
+
+        /// <summary>
+        /// This method returns a string value based on the spark type
+        /// </summary>
+        /// <param name="sparkType">sparkType</param>
+        /// <param name="valueForHDInsightEnv">Value to be used in case of HDInsight environment</param>
+        /// <param name="valueForDatabricksEnv">Value to be used in case of Databricks environment</param>
+        /// <returns>Returns string value based on spark type</returns>
+        public static string SetValueBasedOnSparkType(string sparkType, string valueForHDInsightEnv, string valueForDatabricksEnv)
+        {
+            if (sparkType != Config.ConfigDataModel.Constants.SparkTypeDataBricks)
+            {
+                return valueForHDInsightEnv;
+            }
+            else
+            {
+                return valueForDatabricksEnv;
+            }
+        }
     }
 
     /// <summary>
