@@ -309,7 +309,7 @@ namespace DataX.Flow.InteractiveQuery
 
                 if (SparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
                 {
-                    MountStorage(FlowConfig, realPath, kernel);
+                    MountStorage(FlowConfig.OpsStorageAccountName, FlowConfig.SparkKeyVaultName, realPath, kernel);
                 }
 
                 string code = $"spark.read.option(\"delimiter\", \"{(string.IsNullOrEmpty(referenceDatas[i].Properties.Delimiter) ? "," : referenceDatas[i].Properties.Delimiter)}\").option(\"header\", \"{referenceDatas[i].Properties.Header.ToString()}\").csv(\"{realPath}\").createOrReplaceTempView(\"{referenceDatas[i].Id}\"); print(\"done\");";
@@ -341,7 +341,7 @@ namespace DataX.Flow.InteractiveQuery
 
                     if (SparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
                     {
-                        MountStorage(FlowConfig, realPath, kernel);
+                        MountStorage(FlowConfig.OpsStorageAccountName, FlowConfig.SparkKeyVaultName, realPath, kernel);
                     }
 
                     string code = $"val jarPath = \"{realPath}\"\n";
@@ -370,7 +370,7 @@ namespace DataX.Flow.InteractiveQuery
 
                     if (SparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
                     {
-                        MountStorage(FlowConfig, realPath, kernel);
+                        MountStorage(FlowConfig.OpsStorageAccountName, FlowConfig.SparkKeyVaultName, realPath, kernel);
                     }
 
                     string code = $"val jarPath = \"{realPath}\"\n";
@@ -782,23 +782,25 @@ namespace DataX.Flow.InteractiveQuery
         /// <summary>
         /// Mount container to DBFS 
         /// </summary>
-        /// <param name="engineFlowConfig">Flow config</param>
+        /// <param name="opsStorageAccountName">Storage account name</param>
+        /// <param name="sparkKeyVaultName">Spark keyvault name</param>
         /// <param name="dbfsPath">DBFS path. Format dbfs:/mnt/livequery/..</param>
         /// <param name="kernelId">kernelId</param>
-        public void MountStorage(FlowConfigObject engineFlowConfig, string dbfsPath, string kernelId)
+        public void MountStorage(string opsStorageAccountName, string sparkKeyVaultName, string dbfsPath, string kernelId)
         {
             // Attach to kernel
             IKernel kernel = GetKernel(kernelId);
-            MountStorage(engineFlowConfig, dbfsPath, kernel);
+            MountStorage(opsStorageAccountName, sparkKeyVaultName, dbfsPath, kernel);
         }
 
         /// <summary>
         /// Mount container to DBFS 
         /// </summary>
-        /// <param name="engineFlowConfig">Flow config</param>
+        /// <param name="opsStorageAccountName">Storage account name</param>
+        /// <param name="sparkKeyVaultName">Spark keyvault name</param>
         /// <param name="dbfsPath">DBFS path. Format dbfs:/mnt/livequery/..</param>
         /// <param name="kernel">kernel</param>
-        private void MountStorage(FlowConfigObject engineFlowConfig, string dbfsPath, IKernel kernel)
+        private void MountStorage(string opsStorageAccountName, string sparkKeyVaultName, string dbfsPath, IKernel kernel)
         {
             try
             {
@@ -809,7 +811,7 @@ namespace DataX.Flow.InteractiveQuery
                 //If container is not mounted then mount it
                 if (string.IsNullOrEmpty(result))
                 {
-                    string mountCode = CreateMountCode(dbfsPath, engineFlowConfig.OpsStorageAccountName, engineFlowConfig.SparkKeyVaultName);
+                    string mountCode = CreateMountCode(dbfsPath, opsStorageAccountName, sparkKeyVaultName);
                     kernel.ExecuteCode(mountCode);
                 }
             }
