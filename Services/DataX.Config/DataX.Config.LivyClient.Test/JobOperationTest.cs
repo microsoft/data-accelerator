@@ -37,7 +37,7 @@ namespace DataX.Config.LivyClient.Test
         }
 
         [TestMethod]
-        public async Task TestGetsJobs()
+        public async Task TestGetJobs()
         {
             var appInfoJson = "\"appInfo\":{\"driverLogUrl\":\"http://123.xx.internal.cloudapp.net:3/node/containerlogs/container_123/livy\",\"sparkUiUrl\":\"https://site.azurehdinsight.net/yarnui/hn/proxy/application_123_0101/\"}";
             var logs1 = ",\"log\":[\"\\t user: livy\",\"19/01/30 04:02:31 INFO ShutdownHookManager: Shutdown hook called\",\"\\nYARN Diagnostics: \"]}";
@@ -68,8 +68,7 @@ namespace DataX.Config.LivyClient.Test
         {
             var appInfoJson = "\"appInfo\":{\"driverLogUrl\":\"http://123.xx.internal.cloudapp.net:3/node/containerlogs/container_123/livy\",\"sparkUiUrl\":\"https://site.azurehdinsight.net/yarnui/hn/proxy/application_123_0101/\"}";
             var logs1 = ",\"log\":[\"\\t user: livy\",\"19/01/30 04:02:31 INFO ShutdownHookManager: Shutdown hook called\",\"\\nYARN Diagnostics: \"]}";
-            var logs2 = ",\"log\":[\"\\t user: livy\",\"19/01/30 04:02:31 INFO ShutdownHookManager: Shutdown hook called\",\"19/01/30 04:02:31 INFO ShutdownHookManager: Deleting directory /tmp/spark-123\",\"19/01/30 04:02:31 INFO ShutdownHookManager: Deleting directory /tmp/spark-123\",\"19/01/30 04:02:31 INFO MetricsSystemImpl: Stopping azure-file-system metrics system...\",\"19/01/30 04:02:31 INFO MetricsSinkAdapter: azurefs2 thread interrupted.\",\"19/01/30 04:02:31 INFO MetricsSystemImpl: azure-file-system metrics system stopped.\",\"19/01/30 04:02:31 INFO MetricsSystemImpl: azure-file-system metrics system shutdown complete.\",\"\\nstderr: \",\"\\nYARN Diagnostics: \"]}";
-
+            
             var httpClientFactory = new HttpClientFactory();
             httpClientFactory
                 .AddResponse(HttpMethod.Delete, "http://localhost/batches/0", "{\"id\":2,\"state\":\"starting\",\"appId\":\"application_123_0101\"," + appInfoJson + logs1);
