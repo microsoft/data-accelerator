@@ -17,8 +17,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataXScenarios", "..\..\Tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Utility.Blob", "..\DataX.Utilities\DataX.Utility.Blob\DataX.Utility.Blob.csproj", "{CA33FC4C-AE37-450C-81CC-814BA49EAED4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Utilities.JobRunner", "..\DataX.Utilities.JobRunner\DataX.Utilities.JobRunner\DataX.Utilities.JobRunner.csproj", "{7247545E-402D-42C4-BD11-494F971D5C2A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,10 +51,6 @@ Global
 		{CA33FC4C-AE37-450C-81CC-814BA49EAED4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA33FC4C-AE37-450C-81CC-814BA49EAED4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA33FC4C-AE37-450C-81CC-814BA49EAED4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7247545E-402D-42C4-BD11-494F971D5C2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7247545E-402D-42C4-BD11-494F971D5C2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7247545E-402D-42C4-BD11-494F971D5C2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7247545E-402D-42C4-BD11-494F971D5C2A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
