@@ -20,11 +20,11 @@ object SqlOutputSetting {
   val SettingTable = "table"
   val SettingFilter="filter"
   val SettingWriteMode="writemode"
-  val SettingUserName = "username"
+  val SettingUserName = "user"
   val SettingPassword = "password"
   val SettingConnectionTimeout = "connectiontimeout"
   val SettingQueryTimeout = "querytimeout"
-  val SettingUseBulkCopy = "usebulkcopy"
+  val SettingUseBulkCopy = "usebulkinsert"
   val SettingUseBulkCopyTablelock = "usebulkcopytablelock"
   val SettingUseBulkCopyInternalTransaction = "usebulkcopyinternaltransaction"
   val SettingUseBulkCopyTimeout = "bulkcopytimeout"
@@ -43,8 +43,8 @@ object SqlOutputSetting {
           databaseName = dict.getOrNull(SettingDatabaseName),
           table = dict.getOrNull(SettingTable),
           writeMode = dict.getOrElse(SettingWriteMode,"append"),
-          userName = KeyVaultClient.resolveSecretIfAny(dict.getOrNull(SettingUserName)),
-          password = KeyVaultClient.resolveSecretIfAny(dict.getOrNull(SettingPassword)),
+          userName = KeyVaultClient.resolveSecretIfAny(dict.get(SettingUserName)),
+          password = KeyVaultClient.resolveSecretIfAny(dict.get(SettingPassword)),
           filter = dict.getOrNull(SettingFilter),
           connectionTimeout=dict.getOrElse(SettingConnectionTimeout,"30"),
           queryTimeout = dict.getOrElse(SettingQueryTimeout,"30"),
