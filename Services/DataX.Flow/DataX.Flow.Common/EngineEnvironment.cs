@@ -121,7 +121,10 @@ namespace DataX.Flow.Common
 
                 FlowBlobConnectionString = KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, flowConfigObj.ConfiggenSecretPrefix + flowConfigObj.StorageAccountName + "-blobconnectionstring");
                 OpsBlobConnectionString = KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, flowConfigObj.ConfiggenSecretPrefix + flowConfigObj.OpsStorageAccountName + "-blobconnectionstring");
-                SparkConnInfo = Helper.ParseConnectionString(Helper.PathResolver(flowConfigObj.SparkConnectionString));
+                if (EngineFlowConfig.SparkType != DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
+                {
+                    SparkConnInfo = Helper.ParseConnectionString(Helper.PathResolver(flowConfigObj.SparkConnectionString));
+                }
                 return ApiResult.CreateSuccess("");
             }    
 

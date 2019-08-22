@@ -55,6 +55,7 @@ namespace DataX.Config.ConfigDataModel
         public const string PrefixKeyVault = "keyvault";
         public const string PrefixHdfs = "hdfs://";
         public const string PrefixDbfs = "dbfs:/";
+        public const string PrefixDbfsMount = "mnt/livequery/";
 
         public const string AccountSecretPrefix = "datax-sa-";
     }

@@ -37,7 +37,7 @@ namespace DataX.Config.ConfigGeneration.Processor
         {
             var flowConfig = flowToDeploy.Config;
 
-            if (flowConfig.GetGuiConfig().Input.Mode == Constants.InputMode_Batching)
+            if (flowConfig.GetGuiConfig()?.Input?.Mode == Constants.InputMode_Batching)
             {
                 return "done";
             }

@@ -1,0 +1,307 @@
+﻿{
+  "type": "object",
+  "namespace": "datax.job",
+  "fields": {
+    "name": "name",
+    "input": {
+      "type": "object",
+      "namespace": "input.default",
+      "fields": {
+        "blobSchemaFile": "blobschemafile",
+        "sourceIdRegex": "sourceidregex",
+        "blobPathRegex": "blobpathregex",
+        "fileTimeRegex": "filetimeregex",
+        "fileTimeFormat": "filetimeformat",
+        "eventNamePath": "eventnamepath",
+        "eventhub": {
+          "type": "object",
+          "namespace": "eventhub",
+          "fields": {
+            "connectionString": "connectionstring",
+            "consumerGroup": "consumergroup",
+            "checkpointDir": "checkpointdir",
+            "checkpointInterval": "checkpointinterval",
+            "maxRate": "maxrate",
+            "startEnqueueTime": "startenqueuetime",
+            "partitionCount": "partitioncount"
+          }
+        },
+        "streaming": {
+          "type": "object",
+          "namespace": "streaming",
+          "fields": {
+            "checkpointDir": "checkpointdir",
+            "intervalInSeconds": "intervalinseconds"
+          }
+        },
+        "sources": {
+          "type": "map",
+          "namespace": "source",
+          "fields": {
+            "target": "target",
+            "catalogPrefix": "catalogprefix"
+          }
+        },
+        "referenceData": {
+          "type": "array",
+          "namespace": "referencedata",
+          "element": {
+            "type": "scopedObject",
+            "namespaceField": "name",
+            "fields": {
+              "path": "path",
+              "format": "format",
+              "header": "header",
+              "delimiter": "delimiter"
+            }
+          }
+        }
+      }
+    },
+    "process": {
+      "type": "object",
+      "namespace": "process",
+      "fields": {
+        "metric": {
+          "type": "object",
+          "namespace": "metric",
+          "fields": {
+            "eventhub": "eventhub"
+          }
+        },
+        "projections": {
+          "type": "stringList",
+          "namespace": "projection"
+        },
+        "transform": "transform",
+        "timestampColumn": "timestampcolumn",
+        "watermark": "watermark",
+        "preprojection": "preprojection",
+        "udf": {
+          "type": "object",
+          "namespace": "udf",
+          "fields": {
+            "tagWorkload": "tagWorkload"
+          }
+        },
+        "timeWindows": {
+          "type": "array",
+          "namespace": "timewindow",
+          "element": {
+            "type": "scopedObject",
+            "namespaceField": "name",
+            "fields": { "windowDuration": "windowduration" }
+          }
+        },
+        "jarUDFs": {
+          "type": "array",
+          "namespace": "jar.udf",
+          "element": {
+            "type": "scopedObject",
+            "namespaceField": "name",
+            "fields": {
+              "class": "class",
+              "path": "path",
+              "libs": {
+                "type": "stringList",
+                "namespace": "libs"
+              }
+            }
+          }
+        },
+        "jarUDAFs": {
+          "type": "array",
+          "namespace": "jar.udaf",
+          "element": {
+            "type": "scopedObject",
+            "namespaceField": "name",
+            "fields": {
+              "class": "class",
+              "path": "path",
+              "libs": {
+                "type": "stringList",
+                "namespace": "libs"
+              }
+            }
+          }
+        },
+        "accumulationTables": {
+          "type": "array",
+          "namespace": "statetable",
+          "element": {
+            "type": "scopedObject",
+            "namespaceField": "name",
+            "fields": {
+              "schema": "schema",
+              "location": "location"
+            }
+          }
+        },
+        "azureFunctions": {
+          "type": "array",
+          "namespace": "azurefunction",
+          "element": {
+            "type": "scopedObject",
+            "namespaceField": "name",
+            "fields": {
+              "serviceEndpoint": "serviceendpoint",
+              "api": "api",
+              "code": "code",
+              "methodType": "methodtype",
+              "params": {
+                "type": "stringList",
+                "namespace": "params"
+              }
+            }
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "scopedObject",
+      "namespace": "output",
+      "namespaceField": "name",
+      "fields": {
+        "processedSchemaPath": "processedschemapath",
+        "blob": {
+          "type": "object",
+          "namespace": "blob",
+          "fields": {
+            "groupEvaluation": "groupevaluation",
+            "compressionType": {
+              "type": "excludeDefaultValue",
+              "namespace": "compressiontype",
+              "defaultValue": "gzip"
+            },
+            "format": {
+              "type": "excludeDefaultValue",
+              "namespace": "format",
+              "defaultValue": "json"
+            },
+            "groups": {
+              "type": "map",
+              "namespace": "group",
+              "fields": { "folder": "folder" }
+            }
+          }
+        },
+        "eventhub": {
+          "type": "object",
+          "namespace": "eventhub",
+          "fields": {
+            "connectionStringRef": "connectionstring",
+            "compressionType": {
+              "type": "excludeDefaultValue",
+              "namespace": "compressiontype",
+              "defaultValue": "gzip"
+            },
+            "format": {
+              "type": "excludeDefaultValue",
+              "namespace": "format",
+              "defaultValue": "json"
+            },
+            "appendProperties": {
+              "type": "mapProps",
+              "namespace": "appendproperty"
+            }
+          }
+        },
+        "cosmosdb": {
+          "type": "object",
+          "namespace": "cosmosdb",
+          "fields": {
+            "connectionStringRef": "connectionstring",
+            "database": "database",
+            "collection": "collection"
+          }
+        },
+        "httpPost": {
+          "type": "object",
+          "namespace": "httppost",
+          "fields": {
+            "endpoint": "endpoint",
+            "filter": "filter",
+            "appendHeaders": {
+              "type": "mapProps",
+              "namespace": "header"
+            }
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "element": {
+        "type": "scopedObject",
+        "namespace": "output",
+        "namespaceField": "name",
+        "fields": {
+          "blob": {
+            "type": "object",
+            "namespace": "blob",
+            "fields": {
+              "groupEvaluation": "groupevaluation",
+              "compressionType": {
+                "type": "excludeDefaultValue",
+                "namespace": "compressiontype",
+                "defaultValue": "gzip"
+              },
+              "format": {
+                "type": "excludeDefaultValue",
+                "namespace": "format",
+                "defaultValue": "json"
+              },
+              "groups": {
+                "type": "map",
+                "namespace": "group",
+                "fields": { "folder": "folder" }
+              }
+            }
+          },
+          "eventhub": {
+            "type": "object",
+            "namespace": "eventhub",
+            "fields": {
+              "connectionStringRef": "connectionstring",
+              "compressionType": {
+                "type": "excludeDefaultValue",
+                "namespace": "compressiontype",
+                "defaultValue": "gzip"
+              },
+              "format": {
+                "type": "excludeDefaultValue",
+                "namespace": "format",
+                "defaultValue": "json"
+              },
+              "appendProperties": {
+                "type": "mapProps",
+                "namespace": "appendproperty"
+              }
+            }
+          },
+          "cosmosdb": {
+            "type": "object",
+            "namespace": "cosmosdb",
+            "fields": {
+              "connectionStringRef": "connectionstring",
+              "database": "database",
+              "collection": "collection"
+            }
+          },
+          "httpPost": {
+            "type": "object",
+            "namespace": "httppost",
+            "fields": {
+              "endpoint": "endpoint",
+              "filter": "filter",
+              "appendHeaders": {
+                "type": "mapProps",
+                "namespace": "header"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -47,7 +47,7 @@ namespace DataX.Config.ConfigGeneration.Processor
         {
             var flowConfig = flowToDeploy.Config;
 
-            if (flowConfig.GetGuiConfig().Input.Mode != Constants.InputMode_Batching)
+            if (flowConfig.GetGuiConfig()?.Input?.Mode != Constants.InputMode_Batching)
             {
                 return "done";
             }
@@ -85,12 +85,14 @@ namespace DataX.Config.ConfigGeneration.Processor
             Ensure.NotNull(defaultJobConfig, "defaultJobConfig");
 
             var inputConfig = job.Flow.Config?.GetGuiConfig();
-
-            var jcons = new List<JobConfig>();
-
-            for (int i = 0; i < inputConfig.BatchList.Length; i++)
+            if (inputConfig != null)
             {
-                job.JobConfigs.AddRange(await GetJobConfig(job, inputConfig.BatchList[i], destFolder, defaultJobConfig, i).ConfigureAwait(false));
+                var jcons = new List<JobConfig>();
+
+                for (int i = 0; i < inputConfig.BatchList.Length; i++)
+                {
+                    job.JobConfigs.AddRange(await GetJobConfig(job, inputConfig.BatchList[i], destFolder, defaultJobConfig, i).ConfigureAwait(false));
+                }
             }
         }
 
@@ -428,12 +430,14 @@ namespace DataX.Config.ConfigGeneration.Processor
             if (existingFlow != null)
             {
                 var gui = config.GetGuiConfig();
+                if (gui != null)
+                {
+                    var batch = gui.BatchList[index];
+                    batch.Disabled = true;
 
-                var batch = gui.BatchList[index];
-                batch.Disabled = true;
-                
-                config.Gui = JObject.FromObject(gui);
-                result = await FlowData.UpdateGuiForFlow(config.Name, config.Gui).ConfigureAwait(false);
+                    config.Gui = JObject.FromObject(gui);
+                    result = await FlowData.UpdateGuiForFlow(config.Name, config.Gui).ConfigureAwait(false);
+                }
             }
 
             return result;
@@ -450,12 +454,14 @@ namespace DataX.Config.ConfigGeneration.Processor
             if (existingFlow != null)
             {
                 var gui = config.GetGuiConfig();
+                if (gui != null)
+                {
+                    var batch = gui.BatchList[index];
+                    batch.Properties.LastProcessedTime = value.ToString(CultureInfo.InvariantCulture);
 
-                var batch = gui.BatchList[index];
-                batch.Properties.LastProcessedTime = value.ToString(CultureInfo.InvariantCulture);
-
-                config.Gui = JObject.FromObject(gui);
-                result = await FlowData.UpdateGuiForFlow(config.Name, config.Gui).ConfigureAwait(false);
+                    config.Gui = JObject.FromObject(gui);
+                    result = await FlowData.UpdateGuiForFlow(config.Name, config.Gui).ConfigureAwait(false);
+                }
             }
 
             return result;

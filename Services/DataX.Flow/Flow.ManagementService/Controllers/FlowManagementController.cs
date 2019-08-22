@@ -168,7 +168,7 @@ namespace Flow.Management.Controllers
                 RolesCheck.EnsureReader(Request, _isLocal);
 
                 var flowConfigs = await _flowOperation.GetAllFlows();
-                var result = flowConfigs.Select(x => new { name = x.Name, displayName = x.DisplayName, owner = x.GetGuiConfig().Owner });
+                var result = flowConfigs.Select(x => new { name = x.Name, displayName = x.DisplayName, owner = x.GetGuiConfig()?.Owner });
                 return ApiResult.CreateSuccess(JToken.FromObject(result));
             }
             catch (Exception e)

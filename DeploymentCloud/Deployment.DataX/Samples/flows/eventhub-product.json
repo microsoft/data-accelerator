@@ -24,7 +24,7 @@
 			},
 			"process" : {
 				"metric" : {
-					"eventhub" : "keyvault://${sparkKeyVaultName}/${metricEventHubConnectionStringKey}"
+					"eventhub" : "$keyvaultPrefix://${sparkKeyVaultName}/${metricEventHubConnectionStringKey}"
 				},
 				"timestampColumn" : "${processTimestampColumn}",
 				"watermark" : "${processWatermark}",
@@ -48,6 +48,10 @@
 			"sparkJobExecutorLogLevel" : "INFO",
 			"sparkJobNumExecutors" : "${guiSparkJobNumExecutors}",
 			"sparkJobExecutorMemory" : "${guiSparkJobExecutorMemory}",
+			"sparkJobDatabricksMinWorkers" : "${guiSparkJobDatabricksMinWorkers}",
+			"sparkJobDatabricksMaxWorkers" : "${guiSparkJobDatabricksMaxWorkers}",
+			"sparkDatabricksToken" : "${guiSparkDatabricksToken}",
+			"sparkJobDatabricksAutoScale" : "${guiSparkJobDatabricksAutoScale}",
 			"processedSchemaPath" : null
 		},
 		"jobs" : [
@@ -362,13 +366,14 @@
 	"gui" : {
 		"name" : "eventhub",
 		"displayName" : "EventHub",
+		"databricksToken" : "",
 		"owner" : "eventhub",
 		"input" : {
 			"mode" : "streaming",
 			"type" : "events",
 			"properties" : {
 				"inputEventhubName" : "",
-				"inputEventhubConnection" : "keyvault://$sparkKVName/eventhub-input-eventhubconnectionstring",
+				"inputEventhubConnection" : "$keyvaultPrefix://$sparkKVName/eventhub-input-eventhubconnectionstring",
 				"windowDuration" : "60",
 				"timestampColumn" : "eventTimeStamp",
 				"watermarkValue" : "60",
@@ -384,7 +389,7 @@
 					"type" : "csv",
 					"typeDisplay" : "CSV/TSV File",
 					"properties" : {
-						"path" : "keyvault://$sparkKVName/eventhub-referencedata-devicesdata",
+						"path" : "$keyvaultPrefix://$sparkKVName/eventhub-referencedata-devicesdata",
 						"delimiter" : ",",
 						"header" : true
 					}
@@ -400,7 +405,7 @@
 					"type" : "jarUDF",
 					"properties" : {
 						"name" : null,
-						"path" : "keyvault://$sparkKVName/eventhub-jarpath-udfsample",
+						"path" : "$keyvaultPrefix://$sparkKVName/eventhub-jarpath-udfsample",
 						"class" : "datax.sample.udf.UdfHelloWorld",
 						"libs" : [ ]
 					},
@@ -412,7 +417,10 @@
 			],
 			"jobconfig" : {
 				"jobNumExecutors" : "4",
-				"jobExecutorMemory" : "1024"
+				"jobExecutorMemory" : "1024",
+				"jobDatabricksAutoScale" : true,
+				"jobDatabricksMinWorkers" : "1",
+				"jobDatabricksMaxWorkers" : "8"
 			}
 		},
 		"outputs" : [
@@ -526,7 +534,7 @@
 		"subscription" : ""
 	},
 	"properties" : {
-		"inputEventHubSubscriptionId" : "keyvault://${serviceKeyVaultName}/$clientSecretPrefix-subscriptionId",
+		"inputEventHubSubscriptionId" : "$keyvaultPrefix://${serviceKeyVaultName}/$clientSecretPrefix-subscriptionId",
 		"inputEventHubResourceGroupName" : "${eventHubResourceGroupName}"
 	},
 	"jobNames" : [

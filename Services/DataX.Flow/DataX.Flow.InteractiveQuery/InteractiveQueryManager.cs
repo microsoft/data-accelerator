@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using System.Text.RegularExpressions;
 
 namespace DataX.Flow.InteractiveQuery
 {
@@ -65,7 +66,9 @@ namespace DataX.Flow.InteractiveQuery
             }
 
             var hashValue = Helper.GetHashCode(diag.UserName);
-            string sampleDataPath = Path.Combine(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json");
+            string sampleDataPath = Helper.SetValueBasedOnSparkType(_engineEnvironment.EngineFlowConfig.SparkType,
+                Path.Combine(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json"),
+                Helper.ConvertToDbfsFilePath(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json"));
 
             response = await CreateAndInitializeKernelHelper(diag.InputSchema, diag.UserName, diag.Name, sampleDataPath, diag.NormalizationSnippet, diag.ReferenceDatas, diag.Functions, diag.DatabricksToken);
             if (response.Error.HasValue && response.Error.Value)
@@ -215,7 +218,10 @@ namespace DataX.Flow.InteractiveQuery
 
                 //Create the xml with the scala steps to execute to initialize the kernel
                 var hashValue = Helper.GetHashCode(diag.UserName);
-                var sampleDataPath = Path.Combine(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json");
+                var sampleDataPath = Helper.SetValueBasedOnSparkType(_engineEnvironment.EngineFlowConfig.SparkType,
+                    Path.Combine(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json"),
+                    Helper.ConvertToDbfsFilePath(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json"));
+                
                 DiagnosticInputhelper(diag.InputSchema, sampleDataPath, diag.NormalizationSnippet, diag.Name);
 
                 response = await kernelService.RecycleKernelAsync(diag.KernelId, diag.UserName, diag.Name, _engineEnvironment.OpsBlobConnectionString, Path.Combine(_engineEnvironment.OpsDiagnosticPath, _GarbageCollectBlobName), SetupSteps, isReSample, diag.ReferenceDatas, diag.Functions);
@@ -327,6 +333,11 @@ namespace DataX.Flow.InteractiveQuery
                 {
                     await kernelService.DeleteKernelAsync(kernelId);
                     return ApiResult.CreateError(response.Message);
+                }
+
+                if(_engineEnvironment.EngineFlowConfig.SparkType == Config.ConfigDataModel.Constants.SparkTypeDataBricks)
+                {
+                    kernelService.MountStorage(_engineEnvironment.EngineFlowConfig.OpsStorageAccountName, _engineEnvironment.EngineFlowConfig.SparkKeyVaultName, sampleDataPath, kernelId);
                 }
 
                 response = await kernelService.CreateandInitializeKernelAsync(kernelId, SetupSteps, false, referenceDatas, functions);
@@ -479,7 +490,7 @@ namespace DataX.Flow.InteractiveQuery
             {
                 ["RawSchema"] = rawSchema,
                 ["SampleDataPath"] = sampleDataPath,
-                ["NormalizationSnippet"] = finalNormalizationString,                
+                ["NormalizationSnippet"] = finalNormalizationString,
                 ["BinName"] = TranslateBinNames(_engineEnvironment.EngineFlowConfig.BinaryName, _engineEnvironment.EngineFlowConfig.OpsStorageAccountName, _engineEnvironment.EngineFlowConfig.InteractiveQueryDefaultContainer),
                 ["KernelDisplayName"] = _engineEnvironment.GenerateKernelDisplayName(flowId)
             };

@@ -46,6 +46,11 @@ namespace DataX.Config.ConfigGeneration.Processor
             }
 
             var config = flowToDeploy.Config;
+            var guiConfig = config?.GetGuiConfig();
+            if (guiConfig == null)
+            {
+                return "no gui input, skipped.";
+            }
 
             var rulesCode = flowToDeploy.GetAttachment<RulesCode>(PrepareTransformFile.AttachmentName_CodeGenObject);
             Ensure.NotNull(rulesCode, "rulesCode");
