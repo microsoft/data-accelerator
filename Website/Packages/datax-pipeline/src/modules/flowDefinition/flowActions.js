@@ -6,7 +6,7 @@ import Q from 'q';
 import * as Api from './api';
 import * as Selectors from './flowSelectors';
 import { UserSelectors, getApiErrorMessage } from 'datax-common';
-import { QueryActions } from 'datax-query';
+import { QueryActions, QueryModels } from 'datax-query';
 import * as Helpers from './flowHelpers';
 import * as Models from './flowModels';
 /**
@@ -101,6 +101,7 @@ export const initFlow = context => (dispatch, getState) => {
             });
     } else {
         const owner = UserSelectors.getUserAlias(getState());
+        dispatch(QueryActions.initQuery(QueryModels.defaultQuery));
         return dispatch({
             type: FLOW_NEW,
             payload: owner
