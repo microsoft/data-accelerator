@@ -253,6 +253,7 @@ class FlowDefinitionPanel extends React.Component {
 
     renderSaveButton() {
         if (!this.state.loading) {
+            //Will be enabled when user has access and flow has been changed. 
             const enableButton = (this.props.flow.isDirty || this.props.isQueryDirty) && this.state.saveFlowButtonEnabled;
             return (
                 <DefaultButton
@@ -277,13 +278,14 @@ class FlowDefinitionPanel extends React.Component {
     renderDeployButton() {
         if (!this.state.loading) {
             const enableButton =
-                (this.props.flow.isDirty || this.props.isQueryDirty) && this.props.flowValidated && this.state.deployFlowButtonEnabled;
+                //Will be enabled when user has access and flow has valid configuration. 
+                this.props.flowValidated && this.state.deployFlowButtonEnabled;
             return (
                 <DefaultButton
                     key="deploy"
                     className="header-button"
                     disabled={!enableButton}
-                    title="Deploy and restart the Flow"
+                    title="Save, deploy and restart the Flow job"
                     onClick={() => this.onDeployDefinition()}
                 >
                     <i
