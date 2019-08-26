@@ -136,7 +136,8 @@ const mapDispatchToProps = () => ({});
 // Styles
 const rootStyle = {
     display: 'flex',
-    flexDirection: 'row',
+    flexDirection: 'column',
+    overflowX: 'hidden',
     overflowY: 'auto'
 };
 
