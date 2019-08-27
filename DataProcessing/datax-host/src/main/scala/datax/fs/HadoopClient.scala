@@ -43,9 +43,10 @@ object HadoopClient {
   def setConf(conf: Configuration = null): Unit ={
     if(conf==null) {
       hadoopConf = new Configuration()
-	  hadoopConf.set("fs.wasbs.impl","org.apache.hadoop.fs.azure.NativeAzureFileSystem")
+      //Used to fetch fileSystem for wasbs
+      hadoopConf.set("fs.wasbs.impl","org.apache.hadoop.fs.azure.NativeAzureFileSystem")
     }
-	else
+    else
       hadoopConf = conf
   }
 
