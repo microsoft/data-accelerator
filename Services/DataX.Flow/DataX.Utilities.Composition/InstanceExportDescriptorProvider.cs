@@ -2,11 +2,10 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
-
 using System.Collections.Generic;
 using System.Composition.Hosting.Core;
 
-namespace JobRunner
+namespace DataX.Utilities.Composition
 {
     /// <summary>
     /// Custom export descriptor provider class to add existing instances to MEF container

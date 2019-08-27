@@ -3,6 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 
+using DataX.Utilities.Composition;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;

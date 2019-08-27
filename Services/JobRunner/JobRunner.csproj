@@ -18,6 +18,7 @@
     <ProjectReference Include="..\..\Tests\DataXScenarios\DataXScenarios\DataXScenarios.csproj" />
     <ProjectReference Include="..\..\Tests\ScenarioTester\ScenarioTester\ScenarioTester.csproj" />
     <ProjectReference Include="..\DataX.Contract\DataX.Contract.csproj" />
+    <ProjectReference Include="..\DataX.Flow\DataX.Utilities.Composition\DataX.Utilities.Composition.csproj" />
     <ProjectReference Include="..\DataX.Utilities\DataX.Utilities.KeyVault\DataX.Utilities.KeyVault.csproj" />
     <ProjectReference Include="..\DataX.Utilities\DataX.Utility.Blob\DataX.Utility.Blob.csproj" />
   </ItemGroup>

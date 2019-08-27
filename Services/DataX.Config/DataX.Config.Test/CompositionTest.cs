@@ -23,7 +23,7 @@ namespace DataX.Config.Test
                 .WithAssembly(typeof(ConfigGenConfiguration).Assembly)
                 .WithAssembly(typeof(MockBase).Assembly)
                 .WithAssembly(Assembly.GetExecutingAssembly())
-                .WithProvider(new LoggerAndInstanceExportDescriptorProvider(null, new LoggerFactory()));
+                .WithProvider(new LoggerAndInstanceExportDescriptorProvider<object>(null, new LoggerFactory()));
 
             CompositionHost = conf.CreateContainer();
         }
