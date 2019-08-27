@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DataX.Utilities
+namespace DataX.Utilities.Storage
 {
     /// <summary>
     /// CosmosTable utility class

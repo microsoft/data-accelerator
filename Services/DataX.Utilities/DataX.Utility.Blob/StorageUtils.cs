@@ -11,7 +11,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace DataX.Utilities
+namespace DataX.Utilities.Storage
 {
     public static class StorageUtils
     {

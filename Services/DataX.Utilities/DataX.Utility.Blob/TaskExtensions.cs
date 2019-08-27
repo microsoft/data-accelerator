@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
-namespace DataX.Utilities
+namespace DataX.Utilities.Storage
 {
     public static class TaskExtensions
     {

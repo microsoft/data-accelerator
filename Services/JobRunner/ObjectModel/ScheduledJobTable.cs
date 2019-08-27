@@ -3,11 +3,11 @@
 // Licensed under the MIT License
 // *********************************************************************
 
-using DataX.Utilities;
+using DataX.Contract;
+using DataX.Utilities.Storage;
 using System;
 using System.Composition;
 using System.Threading.Tasks;
-using DataX.Contract;
 
 namespace JobRunner
 {

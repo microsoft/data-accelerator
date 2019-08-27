@@ -8,7 +8,7 @@ using Microsoft.Azure.Cosmos.Table;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace DataX.Utilities
+namespace DataX.Utilities.Storage
 {
     /// <summary>
     /// Utility base class for CosmosTable

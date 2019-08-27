@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using System;
 using System.Collections.Generic;
 using System.Composition.Hosting.Core;
 
@@ -21,11 +22,24 @@ namespace DataX.Utilities.Composition
 
         public override IEnumerable<ExportDescriptorPromise> GetExportDescriptors(CompositionContract contract, DependencyAccessor descriptorAccessor)
         {
-            if (contract.ContractType == typeof(TValue))
+            object[] obj = null;
+            Type type = _exportedInstance.GetType();            
+            if (!type.IsArray)
             {
-                yield return new ExportDescriptorPromise(contract, _exportedInstance.ToString(), true, NoDependencies, _ =>
-                    ExportDescriptor.Create((c, o) => _exportedInstance, new Dictionary<string, object>()));
+                obj = new object[] { _exportedInstance };
             }
+            else
+            {
+                obj = (object[])Convert.ChangeType(_exportedInstance, typeof(object[]));
+            }
+            foreach (var instance in obj)
+            {
+                if (contract.ContractType.IsInstanceOfType(instance))
+                {
+                    yield return new ExportDescriptorPromise(contract, instance.ToString(), true, NoDependencies, _ =>
+                        ExportDescriptor.Create((c, o) => instance, new Dictionary<string, object>()));
+                }
+            }            
         }
     }
 }
