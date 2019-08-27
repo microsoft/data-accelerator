@@ -329,72 +329,71 @@ namespace DataX.Flow.InteractiveQuery
             {
                 return;
             }
-
             foreach (FunctionObject fo in functions)
             {
-                if(fo.TypeDisplay=="UDF")
+                switch (fo.TypeDisplay)
                 {
-                    PropertiesUD properties = JsonConvert.DeserializeObject<PropertiesUD>(fo.Properties.ToString());
-                    string realPath = Helper.SetValueBasedOnSparkType(SparkType,
-                        UDFPathResolver(properties.Path),
-                        Helper.ConvertToDbfsFilePath(UDFPathResolver(properties.Path)));
-
-                    if (SparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
-                    {
-                        MountStorage(FlowConfig.OpsStorageAccountName, FlowConfig.SparkKeyVaultName, realPath, kernel);
-                    }
-
-                    string code = $"val jarPath = \"{realPath}\"\n";
-                    code += $"val mainClass = \"{properties.ClassName}\"\n";
-                    code += $"datax.host.SparkJarLoader.addJarOnDriver(spark, jarPath, 0, false)\n";
-                    code += "spark.sparkContext.addJar(jarPath)\n";
-                    code += $"datax.host.SparkJarLoader.registerJavaUDF(spark.udf, \"{fo.Id}\", mainClass, null)\n";
-
-                    if(properties.Libs!=null)
-                    {
-                        foreach (string lib in properties.Libs)
-                        {
-                            code += $"datax.host.SparkJarLoader.addJar(spark, \"{lib}\")\n";
-                        }
-                    }
-                    code += "println(\"done\")";
-                    string result = kernel.ExecuteCode(code);
-                    LogErrors(result, code, "LoadFunctions");
-                }
-                else if(fo.TypeDisplay=="UDAF")
-                {
-                    PropertiesUD properties = JsonConvert.DeserializeObject<PropertiesUD>(fo.Properties.ToString());
-                    string realPath = Helper.SetValueBasedOnSparkType(SparkType,
-                        UDFPathResolver(properties.Path),
-                        Helper.ConvertToDbfsFilePath(UDFPathResolver(properties.Path)));
-
-                    if (SparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
-                    {
-                        MountStorage(FlowConfig.OpsStorageAccountName, FlowConfig.SparkKeyVaultName, realPath, kernel);
-                    }
-
-                    string code = $"val jarPath = \"{realPath}\"\n";
-                    code += $"val mainClass = \"{properties.ClassName}\"\n";
-                    code += $"datax.host.SparkJarLoader.addJarOnDriver(spark, jarPath, 0, false)\n";
-                    code += "spark.sparkContext.addJar(jarPath)\n";
-                    code += $"datax.host.SparkJarLoader.registerJavaUDAF(spark.udf, \"{fo.Id}\", mainClass)\n";
-
-                    if (properties.Libs != null)
-                    {
-                        foreach (string lib in properties.Libs)
-                        {
-                            code += $"datax.host.SparkJarLoader.addJar(spark, \"{lib}\")\n";
-                        }
-                    }
-                    code += "println(\"done\")";
-                    string result = kernel.ExecuteCode(code);
-                    LogErrors(result, code, "LoadFunctions");
-                }
-                else if(fo.TypeDisplay=="Azure Function")
-                {
-                    // TODO
+                    case "UDF":
+                    case "UDAF":
+                        PropertiesUD properties = JsonConvert.DeserializeObject<PropertiesUD>(fo.Properties.ToString());
+                        string realPath = UDFPathResolver(properties.Path);
+                        string code = CreateLoadFunctionCode(realPath, SparkType, fo.TypeDisplay, fo.Id, properties);
+                        string result = kernel.ExecuteCode(code);
+                        LogErrors(result, code, "LoadFunctions");
+                        break;
+                    case "Azure Function":
+                        // TODO
+                        break;
+                    default:
+                        break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Create code to load functions
+        /// </summary>
+        /// <param name="realPath">Path of jar</param>
+        /// <param name="sparkType">spark type</param>
+        /// <param name="functionType">function type</param>
+        /// <param name="functionId">functionId</param>
+        /// <param name="properties">Function properties</param>
+        /// <returns>code to load functions</returns>
+        public static string CreateLoadFunctionCode(string realPath, string sparkType, string functionType, string functionId, PropertiesUD properties)
+        {
+            string code = $"val jarPath = \"{realPath}\"\n";
+            code += $"val mainClass = \"{properties.ClassName}\"\n";
+
+            if (sparkType == DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
+            {
+                code += $"val jarFileUrl = datax.host.SparkJarLoader.addJarOnDriver(spark, jarPath, 0, true)\n";
+            }
+            else
+            {
+                code += $"val jarFileUrl = datax.host.SparkJarLoader.addJarOnDriver(spark, jarPath, 0, false)\n";
+            }
+            
+            code += "spark.sparkContext.addJar(jarFileUrl)\n";
+
+            if (functionType == "UDF")
+            {
+                code += $"datax.host.SparkJarLoader.registerJavaUDF(spark.udf, \"{functionId}\", mainClass, null)\n";
+            }
+            else if (functionType == "UDAF")
+            {
+                code += $"datax.host.SparkJarLoader.registerJavaUDAF(spark.udf, \"{functionId}\", mainClass)\n";
+            }
+
+            if (properties.Libs != null)
+            {
+                foreach (string lib in properties.Libs)
+                {
+                    code += $"datax.host.SparkJarLoader.addJar(spark, \"{lib}\")\n";
+                }
+            }
+            code += "println(\"done\")";
+
+            return code;
         }
 
         /// <summary>

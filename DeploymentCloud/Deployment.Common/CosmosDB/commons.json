@@ -147,7 +147,8 @@
 				"wasbs:///datax/bin/datax-keyvault_2.3_2.11-1.1.0-with-dependencies.jar",
 				"wasbs:///datax/bin/java-uuid-generator-3.1.5.jar",
 				"wasbs:///datax/bin/proton-j-0.31.0.jar",
-				"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar"
+				"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar",
+				"wasbs:///datax/bin/azure-sqldb-spark-1.0.2.jar"
 			],
 			"driverMemory": "1024m",
 			"executorCores": 2,
@@ -243,6 +244,18 @@
 					}, 
 					{
 						"jar" : "dbfs:/datax/scala-java8-compat_2.11-0.9.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-sqldb-spark-1.0.2.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/hadoop-azure-2.7.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/jetty-util-6.1.25.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/json-20180813.jar"
 					}
 				],
 				"spark_jar_task" : {
@@ -646,7 +659,8 @@
 							"wasbs:///datax/bin/proton-j-0.31.0.jar",
 							"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar",
 							"wasbs:///datax/bin/spark-streaming-kafka-0-10_2.11-2.4.0.jar",
-							"wasbs:///datax/bin/kafka-clients-2.0.0.jar"
+							"wasbs:///datax/bin/kafka-clients-2.0.0.jar",
+							"wasbs:///datax/bin/azure-sqldb-spark-1.0.2.jar"
 				],
 				"driverMemory" : "1024m",
 				"executorCores" : 2,
@@ -748,6 +762,18 @@
 					}, 
 					{
 						"jar" : "dbfs:/datax/kafka-clients-2.0.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-sqldb-spark-1.0.2.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/hadoop-azure-2.7.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/jetty-util-6.1.25.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/json-20180813.jar"
 					}
 				],
 				"spark_jar_task" : {
@@ -1023,7 +1049,8 @@
 				"wasbs:///datax/bin/datax-keyvault_2.3_2.11-1.1.0-with-dependencies.jar",
 					"wasbs:///datax/bin/java-uuid-generator-3.1.5.jar", 
 					"wasbs:///datax/bin/proton-j-0.31.0.jar",
-					"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar"
+					"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar",
+					"wasbs:///datax/bin/azure-sqldb-spark-1.0.2.jar"
 				],
 				"driverMemory" : "1024m",
 				"executorCores" : 2,
@@ -1119,6 +1146,18 @@
 					}, 
 					{
 						"jar" : "dbfs:/datax/scala-java8-compat_2.11-0.9.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-sqldb-spark-1.0.2.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/hadoop-azure-2.7.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/jetty-util-6.1.25.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/json-20180813.jar"
 					}
 				],
 				"spark_jar_task" : {
