@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "JobRunnerWebJob": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
