@@ -153,11 +153,14 @@ namespace DataX.Config.DatabricksClient
             await CallDatabricksService(HttpMethod.Post, "jobs/delete", $@"{{""job_id"":{clientData.JobId}}}");
             var result = new SparkJobSyncResult();
             //Fetch status of job after it has been stopped
+            var numRetry = 0;
             do
             {
                 var jobStatus = await CallDatabricksService(HttpMethod.Get, $"jobs/runs/get?run_id={clientData.RunId}");
                 result = ParseJobInfoFromDatabricksHttpResult(jobStatus);
-            } while (result.JobState == JobState.Running );
+                //When job is in progress of termination, fetch the latest job state max 5 times untill the job has stopped.
+                numRetry++;
+            } while (result.JobState == JobState.Running && numRetry <= 5);
             return result;
         }
 
