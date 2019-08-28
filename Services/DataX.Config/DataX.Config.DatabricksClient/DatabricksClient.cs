@@ -150,8 +150,15 @@ namespace DataX.Config.DatabricksClient
         {
             var clientData = JsonConvert.DeserializeObject<DatabricksJobResult>(jobClientData.ToString());
             await CallDatabricksService(HttpMethod.Post, "jobs/runs/cancel", $@"{{""run_id"":{clientData.RunId}}}");
-            var result = await CallDatabricksService(HttpMethod.Post, "jobs/delete", $@"{{""job_id"":{clientData.JobId}}}");
-            return ParseJobInfoFromDatabricksHttpResult(result);
+            await CallDatabricksService(HttpMethod.Post, "jobs/delete", $@"{{""job_id"":{clientData.JobId}}}");
+            var result = new SparkJobSyncResult();
+            //Fetch status of job after it has been stopped
+            do
+            {
+                var jobStatus = await CallDatabricksService(HttpMethod.Get, $"jobs/runs/get?run_id={clientData.RunId}");
+                result = ParseJobInfoFromDatabricksHttpResult(jobStatus);
+            } while (result.JobState == JobState.Running );
+            return result;
         }
 
         public async Task<SparkJobSyncResult[]> GetJobs()
