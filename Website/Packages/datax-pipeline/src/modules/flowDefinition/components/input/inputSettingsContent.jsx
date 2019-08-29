@@ -65,7 +65,7 @@ export default class InputSettingsContent extends React.Component {
     renderLeftPane() {
         if (this.props.input.mode === Models.inputModeEnum.batching) {
             let batchData = undefined;
-            if (this.props.batchInputs !== null && this.props.selectedFlowBatchInputIndex !== undefined) {
+            if (this.props.batchInputs && this.props.selectedFlowBatchInputIndex !== undefined) {
                 batchData = this.props.batchInputs[this.props.selectedFlowBatchInputIndex];
             }
             return (
@@ -528,9 +528,10 @@ export default class InputSettingsContent extends React.Component {
         const enableButton =
             ((this.props.input.mode === Models.inputModeEnum.streaming && this.props.input.properties.inputEventhubConnection !== '') ||
                 (this.props.input.mode === Models.inputModeEnum.batching &&
-                    this.props.batchInputs !== null &&
+                    this.props.batchInputs &&
                     this.props.selectedFlowBatchInputIndex !== undefined &&
-                    this.props.batchInputs[this.props.selectedFlowBatchInputIndex].properties.connection !== '')) &&
+                    this.props.batchInputs[this.props.selectedFlowBatchInputIndex].properties.connection !== '' &&
+                    this.props.batchInputs[this.props.selectedFlowBatchInputIndex].properties.path !== '')) &&
             !this.props.fetchingInputSchema &&
             this.props.getInputSchemaButtonEnabled;
 

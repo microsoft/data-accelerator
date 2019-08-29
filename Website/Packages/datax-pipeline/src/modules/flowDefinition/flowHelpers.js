@@ -441,7 +441,7 @@ export function convertFlowToConfig(flow, query) {
     let outputTemplates = [...flow.outputTemplates];
     let rules = [...flow.rules];
     let batchList = flow.batchList ? [...flow.batchList] : [];
-    let batchInputs = flow.batchInputs !== null && flow.batchInputs ? [...flow.batchInputs] : [Models.getDefaultBatchInputSettings()];
+    let batchInputs = flow.batchInputs ? [...flow.batchInputs] : [Models.getDefaultBatchInputSettings()];
 
     // sort by name
     referenceData.sort((a, b) => a.id.localeCompare(b.id));
@@ -493,7 +493,7 @@ export function convertConfigToFlow(config) {
         owner: config.owner,
         databricksToken: config.databricksToken,
         input: input,
-        batchInputs: input.batch !== null && input.batch ? input.batch : [Models.getDefaultBatchInputSettings()],
+        batchInputs: input.batch ? input.batch : [Models.getDefaultBatchInputSettings()],
         batchList: config.batchList ? config.batchList : [],
         referenceData: input.referenceData ? input.referenceData : [],
         functions: config.process.functions ? config.process.functions : [],
