@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\DataX.Contract\DataX.Contract.csproj" />
+    <ProjectReference Include="..\..\DataX.Flow\DataX.Flow.DeleteHelper\DataX.Flow.DeleteHelper.csproj" />
     <ProjectReference Include="..\DataX.Config.KeyVault\DataX.Config.KeyVault.csproj" />
     <ProjectReference Include="..\DataX.Config.Test.Utility\DataX.Config.Test.Utility.csproj" />
     <ProjectReference Include="..\DataX.Config\DataX.Config.csproj" />

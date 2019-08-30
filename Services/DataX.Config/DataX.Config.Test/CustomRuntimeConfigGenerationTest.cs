@@ -86,7 +86,7 @@ namespace DataX.Config.Test
 
             public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
             {
-                return "done";
+                return await Task.FromResult("done");
             }
         }
 
