@@ -53,7 +53,7 @@ export default class InputSettingsContent extends React.Component {
 
     renderContent() {
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflowY: 'auto' }}>
                 <div style={contentStyle}>
                     {this.renderLeftPane()}
                     {this.renderRightPane()}
