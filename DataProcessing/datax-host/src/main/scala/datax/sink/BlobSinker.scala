@@ -15,6 +15,10 @@ import datax.fs.HadoopClient
 import datax.securedsetting.KeyVaultClient
 import datax.sink.BlobOutputSetting.BlobOutputConf
 import datax.utility.{GZipHelper, SinkerUtil}
+import datax.constants.ProductConstant
+import datax.config.ConfigManager
+import datax.host.SparkSessionSingleton
+import org.apache.spark.broadcast
 import org.apache.log4j.LogManager
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
@@ -126,7 +130,8 @@ object BlobSinker extends SinkOperatorFactory {
                      outputFolders: Map[String, String],
                      partitionId: Int,
                      compression: Boolean,
-                     loggerSuffix: String): Map[String, Int] = {
+                     loggerSuffix: String,
+                     blobStorageKey: broadcast.Broadcast[String]): Map[String, Int] = {
     val logger = LogManager.getLogger(s"Sinker-BlobSinker$loggerSuffix")
     val dataGroups = dataGenerator()
     val timeStart = System.nanoTime ()
@@ -139,6 +144,8 @@ object BlobSinker extends SinkOperatorFactory {
           case Some(folder) =>
             val path = folder +
               (if (fileName == null) s"part-$partitionId" else fileName) + (if(compression) ".json.gz" else ".json")
+            var sa = HadoopClient.getWasbStorageAccount(path)
+            HadoopClient.getConf().set(s"fs.azure.account.key.$sa.blob.core.windows.net", blobStorageKey.value)
             val jsonList = data.toSeq
             BlobSinker.writeEventsToBlob(jsonList, path, compression )
 
@@ -157,8 +164,16 @@ object BlobSinker extends SinkOperatorFactory {
     if(formatConf.isDefined && !formatConf.get.equalsIgnoreCase("json"))
       throw new Error(s"Output format: ${formatConf.get} as specified in the config is not supported")
     val outputFolders = blobOutputConf.groups.map{case(k,v)=>k->KeyVaultClient.resolveSecretIfAny(v.folder)}
-
-    val jsonSinkDelegate = (rowInfo: Row, rows: Seq[Row], outputPartitionTime: Timestamp, partitionId: Int, loggerSuffix: String) => {
+    
+	val sparkConf = ConfigManager.initSparkConf
+    val spark = SparkSessionSingleton.getInstance(sparkConf)
+    val sc = spark.sparkContext
+	val sa = getStorageAccountName(outputFolders.head._2)
+    var key = ""
+	KeyVaultClient.withKeyVault {vaultName => key = setStorageAccountKeyForExecuterNodes(vaultName, sa)}
+	val blobStorageKey = sc.broadcast(key)
+	
+	val jsonSinkDelegate = (rowInfo: Row, rows: Seq[Row], outputPartitionTime: Timestamp, partitionId: Int, loggerSuffix: String) => {
       val target = FileInternal.getInfoTargetTag(rowInfo)
       if(compressionTypeConf.isDefined && !(compressionTypeConf.get.equalsIgnoreCase("gzip")|| compressionTypeConf.get.equalsIgnoreCase("none")|| compressionTypeConf.get.equals("")))
         throw new Error(s"Output compressionType: ${compressionTypeConf.get} as specified in the config is not supported")
@@ -175,7 +190,8 @@ object BlobSinker extends SinkOperatorFactory {
           k->generateOutputFolderPath(v, outputPartitionTime, Option(target))},
         partitionId = partitionId,
         compression = compression,
-        loggerSuffix = loggerSuffix
+        loggerSuffix = loggerSuffix,
+        blobStorageKey = blobStorageKey
       )
     }
 
@@ -211,6 +227,38 @@ object BlobSinker extends SinkOperatorFactory {
         logger.warn(s"Created folders at ------\n${outputFolders.mkString("\n")}")
       }
     )
+  }
+
+  private def getStorageAccountName(path:String):String ={
+    val regex = "@([a-zA-Z0-9-_]+).blob.core.windows.net".r
+    regex.findFirstMatchIn(path) match {
+      case Some(partition) => partition.group(1)
+      case None =>  null
+    }
+  }
+
+  /***
+    * set storage account key with a keyvault name for writting to blobs on executer nodes
+    * @param vaultName key vault name to get the key of storage account
+    * @param sa name of the storage account
+    */
+  private def setStorageAccountKeyForExecuterNodes(vaultName: String, sa: String): String = {
+    val logger = LogManager.getLogger("setStorageAccountKeyForExecuterNodes")
+    // Fetch secret from keyvault using KeyVaultMsiAuthenticatorClient and if that does not return secret then fetch it using secret scope
+    val secretId = s"keyvault://$vaultName/${ProductConstant.ProductRoot}-sa-$sa"
+    KeyVaultClient.getSecret(secretId) match {
+      case Some(value)=>
+        value
+      case None =>
+        val databricksSecretId = s"secretscope://$vaultName/${ProductConstant.ProductRoot}-sa-$sa"
+        KeyVaultClient.getSecret(databricksSecretId) match {
+          case Some(value)=>
+			value
+          case None =>
+            logger.warn(s"Failed to find key of storage account '$sa' with secretid:'$secretId' and '$databricksSecretId' for executer nodes")
+			null
+        }
+    }
   }
 
   override def getSettingNamespace(): String = BlobOutputSetting.Namespace

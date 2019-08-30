@@ -69,7 +69,7 @@ object HadoopClient {
     * @param path a hdfs path
     * @return the storage account name if there is storage account name in the wasbs/wasb path, else null
     */
-  private def getWasbStorageAccount(path: String): String = {
+  def getWasbStorageAccount(path: String): String = {
     val uri = new URI(path.replace(" ", "%20"))
     val scheme = uri.getScheme
     if(scheme == "wasb" || scheme == "wasbs")

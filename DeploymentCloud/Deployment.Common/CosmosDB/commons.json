@@ -199,6 +199,8 @@
 					"spark_conf" : {
 						"spark\uff0edatabricks\uff0edelta\uff0epreview\uff0eenabled" : true,
 						"spark\uff0esql\uff0ehive\uff0emetastore\uff0eversion" : "1.2.1",
+						"spark\uff0edriver\uff0euserClassPathFirst": true,
+						"spark\uff0eexecutor\uff0euserClassPathFirst": true,
 						"spark\uff0esql\uff0ehive\uff0emetastore\uff0ejars" : "builtin"
 					},
 					"spark_env_vars" : {
@@ -249,13 +251,16 @@
 						"jar" : "dbfs:/datax/azure-sqldb-spark-1.0.2.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/hadoop-azure-2.7.0.jar"
+						"jar" : "dbfs:/datax/hadoop-azure-2.7.3.jar"
 					}, 
 					{
 						"jar" : "dbfs:/datax/jetty-util-6.1.25.jar"
 					}, 
 					{
 						"jar" : "dbfs:/datax/json-20180813.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-storage-3.1.0.jar"
 					}
 				],
 				"spark_jar_task" : {
@@ -711,6 +716,8 @@
 					"spark_conf" : {
 						"spark\uff0edatabricks\uff0edelta\uff0epreview\uff0eenabled" : true,
 						"spark\uff0esql\uff0ehive\uff0emetastore\uff0eversion" : "1.2.1",
+						"spark\uff0edriver\uff0euserClassPathFirst": true,
+						"spark\uff0eexecutor\uff0euserClassPathFirst": true,
 						"spark\uff0esql\uff0ehive\uff0emetastore\uff0ejars" : "builtin"
 					},
 					"spark_env_vars" : {
@@ -767,13 +774,16 @@
 						"jar" : "dbfs:/datax/azure-sqldb-spark-1.0.2.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/hadoop-azure-2.7.0.jar"
+						"jar" : "dbfs:/datax/hadoop-azure-2.7.3.jar"
 					}, 
 					{
 						"jar" : "dbfs:/datax/jetty-util-6.1.25.jar"
 					}, 
 					{
 						"jar" : "dbfs:/datax/json-20180813.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-storage-3.1.0.jar"
 					}
 				],
 				"spark_jar_task" : {
@@ -1101,6 +1111,8 @@
 					"spark_conf" : {
 						"spark\uff0edatabricks\uff0edelta\uff0epreview\uff0eenabled" : true,
 						"spark\uff0esql\uff0ehive\uff0emetastore\uff0eversion" : "1.2.1",
+						"spark\uff0edriver\uff0euserClassPathFirst": true,
+						"spark\uff0eexecutor\uff0euserClassPathFirst": true,
 						"spark\uff0esql\uff0ehive\uff0emetastore\uff0ejars" : "builtin"
 					},
 					"spark_env_vars" : {
@@ -1151,13 +1163,16 @@
 						"jar" : "dbfs:/datax/azure-sqldb-spark-1.0.2.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/hadoop-azure-2.7.0.jar"
+						"jar" : "dbfs:/datax/hadoop-azure-2.7.3.jar"
 					}, 
 					{
 						"jar" : "dbfs:/datax/jetty-util-6.1.25.jar"
 					}, 
 					{
 						"jar" : "dbfs:/datax/json-20180813.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-storage-3.1.0.jar"
 					}
 				],
 				"spark_jar_task" : {
