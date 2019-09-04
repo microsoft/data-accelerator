@@ -99,8 +99,8 @@ namespace DataX.Flow.DeleteHelper
             _inputEventhubConnectionStringRef = Helper.IsKeyVault(diag.EventhubConnectionString) ? diag.EventhubConnectionString : Helper.GenerateNewSecret(_keySecretList, _engineEnvironment.EngineFlowConfig.SparkKeyVaultName, ConfigName + "-input-eventhubconnectionstring", _engineEnvironment.EngineFlowConfig.SparkType, diag.EventhubConnectionString, false);
             diag.EventhubConnectionString = _inputEventhubConnectionStringRef;
 
-            if (diag.InputType == Constants.InputType_EventHub)
-            { 
+            if (diag.InputType == Constants.InputType_EventHub && !string.IsNullOrEmpty(inputEventhubConnection))
+            {
                 var ehName = Helper.ParseEventHub(inputEventhubConnection);
                 _eventHubNamespace = Helper.ParseEventHubNamespace(inputEventhubConnection);
                 _eventHubNameRole = Helper.ParseEventHubPolicyName(inputEventhubConnection);
@@ -115,7 +115,7 @@ namespace DataX.Flow.DeleteHelper
 
                 _eventHubNames = new List<string>() { ehName };
             }
-            else
+            else if (diag.InputType == Constants.InputType_IoTHub && !string.IsNullOrEmpty(diag.EventhubNames) && !string.IsNullOrEmpty(inputEventhubConnection))
             {
                 _eventHubNames = Helper.ParseEventHubNames(diag.EventhubNames);
                 _eventHubNamespace = Helper.ParseEventHubNamespace(inputEventhubConnection);
@@ -139,7 +139,7 @@ namespace DataX.Flow.DeleteHelper
 
             // ResourceCreation is one of the environment variables.
             // If you don't want to create resource, you can set this to false.
-            if (_engineEnvironment.ResourceCreation && (diag.InputType == Constants.InputType_EventHub || diag.InputType == Constants.InputType_IoTHub))
+            if (_engineEnvironment.ResourceCreation && _eventHubNames != null && (diag.InputType == Constants.InputType_EventHub || diag.InputType == Constants.InputType_IoTHub))
             {
                 var inputSubscriptionId = string.IsNullOrEmpty(diag.InputSubscriptionId) ? Helper.GetSecretFromKeyvaultIfNeeded(_engineEnvironment.EngineFlowConfig.SubscriptionId) : Helper.GetSecretFromKeyvaultIfNeeded(diag.InputSubscriptionId);
                 var inputResourceGroup = string.IsNullOrEmpty(diag.InputResourceGroup) ? _engineEnvironment.EngineFlowConfig.EventHubResourceGroupName : Helper.GetSecretFromKeyvaultIfNeeded(diag.InputResourceGroup);
