@@ -111,7 +111,7 @@ object HadoopClient {
     // set the key only if its a non-default storage account
     if(!defaultFS.toLowerCase().contains(s"$sa${BlobProperties.BlobHostPath}"))    {
       logger.warn(s"Setting the key in hdfs conf for storage account $sa")
-      getConf().set(s"fs.azure.account.key.$sa${BlobProperties.BlobHostPath}", key)
+      setStorageAccountKeyOnHadoopConf(sa, key)
     }
     else    {
       logger.warn(s"Default storage account $sa found, skipping setting the key")
@@ -330,7 +330,7 @@ object HadoopClient {
     //Set hadoop config with storage account key on executer node
     if(blobStorageKey != null){
       var sa = getWasbStorageAccount(hdfsPath)
-      getConf().set(s"fs.azure.account.key.$sa${BlobProperties.BlobHostPath}", blobStorageKey.value)
+      setStorageAccountKeyOnHadoopConf(sa, blobStorageKey.value)
     }
     def f = Future{
       writeHdfsFile(hdfsPath, content, getConf(), false)
@@ -349,6 +349,15 @@ object HadoopClient {
           throw e
       }
     }
+  }
+
+  /**
+    * set storage account key on hadoop conf
+    * @param sa storage account name
+    * @param value storage account key
+    */
+  private def setStorageAccountKeyOnHadoopConf(sa: String, value: String): Unit = {
+    getConf().set(s"fs.azure.account.key.$sa${BlobProperties.BlobHostPath}", value)
   }
 
   /**
