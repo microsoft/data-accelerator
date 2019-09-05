@@ -496,8 +496,10 @@ object CommonProcessorFactory {
         postMetrics(Map(s"InputBlobs" -> paths.size.toDouble))
         batchLog.warn(s"InputBlob count=${paths.size}");
 
+        val blobStorageKey = BlobSinker.createBlobStorageKeyBroadcastVariable(paths.head, spark)
+
         val inputDf = internalFiles
-                      .flatMap(file => HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
+                      .flatMap(file => HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"), blobStorageKey)
                       .filter(l=>l!=null && !l.isEmpty).map((file, outputPartitionTime, _)))
                       .toDF(ColumnName.InternalColumnFileInfo, ColumnName.MetadataColumnOutputPartitionTime, ColumnName.RawObjectColumn)
 

@@ -164,7 +164,7 @@ object BlobSinker extends SinkOperatorFactory {
       throw new Error(s"Output format: ${formatConf.get} as specified in the config is not supported")
     val outputFolders = blobOutputConf.groups.map{case(k,v)=>k->KeyVaultClient.resolveSecretIfAny(v.folder)}
 
-    val blobStorageKey = createBlobStorageKeyBroadcastVariable(outputFolders.head._2)
+    val blobStorageKey = createBlobStorageKeyBroadcastVariable(outputFolders.head._2, SparkSessionSingleton.getInstance(ConfigManager.initSparkConf))
 
     val jsonSinkDelegate = (rowInfo: Row, rows: Seq[Row], outputPartitionTime: Timestamp, partitionId: Int, loggerSuffix: String) => {
       val target = FileInternal.getInfoTargetTag(rowInfo)
@@ -196,9 +196,9 @@ object BlobSinker extends SinkOperatorFactory {
   /***
     * Create broadcast variable for blob storage account key
     * @param path blob storage path
+    * @param spark SparkSession
     */
-  def createBlobStorageKeyBroadcastVariable(path: String): broadcast.Broadcast[String] ={
-    val spark = SparkSessionSingleton.getInstance(ConfigManager.initSparkConf)
+  def createBlobStorageKeyBroadcastVariable(path: String, spark : SparkSession): broadcast.Broadcast[String] ={
     val sc = spark.sparkContext
     val sa = getStorageAccountName(path)
     var key = ""

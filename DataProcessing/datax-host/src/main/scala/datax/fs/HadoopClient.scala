@@ -229,11 +229,12 @@ object HadoopClient {
     * read a hdfs file
     * @param hdfsPath path to the hdfs file
     * @param gzip whether it is a gzipped file
+    * @param blobStorageKey storage account key broadcast variable
     * @throws IOException if any
     * @return a iterable of strings from content of the file
     */
   @throws[IOException]
-  def readHdfsFile(hdfsPath: String, gzip:Boolean=false): Iterable[String] = {
+  def readHdfsFile(hdfsPath: String, gzip:Boolean=false, blobStorageKey: broadcast.Broadcast[String] = null): Iterable[String] = {
     val logger = LogManager.getLogger(s"FileLoader${SparkEnvVariables.getLoggerSuffix()}")
 
     // resolve key to access azure storage account
@@ -244,6 +245,10 @@ object HadoopClient {
     logger.info(s"Loading '$hdfsPath'")
 
     try{
+      if(blobStorageKey != null){
+        var sa = getWasbStorageAccount(hdfsPath)
+        setStorageAccountKeyOnHadoopConf(sa, blobStorageKey.value)
+      }
       val path = new Path(hdfsPath)
       val fs = path.getFileSystem(getConf())
       val is = fs.open(path)
@@ -383,8 +388,6 @@ object HadoopClient {
     */
   @throws[IOException]
   def writeHdfsFile(hdfsPath: String, content: Array[Byte], conf: Configuration, overwriteIfExists:Boolean) {
-    resolveStorageAccountKeyForPath(hdfsPath)
-
     val logger = LogManager.getLogger("writeHdfsFile")
 
     val path = new Path(hdfsPath)
