@@ -13,7 +13,7 @@ import java.util.zip.GZIPInputStream
 
 import com.google.common.io.{Files => GFiles}
 import datax.config.SparkEnvVariables
-import datax.constants.ProductConstant
+import datax.constants.{ProductConstant, BlobProperties}
 import datax.exception.EngineException
 import datax.securedsetting.KeyVaultClient
 import datax.telemetry.AppInsightLogger
@@ -21,6 +21,7 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path, RemoteIterator}
 import org.apache.log4j.LogManager
+import org.apache.spark.broadcast
 
 import scala.language.implicitConversions
 import scala.collection.mutable
@@ -74,7 +75,7 @@ object HadoopClient {
     val scheme = uri.getScheme
     if(scheme == "wasb" || scheme == "wasbs")
       Option(uri.getHost) match {
-        case Some(host) => host.toLowerCase().replace(".blob.core.windows.net", "")
+        case Some(host) => host.toLowerCase().replace(s"${BlobProperties.BlobHostPath}", "")
         case None => null
       }
     else
@@ -108,9 +109,9 @@ object HadoopClient {
     // get the default storage account
     val defaultFS = getConf().get("fs.defaultFS","")
     // set the key only if its a non-default storage account
-    if(!defaultFS.toLowerCase().contains(s"$sa.blob.core.windows.net"))    {
+    if(!defaultFS.toLowerCase().contains(s"$sa${BlobProperties.BlobHostPath}"))    {
       logger.warn(s"Setting the key in hdfs conf for storage account $sa")
-      getConf().set(s"fs.azure.account.key.$sa.blob.core.windows.net", key)
+      setStorageAccountKeyOnHadoopConf(sa, key)
     }
     else    {
       logger.warn(s"Default storage account $sa found, skipping setting the key")
@@ -124,22 +125,25 @@ object HadoopClient {
     * @param vaultName key vault name to get the key of storage account
     * @param sa name of the storage account
     */
-  private def resolveStorageAccount(vaultName: String, sa: String) = {
+  def resolveStorageAccount(vaultName: String, sa: String) : Option[String] = {
     // Fetch secret from keyvault using KeyVaultMsiAuthenticatorClient and if that does not return secret then fetch it using secret scope  
     val secretId = s"keyvault://$vaultName/${ProductConstant.ProductRoot}-sa-$sa"
     KeyVaultClient.getSecret(secretId) match {
       case Some(value)=>
         logger.warn(s"Retrieved key for storage account '$sa' with secretid:'$secretId'")
         setStorageAccountKey(sa, value)
+        Some(value)
       case None =>	    
         val databricksSecretId = s"secretscope://$vaultName/${ProductConstant.ProductRoot}-sa-$sa"
-		KeyVaultClient.getSecret(databricksSecretId) match {
-		  case Some(value)=>
+        KeyVaultClient.getSecret(databricksSecretId) match {
+          case Some(value)=>
             logger.warn(s"Retrieved key for storage account '$sa' with secretid:'$databricksSecretId'")
             setStorageAccountKey(sa, value)
-		  case None =>
-		    logger.warn(s"Failed to find key for storage account '$sa' with secretid:'$secretId' and '$databricksSecretId'")
-		}
+            Some(value)
+          case None =>
+            logger.warn(s"Failed to find key for storage account '$sa' with secretid:'$secretId' and '$databricksSecretId'")
+            None
+        }
     }
   }
 
@@ -319,9 +323,15 @@ object HadoopClient {
   def writeWithTimeoutAndRetries(hdfsPath: String,
                                  content: Array[Byte],
                                  timeout: Duration = Duration(5, TimeUnit.SECONDS),
-                                 retries: Int = 0
+                                 retries: Int = 0,
+                                 blobStorageKey: broadcast.Broadcast[String]
                                 ) = {
     val logger = LogManager.getLogger(s"FileWriter${SparkEnvVariables.getLoggerSuffix()}")
+    //Set hadoop config with storage account key on executer node
+    if(blobStorageKey != null){
+      var sa = getWasbStorageAccount(hdfsPath)
+      setStorageAccountKeyOnHadoopConf(sa, blobStorageKey.value)
+    }
     def f = Future{
       writeHdfsFile(hdfsPath, content, getConf(), false)
     }
@@ -339,6 +349,15 @@ object HadoopClient {
           throw e
       }
     }
+  }
+
+  /**
+    * set storage account key on hadoop conf
+    * @param sa storage account name
+    * @param value storage account key
+    */
+  private def setStorageAccountKeyOnHadoopConf(sa: String, value: String): Unit = {
+    getConf().set(s"fs.azure.account.key.$sa${BlobProperties.BlobHostPath}", value)
   }
 
   /**

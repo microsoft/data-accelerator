@@ -15,6 +15,10 @@ import datax.fs.HadoopClient
 import datax.securedsetting.KeyVaultClient
 import datax.sink.BlobOutputSetting.BlobOutputConf
 import datax.utility.{GZipHelper, SinkerUtil}
+import datax.constants.{ProductConstant, BlobProperties}
+import datax.config.ConfigManager
+import datax.host.SparkSessionSingleton
+import org.apache.spark.broadcast
 import org.apache.log4j.LogManager
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
@@ -46,7 +50,7 @@ object BlobSinker extends SinkOperatorFactory {
   }
 
   // write events to blob location
-  def writeEventsToBlob(data: Seq[String], outputPath: String, compression: Boolean) {
+  def writeEventsToBlob(data: Seq[String], outputPath: String, compression: Boolean, blobStorageKey: broadcast.Broadcast[String] = null) {
     val logger = LogManager.getLogger(s"EventsToBlob-Writer${SparkEnvVariables.getLoggerSuffix()}")
     val countEvents = data.length
 
@@ -75,7 +79,8 @@ object BlobSinker extends SinkOperatorFactory {
         hdfsPath = outputPath,
         content = content,
         timeout = Duration.create(ConfigManager.getActiveDictionary().getOrElse(JobArgument.ConfName_BlobWriterTimeout, "10 seconds")),
-        retries = 0
+        retries = 0,
+        blobStorageKey
       )
       timeNow = System.nanoTime()
       logger.info(s"$timeNow:Step 3: done writing to $outputPath, spent time=${(timeNow - timeLast) / 1E9} seconds")
@@ -126,7 +131,8 @@ object BlobSinker extends SinkOperatorFactory {
                      outputFolders: Map[String, String],
                      partitionId: Int,
                      compression: Boolean,
-                     loggerSuffix: String): Map[String, Int] = {
+                     loggerSuffix: String,
+                     blobStorageKey: broadcast.Broadcast[String]): Map[String, Int] = {
     val logger = LogManager.getLogger(s"Sinker-BlobSinker$loggerSuffix")
     val dataGroups = dataGenerator()
     val timeStart = System.nanoTime ()
@@ -140,7 +146,7 @@ object BlobSinker extends SinkOperatorFactory {
             val path = folder +
               (if (fileName == null) s"part-$partitionId" else fileName) + (if(compression) ".json.gz" else ".json")
             val jsonList = data.toSeq
-            BlobSinker.writeEventsToBlob(jsonList, path, compression )
+            BlobSinker.writeEventsToBlob(jsonList, path, compression, blobStorageKey )
 
             Seq(s"${MetricPrefixEvents}$group" -> jsonList.length, s"${MetricPrefixBlobs}$group" -> 1)
         }
@@ -157,6 +163,8 @@ object BlobSinker extends SinkOperatorFactory {
     if(formatConf.isDefined && !formatConf.get.equalsIgnoreCase("json"))
       throw new Error(s"Output format: ${formatConf.get} as specified in the config is not supported")
     val outputFolders = blobOutputConf.groups.map{case(k,v)=>k->KeyVaultClient.resolveSecretIfAny(v.folder)}
+
+    val blobStorageKey = createBlobStorageKeyBroadcastVariable(outputFolders.head._2)
 
     val jsonSinkDelegate = (rowInfo: Row, rows: Seq[Row], outputPartitionTime: Timestamp, partitionId: Int, loggerSuffix: String) => {
       val target = FileInternal.getInfoTargetTag(rowInfo)
@@ -175,7 +183,8 @@ object BlobSinker extends SinkOperatorFactory {
           k->generateOutputFolderPath(v, outputPartitionTime, Option(target))},
         partitionId = partitionId,
         compression = compression,
-        loggerSuffix = loggerSuffix
+        loggerSuffix = loggerSuffix,
+        blobStorageKey = blobStorageKey
       )
     }
 
@@ -184,6 +193,19 @@ object BlobSinker extends SinkOperatorFactory {
     }
   }
 
+  /***
+    * Create broadcast variable for blob storage account key
+    * @param path blob storage path
+    */
+  def createBlobStorageKeyBroadcastVariable(path: String): broadcast.Broadcast[String] ={
+    val spark = SparkSessionSingleton.getInstance(ConfigManager.initSparkConf)
+    val sc = spark.sparkContext
+    val sa = getStorageAccountName(path)
+    var key = ""
+    KeyVaultClient.withKeyVault {vaultName => key = HadoopClient.resolveStorageAccount(vaultName, sa).get}
+    val blobStorageKey = sc.broadcast(key)
+    blobStorageKey
+  }
 
   def getSinkOperator(dict: SettingDictionary, name: String): SinkOperator = {
     val blobConf = BlobOutputSetting.buildBlobOutputConf(dict, name)
@@ -211,6 +233,18 @@ object BlobSinker extends SinkOperatorFactory {
         logger.warn(s"Created folders at ------\n${outputFolders.mkString("\n")}")
       }
     )
+  }
+
+  /***
+    * Get the storage account name from blob path
+    * @param path blob storage path
+    */
+  private def getStorageAccountName(path:String):String ={
+    val regex = s"@([a-zA-Z0-9-_]+)${BlobProperties.BlobHostPath}".r
+    regex.findFirstMatchIn(path) match {
+      case Some(partition) => partition.group(1)
+      case None =>  null
+    }
   }
 
   override def getSettingNamespace(): String = BlobOutputSetting.Namespace

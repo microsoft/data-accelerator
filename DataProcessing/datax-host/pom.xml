@@ -138,7 +138,7 @@ SOFTWARE
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-storage</artifactId>
-            <version>5.3.0</version>
+            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
@@ -148,7 +148,7 @@ SOFTWARE
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-azure</artifactId>
-            <version>2.7.0</version>
+            <version>2.7.3</version>
         </dependency>
         <dependency>
             <groupId>org.mortbay.jetty</groupId>
