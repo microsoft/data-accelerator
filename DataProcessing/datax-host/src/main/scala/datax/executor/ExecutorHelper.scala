@@ -49,26 +49,36 @@ object ExecutorHelper {
     */
   private def addJarToExecutor(spark : SparkSession){
     try{
-      logger.warn("Adding azure-storage-3.1.0.jar to executor nodes")
-      withStorageAccount {storageAccount => SparkJarLoader.addJar(spark, s"wasbs://${BlobProperties.DefaultContainer}@$storageAccount${BlobProperties.BlobHostPath}${BlobProperties.AzureStorageJarPath}")}
+      logger.warn("Adding azure-storage jar to executor nodes")
+      withStorageAccount {(storageAccount,containerName,azureStorageJarPath) => SparkJarLoader.addJar(spark, s"wasbs://$containerName@$storageAccount${BlobProperties.BlobHostPath}$azureStorageJarPath")}
     }
     catch {
       case e: Exception => {
-        logger.warn(s"azure-storage-3.1.0.jar could not be added to executer nodes")
+        logger.error(s"azure-storage jar could not be added to executer nodes", e)
         throw e
       }
     }
   }
 
   /***
-    * a scope to execute operation with the default storage account, skip the operation if that doesn't exist.
+    * a scope to execute operation with the default storageAccount/container/azureStorageJarPath, skip the operation if that doesn't exist.
     * @param callback execution within the scope
     */
-  private def withStorageAccount(callback: (String)=> Unit) = {
+  private def withStorageAccount(callback: (String, String, String)=> Unit) = {
     ConfigManager.getActiveDictionary().get(JobArgument.ConfName_DefaultStorageAccount) match {
       case Some(storageAccount) =>
         logger.warn(s"Default Storage Account is $storageAccount")
-        callback(storageAccount)
+        ConfigManager.getActiveDictionary().get(JobArgument.ConfName_DefaultContainer) match {
+          case Some(containerName) =>
+            logger.warn(s"Default container is $containerName")
+            ConfigManager.getActiveDictionary().get(JobArgument.ConfName_AzureStorageJarPath) match {
+              case Some(azureStorageJarPath) =>
+                logger.warn(s"Azure storage jar path is $azureStorageJarPath")
+                callback(storageAccount, containerName, azureStorageJarPath)
+              case None => logger.warn(s"No azure storage jar path is defined")
+            }
+          case None => logger.warn(s"No default container is defined")
+        }
       case None => logger.warn(s"No default storage account is defined")
     }
   }

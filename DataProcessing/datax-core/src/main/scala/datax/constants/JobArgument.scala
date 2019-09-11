@@ -16,4 +16,6 @@ object JobArgument {
   def ConfName_BlobWriterTimeout: String = s"${ConfNamePrefix}BlobWriterTimeout"
   def ConfName_DefaultVaultName: String = s"${ConfNamePrefix}DEFAULTVAULTNAME"
   def ConfName_DefaultStorageAccount: String = s"${ConfNamePrefix}DEFAULTSTORAGEACCOUNT"
+  def ConfName_DefaultContainer: String = s"${ConfNamePrefix}DEFAULTCONTAINER"
+  def ConfName_AzureStorageJarPath: String = s"${ConfNamePrefix}AZURESTORAGEJARPATH"
 }

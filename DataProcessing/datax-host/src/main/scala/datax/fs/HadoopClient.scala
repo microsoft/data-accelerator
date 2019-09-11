@@ -302,7 +302,6 @@ object HadoopClient {
     */
   @throws[IOException]
   def writeHdfsFile(hdfsPath: String, content: String, overwriteIfExists:Boolean) {
-    resolveStorageAccountKeyForPath(hdfsPath)
     writeHdfsFile(hdfsPath, content.getBytes("UTF-8"), getConf(), overwriteIfExists)
   }
 
@@ -329,6 +328,7 @@ object HadoopClient {
     * @param content conent to write into the file
     * @param timeout timeout duration for the write operation, by default 5 seconds
     * @param retries times in retries, by default 0 meaning no retries.
+    * @param blobStorageKey storage account key broadcast variable
     */
   def writeWithTimeoutAndRetries(hdfsPath: String,
                                  content: Array[Byte],
@@ -337,9 +337,8 @@ object HadoopClient {
                                  blobStorageKey: broadcast.Broadcast[String]
                                 ) = {
     val logger = LogManager.getLogger(s"FileWriter${SparkEnvVariables.getLoggerSuffix()}")
-    resolveStorageAccountKeyForPath(hdfsPath, blobStorageKey)
     def f = Future{
-      writeHdfsFile(hdfsPath, content, getConf(), false)
+      writeHdfsFile(hdfsPath, content, getConf(), false, blobStorageKey)
     }
     var remainingAttempts = retries+1
     while(remainingAttempts>0) {
@@ -385,10 +384,13 @@ object HadoopClient {
     * @param content content to write into the file
     * @param conf hadoop configuration
     * @param overwriteIfExists flag to specify if the file needs to be overwritten if it already exists in hdfs
+    * @param blobStorageKey storage account key broadcast variable
     * @throws IOException if any from lower file system operation
     */
   @throws[IOException]
-  private def writeHdfsFile(hdfsPath: String, content: Array[Byte], conf: Configuration, overwriteIfExists:Boolean) {
+  private def writeHdfsFile(hdfsPath: String, content: Array[Byte], conf: Configuration, overwriteIfExists:Boolean, blobStorageKey: broadcast.Broadcast[String] = null) {
+    resolveStorageAccountKeyForPath(hdfsPath, blobStorageKey)
+
     val logger = LogManager.getLogger("writeHdfsFile")
 
     val path = new Path(hdfsPath)
