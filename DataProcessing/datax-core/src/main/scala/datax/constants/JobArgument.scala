@@ -15,4 +15,5 @@ object JobArgument {
   def ConfName_AppInsightKeyRef = s"${ConfNamePrefix}APPINSIGHTKEYREF"
   def ConfName_BlobWriterTimeout: String = s"${ConfNamePrefix}BlobWriterTimeout"
   def ConfName_DefaultVaultName: String = s"${ConfNamePrefix}DEFAULTVAULTNAME"
+  def ConfName_DefaultStorageAccount: String = s"${ConfNamePrefix}DEFAULTSTORAGEACCOUNT"
 }

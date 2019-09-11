@@ -8,6 +8,7 @@ package datax.sink
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 
+import datax.executor.ExecutorHelper
 import datax.config._
 import datax.constants.{JobArgument, MetricName}
 import datax.data.{FileInternal, ProcessResult}
@@ -164,7 +165,7 @@ object BlobSinker extends SinkOperatorFactory {
       throw new Error(s"Output format: ${formatConf.get} as specified in the config is not supported")
     val outputFolders = blobOutputConf.groups.map{case(k,v)=>k->KeyVaultClient.resolveSecretIfAny(v.folder)}
 
-    val blobStorageKey = createBlobStorageKeyBroadcastVariable(outputFolders.head._2, SparkSessionSingleton.getInstance(ConfigManager.initSparkConf))
+    val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(outputFolders.head._2, SparkSessionSingleton.getInstance(ConfigManager.initSparkConf))
 
     val jsonSinkDelegate = (rowInfo: Row, rows: Seq[Row], outputPartitionTime: Timestamp, partitionId: Int, loggerSuffix: String) => {
       val target = FileInternal.getInfoTargetTag(rowInfo)
@@ -193,20 +194,6 @@ object BlobSinker extends SinkOperatorFactory {
     }
   }
 
-  /***
-    * Create broadcast variable for blob storage account key
-    * @param path blob storage path
-    * @param spark SparkSession
-    */
-  def createBlobStorageKeyBroadcastVariable(path: String, spark : SparkSession): broadcast.Broadcast[String] ={
-    val sc = spark.sparkContext
-    val sa = getStorageAccountName(path)
-    var key = ""
-    KeyVaultClient.withKeyVault {vaultName => key = HadoopClient.resolveStorageAccount(vaultName, sa).get}
-    val blobStorageKey = sc.broadcast(key)
-    blobStorageKey
-  }
-
   def getSinkOperator(dict: SettingDictionary, name: String): SinkOperator = {
     val blobConf = BlobOutputSetting.buildBlobOutputConf(dict, name)
     SinkOperator(
@@ -233,18 +220,6 @@ object BlobSinker extends SinkOperatorFactory {
         logger.warn(s"Created folders at ------\n${outputFolders.mkString("\n")}")
       }
     )
-  }
-
-  /***
-    * Get the storage account name from blob path
-    * @param path blob storage path
-    */
-  private def getStorageAccountName(path:String):String ={
-    val regex = s"@([a-zA-Z0-9-_]+)${BlobProperties.BlobHostPath}".r
-    regex.findFirstMatchIn(path) match {
-      case Some(partition) => partition.group(1)
-      case None =>  null
-    }
   }
 
   override def getSettingNamespace(): String = BlobOutputSetting.Namespace

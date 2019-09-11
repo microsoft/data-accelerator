@@ -8,6 +8,7 @@ import java.sql.Timestamp
 import java.util.concurrent.Executors
 
 import com.microsoft.azure.eventhubs.EventData
+import datax.executor.ExecutorHelper
 import datax.config._
 import datax.constants._
 import datax.data.FileInternal
@@ -496,7 +497,7 @@ object CommonProcessorFactory {
         postMetrics(Map(s"InputBlobs" -> paths.size.toDouble))
         batchLog.warn(s"InputBlob count=${paths.size}");
 
-        val blobStorageKey = BlobSinker.createBlobStorageKeyBroadcastVariable(paths.head, spark)
+        val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(paths.head, spark)
 
         val inputDf = internalFiles
                       .flatMap(file => HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"), blobStorageKey)
