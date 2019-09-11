@@ -516,15 +516,23 @@ function Check-Credential([string]$SubscriptionId, [string]$TenantId) {
     Write-Host "Checking credential..."
     Write-Host "Logging in for AzureRM"
     $azurermsub = Select-AzureRmSubscription -SubscriptionId $subscriptionId -ErrorAction SilentlyContinue
+    Write-Host "azurermsub: $azurermsub" 
     if (!($azurermsub)) {
+        Write-Host "Connect-AzureRmAccount started" 
         Connect-AzureRmAccount -TenantId $TenantId
         $azurermsub = Select-AzureRmSubscription -SubscriptionId $subscriptionId
     }
+
+    Write-Host "az account set started" 
 
     try {
         az account set --subscription $subscriptionId > $null 2>&1
     }
     catch {}
+
+    
+    Write-Host "az account set end" 
+
 
     if (!$?) {
         Write-Host "Logging in for AzureCLI"
