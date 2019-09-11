@@ -165,11 +165,17 @@
 			  "spark\uff0especulation": true,
 			  "spark\uff0especulation\uff0emultiplier": 3,
 			  "spark\uff0especulation\uff0equantile": 0.9,
+			  "spark\uff0eexecutorEnv\uff0eDATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+			  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTCONTAINER" : "defaultdx",
+			  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName",
 			  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName",
 			  "spark\uff0eexecutorEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
 			  "spark\uff0eexecutorEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
 			  "spark\uff0eexecutorEnv\uff0eDATAX_LOGLEVEL": "${sparkJobExecutorLogLevel}",
 			  "spark\uff0eexecutorEnv\uff0eDATAX_CHECKPOINTENABLED": "true",
+			  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar", 
+			  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTCONTAINER" : "defaultdx", 
+			  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName", 
 			  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName", 
 			  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
 			  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
@@ -204,6 +210,9 @@
 						"spark\uff0esql\uff0ehive\uff0emetastore\uff0ejars" : "builtin"
 					},
 					"spark_env_vars" : {
+						"DATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+						"DATAX_DEFAULTCONTAINER" : "defaultdx",
+						"DATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName",
 						"DATAX_DEFAULTVAULTNAME" : "$sparkKVName"
 					}
 				},
@@ -682,11 +691,17 @@
 				  "spark\uff0especulation": true,
 				  "spark\uff0especulation\uff0emultiplier": 3,
 				  "spark\uff0especulation\uff0equantile": 0.9,
+				  "spark\uff0eexecutorEnv\uff0eDATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+				  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTCONTAINER" : "defaultdx",
+				  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_LOGLEVEL": "${sparkJobExecutorLogLevel}",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_CHECKPOINTENABLED": "true",
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTCONTAINER" : "defaultdx",
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName", 
 				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName", 
 				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
 				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
@@ -721,6 +736,9 @@
 						"spark\uff0esql\uff0ehive\uff0emetastore\uff0ejars" : "builtin"
 					},
 					"spark_env_vars" : {
+						"DATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+						"DATAX_DEFAULTCONTAINER" : "defaultdx",
+						"DATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName",
 						"DATAX_DEFAULTVAULTNAME" : "$sparkKVName"
 					}
 				},
@@ -1077,11 +1095,17 @@
 				  "spark\uff0especulation": true,
 				  "spark\uff0especulation\uff0emultiplier": 3,
 				  "spark\uff0especulation\uff0equantile": 0.9,
+				  "spark\uff0eexecutorEnv\uff0eDATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+				  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTCONTAINER" : "defaultdx",
+				  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_LOGLEVEL": "${sparkJobExecutorLogLevel}",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_CHECKPOINTENABLED": "true",
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTCONTAINER" : "defaultdx", 
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName", 
 				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName", 
 				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
 				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
@@ -1116,6 +1140,9 @@
 						"spark\uff0esql\uff0ehive\uff0emetastore\uff0ejars" : "builtin"
 					},
 					"spark_env_vars" : {
+						"DATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+						"DATAX_DEFAULTCONTAINER" : "defaultdx",
+						"DATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName",
 						"DATAX_DEFAULTVAULTNAME" : "$sparkKVName"
 					}
 				},
