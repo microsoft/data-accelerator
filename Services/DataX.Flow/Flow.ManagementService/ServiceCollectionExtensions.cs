@@ -27,7 +27,7 @@ namespace Flow.Management
         /// <returns></returns>
         public static IServiceCollection AddMefExportsFromAssemblies(this IServiceCollection services, ServiceLifetime lifetime, IEnumerable<Assembly> assemblies, Type[] exportTypes, object[] instanceExports, ILoggerFactory loggerFactory = null, bool local = false)
         {          
-            var configuration = new ContainerConfiguration().WithAssemblies(assemblies).WithProvider(new LoggerAndInstanceExportDescriptorProvider(instanceExports, loggerFactory));
+            var configuration = new ContainerConfiguration().WithAssemblies(assemblies).WithProvider(new LoggerAndInstanceExportDescriptorProvider<object[]>(instanceExports, loggerFactory));
             using (var container = configuration.CreateContainer())
             {
                 foreach (var exportType in exportTypes)

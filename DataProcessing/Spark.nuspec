@@ -31,6 +31,10 @@
 <file src="**\kafka-clients-2.0.0.jar" target="lib" />
 <file src="**\spark-streaming-kafka-0-10_2.11-2.4.0.jar" target="lib" />
 <file src="**\azure-sqldb-spark-1.0.2.jar" target="lib" />
+<file src="**\hadoop-azure-2.7.3.jar" target="lib" />
+<file src="**\jetty-util-6.1.25.jar" target="lib" />
+<file src="**\json-20180813.jar" target="lib" />
+<file src="**\azure-storage-3.1.0.jar" target="lib" />
 <file src="NOTICE.txt" target="" />
   </files>
 </package>

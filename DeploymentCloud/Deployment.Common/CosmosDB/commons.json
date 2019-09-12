@@ -147,7 +147,8 @@
 				"wasbs:///datax/bin/datax-keyvault_2.3_2.11-1.1.0-with-dependencies.jar",
 				"wasbs:///datax/bin/java-uuid-generator-3.1.5.jar",
 				"wasbs:///datax/bin/proton-j-0.31.0.jar",
-				"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar"
+				"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar",
+				"wasbs:///datax/bin/azure-sqldb-spark-1.0.2.jar"
 			],
 			"driverMemory": "1024m",
 			"executorCores": 2,
@@ -164,11 +165,17 @@
 			  "spark\uff0especulation": true,
 			  "spark\uff0especulation\uff0emultiplier": 3,
 			  "spark\uff0especulation\uff0equantile": 0.9,
+			  "spark\uff0eexecutorEnv\uff0eDATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+			  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTCONTAINER" : "defaultdx",
+			  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName",
 			  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName",
 			  "spark\uff0eexecutorEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
 			  "spark\uff0eexecutorEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
 			  "spark\uff0eexecutorEnv\uff0eDATAX_LOGLEVEL": "${sparkJobExecutorLogLevel}",
 			  "spark\uff0eexecutorEnv\uff0eDATAX_CHECKPOINTENABLED": "true",
+			  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar", 
+			  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTCONTAINER" : "defaultdx", 
+			  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName", 
 			  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName", 
 			  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
 			  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
@@ -198,9 +205,14 @@
 					"spark_conf" : {
 						"spark\uff0edatabricks\uff0edelta\uff0epreview\uff0eenabled" : true,
 						"spark\uff0esql\uff0ehive\uff0emetastore\uff0eversion" : "1.2.1",
+						"spark\uff0edriver\uff0euserClassPathFirst": true,
+						"spark\uff0eexecutor\uff0euserClassPathFirst": true,
 						"spark\uff0esql\uff0ehive\uff0emetastore\uff0ejars" : "builtin"
 					},
 					"spark_env_vars" : {
+						"DATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+						"DATAX_DEFAULTCONTAINER" : "defaultdx",
+						"DATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName",
 						"DATAX_DEFAULTVAULTNAME" : "$sparkKVName"
 					}
 				},
@@ -243,6 +255,21 @@
 					}, 
 					{
 						"jar" : "dbfs:/datax/scala-java8-compat_2.11-0.9.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-sqldb-spark-1.0.2.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/hadoop-azure-2.7.3.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/jetty-util-6.1.25.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/json-20180813.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-storage-3.1.0.jar"
 					}
 				],
 				"spark_jar_task" : {
@@ -646,7 +673,8 @@
 							"wasbs:///datax/bin/proton-j-0.31.0.jar",
 							"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar",
 							"wasbs:///datax/bin/spark-streaming-kafka-0-10_2.11-2.4.0.jar",
-							"wasbs:///datax/bin/kafka-clients-2.0.0.jar"
+							"wasbs:///datax/bin/kafka-clients-2.0.0.jar",
+							"wasbs:///datax/bin/azure-sqldb-spark-1.0.2.jar"
 				],
 				"driverMemory" : "1024m",
 				"executorCores" : 2,
@@ -663,11 +691,17 @@
 				  "spark\uff0especulation": true,
 				  "spark\uff0especulation\uff0emultiplier": 3,
 				  "spark\uff0especulation\uff0equantile": 0.9,
+				  "spark\uff0eexecutorEnv\uff0eDATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+				  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTCONTAINER" : "defaultdx",
+				  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_LOGLEVEL": "${sparkJobExecutorLogLevel}",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_CHECKPOINTENABLED": "true",
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTCONTAINER" : "defaultdx",
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName", 
 				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName", 
 				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
 				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
@@ -697,9 +731,14 @@
 					"spark_conf" : {
 						"spark\uff0edatabricks\uff0edelta\uff0epreview\uff0eenabled" : true,
 						"spark\uff0esql\uff0ehive\uff0emetastore\uff0eversion" : "1.2.1",
+						"spark\uff0edriver\uff0euserClassPathFirst": true,
+						"spark\uff0eexecutor\uff0euserClassPathFirst": true,
 						"spark\uff0esql\uff0ehive\uff0emetastore\uff0ejars" : "builtin"
 					},
 					"spark_env_vars" : {
+						"DATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+						"DATAX_DEFAULTCONTAINER" : "defaultdx",
+						"DATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName",
 						"DATAX_DEFAULTVAULTNAME" : "$sparkKVName"
 					}
 				},
@@ -748,6 +787,21 @@
 					}, 
 					{
 						"jar" : "dbfs:/datax/kafka-clients-2.0.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-sqldb-spark-1.0.2.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/hadoop-azure-2.7.3.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/jetty-util-6.1.25.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/json-20180813.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-storage-3.1.0.jar"
 					}
 				],
 				"spark_jar_task" : {
@@ -1023,7 +1077,8 @@
 				"wasbs:///datax/bin/datax-keyvault_2.3_2.11-1.1.0-with-dependencies.jar",
 					"wasbs:///datax/bin/java-uuid-generator-3.1.5.jar", 
 					"wasbs:///datax/bin/proton-j-0.31.0.jar",
-					"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar"
+					"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar",
+					"wasbs:///datax/bin/azure-sqldb-spark-1.0.2.jar"
 				],
 				"driverMemory" : "1024m",
 				"executorCores" : 2,
@@ -1040,11 +1095,17 @@
 				  "spark\uff0especulation": true,
 				  "spark\uff0especulation\uff0emultiplier": 3,
 				  "spark\uff0especulation\uff0equantile": 0.9,
+				  "spark\uff0eexecutorEnv\uff0eDATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+				  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTCONTAINER" : "defaultdx",
+				  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_LOGLEVEL": "${sparkJobExecutorLogLevel}",
 				  "spark\uff0eexecutorEnv\uff0eDATAX_CHECKPOINTENABLED": "true",
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTCONTAINER" : "defaultdx", 
+				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName", 
 				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_DEFAULTVAULTNAME" : "$sparkKVName", 
 				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPINSIGHT_KEY": "$appinsightkey",
 				  "spark\uff0eyarn\uff0eappMasterEnv\uff0eDATAX_APPNAME": "${sparkJobName}",
@@ -1074,9 +1135,14 @@
 					"spark_conf" : {
 						"spark\uff0edatabricks\uff0edelta\uff0epreview\uff0eenabled" : true,
 						"spark\uff0esql\uff0ehive\uff0emetastore\uff0eversion" : "1.2.1",
+						"spark\uff0edriver\uff0euserClassPathFirst": true,
+						"spark\uff0eexecutor\uff0euserClassPathFirst": true,
 						"spark\uff0esql\uff0ehive\uff0emetastore\uff0ejars" : "builtin"
 					},
 					"spark_env_vars" : {
+						"DATAX_AZURESTORAGEJARPATH" : "/datax/bin/azure-storage-3.1.0.jar",
+						"DATAX_DEFAULTCONTAINER" : "defaultdx",
+						"DATAX_DEFAULTSTORAGEACCOUNT" : "$sparkBlobAccountName",
 						"DATAX_DEFAULTVAULTNAME" : "$sparkKVName"
 					}
 				},
@@ -1119,6 +1185,21 @@
 					}, 
 					{
 						"jar" : "dbfs:/datax/scala-java8-compat_2.11-0.9.0.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-sqldb-spark-1.0.2.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/hadoop-azure-2.7.3.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/jetty-util-6.1.25.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/json-20180813.jar"
+					}, 
+					{
+						"jar" : "dbfs:/datax/azure-storage-3.1.0.jar"
 					}
 				],
 				"spark_jar_task" : {

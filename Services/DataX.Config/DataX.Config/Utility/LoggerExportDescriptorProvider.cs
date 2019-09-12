@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using DataX.Utilities.Composition;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace DataX.Config.Utility
     /// Using a LoggerFactory, dynamically creates Logger<T> to resolve for MEF
     /// Falls back to InstanceExportDescriptorProvider implementation if not a Logger
     /// </summary>
-    public class LoggerAndInstanceExportDescriptorProvider : InstanceExportDescriptorProvider
+    public class LoggerAndInstanceExportDescriptorProvider<TValue> : InstanceExportDescriptorProvider<TValue>
     {
         private static readonly Type _ILoggerType = typeof(ILogger);
 
@@ -28,10 +29,11 @@ namespace DataX.Config.Utility
         private readonly ILoggerFactory _loggerFactory;
         private readonly bool _hasInstances;
 
-        public LoggerAndInstanceExportDescriptorProvider(object[] instances, ILoggerFactory loggerFactory)
+        public LoggerAndInstanceExportDescriptorProvider(TValue instances, ILoggerFactory loggerFactory)
             : base(instances)
         {
-            _hasInstances = instances?.Length > 0;
+            object[] obj = (object[])Convert.ChangeType(instances, typeof(object[]));
+            _hasInstances = obj?.Length > 0;
             _loggerFactory = loggerFactory;
         }
 

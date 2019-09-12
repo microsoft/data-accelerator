@@ -113,7 +113,7 @@ export default class FunctionSettingsContent extends React.Component {
     renderAddFunctionButton() {
         const menuItems = this.props.enableLocalOneBox
             ? Models.functionTypes
-                  .filter(functionType => functionType.name != 'Azure Function') // disable Azure function in OneBox mode
+                  .filter(functionType => functionType.name !== 'Azure Function') // disable Azure function in OneBox mode
                   .map(functionType => {
                       return Object.assign({}, functionType, {
                           onClick: () => this.props.onNewFunction(functionType.key)
