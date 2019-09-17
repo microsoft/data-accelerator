@@ -237,7 +237,7 @@ namespace DataX.Config
                 {
                     //Get Job data
                     var job = await SyncJobState(jobName);
-                    if (job.SyncResult.JobState == JobState.Idle || job.SyncResult.JobState == JobState.Success)
+                    if (job.SyncResult.JobState == JobState.Idle || job.SyncResult.JobState == JobState.Success || job.SyncResult.JobState == JobState.Error)
                     {
                         return job;
                     }
