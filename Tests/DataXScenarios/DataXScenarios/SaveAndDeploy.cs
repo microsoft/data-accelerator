@@ -18,13 +18,13 @@ namespace DataX.ServerScenarios
     /// Partial class defined such that the steps can be defined for the job 
     /// </summary>
     public partial class DataXHost
-    {        
+    {
 
         [Step("acquireToken")]
         public static StepResult AcquireToken(ScenarioContext context)
         {
-            var tokenProvider = new AzureServiceTokenProvider();           
-            GetS2SAccessTokenForProdMSAAsync(context).Wait();            
+            var tokenProvider = new AzureServiceTokenProvider();
+            GetS2SAccessTokenForProdMSAAsync(context).Wait();
 
             return new StepResult(!string.IsNullOrWhiteSpace(context[Context.AuthToken] as string),
                 nameof(AcquireToken), "acquired a bearer token");
@@ -61,6 +61,24 @@ namespace DataX.ServerScenarios
                 nameof(SaveJob),
                 $"created a flow '{context[Context.FlowName]}' ");
         }
+
+        [Step("startJob")]
+        public static StepResult StartJob(ScenarioContext context)
+        {
+            var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.ManagementService/flow/startjobs";
+            string json = JsonConvert.SerializeObject((string)context[Context.FlowName]);
+            string jsonResult = Request.Post(baseAddress,
+                    new RequestContent(Encoding.UTF8.GetBytes(json), "application/json"),
+                    context[Context.AuthToken] as string);
+            dynamic result = JObject.Parse(jsonResult);
+            context[Context.RestartJobsName] = (string)result.result.IsSuccess;
+            string startJobName = context[Context.StartJobName] as string;
+
+            return new StepResult(!string.IsNullOrWhiteSpace(startJobName),
+                nameof(StartJob),
+                $"created configs for the flow: '{startJobName}' ");
+        }
+
         [Step("generateConfigs")]
         public static StepResult GenerateConfigs(ScenarioContext context)
         {
@@ -69,10 +87,10 @@ namespace DataX.ServerScenarios
             string jsonResult = Request.Post(baseAddress,
                     new RequestContent(Encoding.UTF8.GetBytes(json), "application/json"),
                     context[Context.AuthToken] as string);
-            
+
             dynamic result = JObject.Parse(jsonResult);
             context[Context.GenerateConfigsRuntimeConfigFolder] = (string)result.result.Properties.runtimeConfigFolder;
-            
+
             string generateConfigsRuntimeConfigFolder = context[Context.GenerateConfigsRuntimeConfigFolder] as string;
 
             return new StepResult(!string.IsNullOrWhiteSpace(generateConfigsRuntimeConfigFolder),
@@ -82,18 +100,18 @@ namespace DataX.ServerScenarios
 
         [Step("restartJob")]
         public static StepResult RestartJob(ScenarioContext context)
-        {            
+        {
             var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.ManagementService/flow/restartjobs";
-            string json = JsonConvert.SerializeObject((string)context[Context.FlowName]);            
+            string json = JsonConvert.SerializeObject((string)context[Context.FlowName]);
             string jsonResult = Request.Post(baseAddress,
                     new RequestContent(Encoding.UTF8.GetBytes(json), "application/json"),
                     context[Context.AuthToken] as string);
             dynamic result = JObject.Parse(jsonResult);
-            context[Context.RestartJobsName] = (string)result.result.IsSuccess;            
+            context[Context.RestartJobsName] = (string)result.result.IsSuccess;
             string restartJobsName = context[Context.RestartJobsName] as string;
 
             return new StepResult(!string.IsNullOrWhiteSpace(restartJobsName),
-                nameof(GenerateConfigs),
+                nameof(RestartJob),
                 $"created configs for the flow: '{restartJobsName}' ");
         }
 
@@ -101,9 +119,9 @@ namespace DataX.ServerScenarios
         public static StepResult GetFlow(ScenarioContext context)
         {
             var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.ManagementService/flow/get?flowName={context[Context.FlowName] as string}";
-             
-            string jsonResult =  Request.Get(baseAddress,
-                    context[Context.AuthToken] as string);            
+
+            string jsonResult = Request.Get(baseAddress,
+                    context[Context.AuthToken] as string);
 
             dynamic result = JObject.Parse(jsonResult);
             dynamic abc = (JObject)result.result;

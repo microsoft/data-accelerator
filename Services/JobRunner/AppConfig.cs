@@ -35,5 +35,13 @@ namespace JobRunner
         public string SecretKey { get; set; }
         public string BlobConnectionString { get; set; }
         public string BlobUri { get; set; }
+        public string EvenHubConnectionString { get; set; }
+        public string EventHubName { get; set; }
+        public string IsIotHub { get; set; }
+        public string Seconds { get; set; }
+        public string FlowName { get; set; }
+        public string NormalizationSnippet { get; set; }
+        public string DatabricksToken { get; set; }
+        public string SparkType { get; set; }
     }
 }

@@ -25,5 +25,17 @@ namespace DataX.ServerScenarios
         public const string RestartJobsName = "restartJobsName";
         public const string FlowConfig = "flowConfig";
         public const string FlowConfigContent = "flowConfigContent";
+        public const string InputSchema = "InputSchema";
+        public const string EventhubConnectionString = "eventhubConnectionString";
+        public const string EventHubName = "eventHubName";
+        public const string IsIotHub = "isIotHub";
+        public const string InferSchemaInputJson = "inferSchemaInputJson";
+        public const string Seconds = "seconds";
+        public const string KernelId = "kernelId";
+        public const string InitializeKernelJson = "initializeKernelJson";
+        public const string NormalizationSnippet = "normalizationSnippet";
+        public const string DataBricksToken = "dataBricksToken";
+        public const string SparkType = "sparkType";
+        public const string StartJobName = "startJobName";
     }
 }
