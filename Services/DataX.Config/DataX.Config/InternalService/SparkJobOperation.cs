@@ -237,7 +237,7 @@ namespace DataX.Config
                 {
                     //Get Job data
                     var job = await SyncJobState(jobName);
-                    if (job.SyncResult.JobState == JobState.Idle || job.SyncResult.JobState == JobState.Success || job.SyncResult.JobState == JobState.Error)
+                    if (VerifyJobStopped(job.SyncResult.JobState))
                     {
                         return job;
                     }
@@ -253,6 +253,16 @@ namespace DataX.Config
             }
 
             throw new GeneralException($"Job '{jobName}' failed to get to state idle or success after '{retries}' sync attempts");
+        }
+
+        /// <summary>
+        /// Verify the job is not in running state
+        /// </summary>
+        /// <param name="jobState">job state</param>
+        /// <returns>true if job is not running, false otherwise</returns>
+        public static bool VerifyJobStopped(JobState jobState)
+        {
+            return (jobState == JobState.Idle || jobState == JobState.Success || jobState == JobState.Error);
         }
 
         public async Task<T> RetryInCaseOfException<T>(Func<Task<T>> func, DateTime timeout, TimeSpan interval)
