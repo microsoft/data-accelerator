@@ -101,7 +101,7 @@ namespace DataX.Config.PublicService
                 }
             }
 
-            return result;
+            return result ?? new SuccessResult("done");
         }
 
         /// <summary>
