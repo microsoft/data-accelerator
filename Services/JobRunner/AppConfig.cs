@@ -30,7 +30,7 @@ namespace JobRunner
         public string ServiceKeyVaultName { get; set; }
         public string AppInsightsIntrumentationKey { get; set; }
         public string MicrosoftAuthority { get; set; }
-        public string DataHubIdentifier { get; set; }
+        public string ApplicationIdentifierUri { get; set; }
         public string ApplicationId { get; set; }
         public string SecretKey { get; set; }
         public string BlobConnectionString { get; set; }

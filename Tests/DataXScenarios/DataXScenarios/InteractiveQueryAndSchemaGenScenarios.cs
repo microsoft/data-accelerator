@@ -58,8 +58,7 @@ namespace DataX.ServerScenarios
         public static StepResult RefreshKernel(ScenarioContext context)
         {
             var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.InteractiveQueryService/kernel/refresh";
-            context[Context.InitializeKernelJson] = $"{{\"name\": \"{context[Context.FlowName] as string}\", \"userName\": \"{context[Context.FlowName] as string}\", \"eventhubConnectionString\": \"{context[Context.EventhubConnectionString] as string}\", \"eventHubNames\": \"{context[Context.EventHubName] as string}\", \"inputType\": \"iothub\", \"inputSchema\": {context[Context.InputSchema] as string}, \"kernelId\": \"{context[Context.KernelId] as string}\", \"normalizationSnippet\": {context[Context.NormalizationSnippet] as string}, \"databricksToken\": \"{context[Context.DataBricksToken] as string}\"}}";
-
+            
             string jsonResult = Request.Post(baseAddress,
                     RequestContent.EncodeAsJson(
                         JObject.Parse(context[Context.InitializeKernelJson] as string)),
@@ -76,13 +75,12 @@ namespace DataX.ServerScenarios
         public static StepResult RefreshSample(ScenarioContext context)
         {
             var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.SchemaInferenceService/inputdata/refreshsample";
-            context[Context.InferSchemaInputJson] = $"{{\"name\": \"{context[Context.FlowName] as string}\", \"userName\": \"{context[Context.FlowName] as string}\", \"eventhubConnectionString\": \"{context[Context.EventhubConnectionString] as string}\", \"eventHubNames\": \"{context[Context.EventHubName] as string}\", \"inputType\": \"iothub\", \"seconds\": \"{context[Context.Seconds] as string}\", \"databricksToken\": \"{context[Context.DataBricksToken] as string}\"}}";
+            
             string jsonResult = Request.Post(baseAddress,
                     RequestContent.EncodeAsJson(
                         JObject.Parse(context[Context.InferSchemaInputJson] as string)),
                     context[Context.AuthToken] as string);
             dynamic result = JObject.Parse(jsonResult);
-            //context[Context.InputSchema] = JsonConvert.SerializeObject((string)result.result.Schema);
             return new StepResult(((string)result.result).Contains("success"),
                 nameof(RefreshSample),
                 $"Refreshing Sample");
@@ -105,7 +103,6 @@ namespace DataX.ServerScenarios
                 nameof(RefreshSampleAndKernel),
                 $"Refresh the sample and kernel '{context[Context.KernelId]}' ");
         }
-
 
         [Step("deleteKernel")]
         public static StepResult DeleteKernel(ScenarioContext context)

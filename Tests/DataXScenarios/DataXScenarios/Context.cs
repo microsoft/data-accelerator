@@ -14,7 +14,7 @@ namespace DataX.ServerScenarios
         public const string ServiceUrl = "server";
         public const string AuthToken = "authToken";
         public const string MicrosoftAuthority = "microsoftAuthority";
-        public const string DataHubIdentifier = "dataHubIdentifier";
+        public const string ApplicationIdentifierUri = "applicationIdentifierUri";
         public const string ApplicationId = "applicationId";
         public const string ApplicationName = "applicationName";
         public const string SecretKey = "secretKey";

@@ -17,7 +17,7 @@ using Newtonsoft.Json;
 namespace JobRunner.Jobs
 {
     /// <summary>
-    /// Runs through a steel thread scenario for a DataX every 10 minutes to ensure DataX E2E works for Interactive query experience, schemaGen and Live data service.
+    /// Runs through a steel thread scenario for a DataX every few minutes to ensure DataX E2E works for Interactive query experience, SchemaGen and Live data service.
     /// </summary>
     public class DataXSchemaAndQueryJob : IJob
     {
@@ -45,9 +45,8 @@ namespace JobRunner.Jobs
         /// </summary>
         /// <returns></returns>
         public async Task RunAsync()
-        {
-            var server = _config.ServiceUrl;
-            if (string.IsNullOrWhiteSpace(server))
+        {            
+            if (string.IsNullOrWhiteSpace(_config.ServiceUrl))
             {
                 string errorMessage = "Server URL is not available.";
                 _logger.LogError(_scenario.Description, "JobRunner ScenarioTester", new Dictionary<string, string>() { { "scenario.errorMessage", errorMessage } });
@@ -59,7 +58,7 @@ namespace JobRunner.Jobs
             {
                 context[Context.ServiceUrl] = _config.ServiceUrl;
                 context[Context.ApplicationId] = KeyVault.GetSecretFromKeyvault(_config.ApplicationId);
-                context[Context.DataHubIdentifier] = _config.DataHubIdentifier;
+                context[Context.ApplicationIdentifierUri] = _config.ApplicationIdentifierUri;
                 context[Context.SecretKey] = KeyVault.GetSecretFromKeyvault(_config.SecretKey);
                 context[Context.MicrosoftAuthority] = _config.MicrosoftAuthority;
                 context[Context.EventhubConnectionString] = KeyVault.GetSecretFromKeyvault(_config.EvenHubConnectionString);
