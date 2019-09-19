@@ -31,7 +31,7 @@ namespace JobRunner
         // We have a distinct primary and test queue to compartmentalize runners.  The target queue client for this runner is set in the configuration.
         private readonly IQueueClient _primaryQueueClient;
         private readonly IQueueClient _testQueueClient;
-        private const int _Minutes = 10;
+        private const int _Minutes = 20;
 
         private readonly string _activeQueueName;
         private IQueueClient _ActiveQueueClient

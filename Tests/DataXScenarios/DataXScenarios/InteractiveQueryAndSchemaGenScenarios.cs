@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using DataXScenarios;
 
 namespace DataX.ServerScenarios
 {
@@ -36,9 +37,9 @@ namespace DataX.ServerScenarios
         public static StepResult InitializeKernel(ScenarioContext context)
         {
             var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.InteractiveQueryService/kernel";
-            
-            context[Context.InitializeKernelJson] = $"{{\"name\": \"{context[Context.FlowName] as string}\", \"userName\": \"{context[Context.FlowName] as string}\", \"eventhubConnectionString\": \"{context[Context.EventhubConnectionString] as string}\", \"eventHubNames\": \"{context[Context.EventHubName] as string}\", \"inputType\": \"iothub\", \"inputSchema\": {context[Context.InputSchema] as string}, \"kernelId\": \"{context[Context.KernelId] as string}\", \"normalizationSnippet\": {context[Context.NormalizationSnippet] as string}, \"databricksToken\": \"{context[Context.DataBricksToken] as string}\"}}";
-            
+
+            Helper helper = new Helper();
+            context[Context.InitializeKernelJson] = helper.GetInitializeKernelJson(context);
             string jsonResult = Request.Post(baseAddress,
                     RequestContent.EncodeAsJson(
                         JObject.Parse(context[Context.InitializeKernelJson] as string)),
@@ -47,8 +48,9 @@ namespace DataX.ServerScenarios
             dynamic result = JObject.Parse(jsonResult);
             context[Context.KernelId] = (string)result.result.result;
 
-            context[Context.InitializeKernelJson] = $"{{\"name\": \"{context[Context.FlowName] as string}\", \"userName\": \"{context[Context.FlowName] as string}\", \"eventhubConnectionString\": \"{context[Context.EventhubConnectionString] as string}\", \"eventHubNames\": \"{context[Context.EventHubName] as string}\", \"inputType\": \"iothub\", \"inputSchema\": {context[Context.InputSchema] as string}, \"kernelId\": \"{context[Context.KernelId] as string}\", \"normalizationSnippet\": {context[Context.NormalizationSnippet] as string}, \"databricksToken\": \"{context[Context.DataBricksToken] as string}\"}}";
-            
+            context[Context.InitializeKernelJson] = helper.GetInitializeKernelJson(context);
+
+
             return new StepResult(!(string.IsNullOrWhiteSpace(context[Context.KernelId] as string) && (string) result.result.message==""),
                 nameof(InitializeKernel),
                 $"Initialize a kernel '{context[Context.KernelId]}' ");
@@ -90,7 +92,7 @@ namespace DataX.ServerScenarios
         public static StepResult RefreshSampleAndKernel(ScenarioContext context)
         {
             var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.LiveDataService/inputdata/refreshsampleandkernel";
-            context[Context.InitializeKernelJson] = $"{{\"name\": \"{context[Context.FlowName] as string}\", \"userName\": \"{context[Context.FlowName] as string}\", \"eventhubConnectionString\": \"{context[Context.EventhubConnectionString] as string}\", \"eventHubNames\": \"{context[Context.EventHubName] as string}\", \"inputType\": \"iothub\", \"inputSchema\": {context[Context.InputSchema] as string}, \"kernelId\": \"{context[Context.KernelId] as string}\", \"normalizationSnippet\": {context[Context.NormalizationSnippet] as string}, \"databricksToken\": \"{context[Context.DataBricksToken] as string}\"}}";
+            context[Context.InitializeKernelJson] = new Helper().GetInitializeKernelJson(context);
 
             string jsonResult = Request.Post(baseAddress,
                     RequestContent.EncodeAsJson(
