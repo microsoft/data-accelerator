@@ -121,7 +121,7 @@ class FlowDefinitionPanel extends React.Component {
         clearInterval(this.state.timer);
 
         if (this.props.kernelId !== undefined && this.props.kernelId !== '') {
-            this.onDeleteKernel(this.props.kernelId);
+            this.onDeleteKernel(this.props.kernelId, this.props.flow.databricksToken);
         }
     }
 
@@ -495,7 +495,7 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateQuery={this.props.onUpdateQuery}
                                 onGetCodeGenQuery={() => this.onGetCodeGenQuery()}
                                 onRefreshKernel={kernelId => this.refreshKernel(kernelId)}
-                                onDeleteAllKernels={this.props.onDeleteAllKernels}
+                                onDeleteAllKernels={() => this.deleteAllKernel()}
                                 onExecuteQuery={(selectedQuery, kernelId) => this.onExecuteQuery(selectedQuery, kernelId)}
                                 onResampleInput={kernelId => this.onResampleInput(kernelId)}
                                 onShowTestQueryOutputPanel={isVisible => this.onShowTestQueryOutputPanel(isVisible)}
@@ -858,10 +858,14 @@ class FlowDefinitionPanel extends React.Component {
         );
     }
 
-    onDeleteKernel(kernelId) {
+    deleteAllKernel() {
+        this.props.onDeleteAllKernels(QueryActions.updateErrorMessage, this.props.flow.databricksToken);
+    }
+
+    onDeleteKernel(kernelId, databricksToken) {
         const version = this.props.kernelVersion + 1;
         this.props.onUpdateKernelVersion(version);
-        return this.props.onDeleteKernel(kernelId, version);
+        return this.props.onDeleteKernel(kernelId, version, databricksToken);
     }
 
     onResampleInput(kernelId) {
@@ -992,10 +996,10 @@ const mapDispatchToProps = dispatch => ({
     onUpdateKernelVersion: version => dispatch(KernelActions.updateKernelVersion(version)),
     onRefreshKernel: (queryMetadata, kernelId, version, updateErrorMessage) =>
         dispatch(KernelActions.refreshKernel(queryMetadata, kernelId, version, updateErrorMessage)),
-    onDeleteKernel: (kernelId, version) => dispatch(KernelActions.deleteKernel(kernelId, version)),
+    onDeleteKernel: (kernelId, version, databricksToken) => dispatch(KernelActions.deleteKernel(kernelId, version, databricksToken)),
     onResampleInput: (queryMetadata, kernelId, version) => dispatch(QueryActions.resampleInput(queryMetadata, kernelId, version)),
     onUpdateResamplingInputDuration: duration => dispatch(QueryActions.updateResamplingInputDuration(duration)),
-    onDeleteAllKernels: updateErrorMessage => dispatch(KernelActions.deleteAllKernels(updateErrorMessage)),
+    onDeleteAllKernels: (updateErrorMessage, databricksToken) => dispatch(KernelActions.deleteAllKernels(updateErrorMessage, databricksToken)),
 
     // Query Pane Layout Actions
     onShowTestQueryOutputPanel: isVisible => dispatch(LayoutActions.onShowTestQueryOutputPanel(isVisible)),

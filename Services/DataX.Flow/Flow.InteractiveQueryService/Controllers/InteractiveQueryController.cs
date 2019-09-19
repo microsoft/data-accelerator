@@ -3,6 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 using DataX.Contract;
+using DataX.Flow.Common.Models;
 using DataX.Flow.InteractiveQuery;
 using DataX.ServiceHost.AspNetCore.Authorization.Roles;
 using DataX.Utilities.Web;
@@ -91,15 +92,15 @@ namespace Flow.InteractiveQueryService.Controllers
 
         [HttpPost]
         [Route("kernel/delete")] // diag
-        public async Task<ApiResult> DeleteKernel([FromBody]string kernelId)
+        public async Task<ApiResult> DeleteKernel([FromBody]JObject jObject)
         {
             try
             {
                 RolesCheck.EnsureWriter(Request);
 
-
+                var diag = jObject.ToObject<InteractiveQueryObject>();
                 InteractiveQueryManager iqm = new InteractiveQueryManager(_logger, _configuration);
-                return await iqm.DeleteKernel(kernelId).ConfigureAwait(false);
+                return await iqm.DeleteKernel(diag.KernelId, diag.DatabricksToken).ConfigureAwait(false);
 
             }
             catch (Exception e)
@@ -130,14 +131,14 @@ namespace Flow.InteractiveQueryService.Controllers
 
         [HttpPost]
         [Route("kernels/deleteall")]
-        public async Task<ApiResult> DeleteAllKernels()
+        public async Task<ApiResult> DeleteAllKernels([FromBody]string databricksToken)
         {
             try
             {
                 RolesCheck.EnsureWriter(Request);
 
                 InteractiveQueryManager iqm = new InteractiveQueryManager(_logger, _configuration);
-                return await iqm.DeleteAllKernels().ConfigureAwait(false);
+                return await iqm.DeleteAllKernels(databricksToken).ConfigureAwait(false);
             }
             catch (Exception e)
             {

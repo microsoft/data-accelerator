@@ -146,8 +146,9 @@ namespace DataX.Flow.InteractiveQuery
         /// </summary>
         /// <param name="subscriptionId">subscriptionId as passed in from the frontend</param>
         /// <param name="kernelId">kernelId as passed in from the frontend</param>
+        /// <param name="databricksToken">Databricks token</param>
         /// <returns>Returns success or failure as the case may be</returns>
-        public async Task<ApiResult> DeleteKernel(string kernelId)
+        public async Task<ApiResult> DeleteKernel(string kernelId, string databricksToken)
         {
             var response = await _engineEnvironment.GetEnvironmentVariables().ConfigureAwait(false);
             var subscriptionId = Helper.GetSecretFromKeyvaultIfNeeded(_engineEnvironment.EngineFlowConfig.SubscriptionId);
@@ -157,7 +158,7 @@ namespace DataX.Flow.InteractiveQuery
                 return ApiResult.CreateError(response.Message);
             }
 
-            response = await DeleteKernelHelper(subscriptionId, kernelId).ConfigureAwait(false);
+            response = await DeleteKernelHelper(subscriptionId, kernelId, databricksToken).ConfigureAwait(false);
             if (response.Error.HasValue && response.Error.Value)
             {
                 _logger.LogError(response.Message);
@@ -276,9 +277,9 @@ namespace DataX.Flow.InteractiveQuery
         /// <summary>
         /// This is the API method that gets called from the front end on a regular cadence and will delete all the kernels that were created
         /// </summary>
-        /// <param name="jObject">jObject</param>
+        /// <param name="databricksToken">Databricks token</param>
         /// <returns>Returns the result whether the list of kernels were deleted or not. We don't fail if one of the kernels fails to delete because it just does not exist</returns>
-        public async Task<ApiResult> DeleteAllKernels()
+        public async Task<ApiResult> DeleteAllKernels(string databricksToken)
         {
             var response = await _engineEnvironment.GetEnvironmentVariables().ConfigureAwait(false);
             if (response.Error.HasValue && response.Error.Value)
@@ -286,7 +287,7 @@ namespace DataX.Flow.InteractiveQuery
                 _logger.LogError(response.Message);
                 return ApiResult.CreateError(response.Message);
             }
-            KernelService kernelService = CreateKernelService();
+            KernelService kernelService = CreateKernelService(databricksToken);
             _logger.LogInformation("Deleting all Kernels...");
             response = await kernelService.GarbageCollectListOfKernels(_engineEnvironment.OpsBlobConnectionString, Path.Combine(_engineEnvironment.OpsDiagnosticPath, _GarbageCollectBlobName), true).ConfigureAwait(false);
 
@@ -432,8 +433,9 @@ namespace DataX.Flow.InteractiveQuery
         /// </summary>
         /// <param name="subscriptionId">subscriptionId that is passed in from the frontend</param>
         /// <param name="kernelId">kernelId that needs to be deleted</param>
+        /// <param name="databricksToken">Databricks token</param>
         /// <returns>Returns success or failure after the delete kernel api is called</returns>
-        private async Task<ApiResult> DeleteKernelHelper(string subscriptionId, string kernelId)
+        private async Task<ApiResult> DeleteKernelHelper(string subscriptionId, string kernelId, string databricksToken = null)
 
         {
             // validate KernelId can't be null
@@ -445,7 +447,7 @@ namespace DataX.Flow.InteractiveQuery
 
             try
             {
-                KernelService kernelService = CreateKernelService();
+                KernelService kernelService = CreateKernelService(databricksToken);
                 var result = await kernelService.DeleteKernelAsync(kernelId);
                 if (!(result.Error.HasValue && result.Error.Value))
                 {

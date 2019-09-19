@@ -49,11 +49,14 @@ export const refreshDiagnosticKernel = (queryMetadata, kernelId) =>
         functions: queryMetadata.functions
     });
 
-export const deleteAllKernels = () =>
-    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernels/deleteall', {});
+export const deleteAllKernels = databricksToken =>
+    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernels/deleteall', databricksToken);
 
-export const deleteDiagnosticKernelOnUnload = kernelId =>
-    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernel/delete', kernelId);
+export const deleteDiagnosticKernelOnUnload = (kernelId, databricksToken) =>
+    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernel/delete', {
+        kernelId: kernelId,
+        databricksToken: databricksToken
+    });
 
 export const deleteDiagnosticKernel = deleteDiagnosticKernelOnUnload;
 

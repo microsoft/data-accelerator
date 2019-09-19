@@ -58,6 +58,10 @@ namespace DataX.Flow.InteractiveQuery.Databricks
             var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = new FormUrlEncodedContent(nvc) };
             var response = client.SendAsync(request).Result;
             var responseString = response.Content.ReadAsStringAsync().Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                return responseString;
+            }
             string commandId = JsonConvert.DeserializeObject<ExecuteCodeDBKernelResponse>(responseString).Id;
 
             // Now get the result output

@@ -48,7 +48,7 @@ export const getKernel = (queryMetadata, version, updateErrorMessage) => (dispat
             if (version >= curVersion) {
                 return updateKernel(dispatch, kernelId, version, warning);
             } else {
-                return Api.deleteDiagnosticKernel(kernelId);
+                return Api.deleteDiagnosticKernel(kernelId, queryMetadata.databricksToken);
             }
         })
         .catch(error => {
@@ -72,7 +72,7 @@ export const refreshKernel = (queryMetadata, kernelId, version, updateErrorMessa
             if (version >= curVersion) {
                 return updateKernel(dispatch, kernelId, version, warning);
             } else {
-                return Api.deleteDiagnosticKernel(kernelId);
+                return Api.deleteDiagnosticKernel(kernelId, queryMetadata.databricksToken);
             }
         })
         .catch(error => {
@@ -83,9 +83,9 @@ export const refreshKernel = (queryMetadata, kernelId, version, updateErrorMessa
         });
 };
 
-export const deleteAllKernels = updateErrorMessage => dispatch => {
+export const deleteAllKernels = (updateErrorMessage, databricksToken) => dispatch => {
     updateErrorMessage(dispatch, undefined);
-    return Api.deleteAllKernels()
+    return Api.deleteAllKernels(databricksToken)
         .then(result => {
             return result;
         })
@@ -96,8 +96,8 @@ export const deleteAllKernels = updateErrorMessage => dispatch => {
         });
 };
 
-export const deleteKernel = (kernelId, version) => dispatch => {
-    return Api.deleteDiagnosticKernel(kernelId)
+export const deleteKernel = (kernelId, version, databricksToken) => dispatch => {
+    return Api.deleteDiagnosticKernel(kernelId, databricksToken)
         .then(result => {
             return updateKernel(dispatch, '', version, undefined);
         })
