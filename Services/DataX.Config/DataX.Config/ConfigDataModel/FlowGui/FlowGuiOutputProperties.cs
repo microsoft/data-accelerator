@@ -40,6 +40,6 @@ namespace DataX.Config.ConfigDataModel
         public string WriteMode;
 
         [JsonProperty("useBulkInsert", NullValueHandling = NullValueHandling.Ignore)]
-        public string UseBulkInsert;
+        public bool UseBulkInsert;
     }
 }
