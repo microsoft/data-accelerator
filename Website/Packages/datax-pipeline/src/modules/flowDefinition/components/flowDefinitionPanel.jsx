@@ -409,8 +409,7 @@ class FlowDefinitionPanel extends React.Component {
                                 flowNameTextboxEnabled={this.state.flowNameTextboxEnabled}
                                 isDatabricksSparkType={this.state.isDatabricksSparkType}
                                 saveFlowButtonEnabled={this.state.saveFlowButtonEnabled}
-                                onSaveDefinition={() => this.onSaveDefinition()}
-                                getKernel={() => this.getKernel()}
+                                saveFlowAndInitializeKernel={() => this.saveFlowAndInitializeKernel()}
                             />
                         </VerticalTabItem>
 
@@ -879,6 +878,14 @@ class FlowDefinitionPanel extends React.Component {
 
     onExecuteQuery(selectedQuery, kernelId) {
         return this.props.onExecuteQuery(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query), selectedQuery, kernelId);
+    }
+
+    saveFlowAndInitializeKernel() {
+        Q(
+            this.onSaveDefinition()
+        ).then(() => {
+            this.getKernel();
+        })
     }
 }
 

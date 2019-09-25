@@ -4,7 +4,6 @@
 // *********************************************************************
 import React from 'react';
 import PropTypes from 'prop-types';
-import Q from 'q';
 import { DefaultButton, TextField } from 'office-ui-fabric-react';
 import { Colors, IconButtonStyles, ScrollableContentPane, StatementBox } from 'datax-common';
 
@@ -81,14 +80,14 @@ export default class InfoSettingsContent extends React.Component {
 
     renderSaveButton() {
         //Will be enabled when user has access 
-        const enableButton = this.props.saveFlowButtonEnabled;
+        const enableButton = this.props.saveFlowButtonEnabled && this.props.databricksToken;
         return (
             <DefaultButton
                 key="save"
                 className="header-button"
                 disabled={!enableButton}
                 title="Save the Flow"
-                onClick={() => this.saveFlowAndInitializeKernel()}
+                onClick={() => this.props.saveFlowAndInitializeKernel()}
             >
                 <i
                     style={enableButton ? IconButtonStyles.greenStyle : IconButtonStyles.disabledStyle}
@@ -97,15 +96,6 @@ export default class InfoSettingsContent extends React.Component {
                 Save
             </DefaultButton>
         );
-    }
-
-    saveFlowAndInitializeKernel() {
-        Q(
-            this.props.onSaveDefinition()
-        )
-            .then(() => {
-                this.props.getKernel();
-            })
     }
 }
 

@@ -60,6 +60,7 @@ namespace DataX.Flow.InteractiveQuery.Databricks
             var responseString = response.Content.ReadAsStringAsync().Result;
             if (!response.IsSuccessStatusCode)
             {
+                //If request fails then return error string
                 return responseString;
             }
             string commandId = JsonConvert.DeserializeObject<ExecuteCodeDBKernelResponse>(responseString).Id;
