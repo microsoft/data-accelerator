@@ -3,6 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 import * as Models from './flowModels';
+import * as Api from '../../common/api';
 
 export function isValidNumberAboveOrEqualZero(value) {
     const number = Number(value);
@@ -501,7 +502,8 @@ export function convertConfigToFlow(config) {
         scale: config.process.jobconfig,
         outputs: config.outputs,
         outputTemplates: config.outputTemplates ? config.outputTemplates : [],
-        rules: convertConfigToFlowRules(config.rules)
+        rules: convertConfigToFlowRules(config.rules),
+        isDatabricksSparkType: Api.isDatabricksSparkType()
     };
 
     return flow;

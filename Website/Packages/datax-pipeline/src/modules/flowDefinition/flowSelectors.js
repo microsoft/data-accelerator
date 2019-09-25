@@ -33,6 +33,11 @@ export const getFlowDatabricksToken = createSelector(
     flow => flow.databricksToken
 );
 
+export const getFlowIsDatabricksSparkType = createSelector(
+    getFlow,
+    flow => flow.isDatabricksSparkType
+);
+
 // Settings - Input
 export const getFlowInput = createSelector(
     getFlow,
@@ -236,11 +241,16 @@ export const getEnableLocalOneBox = createSelector(
 export const validateFlowInfo = createSelector(
     getFlowDisplayName,
     getFlowDatabricksToken,
+    getFlowIsDatabricksSparkType,
     validateInfo
 );
 
-function validateInfo(displayName, databricksToken) {
-    return displayName && displayName.trim() !== '' && databricksToken && databricksToken.startsWith('secretscope://');
+function validateInfo(displayName, databricksToken, isDatabricksSparkType) {
+    if (isDatabricksSparkType) {
+        return displayName && displayName.trim() !== '' && databricksToken && databricksToken.startsWith('secretscope://');
+    } else {
+        return displayName && displayName.trim() !== ''
+    }
 }
 
 // Validation - Input
