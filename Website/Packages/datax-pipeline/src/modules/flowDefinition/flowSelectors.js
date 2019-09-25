@@ -235,11 +235,12 @@ export const getEnableLocalOneBox = createSelector(
 // Validation - Info
 export const validateFlowInfo = createSelector(
     getFlowDisplayName,
+    getFlowDatabricksToken,
     validateInfo
 );
 
-function validateInfo(displayName) {
-    return displayName && displayName.trim() !== '';
+function validateInfo(displayName, databricksToken) {
+    return displayName && displayName.trim() !== '' && databricksToken && databricksToken.startsWith('secretscope://');
 }
 
 // Validation - Input
