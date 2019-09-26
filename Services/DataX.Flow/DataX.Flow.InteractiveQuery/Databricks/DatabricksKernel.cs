@@ -3,6 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -61,7 +62,9 @@ namespace DataX.Flow.InteractiveQuery.Databricks
             if (!response.IsSuccessStatusCode)
             {
                 //If request fails then return error string
-                return responseString;
+                var responseObj = JObject.Parse(responseString);
+                var errorMsg = responseObj["error"];
+                return $"{response.StatusCode}: {errorMsg?.ToString()}";
             }
             string commandId = JsonConvert.DeserializeObject<ExecuteCodeDBKernelResponse>(responseString).Id;
 
