@@ -23,7 +23,7 @@ import ScaleSettingsContent from './scale/scaleSettingsContent';
 import OutputSettingsContent from './output/outputSettingsContent';
 import ScheduleSettingsContent from './schedule/ScheduleSettingsContent';
 import RulesSettingsContent from './rule/rulesSettingsContent';
-import { functionEnabled, isDatabricksSparkType } from '../../../common/api';
+import { functionEnabled } from '../../../common/api';
 import {
     Colors,
     Panel,
@@ -96,7 +96,6 @@ class FlowDefinitionPanel extends React.Component {
             deleteOutputSinkButtonEnabled: false,
             scaleNumExecutorsSliderEnabled: false,
             scaleExecutorMemorySliderEnabled: false,
-            isDatabricksSparkType: false,
 
             addBatchButtonEnabled: false,
             deleteBatchButtonEnabled: false
@@ -198,10 +197,6 @@ class FlowDefinitionPanel extends React.Component {
                 addBatchButtonEnabled: response.addBatchButtonEnabled ? true : false,
                 deleteBatchButtonEnabled: response.deleteBatchButtonEnabled ? true : false
             });
-        });
-
-        isDatabricksSparkType().then(response => {
-            this.setState({ isDatabricksSparkType: response });
         });
     }
 
@@ -407,7 +402,7 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateDisplayName={this.props.onUpdateDisplayName}
                                 onUpdateDatabricksToken={this.props.onUpdateDatabricksToken}
                                 flowNameTextboxEnabled={this.state.flowNameTextboxEnabled}
-                                isDatabricksSparkType={this.state.isDatabricksSparkType}
+                                isDatabricksSparkType={this.props.flow.isDatabricksSparkType}
                                 saveFlowButtonEnabled={this.state.saveFlowButtonEnabled}
                                 saveFlowAndInitializeKernel={() => this.saveFlowAndInitializeKernel()}
                             />
@@ -589,7 +584,7 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateExecutorMemory={this.props.onUpdateExecutorMemory}
                                 scaleNumExecutorsSliderEnabled={this.state.scaleNumExecutorsSliderEnabled}
                                 scaleExecutorMemorySliderEnabled={this.state.scaleExecutorMemorySliderEnabled}
-                                isDatabricksSparkType={this.state.isDatabricksSparkType}
+                                isDatabricksSparkType={this.props.flow.isDatabricksSparkType}
                                 onUpdateDatabricksAutoScale={this.props.onUpdateDatabricksAutoScale}
                                 onUpdateDatabricksMinWorkers={this.props.onUpdateDatabricksMinWorkers}
                                 onUpdateDatabricksMaxWorkers={this.props.onUpdateDatabricksMaxWorkers}
