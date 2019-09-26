@@ -62,9 +62,17 @@ namespace DataX.Flow.InteractiveQuery.Databricks
             if (!response.IsSuccessStatusCode)
             {
                 //If request fails then return error string
-                var responseObj = JObject.Parse(responseString);
-                var errorMsg = responseObj["error"];
-                return $"{response.StatusCode}: {errorMsg?.ToString()}";
+                try
+                {
+                    var responseObj = JObject.Parse(responseString);
+                    var errorMsg = responseObj["error"];
+                    return $"{response.ReasonPhrase}: {errorMsg?.ToString()}";
+                }
+                catch
+                {
+                    return $"{response.ReasonPhrase}";
+                }
+                
             }
             string commandId = JsonConvert.DeserializeObject<ExecuteCodeDBKernelResponse>(responseString).Id;
 
@@ -82,7 +90,6 @@ namespace DataX.Flow.InteractiveQuery.Databricks
 
             return (result.Results.Data != null) ? result.Results.Data.ToString() : "";
         }
-
     }
 
     /// <summary>
