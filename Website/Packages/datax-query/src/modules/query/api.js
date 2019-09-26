@@ -27,7 +27,6 @@ export const getCodeGenQuery = queryMetadata =>
 export const getDiagnosticKernel = queryMetadata =>
     servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernel', {
         name: queryMetadata.name,
-        databricksToken: queryMetadata.databricksToken,
         displayName: queryMetadata.displayName,
         userName: queryMetadata.userName,
         inputSchema: queryMetadata.inputSchema,
@@ -39,7 +38,6 @@ export const getDiagnosticKernel = queryMetadata =>
 export const refreshDiagnosticKernel = (queryMetadata, kernelId) =>
     servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernel/refresh', {
         kernelId: kernelId,
-        databricksToken: queryMetadata.databricksToken,
         userName: queryMetadata.userName,
         name: queryMetadata.name,
         displayName: queryMetadata.displayName,
@@ -49,18 +47,20 @@ export const refreshDiagnosticKernel = (queryMetadata, kernelId) =>
         functions: queryMetadata.functions
     });
 
-export const deleteAllKernels = () =>
-    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernels/deleteall', {});
+export const deleteAllKernels = flowName =>
+    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernels/deleteall', flowName);
 
-export const deleteDiagnosticKernelOnUnload = kernelId =>
-    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernel/delete', kernelId);
+export const deleteDiagnosticKernelOnUnload = (kernelId, flowName) =>
+    servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernel/delete', {
+        kernelId: kernelId,
+        name: flowName
+    });
 
 export const deleteDiagnosticKernel = deleteDiagnosticKernelOnUnload;
 
 export const executeQuery = (queryMetadata, selectedQuery, kernelId) =>
     servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.interactiveQuery, 'kernel/executequery', {
         name: queryMetadata.name,
-        databricksToken: queryMetadata.databricksToken,
         displayName: queryMetadata.displayName,
         query: selectedQuery,
         kernelId: kernelId,
@@ -77,7 +77,6 @@ export const resampleInput = (queryMetadata, kernelId) =>
         'inputdata/refreshsampleandkernel',
         {
             name: queryMetadata.name,
-            databricksToken: queryMetadata.databricksToken,
             displayName: queryMetadata.displayName,
             userName: queryMetadata.userName,
             kernelId: kernelId,

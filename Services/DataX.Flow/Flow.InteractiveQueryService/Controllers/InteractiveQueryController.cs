@@ -3,6 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 using DataX.Contract;
+using DataX.Flow.Common.Models;
 using DataX.Flow.InteractiveQuery;
 using DataX.ServiceHost.AspNetCore.Authorization.Roles;
 using DataX.Utilities.Web;
@@ -72,7 +73,7 @@ namespace Flow.InteractiveQueryService.Controllers
 
         [HttpPost]
         [Route("kernel/deleteList")]
-        public async Task<ApiResult> DeleteKernelList([FromBody]System.Collections.Generic.List<string> kernels)
+        public async Task<ApiResult> DeleteKernelList([FromBody]System.Collections.Generic.List<string> kernels, string flowName)
         {
             try
             {
@@ -80,7 +81,7 @@ namespace Flow.InteractiveQueryService.Controllers
 
 
                 InteractiveQueryManager iqm = new InteractiveQueryManager(_logger, _configuration);
-                return await iqm.DeleteKernelList(kernels).ConfigureAwait(false);
+                return await iqm.DeleteKernelList(kernels, flowName).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -91,15 +92,15 @@ namespace Flow.InteractiveQueryService.Controllers
 
         [HttpPost]
         [Route("kernel/delete")] // diag
-        public async Task<ApiResult> DeleteKernel([FromBody]string kernelId)
+        public async Task<ApiResult> DeleteKernel([FromBody]JObject jObject)
         {
             try
             {
                 RolesCheck.EnsureWriter(Request);
 
-
+                var diag = jObject.ToObject<InteractiveQueryObject>();
                 InteractiveQueryManager iqm = new InteractiveQueryManager(_logger, _configuration);
-                return await iqm.DeleteKernel(kernelId).ConfigureAwait(false);
+                return await iqm.DeleteKernel(diag.KernelId, diag.Name).ConfigureAwait(false);
 
             }
             catch (Exception e)
@@ -111,14 +112,14 @@ namespace Flow.InteractiveQueryService.Controllers
 
         [HttpPost]
         [Route("kernels/delete")]
-        public async Task<ApiResult> DeleteKernels()
+        public async Task<ApiResult> DeleteKernels([FromBody]string flowName)
         {
             try
             {
                 RolesCheck.EnsureWriter(Request);
 
                 InteractiveQueryManager iqm = new InteractiveQueryManager(_logger, _configuration);
-                return await iqm.DeleteKernels().ConfigureAwait(false);
+                return await iqm.DeleteKernels(flowName).ConfigureAwait(false);
 
             }
             catch (Exception e)
@@ -130,14 +131,14 @@ namespace Flow.InteractiveQueryService.Controllers
 
         [HttpPost]
         [Route("kernels/deleteall")]
-        public async Task<ApiResult> DeleteAllKernels()
+        public async Task<ApiResult> DeleteAllKernels([FromBody]string flowName)
         {
             try
             {
                 RolesCheck.EnsureWriter(Request);
 
                 InteractiveQueryManager iqm = new InteractiveQueryManager(_logger, _configuration);
-                return await iqm.DeleteAllKernels().ConfigureAwait(false);
+                return await iqm.DeleteAllKernels(flowName).ConfigureAwait(false);
             }
             catch (Exception e)
             {
