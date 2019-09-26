@@ -79,7 +79,7 @@ export default class InfoSettingsContent extends React.Component {
     }
 
     renderSaveButton() {
-        //Will be enabled when user has access 
+        //Will be enabled when user has access and the token is not empty
         const enableButton = this.props.saveFlowButtonEnabled && this.props.databricksToken;
         return (
             <DefaultButton
