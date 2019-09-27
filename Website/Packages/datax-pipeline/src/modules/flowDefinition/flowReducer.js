@@ -46,7 +46,8 @@ const INITIAL_FLOW_STATE = {
     resamplingInputDuration: '15',
     errorMessage: undefined,
     warningMessage: undefined,
-    enableLocalOneBox: false
+    enableLocalOneBox: false,
+    isDatabricksSparkType: false
 };
 
 export default (state = INITIAL_FLOW_STATE, action) => {
@@ -87,6 +88,11 @@ export default (state = INITIAL_FLOW_STATE, action) => {
             return Object.assign({}, state, {
                 isDirty: true,
                 databricksToken: action.payload
+            });
+
+        case Actions.FLOW_UPDATE_ISDATABRICKSSPARKTYPE:
+            return Object.assign({}, state, {
+                isDatabricksSparkType: action.payload
             });
 
         case Actions.FLOW_UPDATE_OWNER:

@@ -502,8 +502,7 @@ export function convertConfigToFlow(config) {
         scale: config.process.jobconfig,
         outputs: config.outputs,
         outputTemplates: config.outputTemplates ? config.outputTemplates : [],
-        rules: convertConfigToFlowRules(config.rules),
-        isDatabricksSparkType: Api.isDatabricksSparkType()
+        rules: convertConfigToFlowRules(config.rules)
     };
 
     return flow;
