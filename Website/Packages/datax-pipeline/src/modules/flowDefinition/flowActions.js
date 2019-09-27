@@ -4,7 +4,7 @@
 // *********************************************************************
 import Q from 'q';
 import * as Api from './api';
-import {isDatabricksSparkType} from '../../common/api';
+import { isDatabricksSparkType } from '../../common/api';
 import * as Selectors from './flowSelectors';
 import { UserSelectors, getApiErrorMessage } from 'datax-common';
 import { QueryActions, QueryModels } from 'datax-query';
@@ -82,6 +82,15 @@ export const FLOW_UPDATE_ONEBOX_MODE = 'FLOW_UPDATE_ONEBOX_MODE';
  *
  */
 
+function getSparkEnvAndUpdateIsDatabricksSparkType(dispatch){
+    isDatabricksSparkType().then(response => {
+        return dispatch({
+            type: FLOW_UPDATE_ISDATABRICKSSPARKTYPE,
+            payload: response
+        });
+    });
+}
+ 
 // Init Actions
 export const initFlow = context => (dispatch, getState) => {
     if (context && context.id) {
@@ -95,12 +104,7 @@ export const initFlow = context => (dispatch, getState) => {
             })
             .then(flow => {
                 dispatch(QueryActions.initQuery(flow.payload.query));
-                isDatabricksSparkType().then(response => {
-                    return dispatch({
-                        type: 'FLOW_UPDATE_ISDATABRICKSSPARKTYPE',
-                        payload: response
-                    });
-                });
+                getSparkEnvAndUpdateIsDatabricksSparkType(dispatch);
             })
             .catch(error => {
                 const message = getApiErrorMessage(error);
@@ -110,12 +114,7 @@ export const initFlow = context => (dispatch, getState) => {
     } else {
         const owner = UserSelectors.getUserAlias(getState());
         dispatch(QueryActions.initQuery(QueryModels.defaultQuery));
-        isDatabricksSparkType().then(response => {
-            return dispatch({
-                type: 'FLOW_UPDATE_ISDATABRICKSSPARKTYPE',
-                payload: response
-            });
-        });
+        getSparkEnvAndUpdateIsDatabricksSparkType(dispatch);
         return dispatch({
             type: FLOW_NEW,
             payload: owner
@@ -142,13 +141,6 @@ export const updateDatabricksToken = databricksToken => dispatch => {
     return dispatch({
         type: FLOW_UPDATE_DATABRICKSTOKEN,
         payload: databricksToken
-    });
-};
-
-export const updateIsDatabricksSparkType = isDatabricksSparkType => dispatch => {
-    return dispatch({
-        type: FLOW_UPDATE_ISDATABRICKSSPARKTYPE,
-        payload: isDatabricksSparkType
     });
 };
 

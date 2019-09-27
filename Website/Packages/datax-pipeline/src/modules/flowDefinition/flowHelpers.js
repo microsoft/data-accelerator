@@ -474,12 +474,6 @@ export function convertFlowToConfig(flow, query) {
     };
 }
 
-function getSparkTypeEnv() {
-    Api.isDatabricksSparkType().then(response => {
-        return response
-    })
-}
-
 export function convertConfigToFlow(config) {
     let input = config.input;
 
@@ -508,8 +502,7 @@ export function convertConfigToFlow(config) {
         scale: config.process.jobconfig,
         outputs: config.outputs,
         outputTemplates: config.outputTemplates ? config.outputTemplates : [],
-        rules: convertConfigToFlowRules(config.rules),
-        isDatabricksSparkType: getSparkTypeEnv()
+        rules: convertConfigToFlowRules(config.rules)
     };
 
     return flow;
