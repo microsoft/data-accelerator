@@ -16,7 +16,7 @@ using DataX.Utility.Blob;
 namespace JobRunner.Jobs
 {
     /// <summary>
-    /// Runs through a steel thread scenario for a DataX every 10 minutes to ensure DataX E2E works for saving and deploying a job.
+    /// Runs through a steel thread scenario for a DataX every few minutes to ensure DataX E2E works for saving and deploying a job.
     /// </summary>
     public class DataXDeployJob : IJob
     {
@@ -29,13 +29,13 @@ namespace JobRunner.Jobs
         {
             _config = config;
             _logger = logger;
-            
+
             _scenario = new ScenarioDescription("DataXMainline",
                 DataXHost.AcquireToken,
                 DataXHost.SaveJob,
                 DataXHost.GenerateConfigs,
-                DataXHost.GetFlow,
-                DataXHost.RestartJob
+                DataXHost.RestartJob,
+                DataXHost.GetFlow
                );
         }
         /// <summary>
@@ -43,29 +43,27 @@ namespace JobRunner.Jobs
         /// </summary>
         /// <returns></returns>
         public async Task RunAsync()
-        {
-            var server = _config.ServiceUrl;
-            var microsoftAuthority = _config.MicrosoftAuthority;
-            var dataHubIdentifier = _config.DataHubIdentifier;
-            if (string.IsNullOrWhiteSpace(server))
+        {            
+            if (string.IsNullOrWhiteSpace(_config.ServiceUrl))
             {
                 string errorMessage = "Server URL is not available.";
-                _logger.LogError(_scenario.Description, "JobRunner ScenarioTester", new Dictionary<string, string>() { { "scenario.errorMessage", errorMessage } });                
+                _logger.LogError(_scenario.Description, "JobRunner ScenarioTester", new Dictionary<string, string>() { { "scenario.errorMessage", errorMessage } });
 
                 throw new InvalidOperationException(errorMessage);
             }
 
             using (var context = new ScenarioContext())
             {
-                context[Context.ServiceUrl] = server;
-                context[Context.ApplicationId] = KeyVault.GetSecretFromKeyvault(_config.ServiceKeyVaultName, _config.ApplicationId);                
-                    
+                context[Context.ServiceUrl] = _config.ServiceUrl;
+                context[Context.ApplicationId] = KeyVault.GetSecretFromKeyvault(_config.ApplicationId);
+
                 // The flow config needs to be saved at this location
                 string blobUri = $"{_config.BlobUri}";
-                context[Context.FlowConfigContent] = await Task.Run(() => BlobUtility.GetBlobContent(KeyVault.GetSecretFromKeyvault(_config.BlobConnectionString), blobUri));                
-                context[Context.DataHubIdentifier] = dataHubIdentifier;
-                context[Context.SecretKey] = KeyVault.GetSecretFromKeyvault(_config.ServiceKeyVaultName, _config.SecretKey);                
-                context[Context.MicrosoftAuthority] = microsoftAuthority;
+                context[Context.FlowConfigContent] = await Task.Run(() => BlobUtility.GetBlobContent(KeyVault.GetSecretFromKeyvault(_config.BlobConnectionString), blobUri));
+                context[Context.ApplicationIdentifierUri] = _config.ApplicationIdentifierUri;
+                context[Context.SecretKey] = KeyVault.GetSecretFromKeyvault(_config.SecretKey);
+                context[Context.MicrosoftAuthority] = _config.MicrosoftAuthority;
+                
                 using (_logger.BeginScope<IReadOnlyCollection<KeyValuePair<string, object>>>(
                     new Dictionary<string, object> {
                         { "scenario.Description", _scenario.Description },
@@ -84,7 +82,7 @@ namespace JobRunner.Jobs
                 foreach (var result in results)
                 {
                     string scenarioResult = result.Failed ? "failed" : "succeeded";
-                   
+
                     // log failed steps.
                     foreach (var stepResult in result.StepResults.Where(r => !r.Success))
                     {
@@ -97,8 +95,8 @@ namespace JobRunner.Jobs
                             // do actual logging inside the scope. All logs inside this will have the properties from the Dictionary used in begin scope.
                             _logger.LogInformation(_scenario.Description);
 
-                        }                        
-                        
+                        }
+
                         if (stepResult.Exception != null)
                         {
                             _logger.LogError(stepResult.Exception, _scenario.Description);
@@ -112,13 +110,13 @@ namespace JobRunner.Jobs
                 //emit metric on how many parallel executions passed.
                 using (_logger.BeginScope<IReadOnlyCollection<KeyValuePair<string, object>>>(
                     new Dictionary<string, object> {
-                        { "SuccessRate", $"{(long)((double)results.Count(r => !r.Failed) / _scenarioCount * 100.0)}" }
+                        { $"SuccessRate:{_scenario.Description}", $"{(long)((double)results.Count(r => !r.Failed) / _scenarioCount * 100.0)}" }
                     }))
-                    {
-                        // do actual logging inside the scope. All logs inside this will have the properties from the Dictionary used in begin scope.
-                        _logger.LogInformation(_scenario.Description);
+                {
+                    // do actual logging inside the scope. All logs inside this will have the properties from the Dictionary used in begin scope.
+                    _logger.LogInformation(_scenario.Description);
 
-                    }
+                }
             }
         }
     }

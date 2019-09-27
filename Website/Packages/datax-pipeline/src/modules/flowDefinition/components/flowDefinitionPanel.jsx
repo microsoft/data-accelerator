@@ -23,7 +23,7 @@ import ScaleSettingsContent from './scale/scaleSettingsContent';
 import OutputSettingsContent from './output/outputSettingsContent';
 import ScheduleSettingsContent from './schedule/ScheduleSettingsContent';
 import RulesSettingsContent from './rule/rulesSettingsContent';
-import { functionEnabled, isDatabricksSparkType } from '../../../common/api';
+import { functionEnabled } from '../../../common/api';
 import {
     Colors,
     Panel,
@@ -96,7 +96,6 @@ class FlowDefinitionPanel extends React.Component {
             deleteOutputSinkButtonEnabled: false,
             scaleNumExecutorsSliderEnabled: false,
             scaleExecutorMemorySliderEnabled: false,
-            isDatabricksSparkType: false,
 
             addBatchButtonEnabled: false,
             deleteBatchButtonEnabled: false
@@ -121,7 +120,7 @@ class FlowDefinitionPanel extends React.Component {
         clearInterval(this.state.timer);
 
         if (this.props.kernelId !== undefined && this.props.kernelId !== '') {
-            this.onDeleteKernel(this.props.kernelId);
+            this.onDeleteKernel(this.props.kernelId, this.props.flow.name);
         }
     }
 
@@ -198,10 +197,6 @@ class FlowDefinitionPanel extends React.Component {
                 addBatchButtonEnabled: response.addBatchButtonEnabled ? true : false,
                 deleteBatchButtonEnabled: response.deleteBatchButtonEnabled ? true : false
             });
-        });
-
-        isDatabricksSparkType().then(response => {
-            this.setState({ isDatabricksSparkType: response });
         });
     }
 
@@ -407,7 +402,9 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateDisplayName={this.props.onUpdateDisplayName}
                                 onUpdateDatabricksToken={this.props.onUpdateDatabricksToken}
                                 flowNameTextboxEnabled={this.state.flowNameTextboxEnabled}
-                                isDatabricksSparkType={this.state.isDatabricksSparkType}
+                                isDatabricksSparkType={this.props.flow.isDatabricksSparkType}
+                                saveFlowButtonEnabled={this.state.saveFlowButtonEnabled}
+                                saveFlowAndInitializeKernel={() => this.saveFlowAndInitializeKernel()}
                             />
                         </VerticalTabItem>
 
@@ -495,7 +492,7 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateQuery={this.props.onUpdateQuery}
                                 onGetCodeGenQuery={() => this.onGetCodeGenQuery()}
                                 onRefreshKernel={kernelId => this.refreshKernel(kernelId)}
-                                onDeleteAllKernels={this.props.onDeleteAllKernels}
+                                onDeleteAllKernels={() => this.deleteAllKernel()}
                                 onExecuteQuery={(selectedQuery, kernelId) => this.onExecuteQuery(selectedQuery, kernelId)}
                                 onResampleInput={kernelId => this.onResampleInput(kernelId)}
                                 onShowTestQueryOutputPanel={isVisible => this.onShowTestQueryOutputPanel(isVisible)}
@@ -587,7 +584,7 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateExecutorMemory={this.props.onUpdateExecutorMemory}
                                 scaleNumExecutorsSliderEnabled={this.state.scaleNumExecutorsSliderEnabled}
                                 scaleExecutorMemorySliderEnabled={this.state.scaleExecutorMemorySliderEnabled}
-                                isDatabricksSparkType={this.state.isDatabricksSparkType}
+                                isDatabricksSparkType={this.props.flow.isDatabricksSparkType}
                                 onUpdateDatabricksAutoScale={this.props.onUpdateDatabricksAutoScale}
                                 onUpdateDatabricksMinWorkers={this.props.onUpdateDatabricksMinWorkers}
                                 onUpdateDatabricksMaxWorkers={this.props.onUpdateDatabricksMaxWorkers}
@@ -858,10 +855,14 @@ class FlowDefinitionPanel extends React.Component {
         );
     }
 
-    onDeleteKernel(kernelId) {
+    deleteAllKernel() {
+        this.props.onDeleteAllKernels(QueryActions.updateErrorMessage, this.props.flow.name);
+    }
+
+    onDeleteKernel(kernelId, flowName) {
         const version = this.props.kernelVersion + 1;
         this.props.onUpdateKernelVersion(version);
-        return this.props.onDeleteKernel(kernelId, version);
+        return this.props.onDeleteKernel(kernelId, version, flowName);
     }
 
     onResampleInput(kernelId) {
@@ -872,6 +873,14 @@ class FlowDefinitionPanel extends React.Component {
 
     onExecuteQuery(selectedQuery, kernelId) {
         return this.props.onExecuteQuery(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query), selectedQuery, kernelId);
+    }
+
+    saveFlowAndInitializeKernel() {
+        Q(
+            this.onSaveDefinition()
+        ).then(() => {
+            this.getKernel();
+        })
     }
 }
 
@@ -992,10 +1001,10 @@ const mapDispatchToProps = dispatch => ({
     onUpdateKernelVersion: version => dispatch(KernelActions.updateKernelVersion(version)),
     onRefreshKernel: (queryMetadata, kernelId, version, updateErrorMessage) =>
         dispatch(KernelActions.refreshKernel(queryMetadata, kernelId, version, updateErrorMessage)),
-    onDeleteKernel: (kernelId, version) => dispatch(KernelActions.deleteKernel(kernelId, version)),
+    onDeleteKernel: (kernelId, version, flowName) => dispatch(KernelActions.deleteKernel(kernelId, version, flowName)),
     onResampleInput: (queryMetadata, kernelId, version) => dispatch(QueryActions.resampleInput(queryMetadata, kernelId, version)),
     onUpdateResamplingInputDuration: duration => dispatch(QueryActions.updateResamplingInputDuration(duration)),
-    onDeleteAllKernels: updateErrorMessage => dispatch(KernelActions.deleteAllKernels(updateErrorMessage)),
+    onDeleteAllKernels: (updateErrorMessage, flowName) => dispatch(KernelActions.deleteAllKernels(updateErrorMessage, flowName)),
 
     // Query Pane Layout Actions
     onShowTestQueryOutputPanel: isVisible => dispatch(LayoutActions.onShowTestQueryOutputPanel(isVisible)),

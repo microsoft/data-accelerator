@@ -50,7 +50,7 @@ object SqlOutputSetting {
           queryTimeout = dict.getOrElse(SettingQueryTimeout,"30"),
           useBulkCopy = dict.getOrElse(SettingUseBulkCopy,"false").toBoolean,
           useBulkCopyTableLock = dict.getOrElse(SettingUseBulkCopyTablelock,"false"),
-          useBulkCopyInternalTransaction = dict.getOrElse(SettingUseBulkCopyInternalTransaction,"true"),
+          useBulkCopyInternalTransaction = dict.getOrElse(SettingUseBulkCopyInternalTransaction,"false"),
           bulkCopyTimeout = dict.getOrElse(SettingUseBulkCopyTimeout,"60"),
           bulkCopyBatchSize = dict.getOrElse(SettingUseBulkBatchSize,"2000")
         )

@@ -537,7 +537,5 @@
 		"inputEventHubSubscriptionId" : "$keyvaultPrefix://${serviceKeyVaultName}/$clientSecretPrefix-subscriptionId",
 		"inputEventHubResourceGroupName" : "${eventHubResourceGroupName}"
 	},
-	"jobNames" : [
-		"DataXDirect-iotsample"
-	]
+	"jobNames" : null
 }

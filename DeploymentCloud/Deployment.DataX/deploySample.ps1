@@ -22,7 +22,7 @@ if ($deploySample -ne 'y') {
 }
 
 $rootFolderPath = $PSScriptRoot
-Import-Module "..\Deployment.Common\Helpers\UtilityModule" -ArgumentList $rootFolderPath, $resourceGroupName, $productName, $sparkClusterName -WarningAction SilentlyContinue
+Import-Module "..\Deployment.Common\Helpers\UtilityModule" -ArgumentList $rootFolderPath, $resourceGroupName, $productName, $sparkClusterName, $randomizeProductName, $serviceFabricClusterName -WarningAction SilentlyContinue
 
 # Check if file paths exist
 function Check-FilePath {    

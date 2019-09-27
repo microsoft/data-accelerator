@@ -33,7 +33,7 @@ export const updateResamplingInputDuration = duration => dispatch => {
 };
 
 
-export const initQuery = query => dispatch=>{
+export const initQuery = query => dispatch => {
     return dispatch({
         type: QUERY_INIT,
         payload: query
@@ -93,7 +93,7 @@ export const resampleInput = (queryMetadata, kernelId, version) => (dispatch, ge
             if (version >= curVersion) {
                 return KernelActions.updateKernel(dispatch, kernelId, version, warning);
             } else {
-                return Api.deleteDiagnosticKernel(kernelId);
+                return Api.deleteDiagnosticKernel(kernelId, queryMetadata.name);
             }
         })
         .catch(error => {

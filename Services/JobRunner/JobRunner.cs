@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,6 +31,7 @@ namespace JobRunner
         // We have a distinct primary and test queue to compartmentalize runners.  The target queue client for this runner is set in the configuration.
         private readonly IQueueClient _primaryQueueClient;
         private readonly IQueueClient _testQueueClient;
+        private const int _Minutes = 20;
 
         private readonly string _activeQueueName;
         private IQueueClient _ActiveQueueClient
@@ -171,8 +173,9 @@ namespace JobRunner
         /// <returns>A boolean of if this is a job or not.</returns>
         private bool IsJobType(Type type)
         {
+            var attr = Attribute.GetCustomAttribute(type, typeof(CompilerGeneratedAttribute));            
             return string.Equals(type.Namespace, "JobRunner.Jobs", StringComparison.Ordinal)
-                    && !type.IsInterface;
+                    && !type.IsInterface && attr==null;
         }
 
         /// <summary>
@@ -275,12 +278,20 @@ namespace JobRunner
                 new TimeSpan(0, 5, 0),
                 useTestQueue: true).Wait();
 
-            // run DataX mainline job every 10 minutes.
+            // run DataX Schema and Query job every few minutes
+            this.ScheduledJobTable.CreateOrUpdateScheduledJobAsync(
+                "DataXSchemaAndQueryJob",
+                GetJobKey<DataXSchemaAndQueryJob>(),
+                new DateTime(2019, 1, 1, 1, 1, 1),
+                new TimeSpan(0, _Minutes, 0),
+                useTestQueue: true).Wait();
+
+            //run DataX mainline job every few minutes.
             this.ScheduledJobTable.CreateOrUpdateScheduledJobAsync(
                 "DataXDeployJob",
                 GetJobKey<DataXDeployJob>(),
                 new DateTime(2019, 1, 1, 1, 1, 1),
-                new TimeSpan(0, 10, 0),
+                new TimeSpan(0, _Minutes, 0),
                 useTestQueue: true).Wait();
         }
 
