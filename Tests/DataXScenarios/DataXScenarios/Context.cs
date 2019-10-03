@@ -35,7 +35,6 @@ namespace DataX.ServerScenarios
         public const string InitializeKernelJson = "initializeKernelJson";
         public const string DeleteKernelJson = "deleteKernelJson";
         public const string NormalizationSnippet = "normalizationSnippet";
-        public const string DataBricksToken = "dataBricksToken";
         public const string SparkType = "sparkType";
         public const string StartJobName = "startJobName";
     }

@@ -67,14 +67,6 @@ namespace JobRunner.Jobs
                 context[Context.IsIotHub] = _config.IsIotHub;
                 context[Context.Seconds] = _config.Seconds;
                 context[Context.FlowName] = _config.FlowName;
-                if (_config.SparkType == "databricks")
-                {
-                    context[Context.DataBricksToken] = KeyVault.GetSecretFromKeyvault(_config.DatabricksToken);
-                }
-                else
-                {
-                    context[Context.DataBricksToken] = "";
-                }
                 context[Context.SparkType] = _config.SparkType;
                 context[Context.FlowConfigContent] = await Task.Run(() => BlobUtility.GetBlobContent(KeyVault.GetSecretFromKeyvault(_config.BlobConnectionString), _config.BlobUri));
                 context[Context.NormalizationSnippet] = JsonConvert.SerializeObject(_config.NormalizationSnippet);
