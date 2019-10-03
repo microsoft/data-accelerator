@@ -37,7 +37,8 @@ namespace JobRunner.Jobs
                 DataXHost.InitializeKernel,
                 DataXHost.RefreshSampleAndKernel,
                 DataXHost.RefreshKernel,
-                DataXHost.RefreshSample
+                DataXHost.RefreshSample,
+                DataXHost.DeleteKernel
                );
         }
         /// <summary>
