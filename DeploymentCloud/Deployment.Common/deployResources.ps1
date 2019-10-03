@@ -100,6 +100,18 @@ Get-Content $ParamFile | Foreach-Object {
     set-Variable -Name $var[0] -Value $var[1]
 }
 
+if ($enableHDInsightAutoScaling -eq 'y') {
+    $autoScalingConfig = "{
+        capacity: {
+            minInstanceCount: '$minNodesForHDInsightAutoScaling',
+            maxInstanceCount: '$maxNodesForHDInsightAutoScaling'
+            },
+         recurrence: null
+        }" | ConvertTo-Json
+} else {
+    $autoScalingConfig = 'null'
+}
+
 if ($deployResources -ne 'y') {
     Write-Host "deployResources parameter value is not 'y'. This script will not execute."
     Exit 0
@@ -164,7 +176,7 @@ function Get-Tokens {
     $tokens.Add('tenantId', $tenantId )
     $tokens.Add('userId', $userId )
 	
-	$sparkType = 'hdinsight'
+    $sparkType = 'hdinsight'
     $keyvaultPrefix = 'keyvault'
 	$dataxJobTemplate = 'DataXDirect'
 	$dataxKafkaJobTemplate = 'kafkaDataXDirect'
@@ -179,7 +191,17 @@ function Get-Tokens {
 		$tokens.Add('databricksClusterNodeType', $databricksClusterNodeType)
 		$tokens.Add('databricksSku', $databricksSku)
 		$tokens.Add('dbResourceGroupName', $resourceGroupName)
+    } else {
+        if($HDInsightVersion -like '4*') {
+            $tokens.Add('HDInsightVersion', $HDInsightVersion)
+            $tokens.Add('enableHDInsightAutoScaling', $enableHDInsightAutoScaling)
+            if($enableHDInsightAutoScaling -eq 'y') {
+                $tokens.Add('minNodesForHDInsightAutoScaling', $minNodesForHDInsightAutoScaling)
+                $tokens.Add('maxNodesForHDInsightAutoScaling', $maxNodesForHDInsightAutoScaling)
+            }
+        }
     }
+
 	$tokens.Add('sparkType', $sparkType)
 	$tokens.Add('keyvaultPrefix', $keyvaultPrefix)
 	$tokens.Add('dataxJobTemplate', $dataxJobTemplate)
@@ -843,14 +865,36 @@ if($sparkCreation -eq 'y') {
 
     $tokens = Get-Tokens
 	if ($useDatabricks -eq 'n') {
+
+        $sparkTemplate = "Spark-Template.json"
+        $sparkParameter = "Spark-parameter.json"
+
+        if ( $HDInsightVersion -like '4*') {
+            $sparkTemplate = "Spark4-Template.json"
+            $sparkParameter = "Spark4-parameter.json"
+        }      
+
+        Write-Host "sparkTempalte: '$sparkTemplate' ; sparkParameter: '$sparkParameter'; autoScalingConfig: '$autoScalingConfig'"
+
 		Write-Host -ForegroundColor Green "Estimated time to complete: 20 mins"
-		Deploy-Resources -templateName "Spark-Template.json" -paramName "Spark-parameter.json" -templatePath $templatePath -tokens $tokens
+		Deploy-Resources -templateName  $sparkTemplate -paramName $sparkParameter -templatePath $templatePath -tokens $tokens
 	}
 	else {
 		Write-Host -ForegroundColor Green "Estimated time to complete: 5 mins"
 		Deploy-Resources -templateName "Databricks-Template.json" -paramName "Databricks-Parameter.json" -templatePath $templatePath -tokens $tokens
 	}
 }
+
+# Spark
+if ($sparkCreation -eq 'y') {
+    Write-Host -ForegroundColor Green "Setting up ScriptActions... (6/16 steps)"   
+	if ($useDatabricks -eq 'n') {
+		Write-Host -ForegroundColor Green "Estimated time to complete: 2 mins"
+        Add-ScriptActions 
+    }
+}
+
+exit 0
 
 # Preparing certs...
 if ($generateNewSelfSignedCerts -eq 'y') {

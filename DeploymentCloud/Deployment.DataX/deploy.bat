@@ -5,18 +5,18 @@ powershell "&{..\Deployment.Common\deployresources.ps1 -ParamFile .\common.param
 if %errorlevel% neq 0 goto :errorHandler
 echo Deploying resources succeeded
 
-echo Deploying svc/apps
-@set script=deployapps.ps1
-powershell "&{.\deployapps.ps1 -ParamFile .\common.parameters.txt ;exit $LastExitCode}"
-if %errorlevel% neq 0 goto :errorHandler
-echo Deploying svc/apps succeeded
+REM echo Deploying svc/apps
+REM @set script=deployapps.ps1
+REM powershell "&{.\deployapps.ps1 -ParamFile .\common.parameters.txt ;exit $LastExitCode}"
+REM if %errorlevel% neq 0 goto :errorHandler
+REM echo Deploying svc/apps succeeded
 
-echo Deploying sample
-@set script=deploySample.ps1
-powershell "&{.\deploySample.ps1 -ParamFile .\common.parameters.txt ;exit $LastExitCode}"
-if %errorlevel% neq 0 goto :errorHandler
-echo Deploying sample succeeded
-echo.
+REM echo Deploying sample
+REM @set script=deploySample.ps1
+REM powershell "&{.\deploySample.ps1 -ParamFile .\common.parameters.txt ;exit $LastExitCode}"
+REM if %errorlevel% neq 0 goto :errorHandler
+REM echo Deploying sample succeeded
+REM echo.
 
 if exist cachedVariables (
     @set /p name=< cachedVariables

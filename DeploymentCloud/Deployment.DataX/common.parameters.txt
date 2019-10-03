@@ -2,23 +2,24 @@
 
 # The tenant directoryId you want to sign in
 # You can get this from Azure portal through Azure Active Directory -> Properties -> Directory Id
-tenantId=
+tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47
 
 # The subscription id where the template will be deployed
-subscriptionId=
+subscriptionId=4ff1a3d2-f080-4683-ba45-9f8393e30f76
 
 # Name for Service AAD app. This application Id will be used as the Service Fabric ResourceId. 
 # Please specify here if you want to use a custom name.
 # Optional. Default value is "serviceapp-<product name>"
-# serviceAppName=
+
+serviceAppName=DataXDevServices
 
 # Name for Client AAD app. This application Id will be used for the web app.
 # Please specify here if you want to use a custom name.
 # Optional. Default value is "clientapp-<product name>"
-# clientAppName=
+clientAppName=DataXDevWeb
 
 # ResourceGroupName to generate resources 
-resourceGroupName=DataX
+resourceGroupName=Andg4
 
 # y if you want to run spark jobs on Databricks, n for running jobs on HDinsight 
 useDatabricks=n
@@ -31,6 +32,18 @@ databricksClusterNodeType=Standard_DS3_v2
 
 #Databricks SKU
 databricksSku=premium
+
+# HDInsight cluster version. Default to 3.6
+HDInsightVersion=4.0
+
+# y if you want to enable HDInsight cluster auto-scaling 
+enableHDInsightAutoScaling=y
+
+# HDInsight minimal nodes 
+minNodesForHDInsightAutoScaling=1
+
+# HDInsight maximal nodes 
+maxNodesForHDInsightAutoScaling=5
 
 # y if you want to deploy Kafka sample, n otherwise
 # This will deploy the Kafka specific samples and resources such as HDinsight Kafka and EventHub Kafka  
