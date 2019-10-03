@@ -20,8 +20,8 @@ const INITIAL_FLOW_STATE = {
     scale: {
         jobNumExecutors: '4',
         jobExecutorMemory: '1000',
-        jobDatabricksAutoScale: true,
-        jobDatabricksMinWorkers: '1',
+        jobDatabricksAutoScale: false,
+        jobDatabricksMinWorkers: '3',
         jobDatabricksMaxWorkers: '8'
     },
     outputs: [Models.getMetricSinker()],
