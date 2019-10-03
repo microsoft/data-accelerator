@@ -33,6 +33,7 @@ namespace DataX.ServerScenarios
         public const string Seconds = "seconds";
         public const string KernelId = "kernelId";
         public const string InitializeKernelJson = "initializeKernelJson";
+        public const string DeleteKernelJson = "deleteKernelJson";
         public const string NormalizationSnippet = "normalizationSnippet";
         public const string DataBricksToken = "dataBricksToken";
         public const string SparkType = "sparkType";

@@ -110,9 +110,9 @@ namespace DataX.ServerScenarios
         public static StepResult DeleteKernel(ScenarioContext context)
         {
             var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.InteractiveQueryService/kernel/delete";
-            string json = JsonConvert.SerializeObject((string)context[Context.KernelId]);
+            context[Context.DeleteKernelJson] = new Helper().GetDeleteKernelJson(context);
             string jsonResult = Request.Post(baseAddress,
-                    new RequestContent(Encoding.UTF8.GetBytes(json), "application/json"),
+                    new RequestContent(Encoding.UTF8.GetBytes((string)context[Context.DeleteKernelJson]), "application/json"),
                     context[Context.AuthToken] as string);
             dynamic result = JObject.Parse(jsonResult);
             return new StepResult(((string)result.result).Contains("Success"),
