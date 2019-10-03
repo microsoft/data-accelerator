@@ -4,6 +4,7 @@
 // *********************************************************************
 using DataX.Flow.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
 
 namespace DataX.Flow.InteractiveQuery.Tests
 {
@@ -98,6 +99,50 @@ namespace DataX.Flow.InteractiveQuery.Tests
                 new Common.Models.PropertiesUD { ClassName = "SampleClass", Libs = new System.Collections.Generic.List<string>(), Path = "keyvault://testkeyvault/sample" });
             expectedValue = "val jarPath = \"wasbs://mycontainer@teststorage.blob.core.windows.net/sample/udfsample.jar\"\nval mainClass = \"SampleClass\"\nval jarFileUrl = datax.host.SparkJarLoader.addJarOnDriver(spark, jarPath, 0, true)\nspark.sparkContext.addJar(jarFileUrl)\ndatax.host.SparkJarLoader.registerJavaUDAF(spark.udf, \"myFunction\", mainClass)\nprintln(\"done\")";
             Assert.AreEqual(expectedValue, actualValue, "Load UDAF function code for Databricks is incorrect");
+        }
+
+        [TestMethod]
+        public void TestTranslateBinNames()
+        {
+            string json = @"[
+		        'path1/path2/a.jar',
+		        'path1/path2/b.jar',
+		        'path1/path2/c.jar'
+            ]";
+
+            JArray binNames = JArray.Parse(json);
+            var actual = InteractiveQueryManager.TranslateBinNames(binNames, "myAccount", "myContainer");
+
+            string expected = "wasbs://myContainer@myAccount.blob.core.windows.net/path1/path2/a.jar,wasbs://myContainer@myAccount.blob.core.windows.net/path1/path2/b.jar,wasbs://myContainer@myAccount.blob.core.windows.net/path1/path2/c.jar";
+
+            Assert.AreEqual(expected, actual);
+        }
+
+
+        [TestMethod]
+        public void TestConvertToJson()
+        {
+            string result = @"org.apache.spark.sql.catalyst.parser.ParseException:\r\nmismatched input '<EOF>' expecting { '(', 'SELECT'} (line 1, pos 146)";
+            var json = KernelService.ConvertToJson(10, result);
+                        
+            Assert.IsTrue(json.Error.HasValue && json.Error.Value);
+            Assert.IsNotNull(json.Message);
+
+            string source = @"{'prop1':6, 'prop2': 'evnetName1', 'status':0}
+{'prop1':6, 'prop2': 'evnetName2', 'status':1}
+Input: org.apache.spark.sql.DataFrame = [prop1: bigint, prop2: string... 1 more field]";
+
+            json = KernelService.ConvertToJson(10, source.ToString());
+
+            Assert.IsTrue(!json.Error.HasValue);
+            Assert.AreEqual(2, JArray.Parse(json.Result.ToString()).Count);
+
+            source = @"{'prop1':6, 'prop2': 'evnetName1', 'status':0}
+{'prop1':6, 'prop2': 'evnetName2', 'status':1}";
+            json = KernelService.ConvertToJson(10, source.ToString());
+
+            Assert.IsTrue(!json.Error.HasValue);
+            Assert.AreEqual(2, JArray.Parse(json.Result.ToString()).Count);
         }
     }
 }

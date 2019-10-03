@@ -110,7 +110,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             var jQueue = new List<JobConfig>();
             var batchProps = batchingJob.Properties;
 
-            if (batchingJob.Disabled || batchProps.StartTime == null || (isOneTime && batchProps.EndTime == null))
+            if (!ConfigHelper.ShouldScheduleJob(batchingJob.Disabled, isOneTime, batchProps.StartTime, batchProps.EndTime))
             {
                 return jQueue;
             }
@@ -118,15 +118,16 @@ namespace DataX.Config.ConfigGeneration.Processor
             var configStartTime = (DateTime)batchProps.StartTime;
             var configEndTime = batchProps.EndTime;
 
-            var interval = TranslateInterval(batchProps.Interval, batchProps.IntervalType);
-            var delay = TranslateDelay(batchProps.Delay, batchProps.DelayType);
-            var window = TranslateWindow(batchProps.Window, batchProps.WindowType);
+            var interval = ConfigHelper.TranslateInterval(batchProps.Interval, batchProps.IntervalType);
+            var delay = ConfigHelper.TranslateDelay(batchProps.Delay, batchProps.DelayType);
+            var window = ConfigHelper.TranslateWindow(batchProps.Window, batchProps.WindowType);
 
             var currentTime = DateTime.UtcNow;
 
             if (!isOneTime)
             {
-                if (currentTime < configStartTime || (configEndTime != null && configEndTime < currentTime))
+
+                if (!ConfigHelper.IsValidRecurringJob(currentTime, configStartTime, configEndTime))
                 {
                     await DisableBatchConfig(job.Flow.Config, index).ConfigureAwait(false);
                     return jQueue;
@@ -166,8 +167,8 @@ namespace DataX.Config.ConfigGeneration.Processor
             for (var processingTime = startTime; processingTime <= endTime; processingTime += interval)
             {
                 lastProcessingTime = processingTime;
-                var processingTimeBasedOnInterval = NormalizeTimeBasedOnInterval(processingTime, batchProps.IntervalType, new TimeSpan());
-                var processingTimeBasedOnDelay = NormalizeTimeBasedOnInterval(processingTime, batchProps.IntervalType, delay);
+                var processingTimeBasedOnInterval = ConfigHelper.NormalizeTimeBasedOnInterval(processingTime, batchProps.IntervalType, new TimeSpan());
+                var processingTimeBasedOnDelay = ConfigHelper.NormalizeTimeBasedOnInterval(processingTime, batchProps.IntervalType, delay);
                 JobConfig jc = ScheduleSingleJob(job, destFolder, defaultJobConfig, isOneTime, interval, window, processingTimeBasedOnDelay, processingTimeBasedOnInterval, prefix);
                 jQueue.Add(jc);
             }
@@ -290,104 +291,6 @@ namespace DataX.Config.ConfigGeneration.Processor
         }
 
         /// <summary>
-        /// Normalize the datetime base on interval and delay
-        /// </summary>
-        /// <returns></returns>
-        private static DateTime NormalizeTimeBasedOnInterval(DateTime dateTime, string intervalType, TimeSpan delay)
-        {
-            dateTime = dateTime.Add(-delay);
-            int second = dateTime.Second;
-            int minute = dateTime.Minute;
-            int hour = dateTime.Hour;
-            int day = dateTime.Day;
-            int month = dateTime.Month;
-            int year = dateTime.Year;
-
-            switch (intervalType)
-            {
-                case "min":
-                    {
-                        second = 0;
-                        break;
-                    }
-                case "hour":
-                    {
-                        second = 0;
-                        minute = 0;
-                        break;
-                    }
-                default:
-                    {
-                        second = 0;
-                        minute = 0;
-                        hour = 0;
-                        break;
-                    }
-            }
-
-            return new DateTime(year, month, day, hour, minute, second);
-        }
-
-        /// <summary>
-        /// Translate Interval to a timespan value
-        /// </summary>
-        /// <returns></returns>
-        private static int TranslateIntervalHelper(string unit)
-        {
-            switch (unit)
-            {
-                case "min":
-                    return 1;
-                case "hour":
-                    return 60;
-                default:
-                    return 60 * 24;
-            }
-        }
-
-        /// <summary>
-        /// Generate a timespan for Interval
-        /// </summary>
-        /// <returns></returns>
-        private static TimeSpan TranslateInterval(string value, string unit)
-        {
-            var translatedValue = TranslateIntervalHelper(unit);
-            int multiplier = Convert.ToInt32(value, CultureInfo.InvariantCulture);
-            translatedValue = translatedValue * multiplier;
-
-            var timeSpan = new TimeSpan(0, 0, translatedValue, 0, 0);
-            return timeSpan;
-        }
-
-        /// <summary>
-        /// Generate a timespan for Window
-        /// </summary>
-        /// <returns></returns>
-        private static TimeSpan TranslateWindow(string value, string unit)
-        {
-            var translatedValue = TranslateIntervalHelper(unit);
-            int multiplier = Convert.ToInt32(value, CultureInfo.InvariantCulture);
-            translatedValue = translatedValue * multiplier;
-
-            var timeSpan = new TimeSpan(0, 0, translatedValue - 1, 59, 59);
-            return timeSpan;
-        }
-
-        /// <summary>
-        /// Generate a timespan for Delay
-        /// </summary>
-        /// <returns></returns>
-        private static TimeSpan TranslateDelay(string value, string unit)
-        {
-            var translatedValue = TranslateIntervalHelper(unit);
-            int multiplier = Convert.ToInt32(value, CultureInfo.InvariantCulture);
-            translatedValue = translatedValue * multiplier;
-
-            var timeSpan = new TimeSpan(0, 0, translatedValue, 0, 0);
-            return timeSpan;
-        }
-
-        /// <summary>
         /// Convert a datetime to string in an expected format
         /// Implement this specific helper function since using "o" doesn't work
         /// </summary>
@@ -465,42 +368,6 @@ namespace DataX.Config.ConfigGeneration.Processor
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Get a partition increment value using the given blob path
-        /// </summary>
-        /// <returns></returns>
-        private static long GetPartitionIncrement(string path)
-        {
-            Regex regex = new Regex(@"\{([yMdHhmsS\-\/.,: ]+)\}*", RegexOptions.IgnoreCase);
-            Match mc = regex.Match(path);
-
-            if (mc != null && mc.Success && mc.Groups.Count > 1)
-            {
-                var value = mc.Groups[1].Value.Trim();
-
-                value = value.Replace(@"[\/:\s-]", "", StringComparison.InvariantCultureIgnoreCase).Replace(@"(.)(?=.*\1)", "", StringComparison.InvariantCultureIgnoreCase);
-
-                if (value.Contains("h", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return 1 * 60;
-                }
-                else if (value.Contains("d", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return 1 * 60 * 24;
-                }
-                else if (value.Contains("M", StringComparison.InvariantCulture))
-                {
-                    return 1 * 60 * 24 * 30;
-                }
-                else if (value.Contains("y", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return 1 * 60 * 24 * 30 * 12;
-                }
-            }
-
-            return 1;
         }
     }
 }

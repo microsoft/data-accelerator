@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using DataX.Utility.KeyVault;
 using System;
 using System.Text.RegularExpressions;
 
@@ -11,7 +12,7 @@ namespace DataX.Utilities.KeyVault
     {
         public static string GetSecretFromKeyvault(string secretUri)
         {
-            ParseSecretUri(secretUri, out string keyvaultName, out string secretName);
+            SecretUriParser.ParseSecretUri(secretUri, out string keyvaultName, out string secretName);
 
             var secretValue = GetSecretFromKeyvault(keyvaultName, secretName);
             return secretValue;
@@ -30,25 +31,10 @@ namespace DataX.Utilities.KeyVault
 
         public static string SaveSecretToKeyvault(string secretUri, string value)
         {
-            ParseSecretUri(secretUri, out string keyvaultName, out string secretName);
+            SecretUriParser.ParseSecretUri(secretUri, out string keyvaultName, out string secretName);
 
             var secretValue = KeyVaultUtility.SaveSecretToKeyvault(keyvaultName, secretName, value).Result;
             return secretValue;
-        }
-
-        private static void ParseSecretUri(string secretUri, out string keyvaultName, out string secretName)
-        {
-            try
-            {
-                Regex reg = new Regex(@"^((keyvault|secretscope:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
-                MatchCollection m = reg.Matches(secretUri);
-                keyvaultName = m[0].Groups[3].Value;
-                secretName = m[0].Groups[5].Value;
-            }
-            catch (Exception)
-            {
-                throw new Exception("Can't parse keyvault from string:" + secretUri);
-            }
         }
     }
 }
