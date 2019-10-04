@@ -63,40 +63,13 @@
             }
         }
     },
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
     "resources": [
         {
             "apiVersion": "2015-03-01-preview",
             "name": "[parameters('clusterName')]",
             "type": "Microsoft.HDInsight/clusters",
             "location": "[parameters('location')]",
-            "dependsOn": [
-                "Microsoft.Storage/storageAccounts/testautomatiohdistorage"
-            ],
+            "dependsOn": [],
             "properties": {
                 "clusterVersion": "[parameters('clusterVersion')]",
                 "osType": "Linux",
@@ -117,10 +90,10 @@
                 "storageProfile": {
                     "storageaccounts": [
                         {
-                            "name": "testautomatiohdistorage.blob.core.windows.net",
+                            "name": "saspark86900076d82x.blob.core.windows.net",
                             "isDefault": true,
-                            "container": "testautomation-2019-10-02t20-41-15-300z",
-                            "key": "[listKeys('Microsoft.Storage/storageAccounts/testautomatiohdistorage', '2015-05-01-preview').key1]"
+                            "container": "forautomation-2019-10-02t19-07-40-163z",
+                            "key": "[listKeys('/subscriptions/4ff1a3d2-f080-4683-ba45-9f8393e30f76/resourceGroups/DataX-HDI4/providers/Microsoft.Storage/storageAccounts/saspark86900076d82x', '2015-05-01-preview').key1]"
                         }
                     ]
                 },
@@ -145,7 +118,53 @@
                             "dataDisksGroups": null
                         },
                         {
-                            "autoscale": null,
+                            "autoscale": {
+                                "capacity": null,
+                                "recurrence": {
+                                    "timeZone": "Pacific Standard Time",
+                                    "schedule": [
+                                        {
+                                            "days": [
+                                                "Monday",
+                                                "Tuesday",
+                                                "Wednesday",
+                                                "Thursday",
+                                                "Friday"
+                                            ],
+                                            "timeAndCapacity": {
+                                                "time": "09:00",
+                                                "minInstanceCount": 3,
+                                                "maxInstanceCount": 3
+                                            }
+                                        },
+                                        {
+                                            "days": [
+                                                "Monday",
+                                                "Tuesday",
+                                                "Wednesday",
+                                                "Thursday",
+                                                "Friday"
+                                            ],
+                                            "timeAndCapacity": {
+                                                "time": "21:00",
+                                                "minInstanceCount": 1,
+                                                "maxInstanceCount": 1
+                                            }
+                                        },
+                                        {
+                                            "days": [
+                                                "Saturday",
+                                                "Sunday"
+                                            ],
+                                            "timeAndCapacity": {
+                                                "time": "09:00",
+                                                "minInstanceCount": 3,
+                                                "maxInstanceCount": 3
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
                             "name": "workernode",
                             "targetInstanceCount": 3,
                             "hardwareProfile": {
@@ -163,15 +182,12 @@
                         }
                     ]
                 }
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts",
-            "name": "testautomatiohdistorage",
-            "apiVersion": "2015-05-01-preview",
-            "location": "eastus",
-            "properties": {
-                "accountType": "Standard_LRS"
+            },
+            "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "/subscriptions/4ff1a3d2-f080-4683-ba45-9f8393e30f76/resourcegroups/DataX-HDI4/providers/Microsoft.ManagedIdentity/userAssignedIdentities/SparkManagedIdentitydx2890608607": {}
+                }
             }
         }
     ]

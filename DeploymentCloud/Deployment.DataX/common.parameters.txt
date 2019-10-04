@@ -19,7 +19,7 @@ serviceAppName=DataXDevServices
 clientAppName=DataXDevWeb
 
 # ResourceGroupName to generate resources 
-resourceGroupName=Andg4
+resourceGroupName=Andg9
 
 # y if you want to run spark jobs on Databricks, n for running jobs on HDinsight 
 useDatabricks=n

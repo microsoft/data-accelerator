@@ -101,16 +101,11 @@ Get-Content $ParamFile | Foreach-Object {
 }
 
 if ($enableHDInsightAutoScaling -eq 'y') {
-    $autoScalingConfig = "{
-        capacity: {
-            minInstanceCount: '$minNodesForHDInsightAutoScaling',
-            maxInstanceCount: '$maxNodesForHDInsightAutoScaling'
-            },
-         recurrence: null
-        }" | ConvertTo-Json
+    $autoScalingConfig ="{ capacity: { minInstanceCount: $minNodesForHDInsightAutoScaling, maxInstanceCount: $maxNodesForHDInsightAutoScaling} }"
 } else {
-    $autoScalingConfig = 'null'
+    $autoScalingConfig = $null
 }
+
 
 if ($deployResources -ne 'y') {
     Write-Host "deployResources parameter value is not 'y'. This script will not execute."
@@ -198,6 +193,7 @@ function Get-Tokens {
             if($enableHDInsightAutoScaling -eq 'y') {
                 $tokens.Add('minNodesForHDInsightAutoScaling', $minNodesForHDInsightAutoScaling)
                 $tokens.Add('maxNodesForHDInsightAutoScaling', $maxNodesForHDInsightAutoScaling)
+                $tokens.Add('autoScalingConfig', $autoScalingConfig)
             }
         }
     }

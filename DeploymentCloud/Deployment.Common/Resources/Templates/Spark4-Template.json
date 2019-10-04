@@ -93,13 +93,7 @@
         "userAssignedIdentitiesResourceID": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',parameters('userAssignedIdentitiesName'))]",
         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
         "subnet0Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet0Name'))]",
-        "autoScalingConfig": {
-            capacity: {
-                minInstanceCount: "1",
-                maxInstanceCount: "5"
-                },
-             recurrence: null 
-        }
+        "autoScaling":"[parameters('auto_Scaling_Config')]"
     },
     "resources": [
         {
@@ -167,7 +161,7 @@
                             "scriptActions": []
                         },
                         {
-                            "autoscale": "[variables('autoScalingConfig')]",
+                            "autoscale": "[variables('autoScaling')]",
                             "name": "workernode",
                             "targetInstanceCount": "[parameters('targetInstanceCountSparkWorkernode')]",
                             "hardwareProfile": {
