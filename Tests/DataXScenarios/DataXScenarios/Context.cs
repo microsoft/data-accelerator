@@ -37,5 +37,6 @@ namespace DataX.ServerScenarios
         public const string NormalizationSnippet = "normalizationSnippet";
         public const string SparkType = "sparkType";
         public const string StartJobName = "startJobName";
+        public const string TrustSsl = "trustSsl";
     }
 }

@@ -53,7 +53,7 @@ namespace DataX.ServerScenarios
             string jsonResult = Request.Post(baseAddress,
                     RequestContent.EncodeAsJson(
                         JObject.Parse(context[Context.FlowConfigContent] as string)),
-                    context[Context.AuthToken] as string);
+                    bearerToken: context[Context.AuthToken] as string, sslTrust: (bool)context[Context.TrustSsl]);
 
             dynamic result = JObject.Parse(jsonResult);
             context[Context.FlowName] = (string)result.result.name;
@@ -69,7 +69,7 @@ namespace DataX.ServerScenarios
             string json = JsonConvert.SerializeObject((string)context[Context.FlowName]);
             string jsonResult = Request.Post(baseAddress,
                     new RequestContent(Encoding.UTF8.GetBytes(json), "application/json"),
-                    context[Context.AuthToken] as string);
+                    bearerToken: context[Context.AuthToken] as string, sslTrust: (bool)context[Context.TrustSsl]);
             dynamic result = JObject.Parse(jsonResult);
             context[Context.RestartJobsName] = (string)result.result.IsSuccess;
             string startJobName = context[Context.StartJobName] as string;
@@ -86,7 +86,7 @@ namespace DataX.ServerScenarios
             string json = JsonConvert.SerializeObject((string)context[Context.FlowName]);
             string jsonResult = Request.Post(baseAddress,
                     new RequestContent(Encoding.UTF8.GetBytes(json), "application/json"),
-                    context[Context.AuthToken] as string);
+                    bearerToken: context[Context.AuthToken] as string, sslTrust: (bool)context[Context.TrustSsl]);
 
             dynamic result = JObject.Parse(jsonResult);
             context[Context.GenerateConfigsRuntimeConfigFolder] = (string)result.result.Properties.runtimeConfigFolder;
@@ -105,7 +105,7 @@ namespace DataX.ServerScenarios
             string json = JsonConvert.SerializeObject((string)context[Context.FlowName]);
             string jsonResult = Request.Post(baseAddress,
                     new RequestContent(Encoding.UTF8.GetBytes(json), "application/json"),
-                    context[Context.AuthToken] as string);
+                    bearerToken: context[Context.AuthToken] as string, sslTrust: (bool)context[Context.TrustSsl]);
             dynamic result = JObject.Parse(jsonResult);
             context[Context.RestartJobsName] = (string)result.result.IsSuccess;
             string restartJobsName = context[Context.RestartJobsName] as string;
@@ -121,7 +121,7 @@ namespace DataX.ServerScenarios
             var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.ManagementService/flow/get?flowName={context[Context.FlowName] as string}";
 
             string jsonResult = Request.Get(baseAddress,
-                    context[Context.AuthToken] as string);
+                    bearerToken: context[Context.AuthToken] as string, sslTrust: (bool)context[Context.TrustSsl]);
 
             dynamic result = JObject.Parse(jsonResult);
             dynamic abc = (JObject)result.result;

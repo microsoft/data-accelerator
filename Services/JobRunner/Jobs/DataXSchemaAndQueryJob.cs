@@ -58,6 +58,7 @@ namespace JobRunner.Jobs
             using (var context = new ScenarioContext())
             {
                 context[Context.ServiceUrl] = _config.ServiceUrl;
+                context[Context.TrustSsl] = _config.TrustSsl;
                 context[Context.ApplicationId] = KeyVault.GetSecretFromKeyvault(_config.ApplicationId);
                 context[Context.ApplicationIdentifierUri] = _config.ApplicationIdentifierUri;
                 context[Context.SecretKey] = KeyVault.GetSecretFromKeyvault(_config.SecretKey);
