@@ -61,12 +61,12 @@ namespace ScenarioTester
         /// </summary>
         /// <param name="url">URL to GET response from</param>
         /// <param name="bearerToken">Optional bearer token to pass to the request Auth header</param>
-        /// <param name="sslTrust">Optional option to tell whether to do or not ssl validation</param>
+        /// <param name="skipServerCertificateValidation">If true, skips server certificate validation</param>
         /// <returns>The response for the request as a string</returns>
-        public static string Get(string url, string bearerToken = null, bool sslTrust = false)
+        public static string Get(string url, string bearerToken = null, bool skipServerCertificateValidation = false)
         {
             var req = (HttpWebRequest)WebRequest.Create(url);
-            if (sslTrust)
+            if (skipServerCertificateValidation)
             {
                 req.ServerCertificateValidationCallback = (message, cert, chain, errors) => { return true; };
             }
@@ -112,11 +112,11 @@ namespace ScenarioTester
         /// <param name="content"><see cref="RequestContent"/> to send to the server</param>
         /// <param name="bearerToken">Optional bearer token to pass to the request Auth header</param>
         /// <param name="additionalHeaders">Any additional headers to add to the request</param>
-        /// <param name="sslTrust">Optional option to tell whether to do or not ssl validation</param>
+        /// <param name="skipServerCertificateValidation">If true, skips server certificate validation</param>
         /// <returns>The response for the request as a string</returns>
-        public static string Post(string url, RequestContent content, string bearerToken = null, Dictionary<string, string> additionalHeaders = null, bool sslTrust = false)
+        public static string Post(string url, RequestContent content, string bearerToken = null, Dictionary<string, string> additionalHeaders = null, bool skipServerCertificateValidation = false)
         {
-            return PostPut("POST", url, content, bearerToken, additionalHeaders, sslTrust);
+            return PostPut("POST", url, content, bearerToken, additionalHeaders, skipServerCertificateValidation);
         }
 
         /// <summary>
@@ -126,17 +126,17 @@ namespace ScenarioTester
         /// <param name="content"><see cref="RequestContent"/> to send to the server</param>
         /// <param name="bearerToken">Optional bearer token to pass to the request Auth header</param>
         /// <param name="additionalHeaders">Any additional headers to add to the request</param>
-        /// <param name="sslTrust">Optional option to tell whether to do or not ssl validation</param>
+        /// <param name="skipServerCertificateValidation">If true, skips server certificate validation</param>
         /// <returns>The response for the request as a string</returns>
-        public static string Put(string url, RequestContent content, string bearerToken = null, Dictionary<string, string> additionalHeaders = null, bool sslTrust = false)
+        public static string Put(string url, RequestContent content, string bearerToken = null, Dictionary<string, string> additionalHeaders = null, bool skipServerCertificateValidation = false)
         {
-            return PostPut("PUT", url, content, bearerToken, additionalHeaders, sslTrust);
+            return PostPut("PUT", url, content, bearerToken, additionalHeaders, skipServerCertificateValidation);
         }
 
-        private static string PostPut(string requestMethod, string url, RequestContent content, string bearerToken = null, Dictionary<string, string> additionalHeaders = null, bool sslTrust = false)
+        private static string PostPut(string requestMethod, string url, RequestContent content, string bearerToken = null, Dictionary<string, string> additionalHeaders = null, bool skipServerCertificateValidation = false)
         {
             var req = (HttpWebRequest)WebRequest.Create(url);
-            if (sslTrust)
+            if (skipServerCertificateValidation)
             {
                 req.ServerCertificateValidationCallback = (message, cert, chain, errors) => { return true; };
             }

@@ -37,6 +37,10 @@ namespace DataX.ServerScenarios
         public const string NormalizationSnippet = "normalizationSnippet";
         public const string SparkType = "sparkType";
         public const string StartJobName = "startJobName";
-        public const string TrustSsl = "trustSsl";
+        /// <summary>
+        /// Boolean
+        /// This context param specifies if the current job should skip validating server certificates on http calls if true
+        /// </summary>
+        public const string SkipServerCertificateValidation = "skipServerCertificateValidation";
     }
 }
