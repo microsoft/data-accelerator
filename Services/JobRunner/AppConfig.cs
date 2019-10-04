@@ -43,5 +43,6 @@ namespace JobRunner
         public string NormalizationSnippet { get; set; }
         public string DatabricksToken { get; set; }
         public string SparkType { get; set; }
+        public bool TrustSsl { get; set; } = true;
     }
 }

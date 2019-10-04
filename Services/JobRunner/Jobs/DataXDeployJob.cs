@@ -56,6 +56,7 @@ namespace JobRunner.Jobs
             {
                 context[Context.ServiceUrl] = _config.ServiceUrl;
                 context[Context.ApplicationId] = KeyVault.GetSecretFromKeyvault(_config.ApplicationId);
+                context[Context.TrustSsl] = _config.TrustSsl;
 
                 // The flow config needs to be saved at this location
                 string blobUri = $"{_config.BlobUri}";
