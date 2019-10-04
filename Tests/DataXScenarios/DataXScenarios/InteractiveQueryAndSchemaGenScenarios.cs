@@ -25,7 +25,7 @@ namespace DataX.ServerScenarios
             string jsonResult = Request.Post(baseAddress,
                     RequestContent.EncodeAsJson(
                         JObject.Parse(context[Context.InferSchemaInputJson] as string)),
-                    bearerToken: context[Context.AuthToken] as string, sslTrust: (bool)context[Context.TrustSsl]);
+                    bearerToken: context[Context.AuthToken] as string, skipServerCertificateValidation: (bool)context[Context.TrustSsl]);
             dynamic result = JObject.Parse(jsonResult);
             context[Context.InputSchema] = JsonConvert.SerializeObject((string)result.result.Schema);
             return new StepResult(!string.IsNullOrWhiteSpace(context[Context.InputSchema] as string),
@@ -43,7 +43,7 @@ namespace DataX.ServerScenarios
             string jsonResult = Request.Post(baseAddress,
                     RequestContent.EncodeAsJson(
                         JObject.Parse(context[Context.InitializeKernelJson] as string)),
-                    bearerToken: context[Context.AuthToken] as string, sslTrust: (bool)context[Context.TrustSsl]);
+                    bearerToken: context[Context.AuthToken] as string, skipServerCertificateValidation: (bool)context[Context.TrustSsl]);
 
             dynamic result = JObject.Parse(jsonResult);
             context[Context.KernelId] = (string)result.result.result;
@@ -64,7 +64,7 @@ namespace DataX.ServerScenarios
             string jsonResult = Request.Post(baseAddress,
                     RequestContent.EncodeAsJson(
                         JObject.Parse(context[Context.InitializeKernelJson] as string)),
-                    bearerToken: context[Context.AuthToken] as string, sslTrust: (bool)context[Context.TrustSsl]);
+                    bearerToken: context[Context.AuthToken] as string, skipServerCertificateValidation: (bool)context[Context.TrustSsl]);
 
             dynamic result = JObject.Parse(jsonResult);
             context[Context.KernelId] = (string)result.result.result;
@@ -81,7 +81,7 @@ namespace DataX.ServerScenarios
             string jsonResult = Request.Post(baseAddress,
                     RequestContent.EncodeAsJson(
                         JObject.Parse(context[Context.InferSchemaInputJson] as string)),
-                    bearerToken: context[Context.AuthToken] as string, sslTrust: (bool)context[Context.TrustSsl]);
+                    bearerToken: context[Context.AuthToken] as string, skipServerCertificateValidation: (bool)context[Context.TrustSsl]);
             dynamic result = JObject.Parse(jsonResult);
             return new StepResult(((string)result.result).Contains("success"),
                 nameof(RefreshSample),
@@ -97,7 +97,7 @@ namespace DataX.ServerScenarios
             string jsonResult = Request.Post(baseAddress,
                     RequestContent.EncodeAsJson(
                         JObject.Parse(context[Context.InitializeKernelJson] as string)),
-                    bearerToken: context[Context.AuthToken] as string, sslTrust: (bool)context[Context.TrustSsl]);
+                    bearerToken: context[Context.AuthToken] as string, skipServerCertificateValidation: (bool)context[Context.TrustSsl]);
 
             dynamic result = JObject.Parse(jsonResult);
             context[Context.KernelId] = (string)result.result.result;
@@ -113,7 +113,7 @@ namespace DataX.ServerScenarios
             context[Context.DeleteKernelJson] = new Helper().GetDeleteKernelJson(context);
             string jsonResult = Request.Post(baseAddress,
                     new RequestContent(Encoding.UTF8.GetBytes((string)context[Context.DeleteKernelJson]), "application/json"),
-                    bearerToken: context[Context.AuthToken] as string, sslTrust: (bool)context[Context.TrustSsl]);
+                    bearerToken: context[Context.AuthToken] as string, skipServerCertificateValidation: (bool)context[Context.TrustSsl]);
             dynamic result = JObject.Parse(jsonResult);
             return new StepResult(((string)result.result).Contains("Success"),
                 nameof(DeleteKernel),
