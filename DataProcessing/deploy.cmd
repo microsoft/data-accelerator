@@ -3,7 +3,7 @@
 @FOR /F "TOKENS=1,2 DELIMS=/ eol=/" %%A IN ('echo %CDATE%') DO @SET dd=%%B
 @FOR /F "TOKENS=2,3 DELIMS=/ " %%A IN ('echo %CDATE%') DO @SET yyyy=%%B
 SET date=%yyyy%%mm%%dd%
-SET dataxver=1.1.0
+SET dataxver=1.2.0
 SET module_name=%1
 SET dst_name=%2
 
