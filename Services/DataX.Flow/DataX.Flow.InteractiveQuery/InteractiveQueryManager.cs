@@ -12,6 +12,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using System.Text.RegularExpressions;
 
 namespace DataX.Flow.InteractiveQuery
 {
@@ -22,15 +24,18 @@ namespace DataX.Flow.InteractiveQuery
     {
         private string _flowContainerName => _engineEnvironment.EngineFlowConfig.FlowContainerName;
         private const string _GarbageCollectBlobName = "kernelList.json";
-        private EngineEnvironment _engineEnvironment = new EngineEnvironment();
+        private EngineEnvironment _engineEnvironment;
         private readonly ILogger _logger;
-        private const string _HDInsight = "HDInsight";
-        private const string _DataBricks = "DataBricks";
+        private const string _HDInsight = Config.ConfigDataModel.Constants.SparkTypeHDInsight;
+        private const string _DataBricks = Config.ConfigDataModel.Constants.SparkTypeDataBricks;
         private readonly string _sparkType = _HDInsight;
+        private readonly IConfiguration _configuration;
 
-        public InteractiveQueryManager(ILogger logger)
+        public InteractiveQueryManager(ILogger logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
+            _engineEnvironment = new EngineEnvironment(_configuration);
         }
 
         private string SetupSteps { get; set; } = string.Empty;
@@ -61,7 +66,9 @@ namespace DataX.Flow.InteractiveQuery
             }
 
             var hashValue = Helper.GetHashCode(diag.UserName);
-            string sampleDataPath = Path.Combine(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json");
+            string sampleDataPath = Helper.SetValueBasedOnSparkType(_engineEnvironment.EngineFlowConfig.SparkType,
+                Path.Combine(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json"),
+                Helper.ConvertToDbfsFilePath(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json"));
 
             response = await CreateAndInitializeKernelHelper(diag.InputSchema, diag.UserName, diag.Name, sampleDataPath, diag.NormalizationSnippet, diag.ReferenceDatas, diag.Functions);
             if (response.Error.HasValue && response.Error.Value)
@@ -115,8 +122,9 @@ namespace DataX.Flow.InteractiveQuery
         /// </summary>
         /// <param name="kernels">The list of kernels to be deleted</param>
         /// <param name="subscriptionId">subscriptionId as passed in from the frontend</param>
+        /// <param name="flowName">flow name</param>
         /// <returns>Returns success or error message as the case maybe</returns>
-        public async Task<ApiResult> DeleteKernelList(List<string> kernels)
+        public async Task<ApiResult> DeleteKernelList(List<string> kernels, string flowName)
         {
             var response = await _engineEnvironment.GetEnvironmentVariables().ConfigureAwait(false);
             var subscriptionId = Helper.GetSecretFromKeyvaultIfNeeded(_engineEnvironment.EngineFlowConfig.SubscriptionId);
@@ -128,7 +136,7 @@ namespace DataX.Flow.InteractiveQuery
 
             foreach (var k in kernels)
             {
-                await DeleteKernelHelper(subscriptionId, k).ConfigureAwait(false);
+                await DeleteKernelHelper(subscriptionId, k, flowName).ConfigureAwait(false);
             }
 
             return ApiResult.CreateSuccess("success");
@@ -139,8 +147,9 @@ namespace DataX.Flow.InteractiveQuery
         /// </summary>
         /// <param name="subscriptionId">subscriptionId as passed in from the frontend</param>
         /// <param name="kernelId">kernelId as passed in from the frontend</param>
+        /// <param name="flowName">flowName as passed in from the frontend</param>
         /// <returns>Returns success or failure as the case may be</returns>
-        public async Task<ApiResult> DeleteKernel(string kernelId)
+        public async Task<ApiResult> DeleteKernel(string kernelId, string flowName)
         {
             var response = await _engineEnvironment.GetEnvironmentVariables().ConfigureAwait(false);
             var subscriptionId = Helper.GetSecretFromKeyvaultIfNeeded(_engineEnvironment.EngineFlowConfig.SubscriptionId);
@@ -150,7 +159,7 @@ namespace DataX.Flow.InteractiveQuery
                 return ApiResult.CreateError(response.Message);
             }
 
-            response = await DeleteKernelHelper(subscriptionId, kernelId).ConfigureAwait(false);
+            response = await DeleteKernelHelper(subscriptionId, kernelId, flowName).ConfigureAwait(false);
             if (response.Error.HasValue && response.Error.Value)
             {
                 _logger.LogError(response.Message);
@@ -207,11 +216,14 @@ namespace DataX.Flow.InteractiveQuery
                     diag.Name = await _engineEnvironment.GetUniqueName(Helper.GetSecretFromKeyvaultIfNeeded(_engineEnvironment.EngineFlowConfig.SubscriptionId), diag.DisplayName);
                 }
 
-                KernelService kernelService = CreateKernelService();
+                KernelService kernelService = CreateKernelService(diag.Name);
 
                 //Create the xml with the scala steps to execute to initialize the kernel
                 var hashValue = Helper.GetHashCode(diag.UserName);
-                var sampleDataPath = Path.Combine(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json");
+                var sampleDataPath = Helper.SetValueBasedOnSparkType(_engineEnvironment.EngineFlowConfig.SparkType,
+                    Path.Combine(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json"),
+                    Helper.ConvertToDbfsFilePath(_engineEnvironment.OpsSparkSamplePath, $"{diag.Name}-{hashValue}.json"));
+                
                 DiagnosticInputhelper(diag.InputSchema, sampleDataPath, diag.NormalizationSnippet, diag.Name);
 
                 response = await kernelService.RecycleKernelAsync(diag.KernelId, diag.UserName, diag.Name, _engineEnvironment.OpsBlobConnectionString, Path.Combine(_engineEnvironment.OpsDiagnosticPath, _GarbageCollectBlobName), SetupSteps, isReSample, diag.ReferenceDatas, diag.Functions);
@@ -225,11 +237,12 @@ namespace DataX.Flow.InteractiveQuery
             }
         }
 
-        private KernelService CreateKernelService()
+        private KernelService CreateKernelService(string flowName)
         {
             if (_engineEnvironment.EngineFlowConfig.SparkType == _DataBricks)
             {
-                return new Databricks.DatabricksKernelService(_engineEnvironment.EngineFlowConfig, _engineEnvironment.SparkConnInfo, _logger);
+                var databricksTokenSecret = $"secretscope://{_engineEnvironment.EngineFlowConfig.SparkKeyVaultName}/{flowName}-info-databricksToken";
+                return new Databricks.DatabricksKernelService(_engineEnvironment.EngineFlowConfig, _engineEnvironment.SparkConnInfo, _logger, Helper.GetSecretFromKeyvaultIfNeeded(databricksTokenSecret));
             }
             else
             {
@@ -240,9 +253,9 @@ namespace DataX.Flow.InteractiveQuery
         /// <summary>
         /// This is the API method that gets called from the front end on a regular cadence and will delete all the kernels that are more than 3 hours old
         /// </summary>
-        /// <param name="subscriptionId">SubscriptionId</param>
+        /// <param name="flowName">flowName</param>
         /// <returns>Returns the result whether the list of kernels were deleted or not. We don't fail if one of the kernels fails to delete because it just does not exist</returns>
-        public async Task<ApiResult> DeleteKernels()
+        public async Task<ApiResult> DeleteKernels(string flowName)
         {
             var response = await _engineEnvironment.GetEnvironmentVariables().ConfigureAwait(false);
             var subscriptionId = Helper.GetSecretFromKeyvaultIfNeeded(_engineEnvironment.EngineFlowConfig.SubscriptionId);
@@ -251,7 +264,7 @@ namespace DataX.Flow.InteractiveQuery
                 _logger.LogError(response.Message);
                 return ApiResult.CreateError(response.Message);
             }
-            KernelService kernelService = CreateKernelService();
+            KernelService kernelService = CreateKernelService(flowName);
             response = await kernelService.GarbageCollectListOfKernels(_engineEnvironment.OpsBlobConnectionString, Path.Combine(_engineEnvironment.OpsDiagnosticPath, _GarbageCollectBlobName)).ConfigureAwait(false);
 
             if (response.Error.HasValue && response.Error.Value)
@@ -266,17 +279,17 @@ namespace DataX.Flow.InteractiveQuery
         /// <summary>
         /// This is the API method that gets called from the front end on a regular cadence and will delete all the kernels that were created
         /// </summary>
-        /// <param name="jObject">jObject</param>
+        /// <param name="flowName">flowName</param>
         /// <returns>Returns the result whether the list of kernels were deleted or not. We don't fail if one of the kernels fails to delete because it just does not exist</returns>
-        public async Task<ApiResult> DeleteAllKernels()
-        {            
+        public async Task<ApiResult> DeleteAllKernels(string flowName)
+        {
             var response = await _engineEnvironment.GetEnvironmentVariables().ConfigureAwait(false);
             if (response.Error.HasValue && response.Error.Value)
             {
                 _logger.LogError(response.Message);
                 return ApiResult.CreateError(response.Message);
             }
-            KernelService kernelService = CreateKernelService();
+            KernelService kernelService = CreateKernelService(flowName);
             _logger.LogInformation("Deleting all Kernels...");
             response = await kernelService.GarbageCollectListOfKernels(_engineEnvironment.OpsBlobConnectionString, Path.Combine(_engineEnvironment.OpsDiagnosticPath, _GarbageCollectBlobName), true).ConfigureAwait(false);
 
@@ -295,7 +308,7 @@ namespace DataX.Flow.InteractiveQuery
         /// </summary>
         /// <param name="rawSchema">rawSchema as passed in from the frontend</param>
         /// <param name="userId">userId as passed in from the frontend</param>
-        /// <param name="flowId">rawSchema as passed in from the frontend</param>
+        /// <param name="flowId">flowId as passed in from the frontend</param>
         /// <param name="sampleDataPath">sampleDataPath where the sample data is stored</param>
         /// <param name="normalizationSnippet">normalizationSnippet as passed in from the frontend</param>
         /// <param name="referenceDatas">referenceDatas as passed in from the frontend</param>
@@ -308,7 +321,7 @@ namespace DataX.Flow.InteractiveQuery
                 //Create the xml with the scala steps to execute to initialize the kernel                
                 DiagnosticInputhelper(rawSchema, sampleDataPath, normalizationSnippet, flowId);
 
-                KernelService kernelService = CreateKernelService();
+                KernelService kernelService = CreateKernelService(flowId);
                 var response = await kernelService.GarbageCollectListOfKernels(_engineEnvironment.OpsBlobConnectionString, Path.Combine(_engineEnvironment.OpsDiagnosticPath, _GarbageCollectBlobName));
 
                 response = await kernelService.CreateKernelAsync();
@@ -323,6 +336,11 @@ namespace DataX.Flow.InteractiveQuery
                 {
                     await kernelService.DeleteKernelAsync(kernelId);
                     return ApiResult.CreateError(response.Message);
+                }
+
+                if(_engineEnvironment.EngineFlowConfig.SparkType == Config.ConfigDataModel.Constants.SparkTypeDataBricks)
+                {
+                    kernelService.MountStorage(_engineEnvironment.EngineFlowConfig.OpsStorageAccountName, _engineEnvironment.EngineFlowConfig.SparkKeyVaultName, sampleDataPath, kernelId);
                 }
 
                 response = await kernelService.CreateandInitializeKernelAsync(kernelId, SetupSteps, false, referenceDatas, functions);
@@ -373,7 +391,7 @@ namespace DataX.Flow.InteractiveQuery
 
             try
             {
-                KernelService kernelService = CreateKernelService();
+                KernelService kernelService = CreateKernelService(query.Name);
                 var result = await kernelService.ExecuteQueryAsync(query.Query, query.KernelId);
                 return result;
             }
@@ -401,7 +419,7 @@ namespace DataX.Flow.InteractiveQuery
             var query = jObject.ToObject<InteractiveQueryObject>();
             try
             {
-                KernelService kernelService = CreateKernelService();
+                KernelService kernelService = CreateKernelService(query.Name);
                 var result = await kernelService.GetSampleInputFromQueryAsync(query.Query, query.KernelId);
                 return result;
             }
@@ -417,8 +435,9 @@ namespace DataX.Flow.InteractiveQuery
         /// </summary>
         /// <param name="subscriptionId">subscriptionId that is passed in from the frontend</param>
         /// <param name="kernelId">kernelId that needs to be deleted</param>
+        /// <param name="flowName">flowName</param>
         /// <returns>Returns success or failure after the delete kernel api is called</returns>
-        private async Task<ApiResult> DeleteKernelHelper(string subscriptionId, string kernelId)
+        private async Task<ApiResult> DeleteKernelHelper(string subscriptionId, string kernelId, string flowName)
 
         {
             // validate KernelId can't be null
@@ -430,7 +449,7 @@ namespace DataX.Flow.InteractiveQuery
 
             try
             {
-                KernelService kernelService = CreateKernelService();
+                KernelService kernelService = CreateKernelService(flowName);
                 var result = await kernelService.DeleteKernelAsync(kernelId);
                 if (!(result.Error.HasValue && result.Error.Value))
                 {
@@ -475,7 +494,7 @@ namespace DataX.Flow.InteractiveQuery
             {
                 ["RawSchema"] = rawSchema,
                 ["SampleDataPath"] = sampleDataPath,
-                ["NormalizationSnippet"] = finalNormalizationString,                
+                ["NormalizationSnippet"] = finalNormalizationString,
                 ["BinName"] = TranslateBinNames(_engineEnvironment.EngineFlowConfig.BinaryName, _engineEnvironment.EngineFlowConfig.OpsStorageAccountName, _engineEnvironment.EngineFlowConfig.InteractiveQueryDefaultContainer),
                 ["KernelDisplayName"] = _engineEnvironment.GenerateKernelDisplayName(flowId)
             };

@@ -21,11 +21,13 @@
     "sparkKeyVaultName" : "$sparkKVName",
     "jobURLBase": "$sparkName",
     "binaryName" : [
-      "datax/bin/datax-utility_2.3_2.11-1.1.0.jar",
-      "datax/bin/datax-host_2.3_2.11-1.1.0.jar",
-      "datax/bin/datax-core_2.3_2.11-1.1.0.jar"
+      "datax/bin/datax-utility_2.4_2.11-1.2.0.jar",
+      "datax/bin/datax-host_2.4_2.11-1.2.0.jar",
+      "datax/bin/datax-core_2.4_2.11-1.2.0.jar"
     ],
     "configgenClientId" : "$configgenClientId",
+    "configgenClientSecret" : "keyvault://$servicesKVName/$serviceSecretPrefix-clientsecret",
+    "configgenClientResourceId" : "keyvault://$servicesKVName/$clientSecretPrefix-serviceResourceId",
     "configgenTenantId" : "$configgenTenantId",
     "runtimeStorageConnectionString" : "keyvault://$servicesKVName/$serviceSecretPrefix-$sparkBlobAccountName-blobconnectionstring",
     "metricEventHubConnectionStringKey" : "metric-eventhubconnectionstring",
@@ -39,6 +41,8 @@
     "interactiveQueryDefaultContainer" : "defaultdx",
     "sparkClusterName" : "$sparkName",
     "subscriptionId" : "keyvault://$servicesKVName/$clientSecretPrefix-subscriptionId",
-    "sparkConnectionString" : "keyvault://$servicesKVName/$serviceSecretPrefix-livyconnectionstring-$sparkName"
+    "sparkConnectionString" : "keyvault://$servicesKVName/$serviceSecretPrefix-livyconnectionstring-$sparkName",
+    "sparkRegion" : "$resourceLocation",
+    "sparkType" : "$sparkType"
   }
 ]

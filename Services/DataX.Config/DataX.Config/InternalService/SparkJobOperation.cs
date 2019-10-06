@@ -2,14 +2,12 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using DataX.Config.ConfigDataModel;
-using DataX.Config.Utility;
 using DataX.Contract;
 using DataX.Contract.Exception;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,7 +19,7 @@ namespace DataX.Config
     public class SparkJobOperation
     {
         [ImportingConstructor]
-        public SparkJobOperation(SparkJobData jobData, SparkClusterManager clusterManager, ILogger logger)
+        public SparkJobOperation(SparkJobData jobData, SparkClusterManager clusterManager, ILogger<SparkJobOperation> logger)
         {
             this.JobData= jobData;
             this.ClusterManager = clusterManager;
@@ -45,8 +43,8 @@ namespace DataX.Config
         {
             Ensure.NotNull(jobName, "jobName");
             Logger.LogInformation($"starting job '{jobName}'");
-            var job = await EnsureJobState(jobName, JobState.Idle);
-            var sparkJobClient = await ClusterManager.GetSparkJobClient(job.Cluster);
+            var job = await EnsureJobState(jobName);
+            var sparkJobClient = await ClusterManager.GetSparkJobClient(job.Cluster, job.DatabricksToken);
             var result = await sparkJobClient.SubmitJob(job.Options);
 
             // Update job state
@@ -83,10 +81,11 @@ namespace DataX.Config
             {
                 case JobState.Starting:
                 case JobState.Running:
-                    var sparkJobClient = await ClusterManager.GetSparkJobClient(job.Cluster);
+                    var sparkJobClient = await ClusterManager.GetSparkJobClient(job.Cluster, job.DatabricksToken);
                     var result = await sparkJobClient.StopJob(job.SyncResult.ClientCache);
                     job.SyncResult = result;
                     return await this.JobData.UpdateSyncResultByName(jobName, result);
+                case JobState.Success:
                 case JobState.Idle:
                     return new SuccessResult($"job '{jobName}' has already been stopped");
                 case JobState.Error:
@@ -166,7 +165,7 @@ namespace DataX.Config
             
             if (state.ClientCache != null && state.ClientCache.Type != JTokenType.Null)
             {
-                var sparkJobClient = await ClusterManager.GetSparkJobClient(job.Cluster);
+                var sparkJobClient = await ClusterManager.GetSparkJobClient(job.Cluster, job.DatabricksToken);
                 var newResult = await sparkJobClient.GetJobInfo(state.ClientCache);
                 state = newResult;
                 Logger.LogInformation($"got state for job '{jobName}'");
@@ -224,14 +223,13 @@ namespace DataX.Config
         /// Make sure a job is in the specified state within 
         /// </summary>
         /// <param name="jobName">job name</param>
-        /// <param name="state">desired state</param>
         /// <param name="retries">retries to check for state</param>
         /// <param name="intervalInMs">interval in milliseconds to start perform next check</param>
         /// <returns>the job config</returns>
-        private async Task<SparkJobConfig> EnsureJobState(string jobName, JobState state, int retries = _DefaultRetries, int intervalInMs = _DefaultIntervalInMs)
+        private async Task<SparkJobConfig> EnsureJobState(string jobName, int retries = _DefaultRetries, int intervalInMs = _DefaultIntervalInMs)
         {
             Ensure.NotNull(jobName, "jobName");
-            Logger.LogInformation($"ensuring job '{jobName}' state to be '{state}'");
+            Logger.LogInformation($"ensuring job '{jobName}' state to be idle or success");
             int i = 0;
             while (i < retries)
             {
@@ -239,7 +237,7 @@ namespace DataX.Config
                 {
                     //Get Job data
                     var job = await SyncJobState(jobName);
-                    if (job.SyncResult.JobState == state)
+                    if (VerifyJobStopped(job.SyncResult.JobState))
                     {
                         return job;
                     }
@@ -254,7 +252,17 @@ namespace DataX.Config
                 i++;
             }
 
-            throw new GeneralException($"Job '{jobName}' failed to get to state '{state}' after '{retries}' sync attempts");
+            throw new GeneralException($"Job '{jobName}' failed to get to state idle or success after '{retries}' sync attempts");
+        }
+
+        /// <summary>
+        /// Verify the job is not in running state
+        /// </summary>
+        /// <param name="jobState">job state</param>
+        /// <returns>true if job is not running, false otherwise</returns>
+        public static bool VerifyJobStopped(JobState jobState)
+        {
+            return (jobState == JobState.Idle || jobState == JobState.Success || jobState == JobState.Error);
         }
 
         public async Task<T> RetryInCaseOfException<T>(Func<Task<T>> func, DateTime timeout, TimeSpan interval)

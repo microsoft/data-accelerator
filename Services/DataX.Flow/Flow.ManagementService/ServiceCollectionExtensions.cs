@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Composition.Hosting;
 using System.Reflection;
+using DataX.Contract;
+using Microsoft.Extensions.Logging;
 
 namespace Flow.Management
 {
@@ -23,9 +25,9 @@ namespace Flow.Management
         /// <param name="exportTypes">Types being exported</param>
         /// <param name="instanceExports">Instances that are created outside that need to be added to the container</param>
         /// <returns></returns>
-        public static IServiceCollection AddMefExportsFromAssemblies(this IServiceCollection services, ServiceLifetime lifetime, IEnumerable<Assembly> assemblies, Type[] exportTypes, object[] instanceExports)
+        public static IServiceCollection AddMefExportsFromAssemblies(this IServiceCollection services, ServiceLifetime lifetime, IEnumerable<Assembly> assemblies, Type[] exportTypes, object[] instanceExports, ILoggerFactory loggerFactory = null, bool local = false)
         {          
-            var configuration = new ContainerConfiguration().WithAssemblies(assemblies).WithProvider(new InstanceExportDescriptorProvider(instanceExports));
+            var configuration = new ContainerConfiguration().WithAssemblies(assemblies).WithProvider(new LoggerAndInstanceExportDescriptorProvider<object[]>(instanceExports, loggerFactory));
             using (var container = configuration.CreateContainer())
             {
                 foreach (var exportType in exportTypes)
@@ -35,6 +37,14 @@ namespace Flow.Management
                     {
                         services.Add(new ServiceDescriptor(exportType, sp => svc, lifetime));
                     }
+                }
+
+                if (local)
+                {
+                    var localTemplateInitializer = container.GetExport<DataX.Config.Local.TemplateInitializer>();
+                    var result = localTemplateInitializer?.Initialize().Result;
+
+                    Ensure.IsSuccessResult(result);
                 }
 
             }

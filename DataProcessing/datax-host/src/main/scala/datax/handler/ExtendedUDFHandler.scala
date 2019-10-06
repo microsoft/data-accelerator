@@ -51,9 +51,11 @@ object ExtendedUDFHandler {
       val returnType = ScalaReflection.schemaFor(typeArgs.last).dataType
       val udf = clazz.newInstance()
       val argumentCount = typeArgs.length - 1
-
+	  val inputsNullSafe = typeArgs.take(argumentCount).map(t=>{
+        false
+      })
       val wrap = generateFunctionRef(udf, argumentCount, spark, dict)
-      registerFunction(spark, name, wrap.func, returnType, argumentCount)
+      registerFunction(spark, name, wrap.func, returnType, argumentCount, inputsNullSafe)
       wrap.onInterval
     }
   }
@@ -90,9 +92,9 @@ object ExtendedUDFHandler {
     UdfWrap(obj.func.apply(_:Any, _:Any, _:Any), obj.onInterval)
   }
 
-  def registerFunction(spark:SparkSession, name: String, func: AnyRef, returnType: DataType, argumentCount: Int) = {
+  def registerFunction(spark:SparkSession, name: String, func: AnyRef, returnType: DataType, argumentCount: Int, inputsNullSafe: Seq[Boolean]) = {
     def builder(e: Seq[Expression]) = if (e.length == argumentCount) {
-      ScalaUDF(func, returnType, e, udfName = Some(name))
+      ScalaUDF(func, returnType, e, inputsNullSafe=inputsNullSafe, udfName = Some(name))
     } else {
       throw new EngineException(s"Invalid number of arguments for function $name. Expected: $argumentCount; Found: ${e.length}")
     }

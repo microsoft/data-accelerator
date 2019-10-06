@@ -17,6 +17,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using DataX.Config.Utility;
 
 namespace DataX.Config.Test
 {
@@ -31,7 +32,8 @@ namespace DataX.Config.Test
             var conf = new ContainerConfiguration()
                 .WithAssembly(typeof(ConfigGenConfiguration).Assembly)
                 .WithAssembly(typeof(MockBase).Assembly)
-                .WithAssembly(Assembly.GetExecutingAssembly());
+                .WithAssembly(Assembly.GetExecutingAssembly())
+                .WithProvider(new LoggerAndInstanceExportDescriptorProvider<object>(null, new LoggerFactory()));
 
             CompositionHost = conf.CreateContainer();
         }
@@ -78,6 +80,8 @@ namespace DataX.Config.Test
             {
                 Assert.AreEqual(expected: match.Item2, actual: match.Item3, message: $"path:{match.Item1}");
             }
+
+            Cleanup();
         }
     }
 }

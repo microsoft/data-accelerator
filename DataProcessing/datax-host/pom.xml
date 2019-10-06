@@ -50,11 +50,11 @@ SOFTWARE
     </scm>
 
     <groupId>com.microsoft.datax</groupId>
-    <artifactId>datax-host_2.3_2.11</artifactId>
-    <version>1.1.0</version>
+    <artifactId>datax-host_2.4_2.11</artifactId>
+    <version>1.2.0</version>
 
     <properties>
-        <spark.version>2.3.0</spark.version>
+        <spark.version>2.4.0</spark.version>
         <scala.version.major>2.11</scala.version.major>
         <scala.version.minor>8</scala.version.minor>
         <scala.version>${scala.version.major}.${scala.version.minor}</scala.version>
@@ -117,13 +117,13 @@ SOFTWARE
         </dependency>
         <dependency>
             <groupId>com.microsoft.datax</groupId>
-            <artifactId>datax-core_2.3_2.11</artifactId>
-            <version>1.1.0</version>
+            <artifactId>datax-core_2.4_2.11</artifactId>
+            <version>1.2.0</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.datax</groupId>
-            <artifactId>datax-utility_2.3_2.11</artifactId>
-            <version>1.1.0</version>
+            <artifactId>datax-utility_2.4_2.11</artifactId>
+            <version>1.2.0</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
@@ -138,7 +138,7 @@ SOFTWARE
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-storage</artifactId>
-            <version>5.3.0</version>
+            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
@@ -146,13 +146,36 @@ SOFTWARE
             <version>1.16.1</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-azure</artifactId>
+            <version>2.7.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+            <version>6.1.25</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20180813</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
             <version>2.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-sqldb-spark</artifactId>
+            <version>1.0.2</version>
+		    </dependency>
+		    <dependency>
+            <groupId>com.databricks</groupId>
+            <artifactId>dbutils-api_2.11</artifactId>
+            <version>0.0.3</version>
+        </dependency>
     </dependencies>
-
-   
   <profiles>
     <profile>
       <id>build</id>
@@ -224,24 +247,6 @@ SOFTWARE
                 <id>test</id>
                 <goals>
                   <goal>test</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <version>2.4.1</version>
-            <configuration>
-              <descriptors>
-                <descriptor>with-dependencies.xml</descriptor>
-              </descriptors>
-            </configuration>
-            <executions>
-              <execution>
-                <id>make-assembly</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>single</goal>
                 </goals>
               </execution>
             </executions>

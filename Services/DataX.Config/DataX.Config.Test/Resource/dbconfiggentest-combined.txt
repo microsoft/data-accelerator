@@ -1,0 +1,335 @@
+﻿--DataXQuery--
+ NPI_DeviceWindow =  SELECT
+        deviceDetails.deviceId,
+        deviceDetails.deviceType,
+        eventTimeStamp,
+        deviceDetails.homeId,
+        deviceDetails.status                     
+    FROM
+        DataXProcessedInput_5minutes                      
+    
+--DataXQuery--
+ NPI_DeviceWindow2 =  SELECT
+        deviceDetails.deviceId,
+        deviceDetails.deviceType,
+        eventTimeStamp,
+        deviceDetails.homeId,
+        deviceDetails.status                     
+    FROM
+        DataXProcessedInput_2minutes                      
+    
+--DataXQuery--
+ DeviceInfoTimeWindow = SELECT
+        deviceId,
+        deviceType,
+        homeId,
+        MAX(eventTimeStamp) AS MaxEventTime,
+        MIN(status) AS MinReading,
+        MAX(status) AS MaxReading                 
+    FROM
+        NPI_DeviceWindow                 
+    GROUP BY
+        deviceId,
+        deviceType,
+        homeId
+    
+--DataXQuery--
+ HeaterStatus =  SELECT
+        eventTimeStamp AS EventTime,
+        'HeaterStatus' AS MetricName,
+        deviceDetails.status AS Metric,
+        'iotdevicesample' AS Product,
+        '' AS Pivot1                 
+    FROM
+        DataXProcessedInput                 
+    WHERE
+        deviceDetails.homeId = 150                     
+        AND deviceDetails.deviceType = 'Heating'
+    
+--DataXQuery--
+ WindowLockStatus =  SELECT
+        eventTimeStamp AS EventTime,
+        'WindowLockStatus' AS MetricName,
+        deviceDetails.status AS Metric,
+        'iotdevicesample' AS Product,
+        '' AS Pivot1                     
+    FROM
+        DataXProcessedInput                     
+    WHERE
+        deviceDetails.homeId = 150                         
+        AND deviceDetails.deviceType = 'WindowLock'
+    
+--DataXQuery--
+ WindowLockSliding = SELECT
+        MaxEventTime AS EventTime,
+        'WindowLockSliding' AS MetricName,
+        MaxReading AS Metric,
+        'iotdevicesample' AS Product,
+        '' AS Pivot1                     
+    FROM
+        DeviceInfoTimeWindow                     
+    INNER JOIN
+        WindowLockStatus 
+            ON WindowLockStatus.EventTime = DeviceInfoTimeWindow.MaxEventTime                     
+    WHERE
+        homeId = 150       
+        AND deviceType = 'WindowLock'
+    
+--DataXQuery--
+ WindowOpenWhileHeaterOnAlert =  SELECT
+        MaxEventTime AS EventTime,
+        'WindowOpenWhileHeaterOnAlert' AS MetricName,
+        0 AS Metric,
+        'iotdevicesample' AS Product,
+        'Window open for 5+ minutes while heater is on.' AS Pivot1                                 
+    FROM
+        DeviceInfoTimeWindow                                 
+    INNER JOIN
+        WindowLockStatus 
+            ON WindowLockStatus.EventTime = DeviceInfoTimeWindow.MaxEventTime                                 
+    WHERE
+        homeId = 150                                     
+        AND MaxReading = 0          
+        AND deviceType = 'WindowLock'
+    
+--DataXQuery--
+ DoorLockStatus = SELECT
+        eventTimeStamp AS EventTime,
+        'DoorLockStatus' AS MetricName,
+        deviceDetails.status AS Metric,
+        'iotdevicesample' AS Product,
+        '' AS Pivot1                 
+    FROM
+        DataXProcessedInput                 
+    WHERE
+        deviceDetails.homeId = 150                     
+        AND deviceDetails.deviceType = 'DoorLock'
+    
+--DataXQuery--
+ DoorLockOpenBetween9pmAnd7amUtcAlert = SELECT
+        eventTimeStamp AS EventTime,
+        'DoorLockOpenBetween9pmAnd7amUtcAlert' AS MetricName,
+        0 AS Metric,
+        'iotdevicesample' AS Product,
+        'Door lock open between 9PM and 7AM UTC' AS Pivot1                 
+    FROM
+        DataXProcessedInput                 
+    WHERE
+        deviceDetails.homeId = 150                     
+        AND deviceDetails.deviceType = 'DoorLock'                     
+        AND deviceDetails.status = 0                     
+        AND (
+            hour(eventTimeStamp) >= 21 
+            OR hour(eventTimeStamp) < 7
+        )
+    
+--DataXQuery--
+ GarageDoorStatus = SELECT
+        eventTimeStamp AS EventTime,
+        'GarageDoorStatus' AS MetricName,
+        deviceDetails.status AS Metric,
+        'iotdevicesample' AS Product,
+        '' AS Pivot1                     
+    FROM
+        DataXProcessedInput                     
+    WHERE
+        deviceDetails.homeId = 150                         
+        AND deviceDetails.deviceType = 'GarageDoorLock'
+    
+--DataXQuery--
+ GarageDoorAccumalator = SELECT
+        deviceId,
+        deviceType,
+        homeId,
+        MaxEventTime,
+        MinReading,
+        MaxReading                         
+    FROM
+        DeviceInfoTimeWindow                         
+    WHERE
+        homeId = 150                             
+        AND deviceType = 'GarageDoorLock'                         
+    UNION
+    ALL                         SELECT
+        deviceId,
+        deviceType,
+        homeId,
+        MaxEventTime,
+        MinReading,
+        MaxReading                         
+    FROM
+        iotdevicesample_GarageDoor_accumulated                         
+    WHERE
+        hour(MaxEventTime) = hour(current_timestamp())
+    
+--DataXQuery--
+  iotdevicesample_GarageDoor_accumulated = SELECT
+        deviceId,
+        deviceType,
+        homeId,
+        MaxEventTime,
+        MinReading,
+        MaxReading 
+    FROM
+        GarageDoorAccumalator  
+    
+--DataXQuery--
+ GarageDoorSliding = SELECT
+        MaxEventTime AS EventTime,
+        'GarageDoorSliding' AS MetricName,
+        MaxReading AS Metric,
+        'iotdevicesample' AS Product,
+        '' AS Pivot1                     
+    FROM
+        iotdevicesample_GarageDoor_accumulated                     
+    INNER JOIN
+        GarageDoorStatus 
+            ON GarageDoorStatus.EventTime = iotdevicesample_GarageDoor_accumulated.MaxEventTime                     
+    WHERE
+        homeId = 150                         
+        AND deviceType = 'GarageDoorLock'
+    
+--DataXQuery--
+ GarageDoorSlidingOpenInAnHour = SELECT
+        COUNT(MaxReading) AS NumOfTimesGarageOpenFor5Mins,
+        MAX(MaxEventTime) AS MaxEventTime                                 
+    FROM
+        iotdevicesample_GarageDoor_accumulated                                 
+    WHERE
+        homeId = 150                                     
+        AND deviceType = 'GarageDoorLock'                                     
+        AND MaxReading = 0
+    
+--DataXQuery--
+ GarageOpenFor5MinsInAnHourAlert = SELECT
+        MaxEventTime AS EventTime,
+        'GarageOpenFor5MinsInAnHourAlert' AS MetricName,
+        0 AS Metric,
+        'iotdevicesample' AS Product,
+        CONCAT('No. of times garage door open for past 5 mins in current hour: ',
+        NumOfTimesGarageOpenFor5Mins) AS Pivot1                                 
+    FROM
+        GarageDoorSlidingOpenInAnHour
+    
+--DataXQuery--
+  SimpleRulesTable = SELECT
+        *,
+        filterNull(
+            Array(
+                IF(
+                    deviceDetails.deviceType = 'DoorLock' 
+                    AND deviceDetails.status = 1,
+                    MAP(
+                        'ruleId',
+                        '187a7066-d048-44a5-b08d-59158ec3d230',
+                        'ruleDescription',
+                        'DoorLock Close',
+                        'severity',
+                        'Critical',
+                        'Tag',
+                        'CLOSE'
+                    ),
+                    NULL
+                ),
+                IF(
+                    deviceDetails.deviceType = 'DoorLock' 
+                    AND deviceDetails.status = 0,
+                    MAP(
+                        'ruleId',
+                        '84f7b1c6-e501-448b-99f4-1a5cffa4b19d',
+                        'ruleDescription',
+                        'DoorLock Open',
+                        'severity',
+                        'Critical',
+                        'Tag',
+                        'OPEN'
+                    ),
+                    NULL
+                ),
+                IF(
+                    deviceDetails.deviceId = 9,
+                    MAP(
+                        'ruleId',
+                        '12574ff5-f41d-4169-8532-e9b450ac476f',
+                        'ruleDescription',
+                        'Test',
+                        'severity',
+                        'Critical',
+                        'Tag',
+                        'Tag1'
+                    ),
+                    NULL
+                )  
+            )
+        ) AS Rules 
+    FROM
+        DataXProcessedInput
+    
+    
+--DataXQuery--
+   ar1_2_1 = SELECT
+        AVG(deviceDetails.deviceId) AS deviceDetailsdeviceId_AVG,
+        deviceDetails.deviceType,
+        COUNT(*) AS Count   
+    FROM
+        DataXProcessedInput   
+    GROUP BY
+        deviceDetails.deviceType
+    
+--DataXQuery--
+   ar2_2_1 = SELECT
+        *,
+        IF(
+            deviceDetailsdeviceId_AVG > 2,
+            MAP(
+                'ruleId',
+                '5c85ede7-7a9a-4f64-992d-4c42dfd386c9',
+                'ruleDescription',
+                'Aggr',
+                'severity',
+                'Medium',
+                'Tag',
+                'Tag2'
+            ),
+            NULL
+        ) AS RuleObject   
+    FROM
+        ar1_2_1
+    
+--DataXQuery--
+   ar3_2_1 = SELECT
+        MAP(
+            'deviceDetails.deviceType',
+            deviceType     
+        ) AS pivots,
+        MAP(
+            'deviceDetails.deviceId',
+            MAP(
+                'AVG',
+                deviceDetailsdeviceId_AVG
+            )   
+        ) AS aggs,
+        Count AS count,
+        MAP(
+            'ruleId',
+            '5c85ede7-7a9a-4f64-992d-4c42dfd386c9',
+            'Tag',
+            'Tag2',
+            'description',
+            'Aggr',
+            'severity',
+            'Medium'     
+        ) AS result 
+    FROM
+        ar2_2_1
+    
+--DataXQuery--
+  ar4_2 = SELECT
+        * 
+    FROM
+        ar3_2_1    
+--DataXQuery--
+  AggregateRulesTable = SELECT
+            * 
+        FROM
+            ar4_2

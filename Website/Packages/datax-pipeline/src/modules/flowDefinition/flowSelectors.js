@@ -5,6 +5,10 @@
 import { createSelector } from 'reselect';
 import * as Helpers from './flowHelpers';
 import * as Models from './flowModels';
+import { CommonHelpers } from 'datax-common';
+import { QuerySelectors } from 'datax-query';
+
+const secretScopePrefix = 'secretscope://'
 
 // Settings - Flow
 export const getFlow = state => state.flow;
@@ -26,6 +30,16 @@ export const getFlowDisplayName = createSelector(
     flow => flow.displayName
 );
 
+export const getFlowDatabricksToken = createSelector(
+    getFlow,
+    flow => flow.databricksToken
+);
+
+export const getFlowIsDatabricksSparkType = createSelector(
+    getFlow,
+    flow => flow.isDatabricksSparkType
+);
+
 // Settings - Input
 export const getFlowInput = createSelector(
     getFlow,
@@ -36,6 +50,31 @@ export const getFlowInputProperties = createSelector(
     getFlowInput,
     input => input.properties
 );
+
+export const getFlowBatchInput = createSelector(
+    getFlow,
+    flow => flow.batchInputs
+);
+
+export const getSelectedBatchInputIndex = createSelector(
+    getFlow,
+    flow => flow.selectedFlowBatchInputIndex
+);
+
+export const getSelectedBatchInput = createSelector(
+    getFlowBatchInput,
+    getSelectedBatchInputIndex,
+    selectedFlowBatchInput
+);
+
+export const getSelectedBatchInputProperties = createSelector(
+    getSelectedBatchInput,
+    batch => batch.properties
+);
+
+function selectedFlowBatchInput(batchInputs, selectedIndex) {
+    return selectedIndex !== undefined && selectedIndex < batchInputs.length ? batchInputs[selectedIndex] : undefined;
+}
 
 // Settings - Reference Data
 export const getFlowReferenceData = createSelector(
@@ -89,12 +128,6 @@ function selectedFunction(functions, selectedIndex) {
     return selectedIndex !== undefined && selectedIndex < functions.length ? functions[selectedIndex] : undefined;
 }
 
-// Settings - Query
-export const getFlowQuery = createSelector(
-    getFlow,
-    flow => flow.query
-);
-
 // Settings - Scale
 export const getFlowScale = createSelector(
     getFlow,
@@ -106,6 +139,32 @@ export const getFlowOutputs = createSelector(
     getFlow,
     flow => flow.outputs
 );
+
+// Settings - Batch
+export const getFlowBatchList = createSelector(
+    getFlow,
+    flow => flow.batchList
+);
+
+export const getSelectedBatchIndex = createSelector(
+    getFlow,
+    flow => flow.selectedBatchIndex
+);
+
+export const getSelectedBatch = createSelector(
+    getFlowBatchList,
+    getSelectedBatchIndex,
+    selectedBatch
+);
+
+export const getSelectedBatchProperties = createSelector(
+    getSelectedBatch,
+    batch => batch.properties
+);
+
+function selectedBatch(batchList, selectedIndex) {
+    return selectedIndex !== undefined && selectedIndex < batchList.length ? batchList[selectedIndex] : undefined;
+}
 
 export const getSelectedSinkerIndex = createSelector(
     getFlow,
@@ -183,64 +242,100 @@ export const getEnableLocalOneBox = createSelector(
 // Validation - Info
 export const validateFlowInfo = createSelector(
     getFlowDisplayName,
+    getFlowDatabricksToken,
+    getFlowIsDatabricksSparkType,
     validateInfo
 );
 
-function validateInfo(displayName) {
-    return displayName && displayName.trim() !== '';
+function validateInfo(displayName, databricksToken, isDatabricksSparkType) {
+    if (isDatabricksSparkType) {
+        return displayName && displayName.trim() !== '' && databricksToken && databricksToken.startsWith(secretScopePrefix);
+    } else {
+        return displayName && displayName.trim() !== ''
+    }
 }
 
 // Validation - Input
 export const validateFlowInput = createSelector(
     getFlowInput,
+    getFlowBatchInput,
     validateInput
 );
 
-function validateInput(input) {
+function validateInput(input, batchInputs) {
+    let validations = [];
+    if (input.mode === Models.inputModeEnum.streaming) {
+        return validateInputStreaming(input);
+    } else if (input.mode === Models.inputModeEnum.batching) {
+        return validateInputBatch(batchInputs);
+    } else {
+        validations.push(false);
+    }
+
+    return validations.every(value => value);
+}
+
+function validateInputStreaming(input) {
     let validations = [];
     validations.push(input && input.properties);
 
-    if (input.mode === Models.inputModeEnum.streaming) {
-        if (input.type === Models.inputTypeEnum.events) {
-            validations.push(input.properties.inputEventhubConnection.trim() !== '');
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.windowDuration));
-            validations.push(
-                input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
-            );
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.maxRate));
-            validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
-        } else if (input.type === Models.inputTypeEnum.iothub) {
-            validations.push(input.properties.inputEventhubName.trim() !== '');
-            validations.push(input.properties.inputEventhubConnection.trim() !== '');
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.windowDuration));
-            validations.push(
-                input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
-            );
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.maxRate));
-            validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
-        } else if (input.type === Models.inputTypeEnum.kafkaeventhub || input.type === Models.inputTypeEnum.kafka) {
-            validations.push(input.properties.inputEventhubName.trim() !== '');
-            validations.push(input.properties.inputEventhubConnection.trim() !== '');
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.windowDuration));
-            validations.push(
-                input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
-            );
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.maxRate));
-            validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
-        } else if (input.type === Models.inputTypeEnum.local) {
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.windowDuration));
-            validations.push(
-                input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
-            );
-            validations.push(Helpers.isValidNumberAboveZero(input.properties.maxRate));
-            validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
-        } else {
-            validation.push(false);
-        }
+    if (input.type === Models.inputTypeEnum.events) {
+        validations.push(input.properties.inputEventhubConnection.trim() !== '');
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
+        validations.push(
+            input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
+        );
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
+        validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
+    } else if (input.type === Models.inputTypeEnum.iothub) {
+        validations.push(input.properties.inputEventhubName.trim() !== '');
+        validations.push(input.properties.inputEventhubConnection.trim() !== '');
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
+        validations.push(
+            input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
+        );
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
+        validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
+    } else if (input.type === Models.inputTypeEnum.kafkaeventhub || input.type === Models.inputTypeEnum.kafka) {
+        validations.push(input.properties.inputEventhubName.trim() !== '');
+        validations.push(input.properties.inputEventhubConnection.trim() !== '');
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
+        validations.push(
+            input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
+        );
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
+        validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
+    } else if (input.type === Models.inputTypeEnum.local) {
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.windowDuration));
+        validations.push(
+            input.properties.watermarkValue.trim() !== '' && Helpers.isValidNumberAboveOrEqualZero(input.properties.watermarkValue)
+        );
+        validations.push(CommonHelpers.isValidNumberAboveZero(input.properties.maxRate));
+        validations.push(Helpers.isValidJson(input.properties.inputSchemaFile));
     } else {
-        // future support
         validation.push(false);
     }
+
+    return validations.every(value => value);
+}
+
+function validateInputBatch(batchInputs) {
+    return batchInputs && batchInputs.every(isBatchInputSettingsComplete);
+}
+
+function isBatchInputSettingsComplete(batchInput) {
+    let validations = [];
+    validations.push(batchInput && batchInput.properties);
+
+    if (batchInput.type === Models.inputTypeEnum.blob) {
+        validations.push(batchInput.properties.connection && batchInput.properties.connection.trim() !== '');
+        validations.push(batchInput.properties.path && batchInput.properties.path.trim() !== '');
+        validations.push(batchInput.properties.formatType && batchInput.properties.formatType.trim() !== '');
+        validations.push(batchInput.properties.compressionType && batchInput.properties.compressionType.trim() !== '');
+    } else {
+        validation.push(false);
+    }
+
     return validations.every(value => value);
 }
 
@@ -318,17 +413,6 @@ function isFunctionSettingsComplete(functionItem) {
     return validations.every(value => value);
 }
 
-// Validation - Query
-export const validateFlowQuery = createSelector(
-    getFlowQuery,
-    validateQuery
-);
-
-function validateQuery(query) {
-    //removing validation; codegen will add OUTPUTs for alerts. Blank query is valid.
-    return query || query.trim() === '';
-}
-
 // Validation - Outputs
 export const validateFlowOutputs = createSelector(
     getFlowOutputs,
@@ -360,6 +444,11 @@ function isSinkerSettingsComplete(sinker) {
             validations.push(sinker.properties.containerName && Helpers.isNumberAndStringOnly(sinker.properties.containerName));
             validations.push(sinker.properties.blobPrefix && sinker.properties.blobPrefix.trim() !== '');
             validations.push(sinker.properties.blobPartitionFormat && sinker.properties.blobPartitionFormat.trim() !== '');
+            break;
+
+        case Models.sinkerTypeEnum.sql:
+            validations.push(sinker.properties.connectionString && sinker.properties.connectionString.trim() !== '');
+            validations.push(sinker.properties.tableName && sinker.properties.connectionString.trim() !== '');
             break;
 
         case Models.sinkerTypeEnum.metric:
@@ -452,7 +541,63 @@ export const validateFlowScale = createSelector(
 );
 
 function validateScale(scale) {
-    return scale && Helpers.isValidNumberAboveZero(scale.jobNumExecutors) && Helpers.isValidNumberAboveZero(scale.jobExecutorMemory);
+    return (
+        scale &&
+        CommonHelpers.isValidNumberAboveZero(scale.jobNumExecutors) &&
+        CommonHelpers.isValidNumberAboveZero(scale.jobExecutorMemory)
+    );
+}
+
+// Validation - Schedule
+export const validateFlowSchedule = createSelector(
+    getFlowInput,
+    getFlowBatchList,
+    validateSchedule
+);
+
+function validateSchedule(flowInput, batchList) {
+    return (
+        (flowInput && flowInput.mode === Models.inputModeEnum.streaming) ||
+        (batchList && batchList.length > 0 && batchList.every(isBatchListSettingsComplete))
+    );
+}
+
+function isBatchListSettingsComplete(batch) {
+    let validations = [];
+    validations.push(batch && batch.properties);
+    validations.push(Helpers.isNumberAndStringOnly(batch.id));
+
+    switch (batch.type) {
+        case Models.batchTypeEnum.recurring:
+            validations.push(batch.properties.interval && batch.properties.interval.trim() !== '');
+            validations.push(batch.properties.intervalType && batch.properties.intervalType.trim() !== '');
+            validations.push(batch.properties.delay && batch.properties.delay.trim() !== '');
+            validations.push(batch.properties.delayType && batch.properties.delayType.trim() !== '');
+            validations.push(batch.properties.window && batch.properties.window.trim() !== '');
+            validations.push(batch.properties.windowType && batch.properties.windowType.trim() !== '');
+            validations.push(batch.properties.startTime && batch.properties.startTime !== '');
+            validations.push(CommonHelpers.isValidNumberAboveZero(batch.properties.interval));
+            validations.push(Helpers.isValidNumberAboveOrEqualZero(batch.properties.delay));
+            validations.push(CommonHelpers.isValidNumberAboveZero(batch.properties.window));
+            break;
+        case Models.batchTypeEnum.oneTime:
+            validations.push(batch.properties.interval && batch.properties.interval.trim() !== '');
+            validations.push(batch.properties.intervalType && batch.properties.intervalType.trim() !== '');
+            validations.push(batch.properties.delay && batch.properties.delay == 0);
+            validations.push(batch.properties.delayType && batch.properties.delayType.trim() !== '');
+            validations.push(batch.properties.window && batch.properties.window.trim() !== '');
+            validations.push(batch.properties.windowType && batch.properties.windowType.trim() !== '');
+            validations.push(batch.properties.startTime && batch.properties.startTime !== '');
+            validations.push(batch.properties.endTime && batch.properties.endTime !== '');
+            validations.push(CommonHelpers.isValidNumberAboveZero(batch.properties.interval));
+            validations.push(CommonHelpers.isValidNumberAboveZero(batch.properties.window));
+            break;
+
+        default:
+            validations.push(false);
+            break;
+    }
+    return validations.every(value => value);
 }
 
 // Validation -  Flow
@@ -460,10 +605,11 @@ export const validateFlow = createSelector(
     validateFlowInfo,
     validateFlowInput,
     validateFlowFunctions,
-    validateFlowQuery,
+    QuerySelectors.validateQueryTab,
     validateFlowOutputs,
     validateFlowOutputTemplates,
     validateFlowRules,
     validateFlowScale,
+    validateFlowSchedule,
     (...selectors) => selectors.every(value => value)
 );

@@ -56,7 +56,7 @@
         "input": {
           "type": "MetricApi",
           "metricKeys": [
-            "DATAX-localconfiggentest:Input_DataXProcessedInput_Events_Count"
+            "DATAX-${name}:Input_DataXProcessedInput_Events_Count"
           ]
         },
         "output": {
@@ -66,151 +66,8 @@
             "timechart": true,
             "average": true,
             "speed": true
-          }
-        }
-      },
-      {
-        "name": "HeaterStatus, WindowLockStatus, WindowLockSliding",
-        "input": {
-          "type": "MetricApi",
-          "pollingInterval": 60000,
-          "metricKeys": [
-            {
-              "name": "localconfiggentest:HeaterStatus",
-              "displayName": "HeaterStatus"
-            },
-            {
-              "name": "localconfiggentest:WindowLockStatus",
-              "displayName": "WindowLockStatus"
-            },
-            {
-              "name": "localconfiggentest:WindowLockSliding",
-              "displayName": "WindowLockSliding"
-            }
-          ]
-        },
-        "output": {
-          "type": "DirectTimeChart",
-          "data": {
-            "timechart": true,
-            "current": false,
-            "table": false
           },
-          "chartTimeWindowInMs": 3600000
-        }
-      },
-      {
-        "name": "WindowOpenWhileHeaterOnAlert",
-        "input": {
-          "type": "MetricDetailsApi",
-          "pollingInterval": 60000,
-          "metricKeys": [
-            {
-              "name": "localconfiggentest:WindowOpenWhileHeaterOnAlert",
-              "displayName": "WindowOpenWhileHeaterOnAlert"
-            }
-          ]
-        },
-        "output": {
-          "type": "DirectTable",
-          "data": {
-            "timechart": false,
-            "current": false,
-            "table": true
-          },
-          "chartTimeWindowInMs": 3600000
-        }
-      },
-      {
-        "name": "DoorLockStatus",
-        "input": {
-          "type": "MetricApi",
-          "pollingInterval": 60000,
-          "metricKeys": [
-            {
-              "name": "localconfiggentest:DoorLockStatus",
-              "displayName": "DoorLockStatus"
-            }
-          ]
-        },
-        "output": {
-          "type": "DirectTimeChart",
-          "data": {
-            "timechart": true,
-            "current": false,
-            "table": false
-          },
-          "chartTimeWindowInMs": 3600000
-        }
-      },
-      {
-        "name": "DoorLockOpenBetween9pmAnd7amUtcAlert",
-        "input": {
-          "type": "MetricDetailsApi",
-          "pollingInterval": 60000,
-          "metricKeys": [
-            {
-              "name": "localconfiggentest:DoorLockOpenBetween9pmAnd7amUtcAlert",
-              "displayName": "DoorLockOpenBetween9pmAnd7amUtcAlert"
-            }
-          ]
-        },
-        "output": {
-          "type": "DirectTable",
-          "data": {
-            "timechart": false,
-            "current": false,
-            "table": true
-          },
-          "chartTimeWindowInMs": 3600000
-        }
-      },
-      {
-        "name": "GarageDoorStatus, GarageDoorSliding",
-        "input": {
-          "type": "MetricApi",
-          "pollingInterval": 60000,
-          "metricKeys": [
-            {
-              "name": "localconfiggentest:GarageDoorStatus",
-              "displayName": "GarageDoorStatus"
-            },
-            {
-              "name": "localconfiggentest:GarageDoorSliding",
-              "displayName": "GarageDoorSliding"
-            }
-          ]
-        },
-        "output": {
-          "type": "DirectTimeChart",
-          "data": {
-            "timechart": true,
-            "current": false,
-            "table": false
-          },
-          "chartTimeWindowInMs": 3600000
-        }
-      },
-      {
-        "name": "GarageOpenFor5MinsInAnHourAlert",
-        "input": {
-          "type": "MetricDetailsApi",
-          "pollingInterval": 60000,
-          "metricKeys": [
-            {
-              "name": "localconfiggentest:GarageOpenFor5MinsInAnHourAlert",
-              "displayName": "GarageOpenFor5MinsInAnHourAlert"
-            }
-          ]
-        },
-        "output": {
-          "type": "DirectTable",
-          "data": {
-            "timechart": false,
-            "current": false,
-            "table": true
-          },
-          "chartTimeWindowInMs": 3600000
+          "dynamicOffsetInMs": 300000
         }
       }
     ],
@@ -237,48 +94,6 @@
         "formatter": "longint",
         "position": "FirstRow",
         "type": "SimpleBox"
-      },
-      {
-        "name": "HeaterStatus, WindowLockStatus, WindowLockSliding",
-        "displayName": "HeaterStatus, WindowLockStatus, WindowLockSliding",
-        "data": "HeaterStatus, WindowLockStatus, WindowLockSliding_timechart",
-        "position": "TimeCharts",
-        "type": "MultiLineChart"
-      },
-      {
-        "name": "WindowOpenWhileHeaterOnAlert",
-        "displayName": "WindowOpenWhileHeaterOnAlert",
-        "data": "WindowOpenWhileHeaterOnAlert_table",
-        "position": "TimeCharts",
-        "type": "DetailsList"
-      },
-      {
-        "name": "DoorLockStatus",
-        "displayName": "DoorLockStatus",
-        "data": "DoorLockStatus_timechart",
-        "position": "TimeCharts",
-        "type": "MultiLineChart"
-      },
-      {
-        "name": "DoorLockOpenBetween9pmAnd7amUtcAlert",
-        "displayName": "DoorLockOpenBetween9pmAnd7amUtcAlert",
-        "data": "DoorLockOpenBetween9pmAnd7amUtcAlert_table",
-        "position": "TimeCharts",
-        "type": "DetailsList"
-      },
-      {
-        "name": "GarageDoorStatus, GarageDoorSliding",
-        "displayName": "GarageDoorStatus, GarageDoorSliding",
-        "data": "GarageDoorStatus, GarageDoorSliding_timechart",
-        "position": "TimeCharts",
-        "type": "MultiLineChart"
-      },
-      {
-        "name": "GarageOpenFor5MinsInAnHourAlert",
-        "displayName": "GarageOpenFor5MinsInAnHourAlert",
-        "data": "GarageOpenFor5MinsInAnHourAlert_table",
-        "position": "TimeCharts",
-        "type": "DetailsList"
       }
     ],
     "initParameters": {
@@ -293,6 +108,7 @@
   "gui": {
     "name": "localconfiggentest",
     "displayName": "localconfiggentest",
+    "databricksToken": null,
     "owner": "data-accelerator@microsoft.com",
     "input": {
       "mode": "streaming",
@@ -307,7 +123,9 @@
         "maxRate": "35000",
         "inputSchemaFile": "{\"type\":\"struct\",\"fields\":[{\"name\":\"deviceDetails\",\"type\":{\"type\":\"struct\",\"fields\":[{\"name\":\"deviceId\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"deviceType\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"eventTime\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"homeId\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"status\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}}]},\"nullable\":true,\"metadata\":{}}]}",
         "showNormalizationSnippet": false,
-        "normalizationSnippet": "stringToTimestamp(Raw.deviceDetails.eventTime) AS eventTimeStamp\r\nRaw.*"
+        "normalizationSnippet": "stringToTimestamp(Raw.deviceDetails.eventTime) AS eventTimeStamp\r\nRaw.*",
+        "inputSubscriptionId": "",
+        "inputResourceGroup": ""
       },
       "referenceData": [
         {
@@ -320,7 +138,8 @@
             "header": true
           }
         }
-      ]
+      ],
+      "batch": null
     },
     "process": {
       "timestampColumn": "eventTime",
@@ -332,7 +151,7 @@
           "properties": {
             "name": "myudaf",
             "path": "wasbs://sdfsdf/sdfsdf",
-            "class": "datax.udaf.myudaf",
+            "class": "datax.udf.myudaf",
             "libs": []
           },
           "typeDisplay": "UDAF"
@@ -365,7 +184,10 @@
       "queries": [ "--DataXStates--\nCREATE TABLE configgentest_garagedoor_accumulated\n    (deviceId long, deviceType string, homeId long, MaxEventTime Timestamp, MinReading long, MaxReading long);\n\n--DataXQuery--\nNPI_DeviceWindow =  SELECT \n                        deviceDetails.deviceId,\n                        deviceDetails.deviceType,\n                        eventTimeStamp,\n                        deviceDetails.homeId,\n                        deviceDetails.status\n                    FROM DataXProcessedInput \n                    TIMEWINDOW('5 minutes');\n\n--DataXQuery--\nNPI_DeviceWindow2 =  SELECT \n                        deviceDetails.deviceId,\n                        deviceDetails.deviceType,\n                        eventTimeStamp,\n                        deviceDetails.homeId,\n                        deviceDetails.status\n                    FROM DataXProcessedInput \n                    TIMEWINDOW('2 minutes');\n\n--DataXQuery--\nDeviceInfoTimeWindow = SELECT \n                    deviceId,\n                    deviceType,\n                    homeId,\n                    MAX(eventTimeStamp) AS MaxEventTime,\n                    MIN(status) AS MinReading,\n                    MAX(status) AS MaxReading\n                FROM NPI_DeviceWindow\n                GROUP BY deviceId, deviceType, homeId;\n\n--DataXQuery--\nHeaterStatus =  SELECT \n                    eventTimeStamp AS EventTime,\n                    'HeaterStatus' AS MetricName,\n                    deviceDetails.status AS Metric,\n                    'iotdevicesample' AS Product, \n                    '' AS Pivot1\n                FROM DataXProcessedInput\n                WHERE deviceDetails.homeId = 150\n                    AND deviceDetails.deviceType = 'Heating';\n                    \n--DataXQuery--\nWindowLockStatus =  SELECT \n                        eventTimeStamp AS EventTime,\n                        'WindowLockStatus' AS MetricName,\n                        deviceDetails.status AS Metric,\n                        'iotdevicesample' AS Product, \n                        '' AS Pivot1\n                    FROM DataXProcessedInput\n                    WHERE deviceDetails.homeId = 150\n                        AND deviceDetails.deviceType = 'WindowLock';\n\n--DataXQuery--\nWindowLockSliding = SELECT\n                        MaxEventTime AS EventTime,\n                        'WindowLockSliding' AS MetricName,\n                        MaxReading AS Metric,\n                        'iotdevicesample' AS Product, \n                        '' AS Pivot1\n                    FROM DeviceInfoTimeWindow\n                    INNER JOIN WindowLockStatus ON WindowLockStatus.EventTime = DeviceInfoTimeWindow.MaxEventTime\n                    WHERE homeId = 150\n\t\t\t\t\t\tAND deviceType = 'WindowLock';\n\n--DataXQuery--\nWindowOpenWhileHeaterOnAlert =  SELECT\n                                    MaxEventTime AS EventTime,\n                                    'WindowOpenWhileHeaterOnAlert' AS MetricName,\n                                    0 AS Metric,\n                                    'iotdevicesample' AS Product, \n                                    'Window open for 5+ minutes while heater is on.' AS Pivot1\n                                FROM DeviceInfoTimeWindow\n                                INNER JOIN WindowLockStatus ON WindowLockStatus.EventTime = DeviceInfoTimeWindow.MaxEventTime\n                                WHERE homeId = 150\n                                    AND MaxReading = 0\n\t\t\t\t\t\t\t\t\tAND deviceType = 'WindowLock';\n\n--DataXQuery--\nDoorLockStatus = SELECT\n                    eventTimeStamp AS EventTime,\n                    'DoorLockStatus' AS MetricName,\n                    deviceDetails.status AS Metric,\n                    'iotdevicesample' AS Product, \n                    '' AS Pivot1\n                FROM DataXProcessedInput\n                WHERE deviceDetails.homeId = 150\n                    AND deviceDetails.deviceType = 'DoorLock';\n\n--DataXQuery--\nDoorLockOpenBetween9pmAnd7amUtcAlert = SELECT\n                    eventTimeStamp AS EventTime,\n                    'DoorLockOpenBetween9pmAnd7amUtcAlert' AS MetricName,\n                    0 AS Metric,\n                    'iotdevicesample' AS Product, \n                    'Door lock open between 9PM and 7AM UTC' AS Pivot1\n                FROM DataXProcessedInput\n                WHERE deviceDetails.homeId = 150\n                    AND deviceDetails.deviceType = 'DoorLock'\n                    AND deviceDetails.status = 0\n                    AND (hour(eventTimeStamp) >= 21 OR hour(eventTimeStamp) < 7);\n\n--DataXQuery--\nGarageDoorStatus = SELECT\n                        eventTimeStamp AS EventTime,\n                        'GarageDoorStatus' AS MetricName,\n                        deviceDetails.status AS Metric,\n                        'iotdevicesample' AS Product, \n                        '' AS Pivot1\n                    FROM DataXProcessedInput\n                    WHERE deviceDetails.homeId = 150\n                        AND deviceDetails.deviceType = 'GarageDoorLock';\n\n--DataXQuery--\nGarageDoorAccumalator = SELECT \n                            deviceId,\n                            deviceType,\n                            homeId,\n                            MaxEventTime,\n                            MinReading,\n                            MaxReading\n                        FROM DeviceInfoTimeWindow\n                        WHERE homeId = 150\n                            AND deviceType = 'GarageDoorLock'\n                        UNION ALL\n                        SELECT \n                            deviceId,\n                            deviceType,\n                            homeId,\n                            MaxEventTime,\n                            MinReading,\n                            MaxReading\n                        FROM iotdevicesample_GarageDoor_accumulated\n                        WHERE hour(MaxEventTime) = hour(current_timestamp());\n\n--DataXQuery--\nSELECT deviceId, deviceType, homeId, MaxEventTime, MinReading, MaxReading\nFROM GarageDoorAccumalator\nWITH UPSERT iotdevicesample_GarageDoor_accumulated;\n\n--DataXQuery--\nGarageDoorSliding = SELECT\n                        MaxEventTime AS EventTime,\n                        'GarageDoorSliding' AS MetricName,\n                        MaxReading AS Metric,\n                        'iotdevicesample' AS Product, \n                        '' AS Pivot1\n                    FROM iotdevicesample_GarageDoor_accumulated\n                    INNER JOIN GarageDoorStatus ON GarageDoorStatus.EventTime = iotdevicesample_GarageDoor_accumulated.MaxEventTime\n                    WHERE homeId = 150\n                        AND deviceType = 'GarageDoorLock';\n\n--DataXQuery--\nGarageDoorSlidingOpenInAnHour = SELECT COUNT(MaxReading) AS NumOfTimesGarageOpenFor5Mins,\n                                    MAX(MaxEventTime) AS MaxEventTime\n                                FROM iotdevicesample_GarageDoor_accumulated\n                                WHERE homeId = 150\n                                    AND deviceType = 'GarageDoorLock'\n                                    AND MaxReading = 0;\n\n--DataXQuery--\nGarageOpenFor5MinsInAnHourAlert = SELECT \n                                MaxEventTime AS EventTime,\n                                'GarageOpenFor5MinsInAnHourAlert' AS MetricName,\n                                0 AS Metric,\n                                'iotdevicesample' AS Product, \n                                CONCAT('No. of times garage door open for past 5 mins in current hour: ', NumOfTimesGarageOpenFor5Mins) AS Pivot1\n                                FROM GarageDoorSlidingOpenInAnHour;\n\nSimpleRulesTable = ProcessRules();\nAggregateRulesTable = ProcessAggregateRules(DataXProcessedInput);\nOUTPUT SimpleRulesTable TO myCosmosDB,myBlob;\nOUTPUT AggregateRulesTable TO myEventhub;\n\nOUTPUT HeaterStatus, WindowLockStatus, WindowLockSliding TO Metrics;\nOUTPUT WindowOpenWhileHeaterOnAlert TO Metrics;\nOUTPUT DoorLockStatus TO Metrics;\nOUTPUT DoorLockOpenBetween9pmAnd7amUtcAlert TO Metrics;\nOUTPUT GarageDoorStatus, GarageDoorSliding TO Metrics;\nOUTPUT GarageOpenFor5MinsInAnHourAlert TO Metrics;\n" ],
       "jobconfig": {
         "jobNumExecutors": "6",
-        "jobExecutorMemory": "8000"
+        "jobExecutorMemory": "8000",
+        "jobDatabricksAutoScale": false,
+        "jobDatabricksMinWorkers": null,
+        "jobDatabricksMaxWorkers": null
       }
     },
     "outputs": [
@@ -564,8 +386,9 @@
         }
       }
     ],
+    "batchList": "",
     "subscription": null
   },
-  "properties": { "foo": "bar" },
-  "jobNames": [ "localconfiggentest" ]
+  "properties": { "k1": "v1" },
+  "jobNames": null
 }

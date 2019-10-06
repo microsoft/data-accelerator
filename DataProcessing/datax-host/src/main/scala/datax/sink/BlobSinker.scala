@@ -8,6 +8,7 @@ package datax.sink
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 
+import datax.executor.ExecutorHelper
 import datax.config._
 import datax.constants.{JobArgument, MetricName}
 import datax.data.{FileInternal, ProcessResult}
@@ -15,12 +16,15 @@ import datax.fs.HadoopClient
 import datax.securedsetting.KeyVaultClient
 import datax.sink.BlobOutputSetting.BlobOutputConf
 import datax.utility.{GZipHelper, SinkerUtil}
+import datax.constants.{ProductConstant, BlobProperties}
+import datax.config.ConfigManager
+import datax.host.SparkSessionSingleton
+import org.apache.spark.broadcast
 import org.apache.log4j.LogManager
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
-import scala.collection.mutable
 import scala.concurrent.duration.Duration
 
 object BlobSinker extends SinkOperatorFactory {
@@ -47,7 +51,7 @@ object BlobSinker extends SinkOperatorFactory {
   }
 
   // write events to blob location
-  def writeEventsToBlob(data: Seq[String], outputPath: String, compression: Boolean) {
+  def writeEventsToBlob(data: Seq[String], outputPath: String, compression: Boolean, blobStorageKey: broadcast.Broadcast[String] = null) {
     val logger = LogManager.getLogger(s"EventsToBlob-Writer${SparkEnvVariables.getLoggerSuffix()}")
     val countEvents = data.length
 
@@ -76,7 +80,8 @@ object BlobSinker extends SinkOperatorFactory {
         hdfsPath = outputPath,
         content = content,
         timeout = Duration.create(ConfigManager.getActiveDictionary().getOrElse(JobArgument.ConfName_BlobWriterTimeout, "10 seconds")),
-        retries = 0
+        retries = 0,
+        blobStorageKey
       )
       timeNow = System.nanoTime()
       logger.info(s"$timeNow:Step 3: done writing to $outputPath, spent time=${(timeNow - timeLast) / 1E9} seconds")
@@ -127,7 +132,8 @@ object BlobSinker extends SinkOperatorFactory {
                      outputFolders: Map[String, String],
                      partitionId: Int,
                      compression: Boolean,
-                     loggerSuffix: String): Map[String, Int] = {
+                     loggerSuffix: String,
+                     blobStorageKey: broadcast.Broadcast[String]): Map[String, Int] = {
     val logger = LogManager.getLogger(s"Sinker-BlobSinker$loggerSuffix")
     val dataGroups = dataGenerator()
     val timeStart = System.nanoTime ()
@@ -141,7 +147,7 @@ object BlobSinker extends SinkOperatorFactory {
             val path = folder +
               (if (fileName == null) s"part-$partitionId" else fileName) + (if(compression) ".json.gz" else ".json")
             val jsonList = data.toSeq
-            BlobSinker.writeEventsToBlob(jsonList, path, compression )
+            BlobSinker.writeEventsToBlob(jsonList, path, compression, blobStorageKey )
 
             Seq(s"${MetricPrefixEvents}$group" -> jsonList.length, s"${MetricPrefixBlobs}$group" -> 1)
         }
@@ -158,7 +164,10 @@ object BlobSinker extends SinkOperatorFactory {
     if(formatConf.isDefined && !formatConf.get.equalsIgnoreCase("json"))
       throw new Error(s"Output format: ${formatConf.get} as specified in the config is not supported")
     val outputFolders = blobOutputConf.groups.map{case(k,v)=>k->KeyVaultClient.resolveSecretIfAny(v.folder)}
-    (rowInfo: Row, rows: Seq[Row], outputPartitionTime: Timestamp, partitionId: Int, loggerSuffix: String) => {
+
+    val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(outputFolders.head._2, SparkSessionSingleton.getInstance(ConfigManager.initSparkConf))
+
+    val jsonSinkDelegate = (rowInfo: Row, rows: Seq[Row], outputPartitionTime: Timestamp, partitionId: Int, loggerSuffix: String) => {
       val target = FileInternal.getInfoTargetTag(rowInfo)
       if(compressionTypeConf.isDefined && !(compressionTypeConf.get.equalsIgnoreCase("gzip")|| compressionTypeConf.get.equalsIgnoreCase("none")|| compressionTypeConf.get.equals("")))
         throw new Error(s"Output compressionType: ${compressionTypeConf.get} as specified in the config is not supported")
@@ -175,8 +184,13 @@ object BlobSinker extends SinkOperatorFactory {
           k->generateOutputFolderPath(v, outputPartitionTime, Option(target))},
         partitionId = partitionId,
         compression = compression,
-        loggerSuffix = loggerSuffix
+        loggerSuffix = loggerSuffix,
+        blobStorageKey = blobStorageKey
       )
+    }
+
+    (data: DataFrame, time: Timestamp, loggerSuffix: String) => {
+      SinkerUtil.sinkJson(data, time, jsonSinkDelegate)
     }
   }
 
@@ -185,6 +199,7 @@ object BlobSinker extends SinkOperatorFactory {
     SinkOperator(
       name = SinkName,
       isEnabled = blobConf!=null,
+      sinkAsJson = true,
       flagColumnExprGenerator = () =>  blobConf.groupEvaluation.getOrElse(null),
       generator = flagColumnIndex=>getRowsSinkerGenerator(blobConf, flagColumnIndex),
       onBatch = (spark: SparkSession, outputPartitionTime: Timestamp, targets: Set[String]) => {

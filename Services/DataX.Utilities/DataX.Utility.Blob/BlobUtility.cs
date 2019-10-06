@@ -61,7 +61,7 @@ namespace DataX.Utility.Blob
         public static async Task<bool> DeleteAllBlobsInAContainer(string storageConnectionString, string containerName, string directory)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnectionString);
-            if (storageAccount != null)
+            if (storageAccount == null)
             {
                 return true;
             }

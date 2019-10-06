@@ -41,5 +41,9 @@ namespace DataX.Config.Test.Mock
             return Task.FromResult(destinationPath);
         }
 
+        public Task<string> DeleteAll(string destinationPath)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

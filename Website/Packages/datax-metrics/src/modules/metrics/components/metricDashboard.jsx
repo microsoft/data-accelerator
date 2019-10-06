@@ -10,6 +10,7 @@ import metricsDatasource from '../metrics.datasource';
 import ServiceGroup from '../serviceGroup';
 import * as Api from '../api';
 import { LoadingPanel, StatementBox } from 'datax-common';
+import { Constants } from '../apiConstants';
 
 class MetricDashboard extends React.Component {
     constructor() {
@@ -34,7 +35,11 @@ class MetricDashboard extends React.Component {
     }
 
     componentDidMount() {
-        if (!this.props.product) {
+        if (
+            !this.props.product ||
+            !this.props.product.jobNames ||
+            (this.props.product.jobNames && this.props.product.jobNames.length < 1)
+        ) {
             return;
         }
 
@@ -59,6 +64,22 @@ class MetricDashboard extends React.Component {
 
         if (!product) {
             return null;
+        } else if (!product.jobNames || (product.jobNames && product.jobNames.length < 1)) {
+            const message = 'No metrics to display. No job for the flow is created. Please start the job to see metrics.';
+            return (
+                <div>
+                    <div style={headerStyle}>{product.displayName} Metrics</div>
+                    <StatementBox icon="IncidentTriangle" overrideRootStyle={messageStyle} statement={message} />
+                </div>
+            );
+        } else if (product.gui.input.mode === Constants.batching) {
+            const message = 'Metrics is not supported for the batch job.';
+            return (
+                <div>
+                    <div style={headerStyle}>{product.displayName} Metrics</div>
+                    <StatementBox icon="IncidentTriangle" overrideRootStyle={messageStyle} statement={message} />
+                </div>
+            );
         } else if (this.state.loading) {
             return <LoadingPanel showImmediately={true} />;
         } else if (!this.state.jobsAllRunning) {

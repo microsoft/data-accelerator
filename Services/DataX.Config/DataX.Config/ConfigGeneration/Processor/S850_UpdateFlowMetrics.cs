@@ -44,7 +44,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             }
 
             // Get code gen data from earlier step
-            var rulesCode = flowToDeploy.GetAttachment<RulesCode>(GenerateTransformFile.AttachmentName_CodeGenObject);
+            var rulesCode = flowToDeploy.GetAttachment<RulesCode>(PrepareTransformFile.AttachmentName_CodeGenObject);
             Ensure.NotNull(rulesCode, "rulesCode");
             Ensure.NotNull(rulesCode.MetricsRoot, "rulesCode.MetricsRoot");
             Ensure.NotNull(rulesCode.MetricsRoot.metrics, "rulesCode.MetricsRoot.metrics");

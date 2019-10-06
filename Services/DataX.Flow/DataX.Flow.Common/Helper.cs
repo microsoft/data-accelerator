@@ -6,6 +6,7 @@ using DataX.Contract.Exception;
 using DataX.Utilities.KeyVault;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -56,7 +57,7 @@ namespace DataX.Flow.Common
         /// <returns>true if it is a secret, otherwise false</returns>
         public static bool IsKeyVault(string value)
         {
-            return value.StartsWith(GetKeyValutNamePrefix());
+            return value.StartsWith(GetKeyValutNamePrefix()) || value.StartsWith(GetSecretScopePrefix());
         }
 
         /// <summary>
@@ -67,14 +68,14 @@ namespace DataX.Flow.Common
         /// <param name="value"></param>
         /// <param name="postfix"></param>
         /// <returns>keyVault uri</returns>
-        public static string GetKeyVaultName(string keyvaultName, string key, string value = "", bool postfix = true)
+        public static string GetKeyVaultName(string keyvaultName, string key, string sparkType, string value = "", bool postfix = true)
         {
             if (postfix)
             {
                 key = key + $"-{Helper.GetHashCode(value)}";
             }
 
-            return $"{GetKeyValutNamePrefix()}{keyvaultName}/{key}";
+            return (sparkType == Config.ConfigDataModel.Constants.SparkTypeDataBricks) ? $"{GetSecretScopePrefix()}{keyvaultName}/{key}" : $"{GetKeyValutNamePrefix()}{keyvaultName}/{key}";
         }
 
         /// <summary>
@@ -86,9 +87,9 @@ namespace DataX.Flow.Common
         /// <param name="value"></param>
         /// <param name="postfix"></param>
         /// <returns>secret name</returns>
-        public static string GenerateNewSecret(Dictionary<string, string> keySecretList, string keyvaultName, string key, string value, bool postfix = true)
+        public static string GenerateNewSecret(Dictionary<string, string> keySecretList, string keyvaultName, string key, string sparkType, string value, bool postfix = true)
         {
-            key = GetKeyVaultName(keyvaultName, key, value, postfix);
+            key = GetKeyVaultName(keyvaultName, key, sparkType, value, postfix);
 
             keySecretList.TryAdd(key, value);
 
@@ -102,9 +103,17 @@ namespace DataX.Flow.Common
         public static string GetKeyValutNamePrefix()
         {
             return "keyvault://";
-        }     
-    
-        
+        }
+
+        /// <summary>
+        /// Get the prefix for secretscope uri
+        /// </summary>
+        /// <returns>the prefix for keyvault uri</returns>
+        public static string GetSecretScopePrefix()
+        {
+            return "secretscope://";
+        }
+
         /// <summary>
         /// Parses the eventhub namespace from connection string
         /// </summary>
@@ -300,7 +309,7 @@ namespace DataX.Flow.Common
         {
             if (path != null && Config.Utility.KeyVaultUri.IsSecretUri(path))
             {
-                Regex r = new Regex(@"^((keyvault:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
+                Regex r = new Regex(@"^((keyvault|secretscope:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
                 var keyvault = string.Empty;
 
                 var secret = string.Empty;
@@ -344,7 +353,47 @@ namespace DataX.Flow.Common
                 UserName = match.Groups[2].Value,
                 Password = match.Groups[3].Value
             };
-        }        
+        }
+
+        /// <summary>
+        /// This method converts wasbs path to dbfs file path
+        /// </summary>
+        /// <param name="filePath">wasbs file path</param>
+        /// <param name="fileName">file name</param>
+        /// <returns>Returns dbfs file path</returns>
+        public static string ConvertToDbfsFilePath(string filePath, string fileName = "")
+        {
+            Regex opsPath = new Regex(@"wasbs:\/\/(.*)@(.*).blob.core.windows.net\/(.*)$", RegexOptions.IgnoreCase);
+            var match = opsPath.Match(filePath);
+            if (match.Success)
+            {
+                string result = Path.Combine(Config.ConfigDataModel.Constants.PrefixDbfs, Config.ConfigDataModel.Constants.PrefixDbfsMount + match.Groups[1].Value + "/", match.Groups[3].Value, fileName);
+                return result;
+            }
+            else
+            {
+                throw new Exception("Cannot convert to DBFS file path");
+            }
+        }
+
+        /// <summary>
+        /// This method returns a string value based on the spark type
+        /// </summary>
+        /// <param name="sparkType">sparkType</param>
+        /// <param name="valueForHDInsightEnv">Value to be used in case of HDInsight environment</param>
+        /// <param name="valueForDatabricksEnv">Value to be used in case of Databricks environment</param>
+        /// <returns>Returns string value based on spark type</returns>
+        public static string SetValueBasedOnSparkType(string sparkType, string valueForHDInsightEnv, string valueForDatabricksEnv)
+        {
+            if (sparkType != Config.ConfigDataModel.Constants.SparkTypeDataBricks)
+            {
+                return valueForHDInsightEnv;
+            }
+            else
+            {
+                return valueForDatabricksEnv;
+            }
+        }
     }
 
     /// <summary>

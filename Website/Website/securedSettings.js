@@ -52,6 +52,15 @@ module.exports = async function(host) {
                     env.mongoSharedDbUrl = await getSecretOrThrow('mongoSharedDbUrl').catch(err => env.mongoDbUrl);
                 },
                 async function() {
+                    let kubernetesServices = await getSecret('kubernetesServices');
+                    // Secret Name: <DATAX_KEYVAULT_SECRET_PREFIX>+"kubernetesServices" where you need to use the prefix: <DATAX_KEYVAULT_SECRET_PREFIX>) needs to be specified in the keyvault on the azure portal that starts with kvServices
+                    // Secret value is a JSON object looks like this:
+                    // {"Flow.InteractiveQueryService":"http://<External IP for Interactive Query Service>:5000","Flow.SchemaInferenceService":"http://<External IP for Schema Inference Service>:5000","Flow.ManagementService":"http://<External IP for Flow Management Service>:5000","Flow.LiveDataService":"http://<External IP for live Data Service>:5000"}
+                    if (kubernetesServices) {
+                        env.kubernetesServices = JSON.parse(kubernetesServices);
+                    }
+                },
+                async function() {
                     let redisDataConnectionString = await getSecret('redisDataConnectionString');
                     if (redisDataConnectionString)
                         env.redisData = {

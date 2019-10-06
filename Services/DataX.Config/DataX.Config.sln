@@ -65,6 +65,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Config.Local.Test", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.ServiceHost.ServiceFabric", "..\DataX.ServiceHost\DataX.ServiceHost.ServiceFabric\DataX.ServiceHost.ServiceFabric.csproj", "{A5627F57-73C6-4E81-B36A-B91EDCC03487}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Config.DatabricksClient", "DataX.Config.DatabricksClient\DataX.Config.DatabricksClient.csproj", "{8A0240B7-397A-4F3D-8433-2AF694E9D399}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataX.Config.DatabricksClient.Test", "DataX.Config.DatabricksClient.Test\DataX.Config.DatabricksClient.Test.csproj", "{51D7A7A5-F243-4118-91F7-C4C6E3E3DB99}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -151,6 +155,14 @@ Global
 		{A5627F57-73C6-4E81-B36A-B91EDCC03487}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A5627F57-73C6-4E81-B36A-B91EDCC03487}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A5627F57-73C6-4E81-B36A-B91EDCC03487}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A0240B7-397A-4F3D-8433-2AF694E9D399}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A0240B7-397A-4F3D-8433-2AF694E9D399}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A0240B7-397A-4F3D-8433-2AF694E9D399}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A0240B7-397A-4F3D-8433-2AF694E9D399}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51D7A7A5-F243-4118-91F7-C4C6E3E3DB99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51D7A7A5-F243-4118-91F7-C4C6E3E3DB99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51D7A7A5-F243-4118-91F7-C4C6E3E3DB99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51D7A7A5-F243-4118-91F7-C4C6E3E3DB99}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -171,6 +183,8 @@ Global
 		{8311D49B-3333-45E8-853C-B5790C2317FD} = {0D3EE049-5C0E-415C-81F1-6F19C96BF51F}
 		{D5454F8C-E31D-4731-94D9-C2E26E9DB447} = {0D3EE049-5C0E-415C-81F1-6F19C96BF51F}
 		{4EC08127-ED3A-45C4-A9F9-15E154C1ED4A} = {327F5A7B-C05A-4A0A-9E8D-6DF2D059BD80}
+		{8A0240B7-397A-4F3D-8433-2AF694E9D399} = {327F5A7B-C05A-4A0A-9E8D-6DF2D059BD80}
+		{51D7A7A5-F243-4118-91F7-C4C6E3E3DB99} = {327F5A7B-C05A-4A0A-9E8D-6DF2D059BD80}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3D094544-AA70-412B-979A-06653F810C28}

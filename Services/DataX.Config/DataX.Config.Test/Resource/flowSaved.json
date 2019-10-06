@@ -1,13 +1,14 @@
 ﻿{
-    "name": "configgentest",
-    "icon": "/img/iot.png",
-    "displayName": "configgentest",
-    "properties": {
-        "foo": "bar"
-    },
+  "name": "configgentest",
+  "icon": "/img/iot.png",
+  "displayName": "configgentest",
+  "properties": {
+    "foo": "bar"
+  },
   "gui": {
     "name": "configgentest",
     "displayName": "configgentest",
+    "databricksToken": null,
     "owner": "data-accelerator@microsoft.com",
     "input": {
       "mode": "streaming",
@@ -37,7 +38,8 @@
           },
           "typeDisplay": "CSV/TSV File"
         }
-      ]
+      ],
+      "batch": null
     },
     "process": {
       "timestampColumn": "eventTime",
@@ -86,7 +88,10 @@
       ],
       "jobconfig": {
         "jobNumExecutors": "6",
-        "jobExecutorMemory": "8000"
+        "jobExecutorMemory": "8000",
+        "jobDatabricksAutoScale": false,
+        "jobDatabricksMinWorkers": null,
+        "jobDatabricksMaxWorkers": null
       }
     },
     "outputs": [
@@ -289,6 +294,7 @@
         }
       }
     ],
+    "batchList":  null,
     "subscription": null
   },
   "commonProcessor": {
@@ -344,59 +350,59 @@
       }
     ]
   },
-    "metrics": {
-        "sources": [
-            {
-                "name": "events",
-                "input": {
-                    "type": "MetricApi",
-                    "metricKeys": [
-                        "DATAX-${name}:Input_DataXProcessedInput_Events_Count"
-                    ]
-                },
-                "output": {
-                    "type": "SumWithTimeChart",
-                    "data": {
-                        "sum": true,
-                        "timechart": true,
-                        "average": true,
-                        "speed": true
-                    }
-                }
-            }
-        ],
-        "widgets": [
-            {
-                "name": "eventsChart",
-                "displayName": "Events/Second",
-                "data": "events_timechart",
-                "position": "TimeCharts",
-                "type": "StackAreaChart"
-            },
-            {
-                "name": "totalEvents",
-                "displayName": "Events Ingested Today",
-                "data": "events_sum",
-                "formatter": "longint",
-                "type": "SimpleBox",
-                "position": "FirstRow"
-            },
-            {
-                "name": "averageEvents",
-                "displayName": "Avg. Events/Minute",
-                "data": "events_average",
-                "formatter": "longint",
-                "type": "SimpleBox",
-                "position": "FirstRow"
-            }
-        ],
-        "initParameters": {
-            "widgetSets": [
-                "direct"
-            ],
-            "jobNames": {
-                "type": "getCPSparkJobNames"
-            }
+  "metrics": {
+    "sources": [
+      {
+        "name": "events",
+        "input": {
+          "type": "MetricApi",
+          "metricKeys": [
+            "DATAX-${name}:Input_DataXProcessedInput_Events_Count"
+          ]
+        },
+        "output": {
+          "type": "SumWithTimeChart",
+          "data": {
+            "sum": true,
+            "timechart": true,
+            "average": true,
+            "speed": true
+          }
         }
+      }
+    ],
+    "widgets": [
+      {
+        "name": "eventsChart",
+        "displayName": "Events/Second",
+        "data": "events_timechart",
+        "position": "TimeCharts",
+        "type": "StackAreaChart"
+      },
+      {
+        "name": "totalEvents",
+        "displayName": "Events Ingested Today",
+        "data": "events_sum",
+        "formatter": "longint",
+        "type": "SimpleBox",
+        "position": "FirstRow"
+      },
+      {
+        "name": "averageEvents",
+        "displayName": "Avg. Events/Minute",
+        "data": "events_average",
+        "formatter": "longint",
+        "type": "SimpleBox",
+        "position": "FirstRow"
+      }
+    ],
+    "initParameters": {
+      "widgetSets": [
+        "direct"
+      ],
+      "jobNames": {
+        "type": "getCPSparkJobNames"
+      }
     }
+  }
 }

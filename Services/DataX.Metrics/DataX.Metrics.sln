@@ -17,7 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Contract", "..\DataX.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.ServiceHost.ServiceFabric", "..\DataX.ServiceHost\DataX.ServiceHost.ServiceFabric\DataX.ServiceHost.ServiceFabric.csproj", "{52FB95BC-098F-4010-B82A-AA8097C7D0FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataX.Utility.Nuget", "..\DataX.Utilities\DataX.Utility.Nuget\DataX.Utility.Nuget.csproj", "{91C04219-9332-44EB-BF85-B07FB7718AD4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Utility.Nuget", "..\DataX.Utilities\DataX.Utility.Nuget\DataX.Utility.Nuget.csproj", "{91C04219-9332-44EB-BF85-B07FB7718AD4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.ServiceHost", "..\DataX.ServiceHost\DataX.ServiceHost\DataX.ServiceHost.csproj", "{AB81CD31-F031-496F-B810-7FBED8A906CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,6 +93,14 @@ Global
 		{91C04219-9332-44EB-BF85-B07FB7718AD4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{91C04219-9332-44EB-BF85-B07FB7718AD4}.Release|x64.ActiveCfg = Release|Any CPU
 		{91C04219-9332-44EB-BF85-B07FB7718AD4}.Release|x64.Build.0 = Release|Any CPU
+		{AB81CD31-F031-496F-B810-7FBED8A906CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB81CD31-F031-496F-B810-7FBED8A906CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB81CD31-F031-496F-B810-7FBED8A906CC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AB81CD31-F031-496F-B810-7FBED8A906CC}.Debug|x64.Build.0 = Debug|Any CPU
+		{AB81CD31-F031-496F-B810-7FBED8A906CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB81CD31-F031-496F-B810-7FBED8A906CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB81CD31-F031-496F-B810-7FBED8A906CC}.Release|x64.ActiveCfg = Release|Any CPU
+		{AB81CD31-F031-496F-B810-7FBED8A906CC}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

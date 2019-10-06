@@ -13,5 +13,14 @@ namespace DataX.Config.ConfigDataModel
 
         [JsonProperty("jobExecutorMemory")]
         public string JobExecutorMemory { get; set; }
+
+        [JsonProperty("jobDatabricksAutoScale")]
+        public bool JobDatabricksAutoScale { get; set; }
+
+        [JsonProperty("jobDatabricksMinWorkers")]
+        public string JobDatabricksMinWorkers { get; set; }
+
+        [JsonProperty("jobDatabricksMaxWorkers")]
+        public string JobDatabricksMaxWorkers { get; set; }
     }
 }

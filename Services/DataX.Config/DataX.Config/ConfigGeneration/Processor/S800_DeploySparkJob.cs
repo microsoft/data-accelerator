@@ -56,7 +56,8 @@ namespace DataX.Config.ConfigGeneration.Processor
 
             // Ensure all creations are done successfully
             var upsertedJobNames = await Task.WhenAll(sparkJobUpsertions);
-            flowToDeploy.SetAttachment(AttachmentName_SparkJobNames, upsertedJobNames);
+            var jobNames = ParseJobNames(upsertedJobNames);
+            flowToDeploy.SetAttachment(AttachmentName_SparkJobNames, jobNames);
 
             return "done";
         }
@@ -86,29 +87,55 @@ namespace DataX.Config.ConfigGeneration.Processor
         /// create or update the spark job entry for the given job in deploying
         /// </summary>
         /// <returns>name of the spark job deployed</returns>
-        private async Task<string> DeploySingleJob(JobDeploymentSession job, JsonConfig defaultSparkJobConfig)
+        private async Task<string[]> DeploySingleJob(JobDeploymentSession job, JsonConfig defaultSparkJobConfig)
         {
-            // For each job
-            //      replace config with tokens from job and flow, and the runtime config file path
-            //      create spark job entry
-            var json = job.Tokens.Resolve(defaultSparkJobConfig);
-            var newJob = SparkJobConfig.From(json);
-            var jobName = newJob.Name;
-            var existingJob = await SparkJobData.GetByName(jobName);
-
-            if (existingJob != null)
+            List<string> names = new List<string>();
+            foreach (var jc in job.JobConfigs)
             {
-                //keep the state of the old job so we can stop that 
-                newJob.SyncResult = existingJob.SyncResult;
+                // For each job
+                //      replace config with tokens from job and flow, and the runtime config file path
+                //      create spark job entry
+                job.SparkJobName = jc.SparkJobName;
+                job.SparkJobConfigFilePath = jc.SparkFilePath;
+                var json = job.Tokens.Resolve(defaultSparkJobConfig);
+                var newJob = SparkJobConfig.From(json);
+                var jobName = newJob.Name;
+                var existingJob = await SparkJobData.GetByName(jobName);
+
+                if (existingJob != null)
+                {
+                    //keep the state of the old job so we can stop that 
+                    newJob.SyncResult = existingJob.SyncResult;
+                }
+
+                var result = await this.SparkJobData.UpsertByName(jobName, newJob);
+                if (!result.IsSuccess)
+                {
+                    throw new ConfigGenerationException($"Failed to upsert into SparkJob table for job '{jobName}': {result.Message}");
+                }
+
+                names.Add(jobName);
             }
 
-            var result = await this.SparkJobData.UpsertByName(jobName, newJob);
-            if (!result.IsSuccess)
-            {
-                throw new ConfigGenerationException($"Failed to upsert into SparkJob table for job '{jobName}': {result.Message}");
-            }
-
-            return jobName;
+            return names.ToArray();
         }
+
+        /// <summary>
+        /// parse job names
+        /// </summary>
+        /// <param name="jobNames"></param>
+        /// <returns></returns>
+        private string[] ParseJobNames(string[][] jobNames)
+        {
+            List<string> names = new List<string>();
+
+            for (int i = 0; i < jobNames.Length; i++)
+            {
+                names.AddRange(jobNames[i].ToArray());
+            }
+
+            return names.ToArray();
+        }
+
     }
 }

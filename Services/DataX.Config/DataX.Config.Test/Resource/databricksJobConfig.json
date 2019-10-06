@@ -1,0 +1,183 @@
+﻿{
+  "name": "dbconfiggentest",
+  "input": {
+    "eventhub": {
+      "connectionString": "secretscope://somekeyvault/dbconfiggentest-input-eventhubconnectionstring",
+      "consumerGroup": "dbconfiggentest",
+      "checkpointDir": "hdfs://mycluster/dataxdirect/dbconfiggentest/eventhub/checkpoints",
+      "checkpointInterval": "60",
+      "maxRate": "35000",
+      "flushExistingCheckpoints": true
+    },
+    "streaming": {
+      "checkpointDir": "dbfs:/mycluster/dataxdirect/dbconfiggentest/streaming/checkpoints",
+      "intervalInSeconds": 60
+    },
+    "blobSchemaFile": "secretscope://somekeyvault/dbconfiggentest-inputschemafile",
+    "referenceData": [
+      {
+        "format": "csv",
+        "name": "testrd",
+        "path": "secretscope://somekeyvault/dbconfiggentest-referencedata-21083E2E44F15D315158D78A613254AA",
+        "delimiter": ",",
+        "header": "True"
+      }
+    ]
+  },
+  "process": {
+    "metric": {
+      "eventhub": "secretscope://somekeyvault/metric-eventhubconnectionstring"
+    },
+    "timestampColumn": "eventTime",
+    "watermark": "60 second",
+    "jarUDAFs": [
+      {
+        "path": "secretscope://somekeyvault/dbconfiggentest-jarpath-2BE6B2F2C0AA1682F4E6EBF73B124D6E",
+        "class": "datax.udf.myudaf",
+        "libs": [],
+        "name": "myudaf"
+      }
+    ],
+    "jarUDFs": [
+      {
+        "path": "secretscope://somekeyvault/dbconfiggentest-jarpath-2BE6B2F2C0AA1682F4E6EBF73B124D6E",
+        "class": "datax.udf.myudf",
+        "libs": [],
+        "name": "myudf"
+      }
+    ],
+    "azureFunctions": [
+      {
+        "serviceEndpoint": "https://asdfasdf.asdfasdf.as",
+        "api": "sdfsdf",
+        "code": "secretscope://somekeyvault/dbconfiggentest-azurefunc-4CDC36BB32FDD98D392C9C0F0675F44D",
+        "methodType": "get",
+        "params": [
+          "params1"
+        ],
+        "name": "testaz"
+      }
+    ],
+    "projections": [
+      "secretscope://somekeyvault/dbconfiggentest-projectionfile"
+    ],
+    "timeWindows": [
+      {
+        "name": "DataXProcessedInput_5minutes",
+        "windowDuration": "5 minutes"
+      },
+      {
+        "name": "DataXProcessedInput_2minutes",
+        "windowDuration": "2 minutes"
+      }
+    ],
+    "transform": "secretscope://somekeyvault/dbconfiggentest-transform",
+    "appendEventTags": {},
+    "accumulationTables": [
+      {
+        "name": "dbconfiggentest_garagedoor_accumulated",
+        "schema": "deviceId long, deviceType string, homeId long, MaxEventTime Timestamp, MinReading long, MaxReading long",
+        "location": "dbfs:/mycluster/datax/dbconfiggentest/dbconfiggentest_garagedoor_accumulated/"
+      }
+    ]
+  },
+  "outputs": [
+    {
+      "name": "SimpleRulesTable",
+      "blob": {
+        "groups": {
+          "main": {
+            "folder": "secretscope://somekeyvault/dbconfiggentest-output-D7B7107DC4C5A693C746B31988180C1E"
+          }
+        },
+        "compressionType": "none",
+        "format": "json"
+      },
+      "cosmosdb": {
+        "connectionStringRef": "secretscope://somekeyvault/dbconfiggentest-output-161E93325EAA303AD3816687341330A6",
+        "database": "Outputs",
+        "collection": "tests"
+      }
+    },
+    {
+      "name": "AggregateRulesTable",
+      "eventhub": {
+        "connectionStringRef": "secretscope://somekeyvault/dbconfiggentest-output-67CEEABAAE420FB8C7A8FD11CCC23A30",
+        "compressionType": "gzip",
+        "format": "json"
+      }
+    },
+    {
+      "name": "HeaterStatus",
+      "eventhub": {
+        "connectionStringRef": "secretscope://somekeyvault/metric-eventhubconnectionstring",
+        "compressionType": "none",
+        "format": "json"
+      }
+    },
+    {
+      "name": "WindowLockStatus",
+      "eventhub": {
+        "connectionStringRef": "secretscope://somekeyvault/metric-eventhubconnectionstring",
+        "compressionType": "none",
+        "format": "json"
+      }
+    },
+    {
+      "name": "WindowLockSliding",
+      "eventhub": {
+        "connectionStringRef": "secretscope://somekeyvault/metric-eventhubconnectionstring",
+        "compressionType": "none",
+        "format": "json"
+      }
+    },
+    {
+      "name": "WindowOpenWhileHeaterOnAlert",
+      "eventhub": {
+        "connectionStringRef": "secretscope://somekeyvault/metric-eventhubconnectionstring",
+        "compressionType": "none",
+        "format": "json"
+      }
+    },
+    {
+      "name": "DoorLockStatus",
+      "eventhub": {
+        "connectionStringRef": "secretscope://somekeyvault/metric-eventhubconnectionstring",
+        "compressionType": "none",
+        "format": "json"
+      }
+    },
+    {
+      "name": "DoorLockOpenBetween9pmAnd7amUtcAlert",
+      "eventhub": {
+        "connectionStringRef": "secretscope://somekeyvault/metric-eventhubconnectionstring",
+        "compressionType": "none",
+        "format": "json"
+      }
+    },
+    {
+      "name": "GarageDoorStatus",
+      "eventhub": {
+        "connectionStringRef": "secretscope://somekeyvault/metric-eventhubconnectionstring",
+        "compressionType": "none",
+        "format": "json"
+      }
+    },
+    {
+      "name": "GarageDoorSliding",
+      "eventhub": {
+        "connectionStringRef": "secretscope://somekeyvault/metric-eventhubconnectionstring",
+        "compressionType": "none",
+        "format": "json"
+      }
+    },
+    {
+      "name": "GarageOpenFor5MinsInAnHourAlert",
+      "eventhub": {
+        "connectionStringRef": "secretscope://somekeyvault/metric-eventhubconnectionstring",
+        "compressionType": "none",
+        "format": "json"
+      }
+    }
+  ]
+}
