@@ -22,7 +22,7 @@ if ($deploySample -ne 'y') {
 }
 
 $rootFolderPath = $PSScriptRoot
-Import-Module "..\Deployment.Common\Helpers\UtilityModule" -ArgumentList $rootFolderPath, $resourceGroupName, $productName, $sparkClusterName -WarningAction SilentlyContinue
+Import-Module "..\Deployment.Common\Helpers\UtilityModule" -ArgumentList $rootFolderPath, $resourceGroupName, $productName, $sparkClusterName, $randomizeProductName, $serviceFabricClusterName -WarningAction SilentlyContinue
 
 # Check if file paths exist
 function Check-FilePath {    
@@ -185,6 +185,12 @@ function Get-Tokens {
     $tokens.Add('kafkaName', $kafkaName)
     $tokens.Add('kafkaEventHubNamespaceName', $kafkaEventHubNamespaceName)
     $tokens.Add('clientSecretPrefix', $clientSecretPrefix)
+	
+	$keyvaultPrefix = 'keyvault'
+	if ($useDatabricks -eq 'y') {
+		$keyvaultPrefix = 'secretscope'
+	}
+	$tokens.Add('keyvaultPrefix', $keyvaultPrefix)
 
     $tokens
 }

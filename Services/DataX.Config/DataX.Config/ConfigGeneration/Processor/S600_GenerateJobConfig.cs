@@ -3,15 +3,9 @@
 // Licensed under the MIT License
 // *********************************************************************
 using DataX.Config.ConfigDataModel;
-using DataX.Config.ConfigGeneration.Processor;
-using DataX.Config.Templating;
 using DataX.Config.Utility;
 using DataX.Contract;
-using System;
-using System.Collections.Generic;
 using System.Composition;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DataX.Config.ConfigGeneration.Processor
@@ -25,7 +19,6 @@ namespace DataX.Config.ConfigGeneration.Processor
     {
         public const string ParameterObjectName_DefaultJobConfig = "defaultJobConfig";
         public const string TokenName_JobConfigContent = "jobConfigContent";
-        public const string TokenName_JobConfigFilePath = "jobConfigFilePath";
 
         [ImportingConstructor]
         public GenerateJobConfig(JobDataManager jobs)
@@ -44,10 +37,14 @@ namespace DataX.Config.ConfigGeneration.Processor
         {
             var flowConfig = flowToDeploy.Config;
 
+            if (flowConfig.GetGuiConfig()?.Input?.Mode == Constants.InputMode_Batching)
+            {
+                return "done";
+            }
+
             // set the default job config
             var defaultJobConfig = JsonConfig.From(flowConfig.CommonProcessor?.Template);
             Ensure.NotNull(defaultJobConfig, "defaultJobConfig");
-            flowToDeploy.SetAttachment(ParameterObjectName_DefaultJobConfig, defaultJobConfig);
 
             // Deploy job configs
             var jobsToDeploy = flowToDeploy?.GetJobs();
@@ -78,10 +75,15 @@ namespace DataX.Config.ConfigGeneration.Processor
             Ensure.NotNull(newJobConfig, "newJobConfig");
             job.SetJsonToken(TokenName_JobConfigContent, newJobConfig);
 
-            var destinationPath = ResourcePathUtil.Combine(destFolder, job.Name + ".json");
-            job.SetStringToken(TokenName_JobConfigFilePath, destinationPath);
-        }
+            var jc = new JobConfig
+            {
+                Content = newJobConfig.ToString(),
+                FilePath = ResourcePathUtil.Combine(destFolder, job.Name + ".conf"),
+                SparkJobName = job.SparkJobName,
+            };
 
+            job.JobConfigs.Add(jc);
+        }
         /// <summary>
         /// Delete the runtime job configs
         /// </summary>

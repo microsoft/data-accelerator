@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
 
     <IsPackable>false</IsPackable>
 
@@ -37,12 +37,34 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\DataX.Contract\DataX.Contract.csproj" />
+    <ProjectReference Include="..\..\DataX.Flow\DataX.Flow.DeleteHelper\DataX.Flow.DeleteHelper.csproj" />
     <ProjectReference Include="..\DataX.Config.KeyVault\DataX.Config.KeyVault.csproj" />
     <ProjectReference Include="..\DataX.Config.Test.Utility\DataX.Config.Test.Utility.csproj" />
     <ProjectReference Include="..\DataX.Config\DataX.Config.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Resource\customFlattenerConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\customJobConfig1.conf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\customJobConfig2.conf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\customFlow.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\databricksFlowSaved.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\databricksJobConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\dbconfiggentest-combined.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Resource\Flattener\config.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -55,8 +77,26 @@
     <None Update="Resource\configgentest-combined.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Resource\batchFlow.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\batchFlowDefault.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\databricksFlowStarted.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resource\flowStarted.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\batchJobConfig.conf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\batchSparkJobTemplate.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resource\databricksJobConfig.conf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Resource\sparkJobTemplate.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -92,7 +132,7 @@
 
   <ItemGroup>
     <FilesToSign Include="$(OutDir)\$(AssemblyName).dll">
-      <Authenticode>Microsoft</Authenticode>
+      <Authenticode>Microsoft400</Authenticode>
       <StrongName>StrongName</StrongName>
     </FilesToSign>
   </ItemGroup>

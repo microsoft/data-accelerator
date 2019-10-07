@@ -133,8 +133,8 @@ namespace DataX.Metrics.Ingestor
         private async Task<EventProcessorHost> InitalizeEventProcessorHostAsync()
         {
             // start listening to the event hub 
-            var eventHubName = Utility.GetConfigValue("EventHubName");
-            var consumerGroup = Utility.GetConfigValue("ConsumerGroupName");
+            var eventHubName = ServiceFabricUtil.GetServiceFabricConfigSetting("EventHubName").Result?.ToString();
+            var consumerGroup = ServiceFabricUtil.GetServiceFabricConfigSetting("ConsumerGroupName").Result?.ToString();
 
             var eventProcessorHost = new EventProcessorHost(
                     eventHubName,

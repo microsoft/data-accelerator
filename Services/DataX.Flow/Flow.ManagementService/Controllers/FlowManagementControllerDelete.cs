@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace Flow.Management.Controllers
 {
@@ -26,7 +27,7 @@ namespace Flow.Management.Controllers
                 RolesCheck.EnsureWriter(Request);
                 Ensure.NotNull(queryObject, "queryObject");
 
-                ConfigDeleter c = new ConfigDeleter(_logger);
+                ConfigDeleter c = new ConfigDeleter(_logger, _configuration);
                 return await c.DeleteFlow(queryObject);
             }
             catch (Exception e)

@@ -72,7 +72,8 @@
               "timechart": true,
               "average": true,
               "speed": true
-            }
+            },
+          "dynamicOffsetInMs": 300000
           }
         },
         {
@@ -299,6 +300,7 @@
     "gui": {
       "name": "localconfiggentest",
       "displayName": "localconfiggentest",
+      "databricksToken": null,
       "owner": "data-accelerator@microsoft.com",
       "input": {
         "mode": "streaming",
@@ -313,7 +315,9 @@
           "maxRate": "35000",
           "inputSchemaFile": "{\"type\":\"struct\",\"fields\":[{\"name\":\"deviceDetails\",\"type\":{\"type\":\"struct\",\"fields\":[{\"name\":\"deviceId\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"deviceType\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"eventTime\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"homeId\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"status\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}}]},\"nullable\":true,\"metadata\":{}}]}",
           "showNormalizationSnippet": false,
-          "normalizationSnippet": "stringToTimestamp(Raw.deviceDetails.eventTime) AS eventTimeStamp\r\nRaw.*"
+          "normalizationSnippet": "stringToTimestamp(Raw.deviceDetails.eventTime) AS eventTimeStamp\r\nRaw.*",
+          "inputSubscriptionId": "",
+          "inputResourceGroup": ""
         },
         "referenceData": [
           {
@@ -326,7 +330,8 @@
               "header": true
             }
           }
-        ]
+        ],
+        "batch": null
       },
       "process": {
         "timestampColumn": "eventTime",
@@ -375,7 +380,10 @@
         ],
         "jobconfig": {
           "jobNumExecutors": "6",
-          "jobExecutorMemory": "8000"
+          "jobExecutorMemory": "8000",
+          "jobDatabricksAutoScale": false,
+          "jobDatabricksMinWorkers": null,
+          "jobDatabricksMaxWorkers": null
         }
       },
       "outputs": [
@@ -578,10 +586,11 @@
           }
         }
       ],
+      "batchList": "",
       "subscription": null
     },
     "properties": {
-      "foo": "bar"
+      "k1": "v1"
     },
     "jobNames": [
       "localconfiggentest"

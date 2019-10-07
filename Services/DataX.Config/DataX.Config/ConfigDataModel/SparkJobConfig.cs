@@ -38,6 +38,12 @@ namespace DataX.Config.ConfigDataModel
         public string Cluster { get; set; }
 
         /// <summary>
+        /// Path to key vault secret that stores databricks token
+        /// </summary>
+        [JsonProperty("databricksToken")]
+        public string DatabricksToken { get; set; }
+
+        /// <summary>
         /// options for submitting the job
         /// </summary>
         [JsonProperty("options")]

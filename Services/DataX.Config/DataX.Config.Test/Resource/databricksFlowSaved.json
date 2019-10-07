@@ -1,0 +1,406 @@
+﻿{
+  "name": "dbconfiggentest",
+  "icon": "/img/iot.png",
+  "displayName": "dbconfiggentest",
+  "properties": {
+    "foo": "bar"
+  },
+  "gui": {
+    "name": "dbconfiggentest",
+    "displayName": "dbconfiggentest",
+    "databricksToken": "sometoken",
+    "owner": "data-accelerator@microsoft.com",
+    "input": {
+      "mode": "streaming",
+      "type": "iothub",
+      "properties": {
+        "inputEventhubName": "dbconfiggentest-iothub",
+        "inputEventhubConnection": "secretscope://somekeyvault/dbconfiggentest-input-eventhubconnectionstring",
+        "windowDuration": "60",
+        "timestampColumn": "eventTime",
+        "watermarkValue": "60",
+        "watermarkUnit": "second",
+        "maxRate": "35000",
+        "inputSchemaFile": "{\"type\":\"struct\",\"fields\":[{\"name\":\"deviceDetails\",\"type\":{\"type\":\"struct\",\"fields\":[{\"name\":\"deviceId\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"deviceType\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"eventTime\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"homeId\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"status\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}}]},\"nullable\":true,\"metadata\":{}}]}",
+        "showNormalizationSnippet": false,
+        "normalizationSnippet": "stringToTimestamp(Raw.deviceDetails.eventTime) AS eventTimeStamp\r\nRaw.*",
+        "inputSubscriptionId": "acfaaa5f-a581-4375-badb-9ea61ffff0fc",
+        "inputResourceGroup": "TestRG"
+      },
+      "referenceData": [
+        {
+          "id": "testrd",
+          "type": "csv",
+          "properties": {
+            "path": "secretscope://somekeyvault/dbconfiggentest-referencedata-21083E2E44F15D315158D78A613254AA",
+            "delimiter": ",",
+            "header": true
+          },
+          "typeDisplay": "CSV/TSV File"
+        }
+      ]
+    },
+    "process": {
+      "timestampColumn": "eventTime",
+      "watermark": "60 second",
+      "functions": [
+        {
+          "id": "myudaf",
+          "type": "jarUDAF",
+          "properties": {
+            "path": "secretscope://somekeyvault/dbconfiggentest-jarpath-2BE6B2F2C0AA1682F4E6EBF73B124D6E",
+            "class": "datax.udf.myudaf",
+            "libs": [],
+            "name": "myudaf"
+          },
+          "typeDisplay": "UDAF"
+        },
+        {
+          "id": "myudf",
+          "type": "jarUDF",
+          "properties": {
+            "path": "secretscope://somekeyvault/dbconfiggentest-jarpath-2BE6B2F2C0AA1682F4E6EBF73B124D6E",
+            "class": "datax.udf.myudf",
+            "libs": [],
+            "name": "myudf"
+          },
+          "typeDisplay": "UDF"
+        },
+        {
+          "id": "testaz",
+          "type": "azureFunction",
+          "properties": {
+            "serviceEndpoint": "https://asdfasdf.asdfasdf.as",
+            "api": "sdfsdf",
+            "code": "secretscope://somekeyvault/dbconfiggentest-azurefunc-4CDC36BB32FDD98D392C9C0F0675F44D",
+            "methodType": "get",
+            "params": [
+              "params1"
+            ],
+            "name": "testaz"
+          },
+          "typeDisplay": "Azure Function"
+        }
+      ],
+      "queries": [
+        "--DataXStates--\nCREATE TABLE dbconfiggentest_garagedoor_accumulated\n    (deviceId long, deviceType string, homeId long, MaxEventTime Timestamp, MinReading long, MaxReading long);\n\n--DataXQuery--\nNPI_DeviceWindow =  SELECT \n                        deviceDetails.deviceId,\n                        deviceDetails.deviceType,\n                        eventTimeStamp,\n                        deviceDetails.homeId,\n                        deviceDetails.status\n                    FROM DataXProcessedInput \n                    TIMEWINDOW('5 minutes');\n\n--DataXQuery--\nNPI_DeviceWindow2 =  SELECT \n                        deviceDetails.deviceId,\n                        deviceDetails.deviceType,\n                        eventTimeStamp,\n                        deviceDetails.homeId,\n                        deviceDetails.status\n                    FROM DataXProcessedInput \n                    TIMEWINDOW('2 minutes');\n\n--DataXQuery--\nDeviceInfoTimeWindow = SELECT \n                    deviceId,\n                    deviceType,\n                    homeId,\n                    MAX(eventTimeStamp) AS MaxEventTime,\n                    MIN(status) AS MinReading,\n                    MAX(status) AS MaxReading\n                FROM NPI_DeviceWindow\n                GROUP BY deviceId, deviceType, homeId;\n\n--DataXQuery--\nHeaterStatus =  SELECT \n                    eventTimeStamp AS EventTime,\n                    'HeaterStatus' AS MetricName,\n                    deviceDetails.status AS Metric,\n                    'iotdevicesample' AS Product, \n                    '' AS Pivot1\n                FROM DataXProcessedInput\n                WHERE deviceDetails.homeId = 150\n                    AND deviceDetails.deviceType = 'Heating';\n                    \n--DataXQuery--\nWindowLockStatus =  SELECT \n                        eventTimeStamp AS EventTime,\n                        'WindowLockStatus' AS MetricName,\n                        deviceDetails.status AS Metric,\n                        'iotdevicesample' AS Product, \n                        '' AS Pivot1\n                    FROM DataXProcessedInput\n                    WHERE deviceDetails.homeId = 150\n                        AND deviceDetails.deviceType = 'WindowLock';\n\n--DataXQuery--\nWindowLockSliding = SELECT\n                        MaxEventTime AS EventTime,\n                        'WindowLockSliding' AS MetricName,\n                        MaxReading AS Metric,\n                        'iotdevicesample' AS Product, \n                        '' AS Pivot1\n                    FROM DeviceInfoTimeWindow\n                    INNER JOIN WindowLockStatus ON WindowLockStatus.EventTime = DeviceInfoTimeWindow.MaxEventTime\n                    WHERE homeId = 150\n\t\t\t\t\t\tAND deviceType = 'WindowLock';\n\n--DataXQuery--\nWindowOpenWhileHeaterOnAlert =  SELECT\n                                    MaxEventTime AS EventTime,\n                                    'WindowOpenWhileHeaterOnAlert' AS MetricName,\n                                    0 AS Metric,\n                                    'iotdevicesample' AS Product, \n                                    'Window open for 5+ minutes while heater is on.' AS Pivot1\n                                FROM DeviceInfoTimeWindow\n                                INNER JOIN WindowLockStatus ON WindowLockStatus.EventTime = DeviceInfoTimeWindow.MaxEventTime\n                                WHERE homeId = 150\n                                    AND MaxReading = 0\n\t\t\t\t\t\t\t\t\tAND deviceType = 'WindowLock';\n\n--DataXQuery--\nDoorLockStatus = SELECT\n                    eventTimeStamp AS EventTime,\n                    'DoorLockStatus' AS MetricName,\n                    deviceDetails.status AS Metric,\n                    'iotdevicesample' AS Product, \n                    '' AS Pivot1\n                FROM DataXProcessedInput\n                WHERE deviceDetails.homeId = 150\n                    AND deviceDetails.deviceType = 'DoorLock';\n\n--DataXQuery--\nDoorLockOpenBetween9pmAnd7amUtcAlert = SELECT\n                    eventTimeStamp AS EventTime,\n                    'DoorLockOpenBetween9pmAnd7amUtcAlert' AS MetricName,\n                    0 AS Metric,\n                    'iotdevicesample' AS Product, \n                    'Door lock open between 9PM and 7AM UTC' AS Pivot1\n                FROM DataXProcessedInput\n                WHERE deviceDetails.homeId = 150\n                    AND deviceDetails.deviceType = 'DoorLock'\n                    AND deviceDetails.status = 0\n                    AND (hour(eventTimeStamp) >= 21 OR hour(eventTimeStamp) < 7);\n\n--DataXQuery--\nGarageDoorStatus = SELECT\n                        eventTimeStamp AS EventTime,\n                        'GarageDoorStatus' AS MetricName,\n                        deviceDetails.status AS Metric,\n                        'iotdevicesample' AS Product, \n                        '' AS Pivot1\n                    FROM DataXProcessedInput\n                    WHERE deviceDetails.homeId = 150\n                        AND deviceDetails.deviceType = 'GarageDoorLock';\n\n--DataXQuery--\nGarageDoorAccumalator = SELECT \n                            deviceId,\n                            deviceType,\n                            homeId,\n                            MaxEventTime,\n                            MinReading,\n                            MaxReading\n                        FROM DeviceInfoTimeWindow\n                        WHERE homeId = 150\n                            AND deviceType = 'GarageDoorLock'\n                        UNION ALL\n                        SELECT \n                            deviceId,\n                            deviceType,\n                            homeId,\n                            MaxEventTime,\n                            MinReading,\n                            MaxReading\n                        FROM iotdevicesample_GarageDoor_accumulated\n                        WHERE hour(MaxEventTime) = hour(current_timestamp());\n\n--DataXQuery--\nSELECT deviceId, deviceType, homeId, MaxEventTime, MinReading, MaxReading\nFROM GarageDoorAccumalator\nWITH UPSERT iotdevicesample_GarageDoor_accumulated;\n\n--DataXQuery--\nGarageDoorSliding = SELECT\n                        MaxEventTime AS EventTime,\n                        'GarageDoorSliding' AS MetricName,\n                        MaxReading AS Metric,\n                        'iotdevicesample' AS Product, \n                        '' AS Pivot1\n                    FROM iotdevicesample_GarageDoor_accumulated\n                    INNER JOIN GarageDoorStatus ON GarageDoorStatus.EventTime = iotdevicesample_GarageDoor_accumulated.MaxEventTime\n                    WHERE homeId = 150\n                        AND deviceType = 'GarageDoorLock';\n\n--DataXQuery--\nGarageDoorSlidingOpenInAnHour = SELECT COUNT(MaxReading) AS NumOfTimesGarageOpenFor5Mins,\n                                    MAX(MaxEventTime) AS MaxEventTime\n                                FROM iotdevicesample_GarageDoor_accumulated\n                                WHERE homeId = 150\n                                    AND deviceType = 'GarageDoorLock'\n                                    AND MaxReading = 0;\n\n--DataXQuery--\nGarageOpenFor5MinsInAnHourAlert = SELECT \n                                MaxEventTime AS EventTime,\n                                'GarageOpenFor5MinsInAnHourAlert' AS MetricName,\n                                0 AS Metric,\n                                'iotdevicesample' AS Product, \n                                CONCAT('No. of times garage door open for past 5 mins in current hour: ', NumOfTimesGarageOpenFor5Mins) AS Pivot1\n                                FROM GarageDoorSlidingOpenInAnHour;\n\nSimpleRulesTable = ProcessRules();\nAggregateRulesTable = ProcessAggregateRules(DataXProcessedInput);\nOUTPUT SimpleRulesTable TO myCosmosDB,myBlob;\nOUTPUT AggregateRulesTable TO myEventhub;\n\nOUTPUT HeaterStatus, WindowLockStatus, WindowLockSliding TO Metrics;\nOUTPUT WindowOpenWhileHeaterOnAlert TO Metrics;\nOUTPUT DoorLockStatus TO Metrics;\nOUTPUT DoorLockOpenBetween9pmAnd7amUtcAlert TO Metrics;\nOUTPUT GarageDoorStatus, GarageDoorSliding TO Metrics;\nOUTPUT GarageOpenFor5MinsInAnHourAlert TO Metrics;\n"
+      ],
+      "jobconfig": {
+        "jobNumExecutors": "6",
+        "jobExecutorMemory": "8000",
+        "jobDatabricksAutoScale": true,
+        "jobDatabricksMinWorkers": 1,
+        "jobDatabricksMaxWorkers": 8
+      }
+    },
+    "outputs": [
+      {
+        "id": "Metrics",
+        "type": "metric",
+        "properties": {},
+        "typeDisplay": "Metrics"
+      },
+      {
+        "id": "myBlob",
+        "type": "blob",
+        "properties": {
+          "connectionString": "secretscope://somekeyvault/dbconfiggentest-output-5D09E8DD98332F8B2723EC5C1BCE9AD1",
+          "containerName": "outputs",
+          "blobPrefix": "testdifferentsub",
+          "blobPartitionFormat": "yyyy/MM/dd/HH",
+          "format": "json",
+          "compressionType": "none"
+        },
+        "typeDisplay": "Azure Blob"
+      },
+      {
+        "id": "myCosmosDB",
+        "type": "cosmosdb",
+        "properties": {
+          "connectionString": "secretscope://somekeyvault/dbconfiggentest-output-161E93325EAA303AD3816687341330A6",
+          "db": "Outputs",
+          "collection": "tests"
+        },
+        "typeDisplay": "Cosmos DB"
+      },
+      {
+        "id": "myEventhub",
+        "type": "eventHub",
+        "properties": {
+          "connectionString": "secretscope://somekeyvault/dbconfiggentest-output-67CEEABAAE420FB8C7A8FD11CCC23A30",
+          "format": "json",
+          "compressionType": "gzip"
+        },
+        "typeDisplay": "Event Hub"
+      }
+    ],
+    "outputTemplates": [],
+    "rules": [
+      {
+        "id": "DoorLock Close",
+        "type": "tagAlert",
+        "properties": {
+          "$productId": "iotdevicesample",
+          "$ruleType": "SimpleRule",
+          "$ruleId": "187a7066-d048-44a5-b08d-59158ec3d230",
+          "$ruleDescription": "DoorLock Close",
+          "$condition": "deviceDetails.deviceType = 'DoorLock' AND deviceDetails.status = 1",
+          "$tagName": "Tag",
+          "$tag": "CLOSE",
+          "$aggs": [],
+          "$pivots": [],
+          "$isAlert": false,
+          "$severity": "Critical",
+          "$alertSinks": [],
+          "$outputTemplate": "",
+          "schemaTableName": "DataXProcessedInput",
+          "conditions": {
+            "type": "group",
+            "conjunction": "or",
+            "conditions": [
+              {
+                "type": "condition",
+                "conjunction": "or",
+                "aggregate": "AVG",
+                "field": "deviceDetails.deviceType",
+                "operator": "stringEqual",
+                "value": "DoorLock"
+              },
+              {
+                "type": "condition",
+                "conjunction": "and",
+                "aggregate": "AVG",
+                "field": "deviceDetails.status",
+                "operator": "equal",
+                "value": "1"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "DoorLock Open",
+        "type": "tagAlert",
+        "properties": {
+          "$productId": "iotdevicesample",
+          "$ruleType": "SimpleRule",
+          "$ruleId": "84f7b1c6-e501-448b-99f4-1a5cffa4b19d",
+          "$ruleDescription": "DoorLock Open",
+          "$condition": "deviceDetails.deviceType = 'DoorLock' AND deviceDetails.status = 0",
+          "$tagName": "Tag",
+          "$tag": "OPEN",
+          "$aggs": [],
+          "$pivots": [],
+          "$isAlert": false,
+          "$severity": "Critical",
+          "$alertSinks": [],
+          "$outputTemplate": "",
+          "schemaTableName": "DataXProcessedInput",
+          "conditions": {
+            "type": "group",
+            "conjunction": "or",
+            "conditions": [
+              {
+                "type": "condition",
+                "conjunction": "or",
+                "aggregate": "AVG",
+                "field": "deviceDetails.deviceType",
+                "operator": "stringEqual",
+                "value": "DoorLock"
+              },
+              {
+                "type": "condition",
+                "conjunction": "and",
+                "aggregate": "AVG",
+                "field": "deviceDetails.status",
+                "operator": "equal",
+                "value": "0"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "Aggr",
+        "type": "tag",
+        "properties": {
+          "$productId": "dbconfiggentest",
+          "$ruleType": "AggregateRule",
+          "$ruleId": "5c85ede7-7a9a-4f64-992d-4c42dfd386c9",
+          "$ruleDescription": "Aggr",
+          "$condition": "AVG(deviceDetails.deviceId) > 2",
+          "$tagName": "Tag",
+          "$tag": "Tag2",
+          "$aggs": [
+            "AVG(deviceDetails.deviceId)"
+          ],
+          "$pivots": [ "deviceDetails.deviceType" ],
+          "$isAlert": false,
+          "$severity": "Medium",
+          "$alertSinks": [
+            "myBlob"
+          ],
+          "$outputTemplate": "",
+          "schemaTableName": "DataXProcessedInput",
+          "conditions": {
+            "type": "group",
+            "conjunction": "or",
+            "conditions": [
+              {
+                "type": "condition",
+                "conjunction": "or",
+                "aggregate": "AVG",
+                "field": "deviceDetails.deviceId",
+                "operator": "greater",
+                "value": "2"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "Test",
+        "type": "tag",
+        "properties": {
+          "$productId": "dbconfiggentest",
+          "$ruleType": "SimpleRule",
+          "$ruleId": "12574ff5-f41d-4169-8532-e9b450ac476f",
+          "$ruleDescription": "Test",
+          "$condition": "deviceDetails.deviceId = 9",
+          "$tagName": "Tag",
+          "$tag": "Tag1",
+          "$aggs": [],
+          "$pivots": [],
+          "$isAlert": false,
+          "$severity": "Critical",
+          "$alertSinks": [],
+          "$outputTemplate": "",
+          "schemaTableName": "DataXProcessedInput",
+          "conditions": {
+            "type": "group",
+            "conjunction": "or",
+            "conditions": [
+              {
+                "type": "condition",
+                "conjunction": "or",
+                "aggregate": "AVG",
+                "field": "deviceDetails.deviceId",
+                "operator": "equal",
+                "value": "9"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "subscription": null
+  },
+  "commonProcessor": {
+    "sparkJobConfigFolder": "file:///datax/runtime/testjobs/",
+    "template": {
+      "name": "${name}",
+      "input": {
+        "eventhub": {
+          "connectionString": "${inputEventHubConnectionString}",
+          "consumerGroup": "${inputEventHubConsumerGroup}",
+          "checkpointDir": "${inputEventHubCheckpointDir}",
+          "checkpointInterval": "${inputEventHubCheckpointInterval}",
+          "maxRate": "${inputEventHubMaxRate}",
+          "flushExistingCheckpoints": "${inputEventHubFlushExistingCheckpoints}"
+        },
+        "streaming": {
+          "checkpointDir": "${inputStreamingCheckpointDir}",
+          "intervalInSeconds": "${inputStreamingIntervalInSeconds}"
+        },
+        "blobSchemaFile": "${inputSchemaFilePath}",
+        "referenceData": "${inputReferenceData}"
+      },
+      "process": {
+        "metric": {
+          "eventhub": "secretscope://somekeyvault/metric-eventhubconnectionstring"
+        },
+        "timestampColumn": "${processTimestampColumn}",
+        "watermark": "${processWatermark}",
+        "jarUDAFs": "${processJarUDAFs}",
+        "jarUDFs": "${processJarUDFs}",
+        "azureFunctions": "${processAzureFunctions}",
+        "projections": "${processProjections}",
+        "timeWindows": "${processTimeWindows}",
+        "transform": "${processTransforms}",
+        "appendEventTags": {},
+        "accumulationTables": "${processStateTables}"
+      },
+      "outputs": "${outputs}"
+    },
+    "sparkJobTemplateRef": "defaultJobTemplate",
+    "jobCommonTokens": {
+      "jobName": "${name}",
+      "sparkJobName": "DataXDirect-${name}",
+      "sparkJobDriverLogLevel": "WARN",
+      "sparkJobExecutorLogLevel": "INFO",
+      "sparkJobNumExecutors": "${guiSparkJobNumExecutors}",
+      "sparkJobExecutorMemory": "${guiSparkJobExecutorMemory}",
+      "processedSchemaPath": null
+    },
+    "jobs": [
+      {
+        "partitionJobNumber": "1"
+      }
+    ]
+  },
+  "metrics": {
+    "sources": [
+      {
+        "name": "events",
+        "input": {
+          "type": "MetricApi",
+          "metricKeys": [
+            "DATAX-${name}:Input_DataXProcessedInput_Events_Count"
+          ]
+        },
+        "output": {
+          "type": "SumWithTimeChart",
+          "data": {
+            "sum": true,
+            "timechart": true,
+            "average": true,
+            "speed": true
+          }
+        }
+      }
+    ],
+    "widgets": [
+      {
+        "name": "eventsChart",
+        "displayName": "Events/Second",
+        "data": "events_timechart",
+        "position": "TimeCharts",
+        "type": "StackAreaChart"
+      },
+      {
+        "name": "totalEvents",
+        "displayName": "Events Ingested Today",
+        "data": "events_sum",
+        "formatter": "longint",
+        "type": "SimpleBox",
+        "position": "FirstRow"
+      },
+      {
+        "name": "averageEvents",
+        "displayName": "Avg. Events/Minute",
+        "data": "events_average",
+        "formatter": "longint",
+        "type": "SimpleBox",
+        "position": "FirstRow"
+      }
+    ],
+    "initParameters": {
+      "widgetSets": [
+        "direct"
+      ],
+      "jobNames": {
+        "type": "getCPSparkJobNames"
+      }
+    }
+  }
+}

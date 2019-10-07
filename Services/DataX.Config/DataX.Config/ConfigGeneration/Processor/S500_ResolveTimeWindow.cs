@@ -32,7 +32,7 @@ namespace DataX.Config.ConfigGeneration.Processor
             {
                 return "no gui input, skipped.";
             }
-            var rulesCode = flowToDeploy.GetAttachment<RulesCode>(GenerateTransformFile.AttachmentName_CodeGenObject);
+            var rulesCode = flowToDeploy.GetAttachment<RulesCode>(PrepareTransformFile.AttachmentName_CodeGenObject);
             Ensure.NotNull(rulesCode, "rulesCode");
             Ensure.NotNull(rulesCode.MetricsRoot, "rulesCode.MetricsRoot");
             Ensure.NotNull(rulesCode.MetricsRoot.metrics, "rulesCode.MetricsRoot.metrics");

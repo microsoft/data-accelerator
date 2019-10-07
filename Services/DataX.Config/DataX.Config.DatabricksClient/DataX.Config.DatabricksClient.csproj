@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+	<SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>FinalPublicKey.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>true</DelaySign>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\DataX.Config\DataX.Config.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <FilesToSign Include="$(OutDir)\$(AssemblyName).dll">
+      <Authenticode>Microsoft400</Authenticode>
+      <StrongName>StrongName</StrongName>
+    </FilesToSign>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="0.4.1" />
+  </ItemGroup>
+
+</Project>

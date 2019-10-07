@@ -1,7 +1,8 @@
-// *********************************************************************
+﻿// *********************************************************************
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using DataX.Contract;
 using DataX.ServiceHost.ServiceFabric;
 using DataX.Utilities.KeyVault;
 using System;
@@ -20,28 +21,30 @@ namespace DataX.Metrics.Ingestor.Helper
 
         private SecretsStore()
         {
-            _keyVaultName = (string)ServiceFabricUtil.GetServiceKeyVaultName().Result;
+            _keyVaultName = ServiceFabricUtil.GetServiceKeyVaultName().Result?.ToString();
         }
 
         public static SecretsStore Instance => _LazyInstance.Value;
 
         public async Task<string> GetMetricsEventHubListenerConnectionStringAsync()
         {
-            return await GetSecretAsync(Utility.GetConfigValue("EventhubNamespaceConnectionstring"));
+            return await GetSecretAsync(ServiceFabricUtil.GetServiceFabricConfigSetting("EventhubNamespaceConnectionstring"));
         }
 
         public async Task<string> GetMetricsStorageConnectionStringAsync()
         {
-            return await GetSecretAsync(Utility.GetConfigValue("StorageAccountConnectionstring"));
+            return await GetSecretAsync(ServiceFabricUtil.GetServiceFabricConfigSetting("StorageAccountConnectionstring"));
         }
         
         public async Task<string> GetMetricsRedisConnectionStringAsync()
         {
-            return await GetSecretAsync(Utility.GetConfigValue("RedisCacheConnectionstring"));
+            return await GetSecretAsync(ServiceFabricUtil.GetServiceFabricConfigSetting("RedisCacheConnectionstring"));
         }
 
-        private async Task<string> GetSecretAsync(string key)
+        private async Task<string> GetSecretAsync(ApiResult setting)
         {
+            string key = setting.Result?.ToString();
+
             KeyVaultManager keyManager = new KeyVaultManager();
             var secret = await keyManager.GetSecretStringAsync(_keyVaultName, key);
             return secret;

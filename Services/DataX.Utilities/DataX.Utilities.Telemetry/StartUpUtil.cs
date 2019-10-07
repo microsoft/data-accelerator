@@ -3,6 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 using DataX.ServiceHost.ServiceFabric;
+using DataX.Contract.Settings;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
@@ -17,36 +18,54 @@ namespace DataX.Utilities.Telemetry
 {
     public static class StartUpUtil
     {
-        public static void ConfigureServices(IServiceCollection services)
+        public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
-            services.AddSingleton<ITelemetryInitializer, OperationParentIdTelemetryInitializer>();
-            services.AddApplicationInsightsTelemetry(new ApplicationInsightsServiceOptions()
-            {
-                EnableAdaptiveSampling = false,
-                EnableDebugLogger = false,
-                InstrumentationKey = KeyVault.KeyVault.GetSecretFromKeyvault(ServiceFabricUtil.GetServiceKeyVaultName().Result.ToString(), ServiceFabricUtil.GetServiceFabricConfigSetting("AppInsightsIntrumentationKey").Result.ToString())
-            });
-            services.AddSingleton<ITelemetryInitializer, OperationParentIdTelemetryInitializer>();
-            services.AddLogging(logging =>
-            {
-                try
-                {
-                    // In order to log ILogger logs
-                    logging.AddApplicationInsights();
-                    // Optional: Apply filters to configure LogLevel Information or above is sent to
-                    // ApplicationInsights for all categories.
-                    logging.AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Information);
+            var settings = configuration.GetSection(DataXSettingsConstants.ServiceEnvironment).Get<DataXSettings>();
 
-                    // Additional filtering For category starting in "Microsoft",
-                    // only Warning or above will be sent to Application Insights.
-                    logging.AddFilter<ApplicationInsightsLoggerProvider>("Microsoft", LogLevel.Warning);
+            ConfigureServices(services, settings ?? new DataXSettings());
+        }
 
-                }
-                catch (Exception e)
+        public static void ConfigureServices(IServiceCollection services, DataXSettings settings)
+        {
+            services
+                .AddSingleton<ITelemetryInitializer, OperationParentIdTelemetryInitializer>()
+                .AddApplicationInsightsTelemetry(new ApplicationInsightsServiceOptions()
                 {
-                    ServiceEventSource.Current.Message($"ApplicationInsights Error: {e.Message}");
-                }
-            });
+                    EnableAdaptiveSampling = false,
+                    EnableDebugLogger = false,
+                    InstrumentationKey = GetInstrumentationKey(settings)
+                })
+                .AddSingleton<ITelemetryInitializer, OperationParentIdTelemetryInitializer>()
+                .AddLogging(logging =>
+                {
+                    try
+                    {
+                        // In order to log ILogger logs
+                        logging.AddApplicationInsights();
+                        // Optional: Apply filters to configure LogLevel Information or above is sent to
+                        // ApplicationInsights for all categories.
+                        logging.AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Information);
+
+                        // Additional filtering For category starting in "Microsoft",
+                        // only Warning or above will be sent to Application Insights.
+                        logging.AddFilter<ApplicationInsightsLoggerProvider>("Microsoft", LogLevel.Warning);
+
+                    }
+                    catch (Exception e)
+                    {
+                        ServiceEventSource.Current.Message($"ApplicationInsights Error: {e.Message}");
+                    }
+                });
+        }
+
+        private static string GetInstrumentationKey(DataXSettings settings)
+        {
+            var secretName = settings?.AppInsightsIntrumentationKey;
+            var vaultName = settings.ServiceKeyVaultName;
+
+            return string.IsNullOrWhiteSpace(secretName) || string.IsNullOrWhiteSpace(vaultName)
+                ? Guid.Empty.ToString()
+                : KeyVault.KeyVault.GetSecretFromKeyvault(settings.ServiceKeyVaultName, settings.AppInsightsIntrumentationKey);
         }
     }
 }

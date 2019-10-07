@@ -1,0 +1,105 @@
+﻿{
+  "name": "customconfiggentest",
+  "icon": "/img/vs.png",
+  "displayName": "customconfiggentest",
+  "properties": {
+    "foo": "bar"
+  },
+  "commonProcessor": {
+    "sparkJobConfigFolder": "wasbs://containername@someblob.core.windows.net/customconfiggentest",
+    "template": {
+      "name": "${jobName}",
+      "resources": "keyvault://somekeyvault/customconfiggentest-resources.xml",
+      "input": {
+        "sources": {
+          "myinput${sourceShardNumber}": {
+            "target": "mytarget${partitionJobNumber}"
+          }
+        },
+        "eventhub": {
+          "consumerGroup": "customconfiggentest${partitionJobNumber}-staging",
+          "checkpointDir": "hdfs://mycluster/checkpoints/${jobName}",
+          "checkpointInterval": "300",
+          "connectionString": "keyvault://somekeyvault/customconfiggentest-eventhubconnectionstring",
+          "maxRate": "300",
+          "partitionCount": "10",
+          "startEnqueueTime": "-60"
+        },
+        "streaming": {
+          "checkpointDir": "hdfs://mycluster/checkpoints/${jobName}",
+          "intervalInSeconds": 300
+        },
+        "blobSchemaFile": "keyvault://somekeyvault/customconfiggentest-rawSchema.json",
+        "eventNamePath": "eventhubpath",
+        "blobPathRegex": "\\d{4}/\\d{2}",
+        "fileTimeRegex": "\\d{4}/\\d{2}",
+        "sourceIdRegex": "\\d{4}/\\d{2}",
+        "fileTimeFormat": "yyyyMMdd",
+        "referenceData": []
+      },
+      "process": {
+        "metric": {
+          "eventhub": "keyvault://somekeyvault/metric-eventhubconnectionstring"
+        },
+        "transform": "keyvault://somekeyvault/customconfiggentest-transform.xml",
+        "projections": [
+          "keyvault://somekeyvault/customconfiggentest-projections.xml"
+        ]
+      },
+      "output": {
+        "blob": {
+          "groups": {
+            "main": {
+              "folder": "keyvault://somekeyvault/customconfiggentest-bloboutput"
+            },
+            "quarantined": {
+              "folder": "keyvault://somekeyvault/customconfiggentest-quarantined"
+            }
+          },
+          "groupEvaluation": "test",
+          "format": "json",
+          "compressionType": "gzip"
+        },
+        "name": "default",
+        "processedSchemaPath": "keyvault://somekeyvault/customconfiggentest-processedschemapath"
+      }
+    },
+    "sparkJobTemplateRef": "defaultJobTemplate",
+    "jobCommonTokens": {
+      "jobName": "customconfiggentest${partitionJobNumber}",
+      "sparkJobName": "customconfiggentest${partitionJobNumber}",
+      "sparkJobConfigFileName": "customconfiggentest${partitionJobNumber}.json",
+      "sparkJobDriverLogLevel": "WARN",
+      "sparkJobExecutorLogLevel": "INFO",
+      "sparkJobNumExecutors": 6,
+      "sparkJobExecutorMemory": "8000m",
+      "processedSchemaPath": null
+    },
+    "jobs": [
+      {
+        "sourceShardNumber": "01",
+        "partitionJobNumber": "1",
+        "processedSchemaPath": null
+      },
+      {
+        "sourceShardNumber": "02",
+        "partitionJobNumber": "2",
+        "processedSchemaPath": null
+      }
+    ]
+  },
+  "metrics": {
+    "initParameters": {
+      "widgetSets": [
+        "direct"
+      ],
+      "jobNames": {
+        "type": "getCPSparkJobNames"
+      }
+    }
+  },
+  "jobNames": [
+    "customconfiggentest1",
+    "customconfiggentest2"
+  ]
+}

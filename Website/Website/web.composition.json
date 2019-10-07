@@ -114,6 +114,7 @@
       "^DataX.Flow\/Flow.ManagementService\/job\/getall$",
       "^DataX.Flow\/Flow.ManagementService\/job\/getbynames$",
       "^DataX.Flow\/Flow.ManagementService\/flow\/save$",
+      "^DataX.Flow\/Flow.ManagementService\/flow\/deploy$",
       "^DataX.Flow\/Flow.ManagementService\/flow\/delete$",
       "^DataX.Flow\/Flow.ManagementService\/flow\/generateconfigs$",
       "^DataX.Flow\/Flow.ManagementService\/flow\/startjobs$",
@@ -155,6 +156,7 @@
     "enabledForWriter": [
       "newFlowButtonEnabled",
       "saveFlowButtonEnabled",
+      "deployFlowButtonEnabled",
       "deleteFlowButtonEnabled",
       "getInputSchemaButtonEnabled",
       "outputSideToolBarEnabled",
@@ -183,6 +185,9 @@
       "deleteFunctionButtonEnabled",
       "addOutputSinkButtonEnabled",
       "deleteOutputSinkButtonEnabled",
+      "deleteFunctionButtonEnabled",
+      "addBatchButtonEnabled",
+      "deleteBatchButtonEnabled",
       "scaleNumExecutorsSliderEnabled",
       "scaleExecutorMemorySliderEnabled",
       "jobActionsEnabled"

@@ -34,7 +34,8 @@ namespace DataX.Config.Test
             var conf = new ContainerConfiguration()
                 .WithAssembly(typeof(ConfigGenConfiguration).Assembly)
                 .WithAssembly(typeof(MockBase).Assembly)
-                .WithAssembly(Assembly.GetExecutingAssembly());
+                .WithAssembly(Assembly.GetExecutingAssembly())
+                .WithProvider(new LoggerAndInstanceExportDescriptorProvider<object>(null, new LoggerFactory()));
 
             CompositionHost = conf.CreateContainer();
         }
@@ -85,16 +86,18 @@ namespace DataX.Config.Test
 
             public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
             {
-                var expectedConfigContent = await File.ReadAllTextAsync(@"Resource\jobConfig.json");
-                var expectedJson = JsonConfig.From(expectedConfigContent);
-                var actualContentContent = flowToDeploy.GetJobs().First().GetTokenString(GenerateJobConfig.TokenName_JobConfigContent);
-                var actualJson = JsonConfig.From(actualContentContent);
-
-                foreach (var match in JsonConfig.Match(expectedJson, actualJson))
+                if(flowToDeploy.Name == "configgentest")
                 {
-                    Assert.AreEqual(expected: match.Item2, actual: match.Item3, message: $"path:{match.Item1}");
-                }
+                    var expectedConfigContent = await File.ReadAllTextAsync(@"Resource\jobConfig.json");
+                    var expectedJson = JsonConfig.From(expectedConfigContent);
+                    var actualContentContent = flowToDeploy.GetJobs().First().GetTokenString(GenerateJobConfig.TokenName_JobConfigContent);
+                    var actualJson = JsonConfig.From(actualContentContent);
 
+                    foreach (var match in JsonConfig.Match(expectedJson, actualJson))
+                    {
+                        Assert.AreEqual(expected: match.Item2, actual: match.Item3, message: $"path:{match.Item1}");
+                    }
+                }
                 return "done";
             }
         }
@@ -158,6 +161,8 @@ namespace DataX.Config.Test
             {
                 Assert.AreEqual(expected: match.Item2, actual: match.Item3, message: $"path:{match.Item1}");
             }
+
+            Cleanup();
         }
     }
 }

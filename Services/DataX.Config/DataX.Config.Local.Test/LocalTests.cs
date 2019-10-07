@@ -36,7 +36,8 @@ namespace DataX.Config.Test
 
             var conf = new ContainerConfiguration()
                 .WithAssembly(typeof(ConfigGenConfiguration).Assembly)
-                .WithAssembly(typeof(DataX.Config.Local.LocalDesignTimeStorage).Assembly);
+                .WithAssembly(typeof(DataX.Config.Local.LocalDesignTimeStorage).Assembly)
+                .WithProvider(new LoggerAndInstanceExportDescriptorProvider<object>(null, new LoggerFactory()));
 
             CompositionHost = conf.CreateContainer();
             _TestContext = tc;

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <DelaySign>true</DelaySign>
     <AssemblyOriginatorKeyFile>FinalPublicKey.snk</AssemblyOriginatorKeyFile>
@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>pdbonly</DebugType>
     <CodeAnalysisRuleSet />
   </PropertyGroup>
 
@@ -24,23 +25,24 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="0.4.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="System.Composition" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\DataX.Contract\DataX.Contract.csproj" />
     <ProjectReference Include="..\..\DataX.Flow\DataX.Flow.CodegenRules\DataX.Flow.CodegenRules.csproj" />
+    <ProjectReference Include="..\..\DataX.Flow\DataX.Utilities.Composition\DataX.Utilities.Composition.csproj" />
+    <ProjectReference Include="..\..\DataX.Utilities\DataX.Utility.KeyVault\DataX.Utility.KeyVault.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <FilesToSign Include="$(OutDir)\$(AssemblyName).dll">
-      <Authenticode>Microsoft</Authenticode>
+      <Authenticode>Microsoft400</Authenticode>
       <StrongName>StrongName</StrongName>
     </FilesToSign>
   </ItemGroup>

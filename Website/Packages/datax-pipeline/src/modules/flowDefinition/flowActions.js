@@ -3,14 +3,13 @@
 // Licensed under the MIT License
 // *********************************************************************
 import Q from 'q';
-import { UserSelectors, getApiErrorMessage } from 'datax-common';
-
 import * as Api from './api';
-import * as Helpers from './flowHelpers';
+import { isDatabricksSparkType } from '../../common/api';
 import * as Selectors from './flowSelectors';
-import * as KernelActions from './kernelActions';
-import * as KernelSelectors from './kernelSelectors';
-
+import { UserSelectors, getApiErrorMessage } from 'datax-common';
+import { QueryActions, QueryModels } from 'datax-query';
+import * as Helpers from './flowHelpers';
+import * as Models from './flowModels';
 /**
  *
  * REDUX Action Types
@@ -24,9 +23,8 @@ export const FLOW_NEW = 'FLOW_NEW';
 // Info
 export const FLOW_UPDATE_DISPLAY_NAME = 'FLOW_UPDATE_DISPLAY_NAME';
 export const FLOW_UPDATE_OWNER = 'FLOW_UPDATE_OWNER';
-
-// Query
-export const FLOW_UPDATE_QUERY = 'FLOW_UPDATE_QUERY';
+export const FLOW_UPDATE_DATABRICKSTOKEN = 'FLOW_UPDATE_DATABRICKSTOKEN';
+export const FLOW_UPDATE_ISDATABRICKSSPARKTYPE = 'FLOW_UPDATE_ISDATABRICKSSPARKTYPE';
 
 // Scale
 export const FLOW_UPDATE_SCALE = 'FLOW_UPDATE_SCALE';
@@ -37,6 +35,12 @@ export const FLOW_NEW_SINKER = 'FLOW_NEW_SINKER';
 export const FLOW_DELETE_SINKER = 'FLOW_DELETE_SINKER';
 export const FLOW_UPDATE_SINKER = 'FLOW_UPDATE_SINKER';
 export const FLOW_UPDATE_SELECTED_SINKER_INDEX = 'FLOW_UPDATE_SELECTED_SINKER_INDEX';
+
+// Schedule
+export const FLOW_NEW_BATCH = 'FLOW_NEW_BATCH';
+export const FLOW_DELETE_BATCH = 'FLOW_DELETE_BATCH';
+export const FLOW_UPDATE_BATCHLIST = 'FLOW_UPDATE_BATCHLIST';
+export const FLOW_UPDATE_SELECTED_BATCH_INDEX = 'FLOW_UPDATE_SELECTED_BATCH_INDEX';
 
 // Rules
 export const FLOW_UPDATE_RULES = 'FLOW_UPDATE_RULES';
@@ -61,9 +65,9 @@ export const FLOW_UPDATE_SELECTED_FUNCTION_INDEX = 'FLOW_UPDATE_SELECTED_FUNCTIO
 
 // Input
 export const FLOW_UPDATE_INPUT = 'FLOW_UPDATE_INPUT';
+export const FLOW_UPDATE_BATCH_INPUT = 'FLOW_UPDATE_BATCH_INPUT';
 export const FLOW_FETCHING_INPUT_SCHEMA = 'FLOW_FETCHING_INPUT_SCHEMA';
 export const FLOW_UPDATE_SAMPLING_INPUT_DURATION = 'FLOW_UPDATE_SAMPLING_INPUT_DURATION';
-export const FLOW_UPDATE_RESAMPLING_INPUT_DURATION = 'FLOW_UPDATE_RESAMPLING_INPUT_DURATION';
 
 // Message
 export const FLOW_UPDATE_ERROR_MESSAGE = 'FLOW_UPDATE_ERROR_MESSAGE';
@@ -78,6 +82,15 @@ export const FLOW_UPDATE_ONEBOX_MODE = 'FLOW_UPDATE_ONEBOX_MODE';
  *
  */
 
+function getSparkEnvAndUpdateIsDatabricksSparkType(dispatch){
+    isDatabricksSparkType().then(response => {
+        return dispatch({
+            type: FLOW_UPDATE_ISDATABRICKSSPARKTYPE,
+            payload: response
+        });
+    });
+}
+ 
 // Init Actions
 export const initFlow = context => (dispatch, getState) => {
     if (context && context.id) {
@@ -89,6 +102,10 @@ export const initFlow = context => (dispatch, getState) => {
                     payload: flow
                 });
             })
+            .then(flow => {
+                dispatch(QueryActions.initQuery(flow.payload.query));
+                getSparkEnvAndUpdateIsDatabricksSparkType(dispatch);
+            })
             .catch(error => {
                 const message = getApiErrorMessage(error);
                 updateErrorMessage(dispatch, message);
@@ -96,6 +113,8 @@ export const initFlow = context => (dispatch, getState) => {
             });
     } else {
         const owner = UserSelectors.getUserAlias(getState());
+        dispatch(QueryActions.initQuery(QueryModels.defaultQuery));
+        getSparkEnvAndUpdateIsDatabricksSparkType(dispatch);
         return dispatch({
             type: FLOW_NEW,
             payload: owner
@@ -118,12 +137,25 @@ export const updateOwner = () => (dispatch, getState) => {
     });
 };
 
+export const updateDatabricksToken = databricksToken => dispatch => {
+    return dispatch({
+        type: FLOW_UPDATE_DATABRICKSTOKEN,
+        payload: databricksToken
+    });
+};
+
 // Input Actions
 export const updateInputMode = mode => (dispatch, getState) => {
+    let type = mode === Models.inputModeEnum.streaming ? Models.inputTypeEnum.events : Models.inputTypeEnum.blob;
+    let snippet = Models.getDefaultNormalizationSnippet(mode);
     updateInput(
         dispatch,
         Object.assign({}, Selectors.getFlowInput(getState()), {
-            mode: mode
+            mode: mode,
+            type: type,
+            properties: Object.assign({}, Selectors.getFlowInputProperties(getState()), {
+                normalizationSnippet: snippet
+            })
         })
     );
 };
@@ -140,6 +172,12 @@ export const updateInputType = type => (dispatch, getState) => {
 export const updateInputHubName = name => (dispatch, getState) => {
     updateInputProperties(dispatch, getState, {
         inputEventhubName: name
+    });
+};
+
+export const updateInputPath = path => (dispatch, getState) => {
+    updateInputProperties(dispatch, getState, {
+        inputPath: path
     });
 };
 
@@ -160,6 +198,48 @@ export const updateInputResourceGroup = name => (dispatch, getState) => {
         inputResourceGroup: name
     });
 };
+
+export const updateBatchInputConnection = connection => (dispatch, getState) => {
+    updateBatchInputProperties(dispatch, getState, {
+        connection: connection
+    });
+};
+
+export const updateBlobInputPath = path => (dispatch, getState) => {
+    updateBatchInputProperties(dispatch, getState, {
+        path: path
+    });
+};
+
+export const updateBatchInputFormatType = formatType => (dispatch, getState) => {
+    updateBatchInputProperties(dispatch, getState, {
+        formatType: formatType
+    });
+};
+
+export const updateBachInputCompressionType = compressionType => (dispatch, getState) => {
+    updateBatchInputProperties(dispatch, getState, {
+        compressionType: compressionType
+    });
+};
+
+function updateBatchInputProperties(dispatch, getState, propertyMember) {
+    updateBatchInput(
+        dispatch,
+        Selectors.getSelectedBatchInputIndex(getState()),
+        Object.assign({}, Selectors.getSelectedBatchInput(getState()), {
+            properties: Object.assign({}, Selectors.getSelectedBatchInputProperties(getState()), propertyMember)
+        })
+    );
+}
+
+function updateBatchInput(dispatch, index, batchInput) {
+    return dispatch({
+        type: FLOW_UPDATE_BATCH_INPUT,
+        payload: batchInput,
+        index: index
+    });
+}
 
 export const updateInputWindowDuration = duration => (dispatch, getState) => {
     updateInputProperties(dispatch, getState, {
@@ -206,13 +286,6 @@ export const updateNormalizationSnippet = snippet => (dispatch, getState) => {
 export const updateSamplingInputDuration = duration => dispatch => {
     return dispatch({
         type: FLOW_UPDATE_SAMPLING_INPUT_DURATION,
-        duration: duration
-    });
-};
-
-export const updateResamplingInputDuration = duration => dispatch => {
-    return dispatch({
-        type: FLOW_UPDATE_RESAMPLING_INPUT_DURATION,
         duration: duration
     });
 };
@@ -455,68 +528,6 @@ function updateFunction(dispatch, index, functionItem) {
     });
 }
 
-// Query Actions
-export const updateQuery = query => dispatch => {
-    return dispatch({
-        type: FLOW_UPDATE_QUERY,
-        payload: query
-    });
-};
-
-export const getTableSchemas = flow => {
-    return Api.getTableSchemas(flow).then(tables => {
-        let tableToSchemaMap = {};
-        tables.forEach(table => {
-            tableToSchemaMap[table.name] = table;
-        });
-
-        return tableToSchemaMap;
-    });
-};
-
-export const getCodeGenQuery = flow => {
-    return Api.getCodeGenQuery(flow).then(query => {
-        return query;
-    });
-};
-
-export const executeQuery = (flow, selectedQuery, kernelId) => dispatch => {
-    updateErrorMessage(dispatch, undefined);
-    return Api.executeQuery(flow, selectedQuery, kernelId)
-        .then(result => {
-            return result;
-        })
-        .catch(error => {
-            const message = getApiErrorMessage(error);
-            updateErrorMessage(dispatch, message);
-            return Q.reject({ error: true, message: message });
-        });
-};
-
-export const resampleInput = (flow, kernelId, version) => (dispatch, getState) => {
-    updateErrorMessage(dispatch, undefined);
-    KernelActions.fetchingKernel(dispatch, true);
-    return Api.resampleInput(flow, kernelId)
-        .then(response => {
-            const kernelId = response.result;
-            const warning = response.message;
-
-            const curVersion = KernelSelectors.getKernelVersion(getState());
-
-            if (version >= curVersion) {
-                return KernelActions.updateKernel(dispatch, kernelId, version, warning);
-            } else {
-                return Api.deleteDiagnosticKernel(kernelId);
-            }
-        })
-        .catch(error => {
-            const message = getApiErrorMessage(error);
-            updateErrorMessage(dispatch, message);
-            KernelActions.fetchingKernel(dispatch, false);
-            return Q.reject({ error: true, message: message });
-        });
-};
-
 // Output Actions
 export const updateOutputs = outputs => dispatch => {
     return dispatch({
@@ -637,6 +648,31 @@ function updateSinker(dispatch, index, sinker) {
         index: index
     });
 }
+
+// Sql Sinker
+export const updateSqlConnection = connection => (dispatch, getState) => {
+    updateSinkerProperties(dispatch, getState, {
+        connectionString: connection
+    });
+};
+
+export const updateSqlTableName = name => (dispatch, getState) => {
+    updateSinkerProperties(dispatch, getState, {
+        tableName: name
+    });
+};
+
+export const updateSqlWriteMode = mode => (dispatch, getState) => {
+    updateSinkerProperties(dispatch, getState, {
+        writeMode: mode
+    });
+};
+
+export const updateSqlUseBulkInsert = bulkInsert => (dispatch, getState) => {
+    updateSinkerProperties(dispatch, getState, {
+        useBulkInsert: bulkInsert
+    });
+};
 
 // Rule Actions
 export const updateRules = rules => dispatch => {
@@ -782,6 +818,33 @@ export const updateExecutorMemory = executorMemory => (dispatch, getState) => {
     );
 };
 
+export const updateDatabricksAutoScale = databricksAutoScale => (dispatch, getState) => {
+    updateScale(
+        dispatch,
+        Object.assign({}, Selectors.getFlowScale(getState()), {
+            jobDatabricksAutoScale: databricksAutoScale
+        })
+    );
+};
+
+export const updateDatabricksMinWorkers = databricksMinWorkers => (dispatch, getState) => {
+    updateScale(
+        dispatch,
+        Object.assign({}, Selectors.getFlowScale(getState()), {
+            jobDatabricksMinWorkers: databricksMinWorkers
+        })
+    );
+};
+
+export const updateDatabricksMaxWorkers = databricksMaxWorkers => (dispatch, getState) => {
+    updateScale(
+        dispatch,
+        Object.assign({}, Selectors.getFlowScale(getState()), {
+            jobDatabricksMaxWorkers: databricksMaxWorkers
+        })
+    );
+};
+
 function updateScale(dispatch, scale) {
     return dispatch({
         type: FLOW_UPDATE_SCALE,
@@ -811,8 +874,22 @@ const rejectWithMessage = (error, msg) =>
     });
 
 // Save and Delete Actions
-export const saveFlow = flow => {
-    return Api.saveFlow(Helpers.convertFlowToConfig(flow)).then(result => {
+export const saveFlow = (flow, query) => {
+    return Api.saveFlow(Helpers.convertFlowToConfig(flow, query))
+        .then(result => {
+            return result.name;
+        })
+        .catch(error => {
+            const message = getApiErrorMessage(error);
+            return Q.reject({
+                error: true,
+                message: `There was an issue saving the Flow. Please fix following error then save again: ${message}`
+            });
+        });
+};
+
+export const deployFlow = (flow, query) => {
+    return Api.saveFlow(Helpers.convertFlowToConfig(flow, query)).then(result => {
         const name = result.name;
 
         // generate job configurations for product
@@ -844,3 +921,101 @@ export const updateOneBoxMode = enableLocalOneBox => dispatch => {
         payload: enableLocalOneBox
     });
 };
+
+// Batch
+export const newBatch = type => dispatch => {
+    return dispatch({
+        type: FLOW_NEW_BATCH,
+        payload: type
+    });
+};
+
+export const deleteBatch = index => dispatch => {
+    return dispatch({
+        type: FLOW_DELETE_BATCH,
+        index: index
+    });
+};
+
+export const updateSelectedBatchIndex = index => dispatch => {
+    return dispatch({
+        type: FLOW_UPDATE_SELECTED_BATCH_INDEX,
+        payload: index
+    });
+};
+
+export const updateBatchName = name => (dispatch, getState) => {
+    updateBatchList(
+        dispatch,
+        Selectors.getSelectedBatchIndex(getState()),
+        Object.assign({}, Selectors.getSelectedBatch(getState()), {
+            id: name
+        })
+    );
+};
+
+export const updateBatchStartTime = startTime => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        startTime: startTime
+    });
+};
+
+export const updateBatchEndTime = endTime => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        endTime: endTime
+    });
+};
+
+export const updateBatchIntervalValue = interval => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        interval: interval
+    });
+};
+
+export const updateBatchIntervalType = type => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        intervalType: type
+    });
+};
+
+export const updateBatchDelayValue = delay => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        delay: delay
+    });
+};
+
+export const updateBatchDelayType = type => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        delayType: type
+    });
+};
+
+export const updateBatchWindowValue = window => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        window: window
+    });
+};
+
+export const updateBatchWindowType = type => (dispatch, getState) => {
+    updateBatchProperties(dispatch, getState, {
+        windowType: type
+    });
+};
+
+function updateBatchProperties(dispatch, getState, propertyMember) {
+    updateBatchList(
+        dispatch,
+        Selectors.getSelectedBatchIndex(getState()),
+        Object.assign({}, Selectors.getSelectedBatch(getState()), {
+            properties: Object.assign({}, Selectors.getSelectedBatchProperties(getState()), propertyMember)
+        })
+    );
+}
+
+function updateBatchList(dispatch, index, batch) {
+    return dispatch({
+        type: FLOW_UPDATE_BATCHLIST,
+        payload: batch,
+        index: index
+    });
+}

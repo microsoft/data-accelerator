@@ -11,6 +11,9 @@ Licensed under the MIT License
     <Parameter Name="cosmosDBConfigDatabaseName" Value="" MustOverride="true" />
     <Parameter Name="cosmosDBConfigCollectionName" Value="" MustOverride="true" />
     <Parameter Name="AppInsightsIntrumentationKey" Value="" MustOverride="true" />
+    <Parameter Name="SparkType" Value="" MustOverride="true" />
+    <Parameter Name="TestClientId" Value="" MustOverride="true" />
+    <Parameter Name="EnableOneBox" Value="" MustOverride="true" />
   </Section>
 
 </Settings>

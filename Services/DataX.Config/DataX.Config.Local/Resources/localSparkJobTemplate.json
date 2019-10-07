@@ -3,19 +3,19 @@
   "cluster": "${sparkClusterName}",
   "options": {
     "name": "${sparkJobName}",
-    "file": "${localRoot}/bin/datax-host_2.3_2.11-1.1.0.jar",
+    "file": "${localRoot}/bin/datax-host_2.4_2.11-1.2.0.jar",
     "className": "datax.app.DirectLocalStreamingApp",
     "args": [
       "conf=${sparkJobConfigFilePath}",
       "driverLogLevel=${sparkJobDriverLogLevel}"
     ],
     "jars": [
-      "${localRoot}/bin/datax-core_2.3_2.11-1.1.0.jar",
-      "${localRoot}/bin/datax-utility_2.3_2.11-1.1.0.jar",
+      "${localRoot}/bin/datax-core_2.4_2.11-1.2.0.jar",
+      "${localRoot}/bin/datax-utility_2.4_2.11-1.2.0.jar",
       "${localRoot}/bin/applicationinsights-core-2.2.1.jar",
       "${localRoot}/bin/azure-eventhubs-1.2.1.jar",
       "${localRoot}/bin/azure-eventhubs-spark_2.11-2.3.6.jar",
-      "${localRoot}/bin/datax-keyvault_2.3_2.11-1.1.0-with-dependencies.jar",
+      "${localRoot}/bin/datax-keyvault_2.4_2.11-1.2.0-with-dependencies.jar",
       "${localRoot}/bin/proton-j-0.31.0.jar"
 
     ],

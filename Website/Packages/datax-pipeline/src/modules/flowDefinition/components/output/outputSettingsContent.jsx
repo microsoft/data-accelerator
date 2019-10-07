@@ -11,6 +11,7 @@ import { Colors, IconButtonStyles, PanelHeader, PanelHeaderButtons, ScrollableCo
 import CosmosDbSinkerSettings from './cosmosdbSinkerSettings';
 import EventHubSinkerSettings from './eventHubSinkerSettings';
 import BlobSinkerSettings from './blobSinkerSettings';
+import SqlSinkerSettings from './sqlSinkerSettings';
 import MetricSinkerSettings from './metricSinkerSettings';
 import LocalSinkerSettings from './localSinkerSettings';
 import * as Styles from '../../../../common/styles';
@@ -42,6 +43,7 @@ export default class OutputSettingsContent extends React.Component {
             [Models.sinkerTypeEnum.cosmosdb]: sinker => this.renderCosmosDbSettings(sinker),
             [Models.sinkerTypeEnum.eventHub]: sinker => this.renderEventHubSettings(sinker),
             [Models.sinkerTypeEnum.blob]: sinker => this.renderBlobSettings(sinker),
+            [Models.sinkerTypeEnum.sql]: sinker => this.renderSqlSettings(sinker),
             [Models.sinkerTypeEnum.metric]: sinker => this.renderMetricSettings(sinker),
             [Models.sinkerTypeEnum.local]: sinker => this.renderLocalSettings(sinker)
         };
@@ -123,14 +125,14 @@ export default class OutputSettingsContent extends React.Component {
     renderAddSinkerButton() {
         const menuItems = this.props.enableLocalOneBox
             ? Models.outputSinkerTypes
-                  .filter(sinkerType => sinkerType.name == 'Local')
+                  .filter(sinkerType => sinkerType.name === 'Local')
                   .map(sinkerType => {
                       return Object.assign({}, sinkerType, {
                           onClick: () => this.props.onNewSinker(sinkerType.key)
                       });
                   })
             : Models.outputSinkerTypes
-                  .filter(sinkerType => sinkerType.name != 'Local')
+                  .filter(sinkerType => sinkerType.name !== 'Local')
                   .map(sinkerType => {
                       return Object.assign({}, sinkerType, {
                           onClick: () => this.props.onNewSinker(sinkerType.key)
@@ -233,6 +235,20 @@ export default class OutputSettingsContent extends React.Component {
         );
     }
 
+    renderSqlSettings(sinker) {
+        return (
+            <SqlSinkerSettings
+                sinker={sinker}
+                sinkerDisplayName={this.sinkerTypeToDisplayMap[sinker.type]}
+                onUpdateSinkerName={this.props.onUpdateSinkerName}
+                onUpdateSqlConnection={this.props.onUpdateSqlConnection}
+                onUpdateSqlTableName={this.props.onUpdateSqlTableName}
+                onUpdateSqlWriteMode={this.props.onUpdateSqlWriteMode}
+                onUpdateSqlUseBulkInsert={this.props.onUpdateSqlUseBulkInsert}
+            />
+        );
+    }
+
     renderMetricSettings(sinker) {
         return (
             <MetricSinkerSettings flowId={this.props.flowId} sinker={sinker} sinkerDisplayName={this.sinkerTypeToDisplayMap[sinker.type]} />
@@ -307,6 +323,12 @@ OutputSettingsContent.propTypes = {
     onUpdateBlobContainerName: PropTypes.func.isRequired,
     onUpdateBlobPrefix: PropTypes.func.isRequired,
     onUpdateBlobPartitionFormat: PropTypes.func.isRequired,
+
+    // Sql
+    onUpdateSqlConnection: PropTypes.func.isRequired,
+    onUpdateSqlTableName: PropTypes.func.isRequired,
+    onUpdateSqlWriteMode: PropTypes.func.isRequired,
+    onUpdateSqlUseBulkInsert: PropTypes.func.isRequired,
 
     addOutputSinkButtonEnabled: PropTypes.bool.isRequired,
     deleteOutputSinkButtonEnabled: PropTypes.bool.isRequired

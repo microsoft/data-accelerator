@@ -8,5 +8,7 @@ export const Constants = {
     // List of supported services
     services: {
         flow: 'Flow.ManagementService'
-    }
+    },
+
+    batching: 'batching'
 };
