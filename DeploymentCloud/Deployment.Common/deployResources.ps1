@@ -185,7 +185,10 @@ function Get-Tokens {
 	$tokens.Add('dataxJobTemplate', $dataxJobTemplate)
 	$tokens.Add('dataxKafkaJobTemplate', $dataxKafkaJobTemplate)
 	$tokens.Add('dataxBatchJobTemplate', $dataxBatchJobTemplate)
-    
+	
+	$sqlDocDBName = 'sql' + $docDBName
+	$tokens.Add('sqlDocDBName', $sqlDocDBName)
+	
     # CosmosDB
     $tokens.Add('blobopsconnectionString', $blobopsconnectionString )
     $tokens.Add('configgenClientId', $azureADApplicationConfiggenApplicationId )
@@ -633,6 +636,15 @@ function Setup-Secrets {
 
     $secretName = $prefix + "datax-sa-" + $sparkBlobAccountName    
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $tValue
+	
+	if($setupCosmosdbAndSqldbSample -eq 'y'){
+		$secretName = $prefix + "datax-sa-fullconnectionstring-" + $sparkBlobAccountName    
+		Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $storageAccount.Context.ConnectionString
+	
+		$sqlCosmosdbCon = Get-CosmosDBConnectionString -Name $sqlDocDBName
+		$secretName = "output-samplecosmosdb"
+		Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sqlCosmosdbCon
+	}
     
     $secretName = $prefix + "metric-eventhubconnectionstring"    
     $tValue = (Get-AzureRmEventHubKey -resourceGroupName $resourceGroupName -NamespaceName "$eventHubNamespaceName" -EventHubName metricseventhub -AuthorizationRuleName send).PrimaryConnectionString
@@ -833,8 +845,14 @@ if($resourceCreation -eq 'y') {
     Write-Host -ForegroundColor Green "Deploying resources (1/16 steps): All resources except HDInsight and Service Fabric clusters will be deployed"
     Write-Host -ForegroundColor Green "Estimated time to complete: 40 mins"
     
-    $tokens = Get-Tokens
+	$tokens = Get-Tokens
     Deploy-Resources -templateName "Resource-Template.json" -paramName "Resource-parameter.json"  -templatePath $templatePath -tokens $tokens
+	
+	if($setupCosmosdbAndSqldbSample -eq 'y')
+	{
+		Write-Host -ForegroundColor Green "Deploying SQL type CosmosDB for output sample"
+		Deploy-Resources -templateName "SampleOutputs-Template.json" -paramName "SampleOutputs-Parameter.json"  -templatePath $templatePath -tokens $tokens
+	}
 }
 
 if($sparkCreation -eq 'y') {

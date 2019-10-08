@@ -483,7 +483,7 @@ function Get-CosmosDBConnectionString([string]$Name) {
     -ResourceType "Microsoft.DocumentDb/databaseAccounts" `
     -ApiVersion "2015-04-08" `
     -resourceGroupName $resourceGroupName `
-    -Name $docDBName `
+    -Name $Name `
     -force
 
     $connectionString = $dbConRaw.connectionStrings[0].connectionString
