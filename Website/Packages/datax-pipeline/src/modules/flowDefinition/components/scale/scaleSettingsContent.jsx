@@ -4,7 +4,7 @@
 // *********************************************************************
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Slider } from 'office-ui-fabric-react';
+import { Slider, Toggle } from 'office-ui-fabric-react';
 import { Colors, ScrollableContentPane, StatementBox } from 'datax-common';
 
 export default class ScaleSettingsContent extends React.Component {
@@ -22,6 +22,15 @@ export default class ScaleSettingsContent extends React.Component {
     }
 
     renderContent() {
+        return (
+            <div style={rootStyle}>
+                {this.props.isDatabricksSparkType && this.renderContentForDatabricks()}
+                {!this.props.isDatabricksSparkType && this.renderContentContentForHDInsight()}
+            </div>
+        );
+    }
+
+    renderContentContentForHDInsight() {
         return (
             <div style={contentStyle}>
                 <div style={sectionStyle}>
@@ -54,6 +63,51 @@ export default class ScaleSettingsContent extends React.Component {
             </div>
         );
     }
+
+    renderContentForDatabricks() {
+        return (
+            <div style={contentStyle}>
+                <div style={toggleSectionStyle}>
+                    <Toggle
+                        onText="Autoscale"
+                        offText="Autoscale"
+                        checked={this.props.scale.jobDatabricksAutoScale}
+                        onChange={(event, value) => this.props.onUpdateDatabricksAutoScale(value)}
+                    />
+                </div>
+
+                <div style={sectionStyle}>
+                    <Slider
+                        className="ms-font-m info-settings-slider"
+                        label={this.props.scale.jobDatabricksAutoScale ? 'Min Number of Workers' : 'Number of Workers'}
+                        disabled={false}
+                        min={1}
+                        max={100}
+                        step={1}
+                        value={Number(this.props.scale.jobDatabricksMinWorkers)}
+                        showValue={true}
+                        onChange={value => this.props.onUpdateDatabricksMinWorkers(value.toString())}
+                    />
+                </div>
+
+                {this.props.scale.jobDatabricksAutoScale && (
+                    <div style={sectionStyle}>
+                        <Slider
+                            className="ms-font-m info-settings-slider"
+                            label="Max Number of Workers"
+                            disabled={false}
+                            min={1}
+                            max={100}
+                            step={1}
+                            value={Number(this.props.scale.jobDatabricksMaxWorkers)}
+                            showValue={true}
+                            onChange={value => this.props.onUpdateDatabricksMaxWorkers(value.toString())}
+                        />
+                    </div>
+                )}
+            </div>
+        );
+    }
 }
 
 // Props
@@ -62,6 +116,9 @@ ScaleSettingsContent.propTypes = {
 
     onUpdateNumExecutors: PropTypes.func.isRequired,
     onUpdateExecutorMemory: PropTypes.func.isRequired,
+    onUpdateDatabricksAutoScale: PropTypes.func.isRequired,
+    onUpdateDatabricksMinWorkers: PropTypes.func.isRequired,
+    onUpdateDatabricksMaxWorkers: PropTypes.func.isRequired,
 
     scaleNumExecutorsSliderEnabled: PropTypes.bool.isRequired,
     scaleExecutorMemorySliderEnabled: PropTypes.bool.isRequired
@@ -81,5 +138,10 @@ const contentStyle = {
 };
 
 const sectionStyle = {
+    paddingBottom: 15
+};
+
+const toggleSectionStyle = {
+    paddingTop: 10,
     paddingBottom: 15
 };

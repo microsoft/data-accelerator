@@ -41,6 +41,6 @@ Write-Host "Signing in '$tenantId'"
 az login --tenant $tenantId
 
 Set-AzureAADAccessControl -AppId $serviceAppId
-Set-AzureAADApiPermission -ServiceAppId $serviceAppId -ClientAppId $clientAppId
+Set-AzureAADApiPermission -ServiceAppId $serviceAppId -ClientAppId $clientAppId -RoleName $writerRole
 
 Exit 0

@@ -74,6 +74,12 @@ namespace DataX.Flow.Common.Models
         [JsonProperty("configgenClientId")]
         public string ConfiggenClientId;
 
+        [JsonProperty("configgenClientSecret")]
+        public string ConfiggenClientSecret;
+
+        [JsonProperty("configgenClientResourceId")]
+        public string ConfiggenClientResourceId;
+
         [JsonProperty("configgenTenantId")]
         public string ConfiggenTenantId;
 

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>Microsoft.ScenarioTester</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <projectUrl>http://aka.ms/data-accelerator</projectUrl>
+    <license type="expression">MIT</license>
+    <iconUrl>https://raw.githubusercontent.com/wiki/Microsoft/data-accelerator/tutorials/images/roundwhite6464.PNG</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Enables running scenarios against a server or application.</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <tags>ScenarioTester</tags>
+    <dependencies>	
+	<dependency id="Newtonsoft.Json" version="12.0.2"  />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\dlls\*.dll" target="lib/netcoreapp2.2" />
+  </files>
+</package>

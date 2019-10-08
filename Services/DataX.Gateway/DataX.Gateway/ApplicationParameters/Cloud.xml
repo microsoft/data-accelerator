@@ -18,6 +18,7 @@ Licensed under the MIT License
     <Parameter Name="Tenant" Value="" />
     <Parameter Name="ServiceKeyvaultName" Value="" />
     <Parameter Name="AppInsightsIntrumentationKey" Value="" />
+    <Parameter Name="TestClientId" Value="" />
     <Parameter Name="EnableUserInfoLogging" Value="" />
   </Parameters>
 </Application>

@@ -9,6 +9,7 @@ using System;
 using System.Composition;
 using System.Composition.Hosting;
 using System.Reflection;
+using DataX.Config.Utility;
 
 namespace DataX.Config.Test
 {
@@ -21,7 +22,8 @@ namespace DataX.Config.Test
             var conf = new ContainerConfiguration()
                 .WithAssembly(typeof(ConfigGenConfiguration).Assembly)
                 .WithAssembly(typeof(MockBase).Assembly)
-                .WithAssembly(Assembly.GetExecutingAssembly());
+                .WithAssembly(Assembly.GetExecutingAssembly())
+                .WithProvider(new LoggerAndInstanceExportDescriptorProvider<object>(null, new LoggerFactory()));
 
             CompositionHost = conf.CreateContainer();
         }

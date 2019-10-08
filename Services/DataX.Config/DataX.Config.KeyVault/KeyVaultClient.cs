@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using DataX.Config.ConfigDataModel;
 using DataX.Contract;
 using DataX.Utility.KeyVault;
 using System;
@@ -35,17 +36,31 @@ namespace DataX.Config.KeyVault
             return GetKeyVault().GetSecretFromKeyvaultAsync(secretUri);
         }
 
-        public async Task<string> SaveSecretAsync(string keyvaultName, string secretUri, string secret)
+        public async Task<string> SaveSecretAsync(string keyvaultName, string secretUri, string secret, string sparkType)
         {
+            var uriPrefix = (sparkType != null && sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
             await GetKeyVault().SaveSecretStringAsync(keyvaultName, secretUri, secret);
-            return SecretUriParser.ComposeUri(keyvaultName, secretUri);
+            return SecretUriParser.ComposeUri(keyvaultName, secretUri, uriPrefix);
         }
 
-        public async Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, bool hashSuffix = false)
+        public async Task<string> SaveSecretAsync(string keyvaultName, string secretName, string secretValue, string sparkType, bool hashSuffix = false)
         {
             var finalSecretName = hashSuffix ? (secretName + "-" + HashGenerator.GetHashCode(secretValue)) : secretName;
+            var uriPrefix = GetUriPrefix(sparkType);
             await GetKeyVault().SaveSecretStringAsync(keyvaultName, finalSecretName, secretValue);
-            return SecretUriParser.ComposeUri(keyvaultName, finalSecretName);
+            return SecretUriParser.ComposeUri(keyvaultName, finalSecretName, uriPrefix);
+        }
+
+        public async Task<string> SaveSecretAsync(string secretUri, string secretValue)
+        {
+            SecretUriParser.ParseSecretUri(secretUri, out string keyvaultName, out string secretName);
+            await GetKeyVault().SaveSecretStringAsync(keyvaultName, secretName, secretValue);
+            return secretUri;
+        }
+
+        public string GetUriPrefix(string sparkType)
+        {
+            return (sparkType != null && sparkType == Constants.SparkTypeDataBricks) ? Constants.PrefixSecretScope : Constants.PrefixKeyVault;
         }
     }
 }

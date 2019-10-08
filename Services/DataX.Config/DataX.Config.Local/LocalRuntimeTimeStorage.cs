@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using System;
 using System.Composition;
 using System.IO;
 using System.Threading.Tasks;
@@ -24,6 +25,11 @@ namespace DataX.Config.Local
         {
             DeleteLocal(destinationPath);
             return Task.FromResult(destinationPath);
+        }
+
+        public Task<string> DeleteAll(string destinationPath)
+        {
+            throw new NotImplementedException();
         }
 
         private void DeleteLocal(string destinationPath)

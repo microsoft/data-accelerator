@@ -28,6 +28,8 @@ namespace DataX.Config.ConfigDataModel
         public string Name { get; set; }
         [JsonProperty("displayName")]
         public string DisplayName { get; set; }
+        [JsonProperty("databricksToken")]
+        public string DatabricksToken { get; set; }
         [JsonProperty("owner")]
         public string Owner { get; set; }
         [JsonProperty("input")]
@@ -40,6 +42,8 @@ namespace DataX.Config.ConfigDataModel
         public FlowGuiOutputTemplate[] OutputTemplates { get; set; }
         [JsonProperty("rules")]
         public FlowGuiRule[] Rules { get; set; }
+        [JsonProperty("batchList")]
+        public FlowGuiInputBatchJob[] BatchList { get; set; }
         [JsonProperty("subscription")]
         public string Subscription { get; set; }
         #endregion

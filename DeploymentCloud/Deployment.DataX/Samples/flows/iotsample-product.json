@@ -24,7 +24,7 @@
 			},
 			"process" : {
 				"metric" : {
-					"eventhub" : "keyvault://${sparkKeyVaultName}/${metricEventHubConnectionStringKey}"
+					"eventhub" : "$keyvaultPrefix://${sparkKeyVaultName}/${metricEventHubConnectionStringKey}"
 				},
 				"timestampColumn" : "${processTimestampColumn}",
 				"watermark" : "${processWatermark}",
@@ -48,6 +48,10 @@
 			"sparkJobExecutorLogLevel" : "INFO",
 			"sparkJobNumExecutors" : "${guiSparkJobNumExecutors}",
 			"sparkJobExecutorMemory" : "${guiSparkJobExecutorMemory}",
+			"sparkJobDatabricksMinWorkers" : "${guiSparkJobDatabricksMinWorkers}",
+			"sparkJobDatabricksMaxWorkers" : "${guiSparkJobDatabricksMaxWorkers}",
+			"sparkDatabricksToken" : "${guiSparkDatabricksToken}",
+			"sparkJobDatabricksAutoScale" : "${guiSparkJobDatabricksAutoScale}",
 			"processedSchemaPath" : null
 		},
 		"jobs" : [
@@ -362,13 +366,14 @@
 	"gui" : {
 		"name" : "iotsample",
 		"displayName" : "IoT Sample",
+		"databricksToken" : "",
 		"owner" : "iotsample",
 		"input" : {
 			"mode" : "streaming",
 			"type" : "iothub",
 			"properties" : {
 				"inputEventhubName" : "$iotHubName",
-				"inputEventhubConnection" : "keyvault://$sparkKVName/iotsample-input-eventhubconnectionstring",
+				"inputEventhubConnection" : "$keyvaultPrefix://$sparkKVName/iotsample-input-eventhubconnectionstring",
 				"windowDuration" : "60",
 				"timestampColumn" : "eventTimeStamp",
 				"watermarkValue" : "60",
@@ -384,7 +389,7 @@
 					"type" : "csv",
 					"typeDisplay" : "CSV/TSV File",
 					"properties" : {
-						"path" : "keyvault://$sparkKVName/iotsample-referencedata-devicesdata",
+						"path" : "$keyvaultPrefix://$sparkKVName/iotsample-referencedata-devicesdata",
 						"delimiter" : ",",
 						"header" : true
 					}
@@ -400,7 +405,7 @@
 					"type" : "jarUDF",
 					"properties" : {
 						"name" : null,
-						"path" : "keyvault://$sparkKVName/iotsample-jarpath-udfsample",
+						"path" : "$keyvaultPrefix://$sparkKVName/iotsample-jarpath-udfsample",
 						"class" : "datax.sample.udf.UdfHelloWorld",
 						"libs" : [ ]
 					},
@@ -412,7 +417,10 @@
 			],
 			"jobconfig" : {
 				"jobNumExecutors" : "4",
-				"jobExecutorMemory" : "1024"
+				"jobExecutorMemory" : "1024",
+				"jobDatabricksAutoScale" : false,
+				"jobDatabricksMinWorkers" : "3",
+				"jobDatabricksMaxWorkers" : "8"
 			}
 		},
 		"outputs" : [
@@ -526,10 +534,8 @@
 		"subscription" : ""
 	},
 	"properties" : {
-		"inputEventHubSubscriptionId" : "keyvault://${serviceKeyVaultName}/$clientSecretPrefix-subscriptionId",
+		"inputEventHubSubscriptionId" : "$keyvaultPrefix://${serviceKeyVaultName}/$clientSecretPrefix-subscriptionId",
 		"inputEventHubResourceGroupName" : "${eventHubResourceGroupName}"
 	},
-	"jobNames" : [
-		"DataXDirect-iotsample"
-	]
+	"jobNames" : null
 }

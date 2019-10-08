@@ -32,12 +32,13 @@ namespace DataX.Flow.InteractiveQuery.Databricks
         /// <param name="flowConfig">Config of the flow</param>
         /// <param name="connectionInfo">Spark connection info</param>
         /// <param name="logger">Logger for results/errors</param>
-        public DatabricksKernelService(FlowConfigObject flowConfig, SparkConnectionInfo connectionInfo, ILogger logger) : base(flowConfig, connectionInfo, logger)
+        /// <param name="databricksToken">databricks token</param>
+        public DatabricksKernelService(FlowConfigObject flowConfig, SparkConnectionInfo connectionInfo, ILogger logger, string databricksToken) : base(flowConfig, connectionInfo, logger)
         {
             string region = string.IsNullOrEmpty(flowConfig.SparkRegion) ? flowConfig.ResourceGroupLocation : flowConfig.SparkRegion;
             _baseUrl = _baseUrl.Replace("$region", region);
             _clusterName = flowConfig.SparkClusterName;
-            _token = flowConfig.SparkUserToken;
+            _token = databricksToken;
         }
 
         /// <summary>
@@ -81,6 +82,7 @@ namespace DataX.Flow.InteractiveQuery.Databricks
 
             try
             {
+                InitializeClusterId();
                 // Set body
                 string body = "{\"contextId\":\""+kernelId+"\", \"clusterId\":\""+_clusterId+"\"}";
                 var content = new StringContent(body);
@@ -139,6 +141,8 @@ namespace DataX.Flow.InteractiveQuery.Databricks
                 if (cluster.Name == _clusterName)
                 {
                     _clusterId = cluster.Id;
+                    client.Dispose();
+                    return;
                 }
             }
             client.Dispose();

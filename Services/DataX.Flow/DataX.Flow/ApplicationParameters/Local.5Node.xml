@@ -20,8 +20,11 @@ Licensed under the MIT License
     <Parameter Name="cosmosDBConfigCollectionName" Value="" />
     <Parameter Name="AppInsightsIntrumentationKey" Value="" />
     <Parameter Name="CACertificateLocation" Value="" />
+    <Parameter Name="SparkType" Value="" />
+    <Parameter Name="TestClientId" Value="" />
     <Parameter Name="MefStorageAccountName" Value="" />
     <Parameter Name="MefContainerName" Value="" />
     <Parameter Name="MefBlobDirectory" Value="" />
+    <Parameter Name="EnableOneBox" Value="" />
   </Parameters>
 </Application>

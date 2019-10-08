@@ -3,11 +3,14 @@
 // Licensed under the MIT License
 // *********************************************************************
 using DataX.Contract;
+using DataX.Contract.Settings;
 using DataX.Flow.Common.Models;
+using DataX.ServiceHost;
 using DataX.ServiceHost.ServiceFabric;
 using DataX.Utilities.Blob;
 using DataX.Utilities.CosmosDB;
 using DataX.Utilities.KeyVault;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -34,6 +37,7 @@ namespace DataX.Flow.Common
         public string OpsBlobConnectionString { get; set; }
         public SparkConnectionInfo SparkConnInfo { get; set; }
         public string SparkPassword { get; set; }
+        private readonly IConfiguration _configuration;
 
         /// <summary>
         /// OpsDiagnosticPath is the path that is used in c# code for calculating the garbage colection path for deleting the kernels
@@ -56,6 +60,10 @@ namespace DataX.Flow.Common
         public string OpsSparkSamplePath => $@"wasbs://samples@{EngineFlowConfig.OpsBlobBase}/";
 
         public string Name { get; }
+        public EngineEnvironment(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
 
         /// <summary>
         /// Moving the method that sets the various environment variables
@@ -64,16 +72,29 @@ namespace DataX.Flow.Common
         public async Task<ApiResult> GetEnvironmentVariables()
         {           
             CosmosDBDatabaseName = "production";
-
-            var response  = ServiceFabricUtil.GetServiceKeyVaultName();
-            if (response.Error.HasValue && response.Error.Value)
+            var cosmosCon = "";
+            var cosmosDBCollectionName = "";
+            var response = new ApiResult();
+            string serviceKeyvaultName = string.Empty;
+            if (HostUtil.InServiceFabric)
             {
-                return ApiResult.CreateError(response.Message);
+                response = ServiceFabricUtil.GetServiceKeyVaultName();
+                if (response.Error.HasValue && response.Error.Value)
+                {
+                    return ApiResult.CreateError(response.Message);
+                }
+                serviceKeyvaultName = response.Result.ToString();
+                cosmosCon = KeyVault.GetSecretFromKeyvault(ServiceFabricUtil.GetServiceFabricConfigSetting("cosmosDBConfigConnectionString").Result.ToString());
+                CosmosDBDatabaseName = KeyVault.GetSecretFromKeyvault(ServiceFabricUtil.GetServiceFabricConfigSetting("cosmosDBConfigDatabaseName").Result.ToString());
+                cosmosDBCollectionName = ServiceFabricUtil.GetServiceFabricConfigSetting("cosmosDBConfigCollectionName").Result.ToString();
             }
-            string serviceKeyvaultName = response.Result.ToString();
-
-            var cosmosCon = KeyVault.GetSecretFromKeyvault(ServiceFabricUtil.GetServiceFabricConfigSetting("cosmosDBConfigConnectionString").Result.ToString());
-            CosmosDBDatabaseName = KeyVault.GetSecretFromKeyvault(ServiceFabricUtil.GetServiceFabricConfigSetting("cosmosDBConfigDatabaseName").Result.ToString());
+            else
+            {
+                serviceKeyvaultName = _configuration.GetSection(DataXSettingsConstants.ServiceEnvironment).GetSection(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_ServiceKeyVaultName).Value;
+                cosmosCon = KeyVault.GetSecretFromKeyvault(_configuration.GetSection(DataXSettingsConstants.ServiceEnvironment).GetSection(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_CosmosDBConfigConnectionString).Value);
+                CosmosDBDatabaseName = KeyVault.GetSecretFromKeyvault(_configuration.GetSection(DataXSettingsConstants.ServiceEnvironment).GetSection(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_CosmosDBConfigDatabaseName).Value);
+                cosmosDBCollectionName = _configuration.GetSection(DataXSettingsConstants.ServiceEnvironment).GetSection(DataX.Config.ConfigDataModel.Constants.ConfigSettingName_CosmosDBConfigCollectionName).Value;                
+            }
 
             var namePassword = Helper.ParseCosmosDBUserNamePassword(cosmosCon);
 
@@ -86,7 +107,7 @@ namespace DataX.Flow.Common
             CosmosDBUserName = namePassword.Split(new char[] { ':' })[0];
             CosmosDBPassword = namePassword.Split(new char[] { ':' })[1];
 
-            response = await CosmosDB.DownloadConfigFromDocumentDB(CosmosDBDatabaseName, CosmosDBEndPoint, CosmosDBUserName, CosmosDBPassword, ServiceFabricUtil.GetServiceFabricConfigSetting("cosmosDBConfigCollectionName").Result.ToString());
+            response = await CosmosDB.DownloadConfigFromDocumentDB(CosmosDBDatabaseName, CosmosDBEndPoint, CosmosDBUserName, CosmosDBPassword, cosmosDBCollectionName).ConfigureAwait(false);
             if (response.Error.HasValue && response.Error.Value)
             {
                 return ApiResult.CreateError(response.Message);
@@ -100,7 +121,10 @@ namespace DataX.Flow.Common
 
                 FlowBlobConnectionString = KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, flowConfigObj.ConfiggenSecretPrefix + flowConfigObj.StorageAccountName + "-blobconnectionstring");
                 OpsBlobConnectionString = KeyVault.GetSecretFromKeyvault(serviceKeyvaultName, flowConfigObj.ConfiggenSecretPrefix + flowConfigObj.OpsStorageAccountName + "-blobconnectionstring");
-                SparkConnInfo = Helper.ParseConnectionString(Helper.PathResolver(flowConfigObj.SparkConnectionString));
+                if (EngineFlowConfig.SparkType != DataX.Config.ConfigDataModel.Constants.SparkTypeDataBricks)
+                {
+                    SparkConnInfo = Helper.ParseConnectionString(Helper.PathResolver(flowConfigObj.SparkConnectionString));
+                }
                 return ApiResult.CreateSuccess("");
             }    
 

@@ -11,20 +11,24 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace DataX.Flow.SchemaInference
 {
     public class SchemaInferenceManager
     {
-        private EngineEnvironment _engineEnvironment = new EngineEnvironment();
+        private EngineEnvironment _engineEnvironment;
         private readonly ILogger _logger;
+        private readonly IConfiguration _configuration;
 
         private string OpsSamplePath => $@"https://{_engineEnvironment.EngineFlowConfig.OpsBlobBase}/samples";
 
-        public SchemaInferenceManager(ILogger logger)
+        public SchemaInferenceManager(ILogger logger, IConfiguration configuration)
         {
             _logger = logger;
-       }
+            _configuration = configuration;
+            _engineEnvironment = new EngineEnvironment(_configuration);
+        }
 
         public async Task<ApiResult> GetInputSchema(JObject jObject)
         {
@@ -76,7 +80,7 @@ namespace DataX.Flow.SchemaInference
             var bootstrapServers = Helper.TryGetBootstrapServers(connectionString);
 
             // Sample events and generate schema
-            SchemaGenerator sg = new SchemaGenerator(bootstrapServers, connectionString, eventHubNames, _engineEnvironment.EngineFlowConfig.ConsumerGroup, _engineEnvironment.OpsBlobConnectionString, checkPointContainerName, _engineEnvironment.EngineFlowConfig.OpsBlobDirectory, diag.InputType, _logger);
+            SchemaGenerator sg = new SchemaGenerator(bootstrapServers, connectionString, eventHubNames, _engineEnvironment.EngineFlowConfig.ConsumerGroup, _engineEnvironment.OpsBlobConnectionString, checkPointContainerName, _engineEnvironment.EngineFlowConfig.OpsBlobDirectory, diag.InputType, diag.InputMode, diag.BatchInputs, _logger);
             SchemaResult schema = await sg.GetSchemaAsync(_engineEnvironment.OpsBlobConnectionString, OpsSamplePath, diag.UserName, diag.Name, diag.Seconds);
 
             return ApiResult.CreateSuccess(JObject.FromObject(schema));
@@ -132,7 +136,7 @@ namespace DataX.Flow.SchemaInference
             var bootstrapServers = Helper.TryGetBootstrapServers(connectionString);
 
             // Sample events and refresh sample
-            SchemaGenerator sg = new SchemaGenerator(bootstrapServers, connectionString, eventHubNames, _engineEnvironment.EngineFlowConfig.ConsumerGroup, _engineEnvironment.OpsBlobConnectionString, checkPointContainerName, _engineEnvironment.EngineFlowConfig.OpsBlobDirectory, diag.InputType, _logger);
+            SchemaGenerator sg = new SchemaGenerator(bootstrapServers, connectionString, eventHubNames, _engineEnvironment.EngineFlowConfig.ConsumerGroup, _engineEnvironment.OpsBlobConnectionString, checkPointContainerName, _engineEnvironment.EngineFlowConfig.OpsBlobDirectory, diag.InputType, diag.InputMode, diag.BatchInputs, _logger);
             await sg.RefreshSample(_engineEnvironment.OpsBlobConnectionString, OpsSamplePath, diag.UserName, diag.Name, diag.Seconds);
             _logger.LogInformation("Refresh Sample worked!");
             return ApiResult.CreateSuccess("success");

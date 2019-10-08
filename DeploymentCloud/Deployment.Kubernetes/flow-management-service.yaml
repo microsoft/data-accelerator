@@ -1,0 +1,64 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: flow-management-service
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  minReadySeconds: 5 
+  template:
+    metadata:
+      labels:
+        app: flow-management-service
+        aadpodidbinding: managed-service-identity 
+    spec:
+      terminationGracePeriodSeconds: 30
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+      - name: flow-management-service
+        image: dataxregistry.azurecr.io/datax/cloud/flow.managementservice:v1
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 5000
+        resources:
+          requests:
+            cpu: 250m
+          limits:
+            cpu: 500m
+        env:
+        - name: ASPNETCORE_URLS
+          value: "http://+:5000"
+        - name: DataX__ServiceEnvironment__AppInsightsIntrumentationKey
+          value: ""
+        - name: DataX__ServiceEnvironment__CosmosDBConfigCollectionName
+          value: ""
+        - name: DataX__ServiceEnvironment__CosmosDBConfigConnectionString
+          value: ""
+        - name: DataX__ServiceEnvironment__CosmosDBConfigDatabaseName
+          value: ""
+        - name: DataX__ServiceEnvironment__ServiceKeyVaultName
+          value: ""
+        - name: JwtBearerOptions__Audience
+          value: ""
+        - name: JwtBearerOptions__Authority
+          value: ""
+        - name: servicedllname
+          value: "Flow.ManagementService.dll"
+        - name: DataX__ServiceEnvironment__EnableOneBox
+          value: "false"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flow-management-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 5000
+  selector:
+    app: flow-management-service

@@ -3,7 +3,14 @@
 // Licensed under the MIT License
 // *********************************************************************
 export const inputModeEnum = {
-    streaming: 'streaming'
+    streaming: 'streaming',
+    batching: 'batching'
+};
+
+export const batchIntervalTypeEnum = {
+    day: 'day',
+    hour: 'hour',
+    min: 'min'
 };
 
 export const inputTypeEnum = {
@@ -11,7 +18,18 @@ export const inputTypeEnum = {
     iothub: 'iothub',
     kafka: 'kafka',
     kafkaeventhub: 'kafkaeventhub',
+    blob: 'blob',
     local: 'local'
+};
+
+export const inputCompressionTypeEnum = {
+    none: 'none',
+    gzip: 'gzip'
+};
+
+export const inputFormatTypeEnum = {
+    json: 'json',
+    parquet: 'parquet'
 };
 
 export const watermarkUnitEnum = {
@@ -45,7 +63,13 @@ export const sinkerTypeEnum = {
     eventHub: 'eventHub',
     blob: 'blob',
     metric: 'metric',
-    local: 'local'
+    local: 'local',
+    sql: 'sqlServer'
+};
+
+export const batchTypeEnum = {
+    recurring: 'recurring',
+    oneTime: 'oneTime'
 };
 
 export const sinkerCompressionTypeEnum = {
@@ -56,6 +80,36 @@ export const sinkerCompressionTypeEnum = {
 export const sinkerFormatTypeEnum = {
     json: 'json'
 };
+
+export const sinkerSqlWriteModeEnum = {
+    append: 'append',
+    overwrite: 'overwrite',
+    ignore: 'ignore',
+    errorifexists: 'errorIfExists'
+};
+
+export const sinkerSqlWriteModes = [
+    {
+        key: sinkerSqlWriteModeEnum.append,
+        name: 'Append',
+        disabled: false
+    },
+    {
+        key: sinkerSqlWriteModeEnum.overwrite,
+        name: 'Overwrite',
+        disabled: false
+    },
+    {
+        key: sinkerSqlWriteModeEnum.ignore,
+        name: 'Ignore',
+        disabled: false
+    },
+    {
+        key: sinkerSqlWriteModeEnum.errorIfExists,
+        name: 'Error if exists',
+        disabled: false
+    }
+];
 
 export const ruleTypeEnum = {
     tag: 'tag'
@@ -112,6 +166,11 @@ export const inputModes = [
         key: inputModeEnum.streaming,
         name: 'Streaming',
         disabled: false
+    },
+    {
+        key: inputModeEnum.batching,
+        name: 'Batching',
+        disabled: false
     }
 ];
 
@@ -139,6 +198,30 @@ export const inputTypes = [
     {
         key: inputTypeEnum.local,
         name: 'Local',
+        disabled: false
+    }
+];
+
+export const inputTypesBatching = [
+    {
+        key: inputTypeEnum.blob,
+        name: 'Azure Blob',
+        disabled: false
+    }
+];
+
+export const inputCompressionTypes = [
+    {
+        key: inputCompressionTypeEnum.none,
+        name: 'None',
+        disabled: false
+    }
+];
+
+export const inputFormatTypes = [
+    {
+        key: inputFormatTypeEnum.json,
+        name: 'JSON',
         disabled: false
     }
 ];
@@ -230,8 +313,44 @@ export const outputSinkerTypes = [
         disabled: false
     },
     {
+        key: sinkerTypeEnum.sql,
+        name: 'Azure SQL Database',
+        disabled: false
+    },
+    {
         key: sinkerTypeEnum.local,
         name: 'Local',
+        disabled: false
+    }
+];
+
+export const batchTypes = [
+    {
+        key: batchTypeEnum.recurring,
+        name: 'Recurring',
+        disabled: false
+    },
+    {
+        key: batchTypeEnum.oneTime,
+        name: 'One Time',
+        disabled: false
+    }
+];
+
+export const batchIntervalTypes = [
+    {
+        key: batchIntervalTypeEnum.day,
+        name: 'Day',
+        disabled: false
+    },
+    {
+        key: batchIntervalTypeEnum.hour,
+        name: 'Hour',
+        disabled: false
+    },
+    {
+        key: batchIntervalTypeEnum.min,
+        name: 'Min',
         disabled: false
     }
 ];
@@ -428,6 +547,18 @@ export const severityTypes = [
     }
 ];
 
+export function getDefaultBatchInputSettings() {
+    return {
+        type: inputTypeEnum.blob,
+        properties: {
+            connection: '',
+            path: '',
+            formatType: inputFormatTypeEnum.json,
+            compressionType: inputCompressionTypeEnum.none
+        }
+    };
+}
+
 export function getDefaultReferenceDataSettings(type) {
     if (type === referenceDataTypeEnum.csv) {
         return {
@@ -491,6 +622,44 @@ export function getMetricSinker() {
     };
 }
 
+export function getDefaultBatchSettings(type) {
+    if (type === batchTypeEnum.oneTime) {
+        return {
+            id: '',
+            type: type,
+            disabled: false,
+            properties: {
+                interval: '1',
+                intervalType: 'day',
+                delay: '0',
+                delayType: 'day',
+                window: '1',
+                windowType: 'day',
+                startTime: '',
+                endTime: '',
+                lastProcessedTime: ''
+            }
+        };
+    } else {
+        return {
+            id: '',
+            type: type,
+            disabled: false,
+            properties: {
+                interval: '1',
+                intervalType: 'day',
+                delay: '0',
+                delayType: 'day',
+                window: '1',
+                windowType: 'day',
+                startTime: new Date(),
+                endTime: '',
+                lastProcessedTime: ''
+            }
+        };
+    }
+}
+
 export function getDefaultSinkerSettings(type, owner) {
     if (type === sinkerTypeEnum.cosmosdb) {
         return {
@@ -536,6 +705,17 @@ export function getDefaultSinkerSettings(type, owner) {
                 blobPartitionFormat: '',
                 format: sinkerFormatTypeEnum.json,
                 compressionType: sinkerCompressionTypeEnum.none
+            }
+        };
+    } else if (type === sinkerTypeEnum.sql) {
+        return {
+            id: '',
+            type: type,
+            properties: {
+                connectionString: '',
+                tableName: '',
+                writeMode: sinkerSqlWriteModeEnum.append,
+                useBulkInsert: false
             }
         };
     } else {
@@ -625,29 +805,6 @@ export function getDefaultInput(enableLocalOneBox) {
     }
 }
 
-export function getDefaultQuery(enableLocalOneBox) {
-    if (enableLocalOneBox) {
-        return defaultQueryLocal;
-    } else {
-        return defaultQuery;
-    }
-}
-
-//User can use the sample or tutorial or intellisense to have starting query. Below allows default to have 5 blank lines.
-export const defaultQuery = `
-
-`;
-
-export const defaultQueryLocal = `--DataXQuery--
-events = SELECT MAX(temperature) as maxTemp
-        FROM
-        DataXProcessedInput;
-
-maxTemperature = CreateMetric(events, maxTemp);
-
-OUTPUT maxTemperature TO Metrics;
-`;
-
 export const defaultSchema = `{
   "type": "struct",
   "fields": [
@@ -700,11 +857,21 @@ export const defaultSchemaLocal = `{
   }
   `;
 
+export function getDefaultNormalizationSnippet(inputMode) {
+    if (inputMode === inputModeEnum.batching) {
+        return defaultBatchNormalizationSnippet;
+    } else {
+        return defaultNormalizationSnippet;
+    }
+}
+
 export const defaultNormalizationSnippet = `SystemProperties AS _SystemProperties
 Properties AS _Properties
 Raw.*`;
 
-//Default Flow settings
+export const defaultBatchNormalizationSnippet = `Raw.*`;
+
+// Default Flow settings
 export const defaultInput = {
     type: inputTypeEnum.events,
     mode: inputModeEnum.streaming,

@@ -23,5 +23,14 @@ namespace DataX.Config
         /// <returns></returns>
 
         Task<string> Delete(string destinationPath);
+
+
+        /// <summary>
+        /// Deletes the destination files in folder
+        /// </summary>
+        /// <param name="destinationPath">path to file or folder to be deleted</param>
+        /// <returns></returns>
+
+        Task<string> DeleteAll(string destinationPath);
     }
 }

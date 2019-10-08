@@ -12,10 +12,6 @@ import * as Helpers from '../flowHelpers';
 import * as Models from '../flowModels';
 import * as Actions from '../flowActions';
 import * as Selectors from '../flowSelectors';
-import * as LayoutActions from '../layoutActions';
-import * as LayoutSelectors from '../layoutSelectors';
-import * as KernelActions from '../kernelActions';
-import * as KernelSelectors from '../kernelSelectors';
 import { DefaultButton, PrimaryButton, Spinner, SpinnerSize, MessageBar, MessageBarType } from 'office-ui-fabric-react';
 import { Dialog, DialogType, DialogFooter } from 'office-ui-fabric-react/lib/Dialog';
 import { Modal } from 'office-ui-fabric-react/lib/Modal';
@@ -23,9 +19,9 @@ import InfoSettingsContent from './info/infoSettingsContent';
 import InputSettingsContent from './input/inputSettingsContent';
 import ReferenceDataSettingsContent from './referenceData/referenceDataSettingsContent';
 import FunctionSettingsContent from './function/functionSettingsContent';
-import QuerySettingsContent from './query/querySettingsContent';
 import ScaleSettingsContent from './scale/scaleSettingsContent';
 import OutputSettingsContent from './output/outputSettingsContent';
+import ScheduleSettingsContent from './schedule/ScheduleSettingsContent';
 import RulesSettingsContent from './rule/rulesSettingsContent';
 import { functionEnabled } from '../../../common/api';
 import {
@@ -39,6 +35,16 @@ import {
     VerticalTabItem,
     getApiErrorMessage
 } from 'datax-common';
+import {
+    QueryApi,
+    KernelActions,
+    KernelSelectors,
+    QueryActions,
+    LayoutActions,
+    LayoutSelectors,
+    QuerySelectors,
+    QuerySettingsContent
+} from 'datax-query';
 
 class FlowDefinitionPanel extends React.Component {
     constructor(props) {
@@ -59,6 +65,7 @@ class FlowDefinitionPanel extends React.Component {
             inProgessDialogMessage: '',
             havePermission: true,
             saveFlowButtonEnabled: false,
+            deployFlowButtonEnabled: false,
             deleteFlowButtonEnabled: false,
             getInputSchemaButtonEnabled: false,
             outputSideToolBarEnabled: false,
@@ -88,7 +95,10 @@ class FlowDefinitionPanel extends React.Component {
             addOutputSinkButtonEnabled: false,
             deleteOutputSinkButtonEnabled: false,
             scaleNumExecutorsSliderEnabled: false,
-            scaleExecutorMemorySliderEnabled: false
+            scaleExecutorMemorySliderEnabled: false,
+
+            addBatchButtonEnabled: false,
+            deleteBatchButtonEnabled: false
         };
 
         this.handleWindowClose = this.handleWindowClose.bind(this);
@@ -101,7 +111,7 @@ class FlowDefinitionPanel extends React.Component {
     }
 
     handleWindowClose() {
-        Api.deleteDiagnosticKernelOnUnload(this.props.kernelId);
+        QueryApi.deleteDiagnosticKernelOnUnload(this.props.kernelId);
         this.sleep(500);
     }
 
@@ -110,7 +120,7 @@ class FlowDefinitionPanel extends React.Component {
         clearInterval(this.state.timer);
 
         if (this.props.kernelId !== undefined && this.props.kernelId !== '') {
-            this.onDeleteKernel(this.props.kernelId);
+            this.onDeleteKernel(this.props.kernelId, this.props.flow.name);
         }
     }
 
@@ -152,6 +162,7 @@ class FlowDefinitionPanel extends React.Component {
         functionEnabled().then(response => {
             this.setState({
                 saveFlowButtonEnabled: response.saveFlowButtonEnabled ? true : false,
+                deployFlowButtonEnabled: response.deployFlowButtonEnabled ? true : false,
                 deleteFlowButtonEnabled: response.deleteFlowButtonEnabled ? true : false,
                 getInputSchemaButtonEnabled: response.getInputSchemaButtonEnabled ? true : false,
                 outputSideToolBarEnabled: response.outputSideToolBarEnabled ? true : false,
@@ -181,7 +192,10 @@ class FlowDefinitionPanel extends React.Component {
                 addOutputSinkButtonEnabled: response.addOutputSinkButtonEnabled ? true : false,
                 deleteOutputSinkButtonEnabled: response.deleteOutputSinkButtonEnabled ? true : false,
                 scaleNumExecutorsSliderEnabled: response.scaleNumExecutorsSliderEnabled ? true : false,
-                scaleExecutorMemorySliderEnabled: response.scaleExecutorMemorySliderEnabled ? true : false
+                scaleExecutorMemorySliderEnabled: response.scaleExecutorMemorySliderEnabled ? true : false,
+
+                addBatchButtonEnabled: response.addBatchButtonEnabled ? true : false,
+                deleteBatchButtonEnabled: response.deleteBatchButtonEnabled ? true : false
             });
         });
     }
@@ -203,13 +217,19 @@ class FlowDefinitionPanel extends React.Component {
 
     renderButtons() {
         if (this.state.havePermission) {
-            return [this.renderBackButton(), this.renderSaveButton(), this.renderDeleteButton(), this.renderDebugButton()];
+            return [
+                this.renderBackButton(),
+                this.renderSaveButton(),
+                this.renderDeployButton(),
+                this.renderDeleteButton(),
+                this.renderDebugButton()
+            ];
         }
     }
 
     renderBackButton() {
-        const buttonTooltip = this.props.flow.isDirty ? 'Discard Changes' : 'Go Back';
-        let buttonText = this.props.flow.isDirty ? 'Cancel' : 'Back';
+        const buttonTooltip = this.props.flow.isDirty || this.props.isQueryDirty ? 'Discard Changes' : 'Go Back';
+        let buttonText = this.props.flow.isDirty || this.props.isQueryDirty ? 'Cancel' : 'Back';
         let buttonIcon = <i style={IconButtonStyles.neutralStyle} className="ms-Icon ms-Icon--NavigateBack" />;
 
         if (this.state.loading) {
@@ -228,18 +248,44 @@ class FlowDefinitionPanel extends React.Component {
 
     renderSaveButton() {
         if (!this.state.loading) {
-            const enableButton = this.props.flow.isDirty && this.props.flowValidated && this.state.saveFlowButtonEnabled;
+            //Will be enabled when user has access and flow has been changed. 
+            const enableButton = (this.props.flow.isDirty || this.props.isQueryDirty) && this.state.saveFlowButtonEnabled;
             return (
                 <DefaultButton
-                    key="deploy"
+                    key="save"
                     className="header-button"
                     disabled={!enableButton}
-                    title="Deploy and restart the Flow"
+                    title="Save the Flow"
                     onClick={() => this.onSaveDefinition()}
                 >
                     <i
                         style={enableButton ? IconButtonStyles.greenStyle : IconButtonStyles.disabledStyle}
                         className="ms-Icon ms-Icon--Save"
+                    />
+                    Save
+                </DefaultButton>
+            );
+        } else {
+            return null;
+        }
+    }
+
+    renderDeployButton() {
+        if (!this.state.loading) {
+            const enableButton =
+                //Will be enabled when user has access and flow has valid configuration. 
+                this.props.flowValidated && this.state.deployFlowButtonEnabled;
+            return (
+                <DefaultButton
+                    key="deploy"
+                    className="header-button"
+                    disabled={!enableButton}
+                    title="Save, deploy and restart the Flow job"
+                    onClick={() => this.onDeployDefinition()}
+                >
+                    <i
+                        style={enableButton ? IconButtonStyles.greenStyle : IconButtonStyles.disabledStyle}
+                        className="ms-Icon ms-Icon--Deploy"
                     />
                     Deploy
                 </DefaultButton>
@@ -313,6 +359,35 @@ class FlowDefinitionPanel extends React.Component {
         );
     }
 
+    renderScheduleTab() {
+        if (this.props.input.mode === Models.inputModeEnum.streaming) {
+            return null;
+        } else {
+            return (
+                <VerticalTabItem linkText="Schedule" itemCompleted={this.props.scheduleValidated}>
+                    <ScheduleSettingsContent
+                        batchList={this.props.flow.batchList}
+                        selectedBatchIndex={this.props.selectedBatchIndex}
+                        onNewBatch={this.props.onNewBatch}
+                        onDeleteBatch={this.props.onDeleteBatch}
+                        onUpdateSelectedBatchIndex={this.props.onUpdateSelectedBatchIndex}
+                        addBatchButtonEnabled={this.state.addBatchButtonEnabled}
+                        deleteBatchButtonEnabled={this.state.deleteBatchButtonEnabled}
+                        onUpdateBatchName={this.props.onUpdateBatchName}
+                        onUpdateBatchStartTime={this.props.onUpdateBatchStartTime}
+                        onUpdateBatchEndTime={this.props.onUpdateBatchEndTime}
+                        onUpdateBatchIntervalValue={this.props.onUpdateBatchIntervalValue}
+                        onUpdateBatchIntervalType={this.props.onUpdateBatchIntervalType}
+                        onUpdateBatchDelayValue={this.props.onUpdateBatchDelayValue}
+                        onUpdateBatchDelayType={this.props.onUpdateBatchDelayType}
+                        onUpdateBatchWindowValue={this.props.onUpdateBatchWindowValue}
+                        onUpdateBatchWindowType={this.props.onUpdateBatchWindowType}
+                    />
+                </VerticalTabItem>
+            );
+        }
+    }
+
     renderFlow() {
         return (
             <div style={contentStyle}>
@@ -323,14 +398,21 @@ class FlowDefinitionPanel extends React.Component {
                                 displayName={this.props.flow.displayName}
                                 name={this.props.flow.name}
                                 owner={this.props.flow.owner}
+                                databricksToken={this.props.flow.databricksToken}
                                 onUpdateDisplayName={this.props.onUpdateDisplayName}
+                                onUpdateDatabricksToken={this.props.onUpdateDatabricksToken}
                                 flowNameTextboxEnabled={this.state.flowNameTextboxEnabled}
+                                isDatabricksSparkType={this.props.flow.isDatabricksSparkType}
+                                saveFlowButtonEnabled={this.state.saveFlowButtonEnabled}
+                                saveFlowAndInitializeKernel={() => this.saveFlowAndInitializeKernel()}
                             />
                         </VerticalTabItem>
 
                         <VerticalTabItem linkText="Input" itemCompleted={this.props.inputValidated}>
                             <InputSettingsContent
                                 input={this.props.flow.input}
+                                batchInputs={this.props.flow.batchInputs}
+                                selectedFlowBatchInputIndex={this.props.flow.selectedFlowBatchInputIndex}
                                 fetchingInputSchema={this.props.flow.fetchingInputSchema}
                                 samplingInputDuration={this.props.flow.samplingInputDuration}
                                 timer={this.state.counter}
@@ -338,9 +420,18 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateMode={this.props.onUpdateInputMode}
                                 onUpdateType={this.props.onUpdateInputType}
                                 onUpdateHubName={this.props.onUpdateInputHubName}
+                                onUpdateBatchInputPath={this.props.onUpdateBatchInputPath}
+                                onUpdateBatchInputConnection={this.props.onUpdateBatchInputConnection}
+                                onUpdateBatchInputFormatType={this.props.onUpdateBatchInputFormatType}
+                                onUpdateBatchInputCompressionType={this.props.onUpdateBatchInputCompressionType}
                                 onUpdateHubConnection={this.props.onUpdateInputHubConnection}
                                 onUpdateSubscriptionId={this.props.onUpdateInputSubscriptionId}
                                 onUpdateResourceGroup={this.props.onUpdateInputResourceGroup}
+                                onUpdateJobMode={this.props.onUpdateJobMode}
+                                onUpdateRecurrence={this.props.onUpdateRecurrence}
+                                onUpdateStartTime={this.props.onUpdateStartTime}
+                                onUpdateEndTime={this.props.onUpdateEndTime}
+                                onUpdateOffset={this.props.onUpdateOffset}
                                 onUpdateWindowDuration={this.props.onUpdateInputWindowDuration}
                                 onUpdateTimestampColumn={this.props.onUpdateInputTimestampColumn}
                                 onUpdateWatermarkValue={this.props.onUpdateInputWatermarkValue}
@@ -401,7 +492,7 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateQuery={this.props.onUpdateQuery}
                                 onGetCodeGenQuery={() => this.onGetCodeGenQuery()}
                                 onRefreshKernel={kernelId => this.refreshKernel(kernelId)}
-                                onDeleteAllKernels={this.props.onDeleteAllKernels}
+                                onDeleteAllKernels={() => this.deleteAllKernel()}
                                 onExecuteQuery={(selectedQuery, kernelId) => this.onExecuteQuery(selectedQuery, kernelId)}
                                 onResampleInput={kernelId => this.onResampleInput(kernelId)}
                                 onShowTestQueryOutputPanel={isVisible => this.onShowTestQueryOutputPanel(isVisible)}
@@ -477,6 +568,10 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateBlobPartitionFormat={this.props.onUpdateBlobPartitionFormat}
                                 onUpdateFormatType={this.props.onUpdateFormatType}
                                 onUpdateCompressionType={this.props.onUpdateCompressionType}
+                                onUpdateSqlConnection={this.props.onUpdateSqlConnection}
+                                onUpdateSqlTableName={this.props.onUpdateSqlTableName}
+                                onUpdateSqlWriteMode={this.props.onUpdateSqlWriteMode}
+                                onUpdateSqlUseBulkInsert={this.props.onUpdateSqlUseBulkInsert}
                                 addOutputSinkButtonEnabled={this.state.addOutputSinkButtonEnabled}
                                 deleteOutputSinkButtonEnabled={this.state.deleteOutputSinkButtonEnabled}
                             />
@@ -489,8 +584,14 @@ class FlowDefinitionPanel extends React.Component {
                                 onUpdateExecutorMemory={this.props.onUpdateExecutorMemory}
                                 scaleNumExecutorsSliderEnabled={this.state.scaleNumExecutorsSliderEnabled}
                                 scaleExecutorMemorySliderEnabled={this.state.scaleExecutorMemorySliderEnabled}
+                                isDatabricksSparkType={this.props.flow.isDatabricksSparkType}
+                                onUpdateDatabricksAutoScale={this.props.onUpdateDatabricksAutoScale}
+                                onUpdateDatabricksMinWorkers={this.props.onUpdateDatabricksMinWorkers}
+                                onUpdateDatabricksMaxWorkers={this.props.onUpdateDatabricksMaxWorkers}
                             />
                         </VerticalTabItem>
+
+                        {this.renderScheduleTab()}
                     </VerticalTabs>
                 </div>
             </div>
@@ -577,11 +678,44 @@ class FlowDefinitionPanel extends React.Component {
             isSaving: true,
             showMessageBar: false,
             messageBarIsError: false,
+            inProgessDialogMessage: 'Save in progress'
+        });
+
+        this.props
+            .onSaveFlow(this.props.flow, this.props.query)
+            .then(name => {
+                this.setState({
+                    isSaving: false,
+                    showMessageBar: true,
+                    messageBarIsError: false,
+                    messageBarStatement:
+                        this.props.input.mode === Models.inputModeEnum.streaming
+                            ? 'Flow definition is saved'
+                            : 'Flow definition is saved. If there are any scheduled batch jobs in this flow, they will be created and started by the scheduler.'
+                });
+
+                this.props.initFlow({ id: name });
+            })
+            .catch(error => {
+                this.setState({
+                    isSaving: false,
+                    showMessageBar: true,
+                    messageBarIsError: true,
+                    messageBarStatement: getApiErrorMessage(error)
+                });
+            });
+    }
+
+    onDeployDefinition() {
+        this.setState({
+            isSaving: true,
+            showMessageBar: false,
+            messageBarIsError: false,
             inProgessDialogMessage: 'Deployment in progress'
         });
 
         this.props
-            .onSaveFlow(this.props.flow)
+            .onDeployFlow(this.props.flow, this.props.query)
             .then(name => {
                 this.setState({
                     isSaving: false,
@@ -654,7 +788,7 @@ class FlowDefinitionPanel extends React.Component {
         console.log(this.props.flow);
 
         console.log('Config object');
-        const config = Helpers.convertFlowToConfig(this.props.flow);
+        const config = Helpers.convertFlowToConfig(this.props.flow, this.props.query);
         console.log(config);
 
         console.log('Flow object from Config');
@@ -688,11 +822,11 @@ class FlowDefinitionPanel extends React.Component {
     }
 
     onGetTableSchemas() {
-        return this.props.onGetTableSchemas(this.props.flow);
+        return this.props.onGetTableSchemas(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query));
     }
 
     onGetCodeGenQuery() {
-        return this.props.onGetCodeGenQuery(this.props.flow);
+        return this.props.onGetCodeGenQuery(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query));
     }
 
     getKernel() {
@@ -702,30 +836,51 @@ class FlowDefinitionPanel extends React.Component {
         ) {
             const version = this.props.kernelVersion + 1;
             this.props.onUpdateKernelVersion(version);
-            this.props.onGetKernel(this.props.flow, version, Actions.updateErrorMessage);
+            this.props.onGetKernel(
+                Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query),
+                version,
+                QueryActions.updateErrorMessage
+            );
         }
     }
 
     refreshKernel(kernelId) {
         const version = this.props.kernelVersion + 1;
         this.props.onUpdateKernelVersion(version);
-        this.props.onRefreshKernel(this.props.flow, kernelId, version, Actions.updateErrorMessage);
+        this.props.onRefreshKernel(
+            Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query),
+            kernelId,
+            version,
+            QueryActions.updateErrorMessage
+        );
     }
 
-    onDeleteKernel(kernelId) {
+    deleteAllKernel() {
+        this.props.onDeleteAllKernels(QueryActions.updateErrorMessage, this.props.flow.name);
+    }
+
+    onDeleteKernel(kernelId, flowName) {
         const version = this.props.kernelVersion + 1;
         this.props.onUpdateKernelVersion(version);
-        return this.props.onDeleteKernel(kernelId, version);
+        return this.props.onDeleteKernel(kernelId, version, flowName);
     }
 
     onResampleInput(kernelId) {
         const version = this.props.kernelVersion + 1;
         this.props.onUpdateKernelVersion(version);
-        this.props.onResampleInput(this.props.flow, kernelId, version);
+        this.props.onResampleInput(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query), kernelId, version);
     }
 
     onExecuteQuery(selectedQuery, kernelId) {
-        return this.props.onExecuteQuery(this.props.flow, selectedQuery, kernelId);
+        return this.props.onExecuteQuery(Helpers.convertFlowToQueryMetadata(this.props.flow, this.props.query), selectedQuery, kernelId);
+    }
+
+    saveFlowAndInitializeKernel() {
+        Q(
+            this.onSaveDefinition()
+        ).then(() => {
+            this.getKernel();
+        })
     }
 }
 
@@ -741,13 +896,16 @@ const mapStateToProps = state => ({
     input: Selectors.getFlowInput(state),
     referenceData: Selectors.getFlowReferenceData(state),
     functions: Selectors.getFlowFunctions(state),
-    query: Selectors.getFlowQuery(state),
+    query: QuerySelectors.getQueryContent(state),
+    isQueryDirty: QuerySelectors.getQueryDirty(state),
     scale: Selectors.getFlowScale(state),
     outputs: Selectors.getFlowOutputs(state),
     outputTemplates: Selectors.getFlowOutputTemplates(state),
     rules: Selectors.getFlowRules(state),
 
     // State
+    selectedBatchIndex: Selectors.getSelectedBatchIndex(state),
+
     selectedReferenceDataIndex: Selectors.getSelectedReferenceDataIndex(state),
     selectedFunctionIndex: Selectors.getSelectedFunctionIndex(state),
     selectedSinkerIndex: Selectors.getSelectedSinkerIndex(state),
@@ -766,31 +924,39 @@ const mapStateToProps = state => ({
     inputValidated: Selectors.validateFlowInput(state),
     referenceDataValidated: Selectors.validateFlowReferenceData(state),
     functionsValidated: Selectors.validateFlowFunctions(state),
-    queryValidated: Selectors.validateFlowQuery(state),
     scaleValidated: Selectors.validateFlowScale(state),
     outputsValidated: Selectors.validateFlowOutputs(state),
     rulesValidated: Selectors.validateFlowRules(state),
-    flowValidated: Selectors.validateFlow(state)
+    flowValidated: Selectors.validateFlow(state),
+    queryValidated: QuerySelectors.validateQueryTab(state),
+    scheduleValidated: Selectors.validateFlowSchedule(state)
 });
 
 // Dispatch Props
 const mapDispatchToProps = dispatch => ({
     // Init Actions
     initFlow: context => dispatch(Actions.initFlow(context)),
-
     // Message Actions
     onUpdateWarningMessage: message => dispatch(Actions.updateWarningMessage(message)),
 
     // Info Actions
     onUpdateDisplayName: displayName => dispatch(Actions.updateDisplayName(displayName)),
+    onUpdateDatabricksToken: databricksToken => dispatch(Actions.updateDatabricksToken(databricksToken)),
 
     // Input Actions
     onUpdateInputMode: mode => dispatch(Actions.updateInputMode(mode)),
     onUpdateInputType: type => dispatch(Actions.updateInputType(type)),
     onUpdateInputHubName: name => dispatch(Actions.updateInputHubName(name)),
+    onUpdateInputPath: path => dispatch(Actions.updateInputPath(path)),
     onUpdateInputHubConnection: connection => dispatch(Actions.updateInputHubConnection(connection)),
     onUpdateInputSubscriptionId: id => dispatch(Actions.updateInputSubscriptionId(id)),
     onUpdateInputResourceGroup: name => dispatch(Actions.updateInputResourceGroup(name)),
+
+    onUpdateBatchInputConnection: connection => dispatch(Actions.updateBatchInputConnection(connection)),
+    onUpdateBatchInputPath: path => dispatch(Actions.updateBlobInputPath(path)),
+    onUpdateBatchInputFormatType: formatType => dispatch(Actions.updateBatchInputFormatType(formatType)),
+    onUpdateBatchInputCompressionType: compressionType => dispatch(Actions.updateBachInputCompressionType(compressionType)),
+
     onUpdateInputWindowDuration: duration => dispatch(Actions.updateInputWindowDuration(duration)),
     onUpdateInputTimestampColumn: duration => dispatch(Actions.updateInputTimestampColumn(duration)),
     onUpdateInputWatermarkValue: duration => dispatch(Actions.updateInputWatermarkValue(duration)),
@@ -827,17 +993,18 @@ const mapDispatchToProps = dispatch => ({
     onUpdateAzureFunctionParams: params => dispatch(Actions.updateAzureFunctionParams(params)),
 
     // Query Actions
-    onUpdateQuery: query => dispatch(Actions.updateQuery(query)),
-    onGetCodeGenQuery: flow => Actions.getCodeGenQuery(flow),
-    onExecuteQuery: (flow, selectedQuery, kernelId) => dispatch(Actions.executeQuery(flow, selectedQuery, kernelId)),
-    onGetKernel: (flow, version, updateErrorMessage) => dispatch(KernelActions.getKernel(flow, version, updateErrorMessage)),
+    onUpdateQuery: query => dispatch(QueryActions.updateQuery(query)),
+    onGetCodeGenQuery: queryMetadata => QueryActions.getCodeGenQuery(queryMetadata),
+    onExecuteQuery: (queryMetadata, selectedQuery, kernelId) => dispatch(QueryActions.executeQuery(queryMetadata, selectedQuery, kernelId)),
+    onGetKernel: (queryMetadata, version, updateErrorMessage) =>
+        dispatch(KernelActions.getKernel(queryMetadata, version, updateErrorMessage)),
     onUpdateKernelVersion: version => dispatch(KernelActions.updateKernelVersion(version)),
-    onRefreshKernel: (flow, kernelId, version, updateErrorMessage) =>
-        dispatch(KernelActions.refreshKernel(flow, kernelId, version, updateErrorMessage)),
-    onDeleteKernel: (kernelId, version) => dispatch(KernelActions.deleteKernel(kernelId, version)),
-    onResampleInput: (flow, kernelId, version) => dispatch(Actions.resampleInput(flow, kernelId, version)),
-    onUpdateResamplingInputDuration: duration => dispatch(Actions.updateResamplingInputDuration(duration)),
-    onDeleteAllKernels: updateErrorMessage => dispatch(KernelActions.deleteAllKernels(updateErrorMessage)),
+    onRefreshKernel: (queryMetadata, kernelId, version, updateErrorMessage) =>
+        dispatch(KernelActions.refreshKernel(queryMetadata, kernelId, version, updateErrorMessage)),
+    onDeleteKernel: (kernelId, version, flowName) => dispatch(KernelActions.deleteKernel(kernelId, version, flowName)),
+    onResampleInput: (queryMetadata, kernelId, version) => dispatch(QueryActions.resampleInput(queryMetadata, kernelId, version)),
+    onUpdateResamplingInputDuration: duration => dispatch(QueryActions.updateResamplingInputDuration(duration)),
+    onDeleteAllKernels: (updateErrorMessage, flowName) => dispatch(KernelActions.deleteAllKernels(updateErrorMessage, flowName)),
 
     // Query Pane Layout Actions
     onShowTestQueryOutputPanel: isVisible => dispatch(LayoutActions.onShowTestQueryOutputPanel(isVisible)),
@@ -845,6 +1012,9 @@ const mapDispatchToProps = dispatch => ({
     // Scale Actions
     onUpdateNumExecutors: numExecutors => dispatch(Actions.updateNumExecutors(numExecutors)),
     onUpdateExecutorMemory: executorMemory => dispatch(Actions.updateExecutorMemory(executorMemory)),
+    onUpdateDatabricksAutoScale: databricksAutoScale => dispatch(Actions.updateDatabricksAutoScale(databricksAutoScale)),
+    onUpdateDatabricksMinWorkers: databricksMinWorkers => dispatch(Actions.updateDatabricksMinWorkers(databricksMinWorkers)),
+    onUpdateDatabricksMaxWorkers: databricksMaxWorkers => dispatch(Actions.updateDatabricksMaxWorkers(databricksMaxWorkers)),
 
     // Output Actions
     onNewSinker: type => dispatch(Actions.newSinker(type)),
@@ -862,6 +1032,11 @@ const mapDispatchToProps = dispatch => ({
     onUpdateFormatType: type => dispatch(Actions.updateFormatType(type)),
     onUpdateCompressionType: type => dispatch(Actions.updateCompressionType(type)),
 
+    onUpdateSqlConnection: connection => dispatch(Actions.updateSqlConnection(connection)),
+    onUpdateSqlTableName: name => dispatch(Actions.updateSqlTableName(name)),
+    onUpdateSqlWriteMode: mode => dispatch(Actions.updateSqlWriteMode(mode)),
+    onUpdateSqlUseBulkInsert: useBulkInsert => dispatch(Actions.updateSqlUseBulkInsert(useBulkInsert)),
+
     // Rule Actions
     onNewRule: type => dispatch(Actions.newRule(type)),
     onDeleteRule: index => dispatch(Actions.deleteRule(index)),
@@ -877,14 +1052,29 @@ const mapDispatchToProps = dispatch => ({
     onUpdateTagAggregates: aggregates => dispatch(Actions.updateTagAggregates(aggregates)),
     onUpdateTagPivots: pivots => dispatch(Actions.updateTagPivots(pivots)),
     onUpdateSchemaTableName: name => dispatch(Actions.updateSchemaTableName(name)),
-    onGetTableSchemas: flow => Actions.getTableSchemas(flow),
+    onGetTableSchemas: queryMetadata => QueryActions.getTableSchemas(queryMetadata),
 
     // Save and Delete Actions
-    onSaveFlow: flow => Actions.saveFlow(flow),
+    onSaveFlow: (flow, query) => Actions.saveFlow(flow, query),
+    onDeployFlow: (flow, query) => Actions.deployFlow(flow, query),
     onDeleteFlow: flow => Actions.deleteFlow(flow),
 
     // enableOneBox Action
-    onUpdateOneBoxMode: enableOneBox => dispatch(Actions.updateOneBoxMode(enableOneBox))
+    onUpdateOneBoxMode: enableOneBox => dispatch(Actions.updateOneBoxMode(enableOneBox)),
+
+    // Schedule Actions
+    onNewBatch: type => dispatch(Actions.newBatch(type)),
+    onDeleteBatch: index => dispatch(Actions.deleteBatch(index)),
+    onUpdateSelectedBatchIndex: index => dispatch(Actions.updateSelectedBatchIndex(index)),
+    onUpdateBatchName: value => dispatch(Actions.updateBatchName(value)),
+    onUpdateBatchStartTime: value => dispatch(Actions.updateBatchStartTime(value)),
+    onUpdateBatchEndTime: value => dispatch(Actions.updateBatchEndTime(value)),
+    onUpdateBatchIntervalValue: value => dispatch(Actions.updateBatchIntervalValue(value)),
+    onUpdateBatchIntervalType: value => dispatch(Actions.updateBatchIntervalType(value)),
+    onUpdateBatchDelayValue: value => dispatch(Actions.updateBatchDelayValue(value)),
+    onUpdateBatchDelayType: value => dispatch(Actions.updateBatchDelayType(value)),
+    onUpdateBatchWindowValue: value => dispatch(Actions.updateBatchWindowValue(value)),
+    onUpdateBatchWindowType: value => dispatch(Actions.updateBatchWindowType(value))
 });
 
 // Styles

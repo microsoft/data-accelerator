@@ -8,6 +8,7 @@ import java.sql.Timestamp
 import java.util.concurrent.Executors
 
 import com.microsoft.azure.eventhubs.EventData
+import datax.executor.ExecutorHelper
 import datax.config._
 import datax.constants._
 import datax.data.FileInternal
@@ -15,10 +16,11 @@ import datax.exception.EngineException
 import datax.fs.HadoopClient
 import datax.host.{AppHost, CommonAppHost, SparkSessionSingleton, UdfInitializer}
 import datax.input.{BlobPointerInput, InputManager, SchemaFile, StreamingInputSetting}
-import datax.sink.{OutputManager, OutputOperator}
+import datax.sink.{BlobSinker, OutputManager, OutputOperator}
 import datax.telemetry.{AppInsightLogger, MetricLoggerFactory}
 import datax.utility._
 import datax.handler._
+import datax.input.BlobPointerInput.{inputPathToInternalProps, pathHintsFromBlobPath}
 import datax.sql.TransformSQLParser
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.log4j.LogManager
@@ -456,6 +458,60 @@ object CommonProcessorFactory {
       processJson = (jsonRdd: RDD[String], batchTime: Timestamp, batchInterval: Duration, outputPartitionTime: Timestamp) =>{
         processDataset(jsonRdd.map((FileInternal(), _)).toDF(ColumnName.InternalColumnFileInfo, ColumnName.RawObjectColumn),
           batchTime, batchInterval, outputPartitionTime, null, "")
+      },
+      // process blob path from batch blob input
+      processBatchBlobPaths = (pathsRDD: RDD[String],
+                      batchTime: Timestamp,
+                      batchInterval: Duration,
+                      outputPartitionTime: Timestamp,
+                      namespace: String) => {
+
+
+       val spark = SparkSessionSingleton.getInstance(pathsRDD.sparkContext.getConf)
+
+       val metricLogger = MetricLoggerFactory.getMetricLogger(metricAppName, metricConf)
+       val batchTimeStr = DateTimeUtil.formatSimple(batchTime)
+       val batchLog = LogManager.getLogger(s"BatchProcessor-B$batchTimeStr")
+       val batchTimeInMs = batchTime.getTime
+
+       def postMetrics(metrics: Iterable[(String, Double)]): Unit = {
+          metricLogger.sendBatchMetrics(metrics, batchTime.getTime)
+          batchLog.warn(s"Metric ${metrics.map(m => m._1 + "=" + m._2).mkString(",")}")
+        }
+
+       batchLog.warn(s"Start batch ${batchTime}, output partition time:${outputPartitionTime}, namespace:${namespace}")
+       val t1 = System.nanoTime
+
+        // Wrap files to FileInternal object
+       val internalFiles =  pathsRDD.map(file => {
+                            FileInternal(inputPath = file,
+                              outputFolders = null,
+                              outputFileName = null,
+                              fileTime = null,
+                              ruleIndexPrefix = "",
+                              target = null
+                            )
+                          })
+
+        val paths = internalFiles.map(_.inputPath).collect()
+        postMetrics(Map(s"InputBlobs" -> paths.size.toDouble))
+        batchLog.warn(s"InputBlob count=${paths.size}");
+
+        val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(paths.head, spark)
+
+        val inputDf = internalFiles
+                      .flatMap(file => HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"), blobStorageKey)
+                      .filter(l=>l!=null && !l.isEmpty).map((file, outputPartitionTime, _)))
+                      .toDF(ColumnName.InternalColumnFileInfo, ColumnName.MetadataColumnOutputPartitionTime, ColumnName.RawObjectColumn)
+
+        val processedMetrics = processDataset(inputDf, batchTime, batchInterval, outputPartitionTime, null, "")
+
+        val batchProcessingTime = (System.nanoTime - t1) / 1E9
+
+        val metrics = Map[String, Double](
+          "BatchProcessedET" -> batchProcessingTime
+        )
+        processedMetrics ++ metrics
       },
 
       // process blob path pointer data frame

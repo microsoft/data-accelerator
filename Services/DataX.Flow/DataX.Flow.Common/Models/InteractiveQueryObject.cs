@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
+using DataX.Config.ConfigDataModel;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
@@ -47,6 +48,12 @@ namespace DataX.Flow.Common.Models
 
         [JsonProperty("inputType")]
         public string InputType; // "Event", "Iothub", "KafkaEventhub", "Kafka"
+
+        [JsonProperty("inputMode")]
+        public string InputMode;
+
+        [JsonProperty("batchInputs")]
+        public List<FlowGuiInputBatchInput> BatchInputs;
 
         [JsonProperty("seconds")]
         public int Seconds;

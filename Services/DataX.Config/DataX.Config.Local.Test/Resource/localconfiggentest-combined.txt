@@ -268,7 +268,7 @@
     
 --DataXQuery--
    ar1_2_1 = SELECT
-        AVG(deviceDetails.deviceId) AS deviceDetails.deviceId_AVG,
+        AVG(deviceDetails.deviceId) AS deviceDetailsdeviceId_AVG,
         deviceDetails.deviceType,
         COUNT(*) AS Count   
     FROM
@@ -280,7 +280,7 @@
    ar2_2_1 = SELECT
         *,
         IF(
-            deviceDetails.deviceId_AVG > 2,
+            deviceDetailsdeviceId_AVG > 2,
             MAP(
                 'ruleId',
                 '5c85ede7-7a9a-4f64-992d-4c42dfd386c9',
@@ -300,13 +300,13 @@
    ar3_2_1 = SELECT
         MAP(
             'deviceDetails.deviceType',
-            deviceDetails.deviceType     
+            deviceType     
         ) AS pivots,
         MAP(
             'deviceDetails.deviceId',
             MAP(
                 'AVG',
-                deviceDetails.deviceId_AVG
+                deviceDetailsdeviceId_AVG
             )   
         ) AS aggs,
         Count AS count,

@@ -10,16 +10,24 @@ using DataX.Flow.SchemaInference;
 using System;
 using System.Threading.Tasks;
 using DataX.Utilities.Web;
+using DataX.ServiceHost.AspNetCore.Authorization.Roles;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using DataX.Contract.Settings;
 
 namespace Flow.SchemaInferenceService.Controllers
 {
     [Route("api")]
+    [DataXWriter]
     public class SchemaInferenceController : Controller
     {
         private readonly ILogger<SchemaInferenceController> _logger;
-        public SchemaInferenceController(ILogger<SchemaInferenceController> logger)
+        private readonly IConfiguration _configuration;
+        public SchemaInferenceController(ILogger<SchemaInferenceController> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
+           
         }
 
         [HttpPost]
@@ -29,7 +37,7 @@ namespace Flow.SchemaInferenceService.Controllers
             try
             {
                 RolesCheck.EnsureWriter(Request);
-                SchemaInferenceManager sim = new SchemaInferenceManager(_logger);
+                SchemaInferenceManager sim = new SchemaInferenceManager(_logger, _configuration);
                 return await sim.GetInputSchema(jObject);
 
             }
@@ -47,7 +55,7 @@ namespace Flow.SchemaInferenceService.Controllers
             try
             {
                 RolesCheck.EnsureWriter(Request);
-                SchemaInferenceManager sim = new SchemaInferenceManager(_logger);
+                SchemaInferenceManager sim = new SchemaInferenceManager(_logger, _configuration);
                 return await sim.RefreshSample(jObject);
 
             }

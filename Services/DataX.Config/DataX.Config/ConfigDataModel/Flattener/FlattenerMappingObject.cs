@@ -23,6 +23,12 @@ namespace DataX.Config.ConfigDataModel
                 {
                     var fieldValue = field.Value;
                     var subValue = jt[field.Key];
+
+                    if (subValue?.Type == JTokenType.Date)
+                    {
+                        subValue = subValue.Value<DateTime>().ToString("o");
+                    }
+
                     switch (fieldValue.Type)
                     {
                         case JTokenType.Object:

@@ -6,55 +6,71 @@
         "input": {
             "type": "object",
             "namespace": "input.default",
-            "fields": {
-                "blobSchemaFile": "blobschemafile",
-                "sourceIdRegex": "sourceidregex",
-                "blobPathRegex": "blobpathregex",
-                "fileTimeRegex": "filetimeregex",
-                "fileTimeFormat": "filetimeformat",
-                "eventhub": {
-                    "type": "object",
-                    "namespace": "eventhub",
-                    "fields": {
-                        "connectionString": "connectionstring",
-                        "consumerGroup": "consumergroup",
-                        "checkpointDir": "checkpointdir",
-                        "checkpointInterval": "checkpointinterval",
-                        "maxRate": "maxrate",
-                        "flushExistingCheckpoints": "flushexistingcheckpoints"
-                    }
-                },
-                "streaming": {
-                    "type": "object",
-                    "namespace": "streaming",
-                    "fields": {
-                        "checkpointDir": "checkpointdir",
-                        "intervalInSeconds": "intervalinseconds"
-                    }
-                },
-                "sources": {
-                    "type": "map",
-                    "namespace": "source",
-                    "fields": {
-                        "target": "target",
-                        "catalogPrefix": "catalogprefix"
-                    }
-                },
-                "referenceData": {
-                    "type": "array",
-                    "namespace": "referencedata",
-                    "element": {
-                        "type": "scopedObject",
-                        "namespaceField": "name",
-                        "fields": {
-                            "path": "path",
-                            "format": "format",
-                            "header": "header",
-                            "delimiter": "delimiter"
-                        }
-                    }
+          "fields": {
+            "blobSchemaFile": "blobschemafile",
+            "sourceIdRegex": "sourceidregex",
+            "blobPathRegex": "blobpathregex",
+            "fileTimeRegex": "filetimeregex",
+            "fileTimeFormat": "filetimeformat",
+            "eventhub": {
+              "type": "object",
+              "namespace": "eventhub",
+              "fields": {
+                "connectionString": "connectionstring",
+                "consumerGroup": "consumergroup",
+                "checkpointDir": "checkpointdir",
+                "checkpointInterval": "checkpointinterval",
+                "maxRate": "maxrate",
+                "flushExistingCheckpoints": "flushexistingcheckpoints"
+              }
+            },
+            "blob": {
+              "type": "array",
+              "namespace": "blob",
+              "element": {
+                "type": "scopedObject",
+                "namespaceField": "name",
+                "fields": {
+                  "path": "path",
+                  "format": "format",
+                  "compressiontype": "compressiontype",
+                  "processstarttime": "processstarttime",
+                  "processendtime": "processendtime",
+                  "partitionincrement": "partitionincrement"
                 }
+              }
+            },
+            "streaming": {
+              "type": "object",
+              "namespace": "streaming",
+              "fields": {
+                "checkpointDir": "checkpointdir",
+                "intervalInSeconds": "intervalinseconds"
+              }
+            },
+            "sources": {
+              "type": "map",
+              "namespace": "source",
+              "fields": {
+                "target": "target",
+                "catalogPrefix": "catalogprefix"
+              }
+            },
+            "referenceData": {
+              "type": "array",
+              "namespace": "referencedata",
+              "element": {
+                "type": "scopedObject",
+                "namespaceField": "name",
+                "fields": {
+                  "path": "path",
+                  "format": "format",
+                  "header": "header",
+                  "delimiter": "delimiter"
+                }
+              }
             }
+          }
         },
         "process": {
             "type": "object",

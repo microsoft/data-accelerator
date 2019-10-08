@@ -54,12 +54,12 @@ namespace DataX.Config.ConfigGeneration.Processor
                 return "no gui input, skipped";
             }
 
-            var rulesCode = flowToDeploy.GetAttachment<RulesCode>(GenerateTransformFile.AttachmentName_CodeGenObject);
+            var rulesCode = flowToDeploy.GetAttachment<RulesCode>(PrepareTransformFile.AttachmentName_CodeGenObject);
             Ensure.NotNull(rulesCode, "rulesCode");
             Ensure.NotNull(rulesCode.MetricsRoot, "rulesCode.MetricsRoot");
             Ensure.NotNull(rulesCode.MetricsRoot.metrics, "rulesCode.MetricsRoot.metrics");
 
-            var outputs = await ProcessOutputs(guiConfig.Outputs, rulesCode, config.Name);
+            var outputs = await ProcessOutputs(guiConfig.Input.Mode, guiConfig.Outputs, rulesCode, config.Name);
 
             flowToDeploy.SetObjectToken(TokenName_Outputs, outputs);
 
@@ -67,7 +67,7 @@ namespace DataX.Config.ConfigGeneration.Processor
         }
 
         public override async Task<FlowGuiConfig> HandleSensitiveData(FlowGuiConfig guiConfig)
-        {           
+        {
             var outputsData = guiConfig?.Outputs;
             if (outputsData != null && outputsData.Length > 0)
             {
@@ -81,6 +81,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                             keyvaultName: RuntimeKeyVaultName.Value,
                             secretName: secretName,
                             secretValue: connStr,
+                            sparkType: Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType) ? sparkType : null,
                             hashSuffix: true);
 
                         rd.Properties.ConnectionString = secretUri;
@@ -92,7 +93,7 @@ namespace DataX.Config.ConfigGeneration.Processor
         }
 
 
-        private async Task<FlowOutputSpec[]> ProcessOutputs(FlowGuiOutput[] uiOutputs, RulesCode rulesCode, string configName)
+        private async Task<FlowOutputSpec[]> ProcessOutputs(string inputMode, FlowGuiOutput[] uiOutputs, RulesCode rulesCode, string configName)
         {
             var outputList = uiOutputs.Select(o => o.Id).ToList();
 
@@ -130,14 +131,14 @@ namespace DataX.Config.ConfigGeneration.Processor
                         case "cosmosdb":
                             {
                                 var cosmosDbOutput = ProcessOutputCosmosDb(output);
-                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.CosmosDbOutput, "Multiple target cosmosDB ouptut for same dataset not supported.");
+                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.CosmosDbOutput, "Multiple target cosmosDB output for same dataset not supported.");
                                 flowOutput.CosmosDbOutput = cosmosDbOutput;
                                 break;
                             }
                         case "eventhub":
                             {
                                 var eventhubOutput = ProcessOutputEventHub(output);
-                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.EventHubOutput, "Multiple target eventHub/metric ouptut for same dataset not supported.");
+                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.EventHubOutput, "Multiple target eventHub/metric output for same dataset not supported.");
                                 flowOutput.EventHubOutput = eventhubOutput;
                                 break;
                             }
@@ -148,31 +149,38 @@ namespace DataX.Config.ConfigGeneration.Processor
                                     if (Configuration.TryGet(Constants.ConfigSettingName_LocalMetricsHttpEndpoint, out string localMetricsEndpoint))
                                     {
                                         var httpOutput = ProcessLocalOutputMetric(configName, localMetricsEndpoint);
-                                        Ensure.EnsureNullElseThrowNotSupported(flowOutput.HttpOutput, "Multiple target httpost/metric ouptut for same dataset not supported.");
-                                        flowOutput.HttpOutput = httpOutput;                                       
+                                        Ensure.EnsureNullElseThrowNotSupported(flowOutput.HttpOutput, "Multiple target httpost/metric output for same dataset not supported.");
+                                        flowOutput.HttpOutput = httpOutput;
                                     }
                                     break;
                                 }
                                 else
                                 {
                                     var eventhubOutput = ProcessOutputMetric(output);
-                                    Ensure.EnsureNullElseThrowNotSupported(flowOutput.EventHubOutput, "Multiple target eventHub/metric ouptut for same dataset not supported.");
+                                    Ensure.EnsureNullElseThrowNotSupported(flowOutput.EventHubOutput, "Multiple target eventHub/metric output for same dataset not supported.");
                                     flowOutput.EventHubOutput = eventhubOutput;
                                     break;
                                 }
                             }
                         case "blob":
                             {
-                                var blobOutput = await ProcessOutputBlob(configName, output);
-                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.BlobOutput, "Multiple target blob ouptut for same dataset not supported.");
+                                var blobOutput = await ProcessOutputBlob(inputMode, configName, output);
+                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.BlobOutput, "Multiple target blob output for same dataset not supported.");
                                 flowOutput.BlobOutput = blobOutput;
                                 break;
                             }
                         case "local":
                             {
                                 var blobOutput = ProcessOutputLocal(configName, output);
-                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.BlobOutput, "Multiple target blob ouptut for same dataset not supported.");
+                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.BlobOutput, "Multiple target blob output for same dataset not supported.");
                                 flowOutput.BlobOutput = blobOutput;
+                                break;
+                            }
+                        case "sqlserver":
+                            {
+                                var sqlOutput = await ProcessOutputSql(configName, output);
+                                Ensure.EnsureNullElseThrowNotSupported(flowOutput.SqlOutput, "Multiple target Sql output for same dataset not supported.");
+                                flowOutput.SqlOutput = sqlOutput;
                                 break;
                             }
                         default:
@@ -186,18 +194,61 @@ namespace DataX.Config.ConfigGeneration.Processor
             return fOutputList.ToArray();
         }
 
-        private async Task<FlowBlobOutputSpec> ProcessOutputBlob(string configName, FlowGuiOutput uiOutput)
+        private string TransformPartitionFormat(string partitionFormat)
+        {
+            var parts = partitionFormat.Split(new char[] { ',', '/', ':', '-', ' ' });
+
+            string value = "";
+            foreach (var part in parts)
+            {
+                value = "";
+                switch (part.Substring(0, 1))
+                {
+                    case "s":
+                        value = "%1$tS";
+                        break;
+                    case "m":
+                        value = "%1$tM";
+                        break;
+                    case "h":
+                    case "H":
+                        value = "%1$tH";
+                        break;
+                    case "d":
+                        value = "%1$td";
+                        break;
+                    case "M":
+                        value = "%1$tm";
+                        break;
+                    case "y":
+                        value = "%1$ty";
+                        break;
+                    default:
+                        value = "";
+                        break;
+                }
+
+                partitionFormat = partitionFormat.Replace(part, value);
+
+            }
+
+            return partitionFormat;
+        }
+
+        private async Task<FlowBlobOutputSpec> ProcessOutputBlob(string inputMode, string configName, FlowGuiOutput uiOutput)
         {
             if (uiOutput != null && uiOutput.Properties != null)
             {
                 var sparkKeyVaultName = Configuration[Constants.ConfigSettingName_RuntimeKeyVaultName];
 
                 string connectionString = await KeyVaultClient.ResolveSecretUriAsync(uiOutput.Properties.ConnectionString);
-                var accountName = ParseBlobAccountName(connectionString);
-                var blobPath = $"wasbs://{uiOutput.Properties.ContainerName}@{accountName}.blob.core.windows.net/{uiOutput.Properties.BlobPrefix}/%1$tY/%1$tm/%1$td/%1$tH/${{quarterBucket}}/${{minuteBucket}}";
+                var accountName = ConfigHelper.ParseBlobAccountName(connectionString);
+                var timeFormat = inputMode != Constants.InputMode_Batching ? $"%1$tY/%1$tm/%1$td/%1$tH/${{quarterBucket}}/${{minuteBucket}}" : $"{TransformPartitionFormat(uiOutput.Properties.BlobPartitionFormat)}";
+                var blobPath = $"wasbs://{uiOutput.Properties.ContainerName}@{accountName}.blob.core.windows.net/{uiOutput.Properties.BlobPrefix}/{timeFormat}";
                 var secretId = $"{configName}-output";
-                var blobPathSecret = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, secretId, blobPath, true);
-                await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, $"datax-sa-{accountName}", ParseBlobAccountKey(connectionString), false);
+                var sparkType = Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string value) ? value : null;
+                var blobPathSecret = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, secretId, blobPath, sparkType, true);
+                await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, $"{Constants.AccountSecretPrefix}{accountName}", ConfigHelper.ParseBlobAccountKey(connectionString), sparkType, false);
 
                 FlowBlobOutputSpec blobOutput = new FlowBlobOutputSpec()
                 {
@@ -246,7 +297,7 @@ namespace DataX.Config.ConfigGeneration.Processor
 
                 FlowEventHubOutputSpec eventhubOutput = new FlowEventHubOutputSpec()
                 {
-                    ConnectionStringRef = KeyVaultUri.ComposeUri(sparkKeyVaultName, metricsEhConnectionStringKey),
+                    ConnectionStringRef = KeyVaultUri.ComposeUri(sparkKeyVaultName, metricsEhConnectionStringKey, Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType) ? sparkType : null),
                     CompressionType = "none",
                     Format = "json"
                 };
@@ -320,44 +371,72 @@ namespace DataX.Config.ConfigGeneration.Processor
 
         }
 
-        /// <summary>
-        /// Parses the account name from connection string
-        /// </summary>
-        /// <param name="connectionString"></param>
-        /// <returns>account name</returns>
-        private string ParseBlobAccountName(string connectionString)
+        private async Task<FlowSqlOutputSpec> ProcessOutputSql(string configName, FlowGuiOutput uiOutput)
         {
-            string matched;
-            try
+            if (uiOutput != null && uiOutput.Properties != null)
             {
-                matched = Regex.Match(connectionString, @"(?<=AccountName=)(.*)(?=;AccountKey)").Value;
-            }
-            catch (Exception)
-            {
-                return "The connectionString does not have AccountName";
-            }
+                var sparkKeyVaultName = Configuration[Constants.ConfigSettingName_RuntimeKeyVaultName];
 
-            return matched;
+                string connectionString = await KeyVaultClient.ResolveSecretUriAsync(uiOutput.Properties.ConnectionString).ConfigureAwait(false);
+
+                var database = GetValueFromJdbcConnection(connectionString, "database");
+                var user = GetValueFromJdbcConnection(connectionString, "user");
+                var pwd = GetValueFromJdbcConnection(connectionString, "password");
+                var url = GetUrlFromJdbcConnection(connectionString);
+
+                var sparkType = Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string value) ? value : null;
+
+                // Save password and url in keyvault
+                var pwdSecretId = $"{configName}-outSqlPassword";
+                var pwdRef = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, pwdSecretId, pwd, sparkType, true).ConfigureAwait(false);
+
+                var urlSecretId = $"{configName}-outSqlUrl";
+                var urlRef = await KeyVaultClient.SaveSecretAsync(sparkKeyVaultName, urlSecretId, url, sparkType, true).ConfigureAwait(false);
+
+                FlowSqlOutputSpec sqlOutput = new FlowSqlOutputSpec()
+                {
+                    ConnectionStringRef = uiOutput.Properties.ConnectionString,
+                    TableName = uiOutput.Properties.TableName,
+                    WriteMode = uiOutput.Properties.WriteMode,
+                    UseBulkInsert = uiOutput.Properties.UseBulkInsert,
+                    DatabaseName = database,
+                    User = user,
+                    Password = pwdRef,
+                    Url = urlRef
+                };
+                return sqlOutput;
+            }
+            else
+            {
+                return null;
+            }
         }
 
-        /// <summary>
-        /// Parses the account key from connection string
-        /// </summary>
-        /// <param name="connectionString"></param>
-        /// <returns>account key</returns>
-        private string ParseBlobAccountKey(string connectionString)
+        private string GetValueFromJdbcConnection(string connectionString, string key)
         {
-            string matched;
             try
             {
-                matched = Regex.Match(connectionString, @"(?<=AccountKey=)(.*)(?=;EndpointSuffix)").Value;
+                Match match = Regex.Match(connectionString, $"{key}=([^;]*);", RegexOptions.IgnoreCase);
+                string value = match.Groups[1].Value;
+                return value;
             }
             catch (Exception)
             {
-                return "The connectionString does not have AccountKey";
+                throw new Exception($"{key} not found in jdbc connection string");
             }
-
-            return matched;
+        }
+        private string GetUrlFromJdbcConnection(string connectionString)
+        {
+            try
+            {
+                Match match = Regex.Match(connectionString, @"jdbc:sqlserver://(.*):", RegexOptions.IgnoreCase);
+                string value = match.Groups[1].Value;
+                return value;
+            }
+            catch (Exception)
+            {
+                throw new Exception("url pattern not found in jdbc connecton string");
+            }
         }
     }
 }

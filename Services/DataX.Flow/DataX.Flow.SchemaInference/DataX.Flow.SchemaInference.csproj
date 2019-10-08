@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>FinalPublicKey.snk</AssemblyOriginatorKeyFile>
     <DelaySign>true</DelaySign>
@@ -35,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\DataX.Config\DataX.Config.KeyVault\DataX.Config.KeyVault.csproj" />
     <ProjectReference Include="..\..\DataX.Utilities\DataX.Utilities.Blob\DataX.Utilities.Blob.csproj" />
     <ProjectReference Include="..\..\DataX.Utilities\DataX.Utilities.CosmosDB\DataX.Utilities.CosmosDB.csproj" />
     <ProjectReference Include="..\..\DataX.Utilities\DataX.Utilities.EventHub\DataX.Utilities.EventHub.csproj" />
@@ -43,7 +44,7 @@
 
   <ItemGroup>
     <FilesToSign Include="$(OutDir)\$(AssemblyName).dll">
-      <Authenticode>Microsoft</Authenticode>
+      <Authenticode>Microsoft400</Authenticode>
       <StrongName>StrongName</StrongName>
     </FilesToSign>
   </ItemGroup>

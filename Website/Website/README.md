@@ -62,7 +62,7 @@ faster performance for production consumption.
 npm run build
 ```
 
-### Deploy production version of website with zip-push otpion on Azure Web App
+### Deploy production version of website with zip-push option on Azure Web App
 * Before deploying
 download and install AzureCLI, login first to get access for deployment:
 ```
@@ -84,4 +84,13 @@ set DATAXDEV_GENERATOR_LOCAL_SERVICE=<local URL of Generator service>
 set DATAXDEV_INTERACTIVE_QUERY_LOCAL_SERVICE=<local URL of Interactive Query service>
 set DATAXDEV_SCHEMA_INFERENCE_LOCAL_SERVICE=<local URL of Schema Inference service>
 set DATAXDEV_LIVE_DATA_LOCAL_SERVICE=<local URL of Live Data service>
+```
+
+### (Optional) How to target services hosted on AKS cluster
+If you are hosting DataX services on an AKS cluster, you can configure the website to target the services hosted on an AKS cluster by defining the following secret in the kvServices keyvault. 
+Secret Name: <DATAX_KEYVAULT_SECRET_PREFIX>+"kubernetesServices" where you need to use the prefix: <DATAX_KEYVAULT_SECRET_PREFIX>) from the step 4. 
+Secret Value: In the secret value: You only need to define the ones you are hosting on AKS cluster.
+The <External IP> should be added for each of the services where they can be listened to on the AKS cluster as specified in the example below:
+```
+{"Flow.InteractiveQueryService":"http://<External IP for Interactive Query Service>:5000","Flow.SchemaInferenceService":"http://<External IP for Schema Inference Service>:5000","Flow.ManagementService":"http://<External IP for Flow Management Service>:5000","Flow.LiveDataService":"http://<External IP for live Data Service>:5000"}
 ```

@@ -39,16 +39,24 @@ namespace DataX.Config.ConfigGeneration.Processor
         {
             // Deploy job configs
             var jobs = flowToDeploy.GetJobs();
-            var deploymentTasks = jobs?.Select(async job => {
-                var content = job.GetTokenString(GenerateJobConfig.TokenName_JobConfigContent);
-                var filePath = job.GetTokenString(GenerateJobConfig.TokenName_JobConfigFilePath);
-                if (content != null && filePath != null)
+            var deploymentTasks = jobs?.Select(async job =>
+            {
+
+                foreach (var jc in job.JobConfigs)
                 {
-                    job.SparkJobConfigFilePath = await this.JobData.SaveFile(filePath, content);
-                }
-                else
-                {
-                    job.SparkJobConfigFilePath = null;
+                    var content = job.Tokens.Resolve(jc.Content);
+                    var filePath = job.Tokens.Resolve(jc.FilePath);
+                    if (content != null && filePath != null)
+                    {
+                        jc.SparkFilePath = await this.JobData.SaveFile(filePath, content);
+                        job.SparkJobConfigFilePath = jc.SparkFilePath;
+                    }
+                    else
+                    {
+                        jc.SparkFilePath = null;
+                        job.SparkJobConfigFilePath = null;
+                    }
+
                 }
 
                 return job.SparkJobConfigFilePath;

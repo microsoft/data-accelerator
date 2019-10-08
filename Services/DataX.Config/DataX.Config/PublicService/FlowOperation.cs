@@ -69,6 +69,41 @@ namespace DataX.Config.PublicService
             return this.FlowData.GetByName(name);
         }
 
+
+        /// <summary>
+        /// get flows by input mode
+        /// </summary>
+        /// <param name="mode"></param>
+        /// <returns></returns>
+        public Task<FlowConfig[]> GetByMode(string mode)
+        {
+            return this.FlowData.GetByMode(mode);
+        }
+
+        /// <summary>
+        /// Schedule batch jobs
+        /// </summary>
+        /// <param name="runtimeConfigGeneration"></param>
+        /// <returns></returns>
+        public async Task<Result> ScheduleBatch(RuntimeConfigGeneration runtimeConfigGeneration)
+        {
+            var flows = await GetByMode(Constants.InputMode_Batching).ConfigureAwait(false);
+
+            Result result = null;
+            foreach (var flow in flows)
+            {
+                var name = flow.Name;
+                result = await runtimeConfigGeneration.GenerateRuntimeConfigs(name).ConfigureAwait(false);
+
+                if (result.IsSuccess)
+                {
+                    result = await RestartJobsForFlow(name).ConfigureAwait(false);
+                }
+            }
+
+            return result ?? new SuccessResult("done");
+        }
+
         /// <summary>
         /// Save a flow with the gui input
         /// </summary>
