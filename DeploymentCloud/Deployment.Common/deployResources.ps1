@@ -637,7 +637,7 @@ function Setup-Secrets {
     $secretName = $prefix + "datax-sa-" + $sparkBlobAccountName    
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $tValue
 	
-	if($setupCosmosdbAndSqldbSample -eq 'y'){
+	if($setupAdditionalResourcesForSample -eq 'y'){
 		$secretName = $prefix + "datax-sa-fullconnectionstring-" + $sparkBlobAccountName    
 		Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $storageAccount.Context.ConnectionString
 	
@@ -848,7 +848,7 @@ if($resourceCreation -eq 'y') {
 	$tokens = Get-Tokens
     Deploy-Resources -templateName "Resource-Template.json" -paramName "Resource-parameter.json"  -templatePath $templatePath -tokens $tokens
 	
-	if($setupCosmosdbAndSqldbSample -eq 'y')
+	if($setupAdditionalResourcesForSample -eq 'y')
 	{
 		Write-Host -ForegroundColor Green "Deploying SQL type CosmosDB for output sample"
 		Deploy-Resources -templateName "SampleOutputs-Template.json" -paramName "SampleOutputs-Parameter.json"  -templatePath $templatePath -tokens $tokens

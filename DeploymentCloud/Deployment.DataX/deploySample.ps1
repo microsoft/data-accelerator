@@ -196,7 +196,7 @@ function Get-Tokens {
 	$dataxQueryOutputForEventhubSample = '\n\nOUTPUT DoorUnlockedSimpleAlert TO myAzureBlob;\nOUTPUT GarageOpenForFiveMinsWindowAlert TO myAzureBlob;\nOUTPUT GarageOpenFor30MinutesInHourThresholdAlert TO myAzureBlob;\nOUTPUT WindowOpenFiveMinWhileHeaterOnCombinedAlert TO myAzureBlob;'
 	$dataxQueryOutputForNativeKafkaSample = ''
 	
-	if ($setupCosmosdbAndSqldbSample -eq 'y') {
+	if ($setupAdditionalResourcesForSample -eq 'y') {
 		$dataxQueryOutputForEventhubSample += '\n\nOUTPUT DoorUnlockedSimpleAlert TO myCosmosDB;\nOUTPUT GarageOpenForFiveMinsWindowAlert TO myCosmosDB;\nOUTPUT GarageOpenFor30MinutesInHourThresholdAlert TO myCosmosDB;\nOUTPUT WindowOpenFiveMinWhileHeaterOnCombinedAlert TO myCosmosDB;'
 		$dataxQueryOutputForNativeKafkaSample += '\n\nOUTPUT DoorUnlockedSimpleAlert TO myCosmosDB;\nOUTPUT GarageOpenForFiveMinsWindowAlert TO myCosmosDB;\nOUTPUT GarageOpenFor30MinutesInHourThresholdAlert TO myCosmosDB;\nOUTPUT WindowOpenFiveMinWhileHeaterOnCombinedAlert TO myCosmosDB;'
 	}
@@ -208,7 +208,7 @@ function Get-Tokens {
 	$outputSinkForEventhubSample = '{"id" : "Metrics", "type" : "metric", "properties" : {}, "typeDisplay" : "Metrics"}, { "id" : "myAzureBlob", "type" : "blob", "properties": { "connectionString": "'+$keyvaultPrefix+'://'+$sparkKVName+'/datax-sa-fullconnectionstring-'+$sparkBlobAccountName+'", "containerName": "outputs", "blobPrefix": "EventHub", "blobPartitionFormat": "yyyy/MM/dd/HH", "format": "json", "compressionType": "gzip"}, "typeDisplay" : "Azure Blob"}'
 	$outputSinkForNativeKafkaSample = '{"id" : "Metrics", "type" : "metric", "properties" : {}, "typeDisplay" : "Metrics"}'
 			
-	if ($setupCosmosdbAndSqldbSample -eq 'y') {
+	if ($setupAdditionalResourcesForSample -eq 'y') {
 		$outputSinkForEventhubSample += ',{ "id" : "myCosmosDB", "type" : "cosmosdb", "properties" : { "connectionString" : "'+$keyvaultPrefix+'://'+$sparkKVName+'/output-samplecosmosdb", "db" : "dataxdb", "collection" : "eventhubsample"}, "typeDisplay" : "Cosmos DB"}'
 		$outputSinkForNativeKafkaSample += ',{ "id" : "myCosmosDB", "type" : "cosmosdb", "properties" : { "connectionString" : "'+$keyvaultPrefix+'://'+$sparkKVName+'/output-samplecosmosdb", "db" : "dataxdb", "collection" : "nativekafkasample"}, "typeDisplay" : "Cosmos DB"}'
 	}
