@@ -218,6 +218,8 @@ function Get-Tokens {
     $tokens.Add('serviceAppId', $azureADApplicationConfiggenApplicationId )
     $tokens.Add('clientAppId', $azureADApplicationApplicationId )
 
+    $tokens.Add('azureADApplicationConfiggenResourceId', $azureADApplicationConfiggenResourceId )
+
     $aiKey = ''
     $appInsight = Get-AzureRmApplicationInsights -resourceGroupName $resourceGroupName -Name $appInsightsName -ErrorAction SilentlyContinue
     if ($appInsight) {
