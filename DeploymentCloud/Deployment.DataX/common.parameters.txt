@@ -35,6 +35,21 @@ databricksClusterNodeType=Standard_DS3_v2
 #Databricks SKU
 databricksSku=premium
 
+# HDInsight cluster version. Please use a whitelisted subscriptionId if you want to deploy version 4.0 (for now).
+HDInsightVersion=3.6
+
+# The spark version of the HDInsight. For HDInsight4.0, it can be 2.4 or 2.3. For HDInsight3.6, it should be 2.3
+sparkComponentVersion=2.3
+
+# y if you want to enable the auto-scaling feature of the HDInsight cluster. For now, it is only available for version 4.0.
+enableHDInsightAutoScaling=n
+
+# HDInsight minimal nodes. It is only meaning when HDInsightVersion=4.0 and enableHDInsightAutoScaling=y.
+minNodesForHDInsightAutoScaling=3
+
+# HDInsight maximal nodes. It is only meaning when HDInsightVersion=4.0 and enableHDInsightAutoScaling=y.
+maxNodesForHDInsightAutoScaling=5
+
 # y if you want to deploy Kafka sample, n otherwise
 # This will deploy the Kafka specific samples and resources such as HDinsight Kafka and EventHub Kafka  
 enableKafkaSample=y

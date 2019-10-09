@@ -164,7 +164,7 @@ function Get-Tokens {
     $tokens.Add('tenantId', $tenantId )
     $tokens.Add('userId', $userId )
 	
-	$sparkType = 'hdinsight'
+    $sparkType = 'hdinsight'
     $keyvaultPrefix = 'keyvault'
 	$dataxJobTemplate = 'DataXDirect'
 	$dataxKafkaJobTemplate = 'kafkaDataXDirect'
@@ -179,7 +179,16 @@ function Get-Tokens {
 		$tokens.Add('databricksClusterNodeType', $databricksClusterNodeType)
 		$tokens.Add('databricksSku', $databricksSku)
 		$tokens.Add('dbResourceGroupName', $resourceGroupName)
+    } else {
+        $tokens.Add('HDInsightVersion', $HDInsightVersion)
+        $tokens.Add('sparkComponentVersion', $sparkComponentVersion)
+        $tokens.Add('enableHDInsightAutoScaling', $enableHDInsightAutoScaling)
+        if($enableHDInsightAutoScaling -eq 'y') {
+            $tokens.Add('minNodesForHDInsightAutoScaling', $minNodesForHDInsightAutoScaling)
+            $tokens.Add('maxNodesForHDInsightAutoScaling', $maxNodesForHDInsightAutoScaling)
+        }
     }
+
 	$tokens.Add('sparkType', $sparkType)
 	$tokens.Add('keyvaultPrefix', $keyvaultPrefix)
 	$tokens.Add('dataxJobTemplate', $dataxJobTemplate)
@@ -845,8 +854,20 @@ if($sparkCreation -eq 'y') {
 
     $tokens = Get-Tokens
 	if ($useDatabricks -eq 'n') {
+
+        $sparkTemplate = "Spark-Template.json"
+        $sparkParameter = "Spark-parameter.json"
+
+        $version = ($HDInsightVersion -split '\.')[0]
+        $version = [int]$version
+        if ($version -ge 4 -and $enableHDInsightAutoScaling -eq 'y') {
+            $sparkTemplate = "Spark-AutoScale-Template.json"
+            $sparkParameter = "Spark-AutoScale-parameter.json"
+        }      
+        Write-Host "sparkTempalte: '$sparkTemplate' ; sparkParameter: '$sparkParameter'"
+
 		Write-Host -ForegroundColor Green "Estimated time to complete: 20 mins"
-		Deploy-Resources -templateName "Spark-Template.json" -paramName "Spark-parameter.json" -templatePath $templatePath -tokens $tokens
+		Deploy-Resources -templateName  $sparkTemplate -paramName $sparkParameter -templatePath $templatePath -tokens $tokens
 	}
 	else {
 		Write-Host -ForegroundColor Green "Estimated time to complete: 5 mins"
