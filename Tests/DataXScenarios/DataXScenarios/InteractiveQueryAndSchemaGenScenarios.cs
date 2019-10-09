@@ -4,10 +4,6 @@
 // *********************************************************************
 using ScenarioTester;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Text;
-using System.Threading.Tasks;
 using DataXScenarios;
 
 namespace DataX.ServerScenarios
@@ -21,12 +17,8 @@ namespace DataX.ServerScenarios
         public static StepResult InferSchema(ScenarioContext context)
         {
             var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.SchemaInferenceService/inputdata/inferschema";
-            context[Context.InferSchemaInputJson] = new Helper().GetInferSchemaJson(context);
-            string jsonResult = Request.Post(baseAddress,
-                    RequestContent.EncodeAsJson(
-                        JObject.Parse(context[Context.InferSchemaInputJson] as string)),
-                    bearerToken: context[Context.AuthToken] as string, skipServerCertificateValidation: (bool)context[Context.SkipServerCertificateValidation]);
-            dynamic result = JObject.Parse(jsonResult);
+            ContextHelper helper = new ContextHelper(context);
+            dynamic result = helper.DoHttpPostJson(baseAddress, helper.GetInferSchemaJson());
             context[Context.InputSchema] = JsonConvert.SerializeObject((string)result.result.Schema);
             return new StepResult(!string.IsNullOrWhiteSpace(context[Context.InputSchema] as string),
                 nameof(InferSchema),
@@ -37,20 +29,9 @@ namespace DataX.ServerScenarios
         public static StepResult InitializeKernel(ScenarioContext context)
         {
             var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.InteractiveQueryService/kernel";
-
-            Helper helper = new Helper();
-            context[Context.InitializeKernelJson] = helper.GetInitializeKernelJson(context);
-            string jsonResult = Request.Post(baseAddress,
-                    RequestContent.EncodeAsJson(
-                        JObject.Parse(context[Context.InitializeKernelJson] as string)),
-                    bearerToken: context[Context.AuthToken] as string, skipServerCertificateValidation: (bool)context[Context.SkipServerCertificateValidation]);
-
-            dynamic result = JObject.Parse(jsonResult);
+            ContextHelper helper = new ContextHelper(context);
+            dynamic result = helper.DoHttpPostJson(baseAddress, helper.GetInitializeKernelJson());
             context[Context.KernelId] = (string)result.result.result;
-
-            context[Context.InitializeKernelJson] = helper.GetInitializeKernelJson(context);
-
-
             return new StepResult(!(string.IsNullOrWhiteSpace(context[Context.KernelId] as string) && (string) result.result.message==""),
                 nameof(InitializeKernel),
                 $"Initialize a kernel '{context[Context.KernelId]}' ");
@@ -60,13 +41,8 @@ namespace DataX.ServerScenarios
         public static StepResult RefreshKernel(ScenarioContext context)
         {
             var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.InteractiveQueryService/kernel/refresh";
-            
-            string jsonResult = Request.Post(baseAddress,
-                    RequestContent.EncodeAsJson(
-                        JObject.Parse(context[Context.InitializeKernelJson] as string)),
-                    bearerToken: context[Context.AuthToken] as string, skipServerCertificateValidation: (bool)context[Context.SkipServerCertificateValidation]);
-
-            dynamic result = JObject.Parse(jsonResult);
+            ContextHelper helper = new ContextHelper(context);
+            dynamic result = helper.DoHttpPostJson(baseAddress, helper.GetInitializeKernelJson());
             context[Context.KernelId] = (string)result.result.result;
             return new StepResult(!(string.IsNullOrWhiteSpace(context[Context.KernelId] as string) && (string)result.result.message == ""),
                 nameof(RefreshKernel),
@@ -77,12 +53,8 @@ namespace DataX.ServerScenarios
         public static StepResult RefreshSample(ScenarioContext context)
         {
             var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.SchemaInferenceService/inputdata/refreshsample";
-            
-            string jsonResult = Request.Post(baseAddress,
-                    RequestContent.EncodeAsJson(
-                        JObject.Parse(context[Context.InferSchemaInputJson] as string)),
-                    bearerToken: context[Context.AuthToken] as string, skipServerCertificateValidation: (bool)context[Context.SkipServerCertificateValidation]);
-            dynamic result = JObject.Parse(jsonResult);
+            ContextHelper helper = new ContextHelper(context);
+            dynamic result = helper.DoHttpPostJson(baseAddress, helper.GetInferSchemaJson());
             return new StepResult(((string)result.result).Contains("success"),
                 nameof(RefreshSample),
                 $"Refreshing Sample");
@@ -92,14 +64,8 @@ namespace DataX.ServerScenarios
         public static StepResult RefreshSampleAndKernel(ScenarioContext context)
         {
             var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.LiveDataService/inputdata/refreshsampleandkernel";
-            context[Context.InitializeKernelJson] = new Helper().GetInitializeKernelJson(context);
-
-            string jsonResult = Request.Post(baseAddress,
-                    RequestContent.EncodeAsJson(
-                        JObject.Parse(context[Context.InitializeKernelJson] as string)),
-                    bearerToken: context[Context.AuthToken] as string, skipServerCertificateValidation: (bool)context[Context.SkipServerCertificateValidation]);
-
-            dynamic result = JObject.Parse(jsonResult);
+            ContextHelper helper = new ContextHelper(context);
+            dynamic result = helper.DoHttpPostJson(baseAddress, helper.GetInitializeKernelJson());
             context[Context.KernelId] = (string)result.result.result;
             return new StepResult(!(string.IsNullOrWhiteSpace(context[Context.KernelId] as string) && (string)result.result.message == ""),
                 nameof(RefreshSampleAndKernel),
@@ -110,11 +76,8 @@ namespace DataX.ServerScenarios
         public static StepResult DeleteKernel(ScenarioContext context)
         {
             var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.InteractiveQueryService/kernel/delete";
-            context[Context.DeleteKernelJson] = new Helper().GetDeleteKernelJson(context);
-            string jsonResult = Request.Post(baseAddress,
-                    new RequestContent(Encoding.UTF8.GetBytes((string)context[Context.DeleteKernelJson]), "application/json"),
-                    bearerToken: context[Context.AuthToken] as string, skipServerCertificateValidation: (bool)context[Context.SkipServerCertificateValidation]);
-            dynamic result = JObject.Parse(jsonResult);
+            ContextHelper helper = new ContextHelper(context);
+            dynamic result = helper.DoHttpPostJson(baseAddress, helper.GetDeleteKernelJson());
             return new StepResult(((string)result.result).Contains("Success"),
                 nameof(DeleteKernel),
                 $"Delete the kernel '{context[Context.KernelId]}' ");
