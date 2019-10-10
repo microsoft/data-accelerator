@@ -38,19 +38,23 @@ namespace DataXScenarios
         }
 
         /// <summary>
-        /// Tries to fetch a new json value in the context, creates the entry if not available and returns it
+        /// Tries to fetch a new value in the context, creates the entry if not available and returns it
         /// </summary>
-        /// <param name="jsonFieldName"></param>
-        /// <param name="jsonProvider"></param>
+        /// <param name="fieldName"></param>
+        /// <param name="supplier"></param>
         /// <returns></returns>
-        private string getAndCacheJson(string jsonFieldName, Func<string> jsonProvider)
+        public T SetContextValue<T>(string fieldName, Func<T> supplier)
         {
-            if (!isValueSet(jsonFieldName))
+            if (!isValueSet(fieldName))
             {
-                context[jsonFieldName] = jsonProvider.Invoke();
+                context[fieldName] = supplier.Invoke();
             }
-            return (string)context[jsonFieldName];
+            return (T)context[fieldName];
         }
+
+        public T GetContextValue<T>(string fieldName)
+        {
+            return (T)Convert.ChangeType(context[fieldName], typeof(T));        }
 
         public async Task GetS2SAccessTokenForProdMSAAsync()
         {
@@ -68,40 +72,6 @@ namespace DataXScenarios
             context[Context.AuthResult] = authenticationResult;
             context[Context.AccessTokenType] = authenticationResult.AccessTokenType;
         }
-
-        /// <summary>
-        /// Creating a helper function for constructing GetInferSchemaJson
-        /// </summary>
-        /// <returns></returns>
-        public string GetInferSchemaJson()
-        {
-            return getAndCacheJson(Context.InferSchemaInputJson, () =>
-                $"{{\"name\": \"{context[Context.FlowName] as string}\", \"userName\": \"{context[Context.FlowName] as string}\", \"eventhubConnectionString\": \"{context[Context.EventhubConnectionString] as string}\", \"eventHubNames\": \"{context[Context.EventHubName] as string}\", \"inputType\": \"iothub\", \"seconds\": \"{context[Context.Seconds] as string}\"}}"
-            );
-        }
-
-        /// <summary>
-        /// Creating a helper function for constructing the InitializeKernelJson
-        /// </summary>
-        /// <returns></returns>
-        public string GetInitializeKernelJson()
-        {
-            return getAndCacheJson(Context.InitializeKernelJson, () =>
-                $"{{\"name\": \"{context[Context.FlowName] as string}\", \"userName\": \"{context[Context.FlowName] as string}\", \"eventhubConnectionString\": \"{context[Context.EventhubConnectionString] as string}\", \"eventHubNames\": \"{context[Context.EventHubName] as string}\", \"inputType\": \"iothub\", \"inputSchema\": {context[Context.InputSchema] as string}, \"kernelId\": \"{context[Context.KernelId] as string}\", \"normalizationSnippet\": {context[Context.NormalizationSnippet] as string}}}"
-            );
-        }
-
-        /// <summary>
-        /// Create a helper function for constructing the DeleteKernelJson
-        /// </summary>
-        /// <returns></returns>
-        public string GetDeleteKernelJson()
-        {
-            return getAndCacheJson(Context.DeleteKernelJson, () =>
-                $"{{\"kernelId\": \"{context[Context.KernelId]}\", \"name\": \"{context[Context.FlowName]}\"}}"
-            );
-        }
-
 
         /// <summary>
         /// Creates a JSON post request based in the current context data
@@ -127,5 +97,27 @@ namespace DataXScenarios
             return JObject.Parse(jsonResult);
         }
 
+        /// <summary>
+        /// Generates a base url based on context contents
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public string CreateUrl(string path)
+        {
+            return $"{context[Context.ServiceUrl] as string}{path}";
+        }
+
+        /// <summary>
+        /// Helper function to store the result of a executed step
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="fieldName">The field name of the context</param>
+        /// <param name="stepResult></param>
+        /// <returns></returns>
+        public StepResult SaveContextValueWithStepResult(string fieldName, string contextValue, bool success, string description, string result)
+        {
+            SetContextValue<string>(fieldName, () => contextValue);
+            return new StepResult(success, description, result);
+        }
     }
 }
