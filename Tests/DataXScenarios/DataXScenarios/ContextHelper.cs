@@ -28,33 +28,27 @@ namespace DataXScenarios
         }
 
         /// <summary>
-        /// Tells whether a field is set in the current context
-        /// </summary>
-        /// <param name="fieldName"></param>
-        /// <returns></returns>
-        private bool isValueSet(string fieldName)
-        {
-            return context.ContainsKey(fieldName) && context[fieldName] != null;
-        }
-
-        /// <summary>
-        /// Tries to fetch a new value in the context, creates the entry if not available and returns it
+        /// Sets a value into the specified field name in the context
         /// </summary>
         /// <param name="fieldName"></param>
         /// <param name="supplier"></param>
         /// <returns></returns>
-        public T SetContextValue<T>(string fieldName, Func<T> supplier)
+        public T SetContextValue<T>(string fieldName, T value)
         {
-            if (!isValueSet(fieldName))
-            {
-                context[fieldName] = supplier.Invoke();
-            }
+            context[fieldName] = value;
             return (T)context[fieldName];
         }
 
+        /// <summary>
+        /// Retrieves a value from context with the desired type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="fieldName"></param>
+        /// <returns></returns>
         public T GetContextValue<T>(string fieldName)
         {
-            return (T)Convert.ChangeType(context[fieldName], typeof(T));        }
+            return (T)Convert.ChangeType(context[fieldName], typeof(T));        
+        }
 
         public async Task GetS2SAccessTokenForProdMSAAsync()
         {
@@ -68,9 +62,10 @@ namespace DataXScenarios
             AuthenticationResult authenticationResult = await authContext.AcquireTokenAsync(
                 resource,  // the resource (app) we are going to access with the token
                 clientCredential);  // the client credentials
-            context[Context.AuthToken] = authenticationResult.AccessToken;
-            context[Context.AuthResult] = authenticationResult;
-            context[Context.AccessTokenType] = authenticationResult.AccessTokenType;
+
+            SetContextValue(Context.AuthToken, authenticationResult.AccessToken);
+            SetContextValue(Context.AuthResult, authenticationResult);
+            SetContextValue(Context.AccessTokenType, authenticationResult.AccessTokenType);
         }
 
         /// <summary>
@@ -81,7 +76,9 @@ namespace DataXScenarios
         /// <returns></returns>
         public dynamic DoHttpPostJson(string baseAddress, string json)
         {
-            string jsonResult = Request.Post(baseAddress, RequestContent.EncodeAsJson(json), bearerToken: context[Context.AuthToken] as string, skipServerCertificateValidation: (bool)context[Context.SkipServerCertificateValidation]);
+            string jsonResult = Request.Post(baseAddress, RequestContent.EncodeAsJson(json),
+                bearerToken: GetContextValue<string>(Context.AuthToken),
+                skipServerCertificateValidation: GetContextValue<bool>(Context.SkipServerCertificateValidation));
             return JObject.Parse(jsonResult);
         }
 
@@ -93,7 +90,8 @@ namespace DataXScenarios
         public dynamic DoHttpGet(string baseAddress)
         {
             string jsonResult = Request.Get(baseAddress,
-                    bearerToken: context[Context.AuthToken] as string, skipServerCertificateValidation: (bool)context[Context.SkipServerCertificateValidation]);
+                bearerToken: GetContextValue<string>(Context.AuthToken), 
+                skipServerCertificateValidation: GetContextValue<bool>(Context.SkipServerCertificateValidation));
             return JObject.Parse(jsonResult);
         }
 
@@ -104,20 +102,7 @@ namespace DataXScenarios
         /// <returns></returns>
         public string CreateUrl(string path)
         {
-            return $"{context[Context.ServiceUrl] as string}{path}";
-        }
-
-        /// <summary>
-        /// Helper function to store the result of a executed step
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="fieldName">The field name of the context</param>
-        /// <param name="stepResult></param>
-        /// <returns></returns>
-        public StepResult SaveContextValueWithStepResult(string fieldName, string contextValue, bool success, string description, string result)
-        {
-            SetContextValue<string>(fieldName, () => contextValue);
-            return new StepResult(success, description, result);
+            return $"{GetContextValue<string>(Context.ServiceUrl)}{path}";
         }
     }
 }

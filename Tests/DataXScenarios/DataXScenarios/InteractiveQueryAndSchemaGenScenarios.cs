@@ -23,7 +23,7 @@ namespace DataX.ServerScenarios
             string eventHubConnectionString = helper.GetContextValue<string>(Context.EventhubConnectionString);
             string eventHubName = helper.GetContextValue<string>(Context.EventHubName);
             string seconds = helper.GetContextValue<string>(Context.Seconds);
-            return helper.SetContextValue(Context.InferSchemaInputJson, () =>
+            return helper.SetContextValue(Context.InferSchemaInputJson,
                 $"{{\"name\": \"{flowName}\", \"userName\": \"{flowName}\", \"eventhubConnectionString\": \"{eventHubConnectionString}\", \"eventHubNames\": \"{eventHubName}\", \"inputType\": \"iothub\", \"seconds\": \"{seconds}\"}}"
             );
         }
@@ -40,7 +40,7 @@ namespace DataX.ServerScenarios
             string inputSchema = helper.GetContextValue<string>(Context.InputSchema);
             string kernelId = helper.GetContextValue<string>(Context.KernelId);
             string normalizationSnippet = helper.GetContextValue<string>(Context.NormalizationSnippet);
-            return helper.SetContextValue(Context.InitializeKernelJson, () =>
+            return helper.SetContextValue(Context.InitializeKernelJson,
                 $"{{\"name\": \"{flowName}\", \"userName\": \"{flowName}\", \"eventhubConnectionString\": \"{eventHubConnectionString}\", \"eventHubNames\": \"{eventHubName}\", \"inputType\": \"iothub\", \"inputSchema\": {inputSchema}, \"kernelId\": \"{kernelId}\", \"normalizationSnippet\": {normalizationSnippet}}}"
             );
         }
@@ -53,7 +53,7 @@ namespace DataX.ServerScenarios
         {
             string kernelId = helper.GetContextValue<string>(Context.KernelId);
             string flowName = helper.GetContextValue<string>(Context.FlowName);
-            return helper.SetContextValue(Context.DeleteKernelJson, () =>
+            return helper.SetContextValue(Context.DeleteKernelJson,
                 $"{{\"kernelId\": \"{kernelId}\", \"name\": \"{flowName}\"}}"
             );
         }
@@ -65,7 +65,8 @@ namespace DataX.ServerScenarios
             var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.SchemaInferenceService/inputdata/inferschema");
             dynamic result = helper.DoHttpPostJson(baseAddress, GetInferSchemaJson(helper));
             string inputSchema = JsonConvert.SerializeObject((string)result.result.Schema);
-            return helper.SaveContextValueWithStepResult(Context.InputSchema, inputSchema, 
+            helper.SetContextValue<string>(Context.InputSchema, inputSchema);
+            return new StepResult(
                 success: !string.IsNullOrWhiteSpace(inputSchema),
                 description: nameof(InferSchema),
                 result: $"Inferring Schema '{inputSchema}' ");
@@ -78,8 +79,10 @@ namespace DataX.ServerScenarios
             var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.InteractiveQueryService/kernel");
             dynamic result = helper.DoHttpPostJson(baseAddress, GetInitializeKernelJson(helper));
             string kernelId = result.result.result;
-            return helper.SaveContextValueWithStepResult(Context.KernelId, contextValue: kernelId, 
-                success: !(string.IsNullOrWhiteSpace(kernelId) && (string) result.result.message==""),
+            string message = result.result.message;
+            helper.SetContextValue<string>(Context.KernelId, kernelId);
+            return new StepResult(
+                success: !(string.IsNullOrWhiteSpace(kernelId) && message == ""),
                 description: nameof(InitializeKernel),
                 result: $"Initialize a kernel '{kernelId}' ");
         }
@@ -91,8 +94,10 @@ namespace DataX.ServerScenarios
             var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.InteractiveQueryService/kernel/refresh");
             dynamic result = helper.DoHttpPostJson(baseAddress, GetInitializeKernelJson(helper));
             string kernelId = result.result.result;
-            return helper.SaveContextValueWithStepResult(Context.KernelId, contextValue: kernelId, 
-                success: !(string.IsNullOrWhiteSpace(context[Context.KernelId] as string) && (string)result.result.message == ""),
+            string message = result.result.message;
+            helper.SetContextValue<string>(Context.KernelId, kernelId);
+            return new StepResult(
+                success: !(string.IsNullOrWhiteSpace(kernelId) && message == ""),
                 description: nameof(RefreshKernel),
                 result: $"Refresh the kernel '{kernelId}' ");
         }
@@ -103,8 +108,9 @@ namespace DataX.ServerScenarios
             ContextHelper helper = new ContextHelper(context);
             var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.SchemaInferenceService/inputdata/refreshsample");
             dynamic result = helper.DoHttpPostJson(baseAddress, GetInferSchemaJson(helper));
+            string response = result.result;
             return new StepResult(
-                success: ((string)result.result).Contains("success"),
+                success: response.Contains("success"),
                 description: nameof(RefreshSample),
                 result: $"Refreshing Sample");
         }
@@ -116,8 +122,10 @@ namespace DataX.ServerScenarios
             var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.LiveDataService/inputdata/refreshsampleandkernel");
             dynamic result = helper.DoHttpPostJson(baseAddress, GetInitializeKernelJson(helper));
             string kernelId = result.result.result;
-            return helper.SaveContextValueWithStepResult(Context.KernelId, contextValue: kernelId, 
-                success: !(string.IsNullOrWhiteSpace(kernelId) && (string)result.result.message == ""),
+            string message = result.result.message;
+            helper.SetContextValue<string>(Context.KernelId, kernelId);
+            return new StepResult(
+                success: !(string.IsNullOrWhiteSpace(kernelId) && message == ""),
                 description: nameof(RefreshSampleAndKernel),
                 result: $"Refresh the sample and kernel '{kernelId}' ");
         }
@@ -128,8 +136,9 @@ namespace DataX.ServerScenarios
             ContextHelper helper = new ContextHelper(context);
             var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.InteractiveQueryService/kernel/delete");
             dynamic result = helper.DoHttpPostJson(baseAddress, GetDeleteKernelJson(helper));
+            string response = result.result;
             return new StepResult(
-                success: ((string)result.result).Contains("Success"),
+                success: response.Contains("Success"),
                 description: nameof(DeleteKernel),
                 result: $"Delete the kernel '{helper.GetContextValue<string>(Context.KernelId)}' ");
         }

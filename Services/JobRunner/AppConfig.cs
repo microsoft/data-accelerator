@@ -46,6 +46,6 @@ namespace JobRunner
         /// <summary>
         /// HttpClient calls to external services will skip server certification validations on http calls if true, use it for development purposes
         /// </summary>
-        public bool SkipServerCertificateValidation { get; set; } = true;
+        public bool SkipServerCertificateValidation { get; set; } = false;
     }
 }

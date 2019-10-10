@@ -56,7 +56,8 @@ namespace DataX.ServerScenarios
             var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.ManagementService/flow/save");
             dynamic result = helper.DoHttpPostJson(baseAddress, GetFlowConfigContentJson(helper));
             string flowName = result.result.name;
-            return helper.SaveContextValueWithStepResult(Context.StartJobName, contextValue: flowName, 
+            helper.SetContextValue<string>(Context.StartJobName, flowName);
+            return new StepResult(
                 success: !string.IsNullOrWhiteSpace(flowName),
                 description: nameof(SaveJob),
                 result: $"created a flow '{flowName}' ");
@@ -69,7 +70,8 @@ namespace DataX.ServerScenarios
             var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.ManagementService/flow/startjobs");
             dynamic result = helper.DoHttpPostJson(baseAddress, GetFlowName(helper));
             string startJobName = result.result.IsSuccess;
-            return helper.SaveContextValueWithStepResult(Context.StartJobName, contextValue: startJobName, 
+            helper.SetContextValue<string>(Context.StartJobName, startJobName);
+            return new StepResult(
                 success: !string.IsNullOrWhiteSpace(startJobName),
                 description: nameof(StartJob),
                 result: $"created configs for the flow: '{startJobName}' ");
@@ -82,7 +84,8 @@ namespace DataX.ServerScenarios
             var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.ManagementService/flow/generateconfigs");
             dynamic result = helper.DoHttpPostJson(baseAddress, GetFlowName(helper));
             string generateConfigsRuntimeConfigFolder = result.result.Properties.runtimeConfigFolder;
-            return helper.SaveContextValueWithStepResult(Context.GenerateConfigsRuntimeConfigFolder, contextValue: generateConfigsRuntimeConfigFolder, 
+            helper.SetContextValue<string>(Context.GenerateConfigsRuntimeConfigFolder, generateConfigsRuntimeConfigFolder);
+            return new StepResult(
                 success: !string.IsNullOrWhiteSpace(generateConfigsRuntimeConfigFolder),
                 description: nameof(GenerateConfigs),
                 result: $"created configs for the flow: '{generateConfigsRuntimeConfigFolder}' ");
@@ -95,7 +98,8 @@ namespace DataX.ServerScenarios
             var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.ManagementService/flow/restartjobs");
             dynamic result = helper.DoHttpPostJson(baseAddress, GetFlowName(helper));
             string restartJobsName = result.result.IsSuccess;
-            return helper.SaveContextValueWithStepResult(Context.RestartJobsName, contextValue: restartJobsName, 
+            helper.SetContextValue<string>(Context.RestartJobsName, restartJobsName);
+            return new StepResult(
                 success: !string.IsNullOrWhiteSpace(restartJobsName), 
                 description: nameof(RestartJob), 
                 result: $"created configs for the flow: '{restartJobsName}' ");
@@ -108,7 +112,8 @@ namespace DataX.ServerScenarios
             var baseAddress = helper.CreateUrl($"/api/DataX.Flow/Flow.ManagementService/flow/get?flowName={GetFlowName(helper)}");
             dynamic result = helper.DoHttpGet(baseAddress);
             string flowConfig = result.result.name;
-            return helper.SaveContextValueWithStepResult(Context.FlowConfig, contextValue: flowConfig, 
+            helper.SetContextValue<string>(Context.FlowConfig, flowConfig);
+            return new StepResult(
                 success: !string.IsNullOrWhiteSpace(flowConfig),
                 description: nameof(GetFlow), 
                 result: "acquired flow");
