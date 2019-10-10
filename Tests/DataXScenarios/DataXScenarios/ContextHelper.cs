@@ -52,7 +52,11 @@ namespace DataXScenarios
 
         public async Task GetS2SAccessTokenForProdMSAAsync()
         {
-            await GetS2SAccessToken(context[Context.MicrosoftAuthority] as string, context[Context.ApplicationIdentifierUri] as string, context[Context.ApplicationId] as string, context[Context.SecretKey] as string);
+            await GetS2SAccessToken(
+                GetContextValue<string>(Context.MicrosoftAuthority),
+                GetContextValue<string>(Context.ApplicationIdentifierUri),
+                GetContextValue<string>(Context.ApplicationId),
+                GetContextValue<string>(Context.SecretKey));
         }
 
         private async Task GetS2SAccessToken(string authority, string resource, string clientId, string clientSecret)
