@@ -1,4 +1,8 @@
-﻿using DataX.ServerScenarios;
+﻿// *********************************************************************
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License
+// *********************************************************************
+using DataX.ServerScenarios;
 using DataXScenarios;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
@@ -117,8 +121,5 @@ namespace ScenarioTesterTests
             Assert.AreEqual(flowNameValue, (string)json.name);
             Assert.AreEqual(kernelIdValue, (string)json.kernelId);
         }
-
-
-
     }
 }

@@ -62,7 +62,7 @@ namespace DataX.ServerScenarios
         public static StepResult InferSchema(ScenarioContext context)
         {
             ContextHelper helper = new ContextHelper(context);
-            var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.SchemaInferenceService/inputdata/inferschema");
+            var baseAddress = helper.CreateUrl(ScenarioUri.InferSchema);
             dynamic result = helper.DoHttpPostJson(baseAddress, GetInferSchemaJson(helper));
             string inputSchema = JsonConvert.SerializeObject((string)result.result.Schema);
             helper.SetContextValue<string>(Context.InputSchema, inputSchema);
@@ -76,7 +76,7 @@ namespace DataX.ServerScenarios
         public static StepResult InitializeKernel(ScenarioContext context)
         {
             ContextHelper helper = new ContextHelper(context);
-            var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.InteractiveQueryService/kernel");
+            var baseAddress = helper.CreateUrl(ScenarioUri.initializeKernel);
             dynamic result = helper.DoHttpPostJson(baseAddress, GetInitializeKernelJson(helper));
             string kernelId = (string)result.result.result;
             string message = (string)result.result.message;
@@ -91,7 +91,7 @@ namespace DataX.ServerScenarios
         public static StepResult RefreshKernel(ScenarioContext context)
         {
             ContextHelper helper = new ContextHelper(context);
-            var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.InteractiveQueryService/kernel/refresh");
+            var baseAddress = helper.CreateUrl(ScenarioUri.RefreshKernel);
             dynamic result = helper.DoHttpPostJson(baseAddress, GetInitializeKernelJson(helper));
             string kernelId = (string)result.result.result;
             string message = (string)result.result.message;
@@ -106,7 +106,7 @@ namespace DataX.ServerScenarios
         public static StepResult RefreshSample(ScenarioContext context)
         {
             ContextHelper helper = new ContextHelper(context);
-            var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.SchemaInferenceService/inputdata/refreshsample");
+            var baseAddress = helper.CreateUrl(ScenarioUri.RefreshSample);
             dynamic result = helper.DoHttpPostJson(baseAddress, GetInferSchemaJson(helper));
             string response = (string)result.result;
             return new StepResult(
@@ -119,7 +119,7 @@ namespace DataX.ServerScenarios
         public static StepResult RefreshSampleAndKernel(ScenarioContext context)
         {
             ContextHelper helper = new ContextHelper(context);
-            var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.LiveDataService/inputdata/refreshsampleandkernel");
+            var baseAddress = helper.CreateUrl(ScenarioUri.RefreshSampleAndKernel);
             dynamic result = helper.DoHttpPostJson(baseAddress, GetInitializeKernelJson(helper));
             string kernelId = (string)result.result.result;
             string message = (string)result.result.message;
@@ -134,7 +134,7 @@ namespace DataX.ServerScenarios
         public static StepResult DeleteKernel(ScenarioContext context)
         {
             ContextHelper helper = new ContextHelper(context);
-            var baseAddress = helper.CreateUrl("/api/DataX.Flow/Flow.InteractiveQueryService/kernel/delete");
+            var baseAddress = helper.CreateUrl(ScenarioUri.DeleteKernel);
             dynamic result = helper.DoHttpPostJson(baseAddress, GetDeleteKernelJson(helper));
             string response = (string)result.result;
             return new StepResult(
