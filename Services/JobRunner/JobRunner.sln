@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Utility.Blob", "..\Da
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Utilities.Composition", "..\DataX.Flow\DataX.Utilities.Composition\DataX.Utilities.Composition.csproj", "{42630955-5D75-48D8-A6CC-1BDB4694F903}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScenarioTesterTests", "..\..\Tests\ScenarioTester\ScenarioTesterTests\ScenarioTesterTests.csproj", "{88E127AE-3742-4580-BFAB-234407E947B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{42630955-5D75-48D8-A6CC-1BDB4694F903}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42630955-5D75-48D8-A6CC-1BDB4694F903}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42630955-5D75-48D8-A6CC-1BDB4694F903}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88E127AE-3742-4580-BFAB-234407E947B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88E127AE-3742-4580-BFAB-234407E947B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88E127AE-3742-4580-BFAB-234407E947B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88E127AE-3742-4580-BFAB-234407E947B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
