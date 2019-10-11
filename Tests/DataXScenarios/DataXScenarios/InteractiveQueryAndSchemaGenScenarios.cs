@@ -63,7 +63,7 @@ namespace DataX.ServerScenarios
         {
             ContextHelper helper = new ContextHelper(context);
             var baseAddress = helper.CreateUrl(ScenarioUri.InferSchema);
-            dynamic result = helper.DoHttpPostJson(baseAddress, GetInferSchemaJson(helper));
+            dynamic result = helper.DoHttpPostJsonObject(baseAddress, GetInferSchemaJson(helper));
             string inputSchema = JsonConvert.SerializeObject((string)result.result.Schema);
             helper.SetContextValue<string>(Context.InputSchema, inputSchema);
             return new StepResult(
@@ -77,7 +77,7 @@ namespace DataX.ServerScenarios
         {
             ContextHelper helper = new ContextHelper(context);
             var baseAddress = helper.CreateUrl(ScenarioUri.initializeKernel);
-            dynamic result = helper.DoHttpPostJson(baseAddress, GetInitializeKernelJson(helper));
+            dynamic result = helper.DoHttpPostJsonObject(baseAddress, GetInitializeKernelJson(helper));
             string kernelId = (string)result.result.result;
             string message = (string)result.result.message;
             helper.SetContextValue<string>(Context.KernelId, kernelId);
@@ -92,7 +92,7 @@ namespace DataX.ServerScenarios
         {
             ContextHelper helper = new ContextHelper(context);
             var baseAddress = helper.CreateUrl(ScenarioUri.RefreshKernel);
-            dynamic result = helper.DoHttpPostJson(baseAddress, GetInitializeKernelJson(helper));
+            dynamic result = helper.DoHttpPostJsonObject(baseAddress, GetInitializeKernelJson(helper));
             string kernelId = (string)result.result.result;
             string message = (string)result.result.message;
             helper.SetContextValue<string>(Context.KernelId, kernelId);
@@ -107,7 +107,7 @@ namespace DataX.ServerScenarios
         {
             ContextHelper helper = new ContextHelper(context);
             var baseAddress = helper.CreateUrl(ScenarioUri.RefreshSample);
-            dynamic result = helper.DoHttpPostJson(baseAddress, GetInferSchemaJson(helper));
+            dynamic result = helper.DoHttpPostJsonObject(baseAddress, GetInferSchemaJson(helper));
             string response = (string)result.result;
             return new StepResult(
                 success: response.Contains("success"),
@@ -120,7 +120,7 @@ namespace DataX.ServerScenarios
         {
             ContextHelper helper = new ContextHelper(context);
             var baseAddress = helper.CreateUrl(ScenarioUri.RefreshSampleAndKernel);
-            dynamic result = helper.DoHttpPostJson(baseAddress, GetInitializeKernelJson(helper));
+            dynamic result = helper.DoHttpPostJsonObject(baseAddress, GetInitializeKernelJson(helper));
             string kernelId = (string)result.result.result;
             string message = (string)result.result.message;
             helper.SetContextValue<string>(Context.KernelId, kernelId);
@@ -135,7 +135,7 @@ namespace DataX.ServerScenarios
         {
             ContextHelper helper = new ContextHelper(context);
             var baseAddress = helper.CreateUrl(ScenarioUri.DeleteKernel);
-            dynamic result = helper.DoHttpPostJson(baseAddress, GetDeleteKernelJson(helper));
+            dynamic result = helper.DoHttpPostJsonObject(baseAddress, GetDeleteKernelJson(helper));
             string response = (string)result.result;
             return new StepResult(
                 success: response.Contains("Success"),

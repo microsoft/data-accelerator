@@ -7,6 +7,7 @@ using Microsoft.Azure.Services.AppAuthentication;
 using ScenarioTester;
 using System;
 using DataXScenarios;
+using Newtonsoft.Json;
 
 namespace DataX.ServerScenarios
 {
@@ -22,7 +23,7 @@ namespace DataX.ServerScenarios
         /// <returns></returns>
         private static string GetFlowConfigContentJson(ContextHelper helper)
         {
-            return helper.GetContextValue<String>(Context.FlowConfigContent);
+            return helper.GetContextValue<string>(Context.FlowConfigContent);
         }
 
         /// <summary>
@@ -32,7 +33,7 @@ namespace DataX.ServerScenarios
         /// <returns></returns>
         private static string GetFlowName(ContextHelper helper)
         {
-            return helper.GetContextValue<String>(Context.FlowName);
+            return helper.GetContextValue<string>(Context.FlowName);
         }
 
         [Step("acquireToken")]
@@ -54,9 +55,10 @@ namespace DataX.ServerScenarios
         {
             ContextHelper helper = new ContextHelper(context);
             var baseAddress = helper.CreateUrl(ScenarioUri.SaveFlow);
-            dynamic result = helper.DoHttpPostJson(baseAddress, GetFlowConfigContentJson(helper));
+            string input = GetFlowConfigContentJson(helper);
+            dynamic result = helper.DoHttpPostJsonObject(baseAddress, input);
             string flowName = (string)result.result.name;
-            helper.SetContextValue<string>(Context.StartJobName, flowName);
+            helper.SetContextValue<string>(Context.FlowName, flowName);
             return new StepResult(
                 success: !string.IsNullOrWhiteSpace(flowName),
                 description: nameof(SaveJob),
@@ -68,7 +70,7 @@ namespace DataX.ServerScenarios
         {
             ContextHelper helper = new ContextHelper(context);
             var baseAddress = helper.CreateUrl(ScenarioUri.StartFlowJobs);
-            dynamic result = helper.DoHttpPostJson(baseAddress, GetFlowName(helper));
+            dynamic result = helper.DoHttpPostJsonString(baseAddress, GetFlowName(helper));
             string startJobName = (string)result.result.IsSuccess;
             helper.SetContextValue<string>(Context.StartJobName, startJobName);
             return new StepResult(
@@ -82,7 +84,7 @@ namespace DataX.ServerScenarios
         {
             ContextHelper helper = new ContextHelper(context);
             var baseAddress = helper.CreateUrl(ScenarioUri.GenerateConfigs);
-            dynamic result = helper.DoHttpPostJson(baseAddress, GetFlowName(helper));
+            dynamic result = helper.DoHttpPostJsonString(baseAddress, GetFlowName(helper));
             string generateConfigsRuntimeConfigFolder = (string)result.result.Properties.runtimeConfigFolder;
             helper.SetContextValue<string>(Context.GenerateConfigsRuntimeConfigFolder, generateConfigsRuntimeConfigFolder);
             return new StepResult(
@@ -96,7 +98,7 @@ namespace DataX.ServerScenarios
         {
             ContextHelper helper = new ContextHelper(context);
             var baseAddress = helper.CreateUrl(ScenarioUri.RestartFlowJobs);
-            dynamic result = helper.DoHttpPostJson(baseAddress, GetFlowName(helper));
+            dynamic result = helper.DoHttpPostJsonString(baseAddress, GetFlowName(helper));
             string restartJobsName = (string)result.result.IsSuccess;
             helper.SetContextValue<string>(Context.RestartJobsName, restartJobsName);
             return new StepResult(

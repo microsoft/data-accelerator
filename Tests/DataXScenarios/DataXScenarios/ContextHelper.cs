@@ -4,9 +4,11 @@
 // *********************************************************************
 using DataX.ServerScenarios;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ScenarioTester;
 using System;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace DataXScenarios
@@ -16,6 +18,8 @@ namespace DataXScenarios
     /// </summary>
     public class ContextHelper
     {
+        private const string ApplicationJson = "application/json";
+
         private ScenarioContext context;
 
         /// <summary>
@@ -36,7 +40,7 @@ namespace DataXScenarios
         public T SetContextValue<T>(string fieldName, T value)
         {
             context[fieldName] = value;
-            return (T)context[fieldName];
+            return GetContextValue<T>(fieldName);
         }
 
         /// <summary>
@@ -73,16 +77,40 @@ namespace DataXScenarios
         }
 
         /// <summary>
-        /// Creates a JSON post request based in the current context data
+        /// Performs a HTTP POST call to the specified base address and provided content
         /// </summary>
         /// <param name="baseAddress"></param>
-        /// <param name="json"></param>
+        /// <param name="requestContent"></param>
         /// <returns></returns>
-        public dynamic DoHttpPostJson(string baseAddress, string json)
+        public dynamic DoHttpPost(string baseAddress, RequestContent requestContent)
         {
-            string jsonResult = Request.Post(baseAddress, RequestContent.EncodeAsJson(json),
+            return Request.Post(baseAddress, requestContent,
                 bearerToken: GetContextValue<string>(Context.AuthToken),
                 skipServerCertificateValidation: GetContextValue<bool>(Context.SkipServerCertificateValidation));
+        }
+
+        /// <summary>
+        /// Creates a JSON post request for an object representation based in the current context data
+        /// </summary>
+        /// <param name="baseAddress"></param>
+        /// <param name="jsonObjectValue"></param>
+        /// <parse name="parse"></parse>
+        /// <returns></returns>
+        public dynamic DoHttpPostJsonObject(string baseAddress, string jsonObjectValue)
+        {
+            string jsonResult = DoHttpPost(baseAddress, RequestContent.EncodeAsJson(JObject.Parse(jsonObjectValue), ApplicationJson));
+            return JObject.Parse(jsonResult);
+        }
+
+        /// <summary>
+        /// Creates a JSON post request for a string representation based in the current context data
+        /// </summary>
+        /// <param name="baseAddress"></param>
+        /// <param name="jsonStringValue"></param>
+        /// <returns></returns>
+        public dynamic DoHttpPostJsonString(string baseAddress, string jsonStringValue)
+        {
+            string jsonResult = DoHttpPost(baseAddress, new RequestContent(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(jsonStringValue)), ApplicationJson));
             return JObject.Parse(jsonResult);
         }
 
