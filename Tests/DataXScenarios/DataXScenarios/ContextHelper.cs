@@ -94,7 +94,6 @@ namespace DataXScenarios
         /// </summary>
         /// <param name="baseAddress"></param>
         /// <param name="jsonObjectValue"></param>
-        /// <parse name="parse"></parse>
         /// <returns></returns>
         public dynamic DoHttpPostJsonObject(string baseAddress, string jsonObjectValue)
         {
