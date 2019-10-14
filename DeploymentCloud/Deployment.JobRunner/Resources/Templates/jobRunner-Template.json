@@ -2,9 +2,426 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "envPrefixId": {
+            "type": "string",
+            "metadata": {
+                "description": "dx123456"
+            }
+        },
+        "appName": {
+            "type": "string",
+            "metadata": {
+                "description": "principalaccount"
+            }
+        },
+        "jobRunnerBaseName": {
+            "default": "WebJobsAppJobRunner", 
+            "type": "string",
+            "metadata": {
+                "description": "Scenario tester webapp base name in environment"
+            }
+        },
+        "envSuffixId": {
+            "type": "string",
+            "metadata": {
+                "description": "123456x"
+            }
+        },
+        "clientId": {
+            "type": "string",
+            "metadata": {
+                "description": "Client id used for scenario tester that is stored in the key vault"
+            }
+        },
+        "secretKey": {
+            "type": "string",
+            "metadata": {
+                "description": "Secret key used for scenario tester that is stored in the key vault"
+            }
+        },
+        "sparkType": {
+            "default": "hdinsight",
+            "type": "string",
+            "metadata": {
+                "description": "Use either hdinsight or databricks"
+            }
+        },
+        "dataBricksToken": {
+            "defaultValue": "",
+            "type": "string",
+            "metadata": {
+                "description": "Data bricks token for databricks configuration"
+            }
+        },
+        "blobResourcePath": {
+            "type": "string",
+            "default": "samples/iotdevice/ScenarioTest.json",
+            "metadata": {
+                "description": "Path to the blob file that contains the payload for create flow test"
+            }
+        },
+        "eventHubBaseName": {
+            "default": "iotDevice",
+            "type": "string",
+            "metadata": {
+                "description": "IotDevice base name assigned to scenarios"
+            }
+        },
+        "tenantName": {
+            "type": "string",
+            "defaultValue": "microsoft.onmicrosoft.com"
+        },
+        "kvServicesBaseName": {
+            "default": "kvServices",
+            "type": "string"
+        },
+        "kvSparkBaseName": {
+            "default": "kvSpark",
+            "type": "string"
+        },
+        "sparkStorageAccountBaseName": {
+            "default": "saspark",
+            "type": "string"
+        },
+        "skipServerCertificateValidation": {
+            "defaultValue": "false",
+            "type": "string"
+        },
+        "primaryQueueName": {
+            "defaultValue": "job_runner",
+            "type": "string"
+        },
+        "activeQueueName": {
+            "defaultValue": "job_runner",
+            "type": "string"
+        },
+        "testQueueName": {
+            "defaultValue": "job_runner",
+            "type": "string"
+        },
+        "isIotHub": {
+            "defaultValue": "true",
+            "type": "string"
+        },
+        "flowName": {
+            "defaultValue": "scenariotest",
+            "type": "string"
+        },
+        "seconds": {
+            "type": "string",
+            "default": "10"
+        },
+        "aspNetCoreDetailedErrorsEnabled": {
+            "defaultValue": "false",
+            "type": "string"
+        },
+        "loginMicrosoftAuthority": {
+            "defaultValue": "login.microsoftonline.com",
+            "type": "string"
+        },
+        "normalizationSnippet": {
+            "defaultValue": "SystemProperties AS _SystemProperties\\r\\nProperties AS _Properties\\r\\nstringToTimestamp(Raw.deviceDetails.eventTime) AS eventTimeStamp\\r\\nRaw.*",
+            "type": "string"
+        }
     },
     "variables": {
+        "jobRunnerSuffix": "[if(equals(parameters('sparkType'), 'databricks'), 'Databricks', '')]",
+        "jobRunnerName": "[concat(parameters('jobRunnerBaseName'), variables('jobRunnerSuffix'))]",
+        "jobRunnerPlanName": "[concat(variables('jobRunnerName', 'Plan'))]",
+        "kvServicesName": "[concat(parameters('kvServicesBaseName'), parameters('envSuffixId'))]",
+        "kvSparkName": "[concat(parameters('kvSparkBaseName'), parameters('envSuffixId'))]",
+        "kvUriPrefix": "[if(equals(parameters('sparkType'), 'databricks'), 'secretscope', 'keyvault')]",
+        "kvServicesBaseUri": "[concat(variables('kvUriPrefix'), '://', variables('kvServicesName'))]",
+        "kvSparkBaseUri": "[concat(variables('kvUriPrefix'), '://', variables('kvSparkName'))]",
+        "kvVaultId": "[resourceId('Microsoft.KeyVault/vaults', variables('kvServicesName'))]",
+        "sparkStorageAccountName": "[concat(parameters('sparkStorageAccountBaseName'), parameters('envSuffixId'))]",
+        "sfClusterName": "[concat(parameters('envPrefixId'), '-sf')]",
+        "sfClusterId": "[resourceId('Microsoft.ServiceFabric/clusters', variables('sfClusterName'))]",
+        "sfClusterManagementUrl": "[reference(variables('sfClusterId'), '2018-02-01').managementEndpoint]",
+        "sfClusterUrl": "[DataX.trimPort(variables('sfClusterManagementUrl'))]",
+        "blobStorageId": "[resourceId('Microsoft.Storage/storageAccounts', variables('sparkStorageAccountName'))]",
+        "blobPrimaryEndpoint": "[reference(variables('blobStorageId'), 2017-10-01).primaryEndpoints.blob]",
+        "sbNamespace": "[concat(parameters('envPrefixId'), 'table')]",
+        "cosmosDBName": "[concat(parameters('envPrefixId'), '-cosmostable')]",
+        "authRulesName": "[concat(variables('sbNamespace'), '/RootManageSharedAccessKey')]",
+        "eventHubName": "[concat(parameters('eventHubBaseName'), parameters('envSuffixId')]",
+        "eventHubId": "[resourceId('Microsoft.Devices/IotHubs', variables('eventHubName'))]"
     },
+    "functions": [
+        {
+            "namespace": "DataX",
+            "members": {
+                "trimPort": {
+                    "parameters": [
+                        {
+                            "name": "url",
+                            "type": "string"
+                        }
+                    ],
+                    "output": {
+                        "type": "string",
+                        "value": "[if(equal(lastIndexOf(parameters('url'), ':'), -1), url, take(parameters('url'), lastIndexOf(parameters('url'), ':')))]"
+                    }
+                }
+            }
+        }
+    ],
     "resources": [
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(variables('kvServicesName'), '/', 'configgen-scenarioTester-clientId')]",
+            "comments": "Api client id that scenario tester uses to make api calls",
+            "apiVersion": "2015-06-01",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+              "[variables('kvVaultId')]"
+            ],
+            "properties": {
+              "value": "[variables('clientId')]"
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(variables('kvServicesName'), '/', 'configgen-scenarioTester-secretKey')]",
+            "comments": "Api secret key that scenario tester uses to make api calls",
+            "apiVersion": "2015-06-01",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+              "[variables('kvVaultId')]"
+            ],
+            "properties": {
+              "value": "[variables('secretKey')]"
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(variables('kvServicesName'), '/', 'scenariotest-input-eventhubconnectionstring')]",
+            "comments": "Connection string to event hub used for scenarios",
+            "apiVersion": "2015-06-01",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+              "[variables('kvVaultId')]",
+              "[variables('eventHubId')]"
+            ],
+            "properties": {
+              "value": "[listConnectionStrings(variables['eventHubId']),'2015-04-08').connectionStrings[0].connectionString]"
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces",
+            "apiVersion": "2017-04-01",
+            "name": "[variables('sbNamespace')]",
+            "comments": "Service bus for scenario tester job queue",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Standard"
+            },
+            "properties": {
+                "provisioningState": "Succeeded",
+                "metricId": "[concat('27de6be1-d524-44f2-9a95-10ab33646cc8:', variables('sbNamespace'))]",
+                "createdAt": null,
+                "updatedAt": null,
+                "serviceBusEndpoint": "[concat('https://', variables('sbNamespace'), '.servicebus.windows.net:443/')]",
+                "status": "Active"
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/AuthorizationRules",
+            "apiVersion": "2017-04-01",
+            "name": "[variables('authRulesName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', variables('sbNamespace'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Listen",
+                    "Manage",
+                    "Send"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(variables('kvServicesName'), '/', 'configgen-sbconn')]",
+            "comments": "Add service bus connection string to key vault",
+            "apiVersion": "2015-06-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+              "[variables('kvVaultId')]",
+              "[resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', variables('sbNamespace'))]"
+            ],
+            "properties": {
+              "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', variables('sbNamespace'))),'2015-04-08').connectionStrings[0].connectionString]"
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/queues",
+            "apiVersion": "2017-04-01",
+            "name": "[concat(variables('serviceBusNamespace'), '/job_runner')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusNamespace'))]"
+            ],
+            "properties": {
+                "lockDuration": "PT5M",
+                "maxSizeInMegabytes": 5120,
+                "requiresDuplicateDetection": true,
+                "requiresSession": false,
+                "defaultMessageTimeToLive": "P14D",
+                "deadLetteringOnMessageExpiration": true,
+                "enableBatchedOperations": true,
+                "duplicateDetectionHistoryTimeWindow": "PT10M",
+                "maxDeliveryCount": 10,
+                "status": "Active",
+                "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+                "enablePartitioning": true,
+                "enableExpress": false
+            }
+        },
+        {
+            "type": "Microsoft.DocumentDB/databaseAccounts",
+            "connection": "Add cosmos db for scenario tester",
+            "apiVersion": "2015-04-08",
+            "name": "[variables('cosmosDBName')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "defaultExperience": "Azure Table"
+            },
+            "kind": "GlobalDocumentDB",
+            "properties": {
+                "enableAutomaticFailover": false,
+                "enableMultipleWriteLocations": true,
+                "isVirtualNetworkFilterEnabled": false,
+                "virtualNetworkRules": [],
+                "databaseAccountOfferType": "Standard",
+                "consistencyPolicy": {
+                    "defaultConsistencyLevel": "BoundedStaleness",
+                    "maxIntervalInSeconds": 86400,
+                    "maxStalenessPrefix": 1000000
+                },
+                "locations": [
+                    {
+                        "locationName": "[resourceGroup().location]",
+                        "provisioningState": "Succeeded",
+                        "failoverPriority": 0
+                    }
+                ],
+                "capabilities": [
+                    {
+                        "name": "EnableTable"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(variables('kvServicesName'), '/', 'configgen-cosmosdbtableconn')]",
+            "comments": "Add cosmos db connection string to key vault",
+            "apiVersion": "2015-06-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+              "[variables('kvVaultId')]",
+              "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDBName'))]"
+            ],
+            "properties": {
+              "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDBName')),'2015-04-08').connectionStrings[0].connectionString]"
+            }
+        },
+        
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2016-09-01",
+            "name": "[variables('jobRunnerPlanName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "S2",
+                "tier": "Standard",
+                "size": "S2",
+                "family": "S",
+                "capacity": 2
+            },
+            "kind": "app",
+            "properties": {
+                "name": "[variables('jobRunnerPlanName')]",
+                "perSiteScaling": false,
+                "reserved": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2016-08-01",
+            "name": "[variables('jobRunnerName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('jobRunnerPlanName'))]"
+            ],
+            "kind": "app",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(variables('jobRunnerName'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(variables('jobRunnerName'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('jobRunnerPlanName'))]",
+                "reserved": false,
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": true,
+                "clientCertEnabled": false,
+                "hostNamesDisabled": false,
+                "containerSize": 0,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": true,
+                "appSettings": []
+            },
+            "resources": [
+                {
+                    "name": "appsettings",
+                    "type": "config",
+                    "apiVersion": "2015-08-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('jobRunnerName'))]"
+                    ],
+                    "properties": {
+                        "ASPNETCORE_DETAILEDERRORS": "[parameters('aspNetCoreDetailedErrorsEnabled')]",
+                        "WEBSITE_RUN_FROM_PACKAGE": "1",
+                        "DATAX_JobRunner:ServiceUrl": "[variables('sfClusterUrl')]",
+                        "DATAX_JobRunner:SparkType": "[parameters('sparkType')]",
+                        "DATAX_JobRunner:ServiceKeyVaultName": "[variables('kvServicesName')]",
+                        "DATAX_JobRunner:SkipServerCertificateValidation": "[parameters('skipServerCertificateValidation')]",
+                        "DATAX_JobRunner:ApplicationIdentifierUri": "[concat('https://', parameters('tenantName'), '/', parameters('appName')]",
+                        "DATAX_JobRunner:MicrosoftAuthority": "[concat('https://', parameters('loginMicrosoftAuthority'), '/', parameters('tenantName')]",
+                        "DATAX_JobRunner:ApplicationId": "[concat(variables('kvServicesBaseUri'), '/configgen-scenarioTester-clientId')]",
+                        "DATAX_JobRunner:SecretKey": "[concat(variables('kvServicesBaseUri'), '/configgen-scenarioTester-secretKey')]",
+                        "DATAX_JobRunner:DatabricksToken": "[concat(variables('kvServicesBaseUri'), '/scenariotest-info-databricksToken')]",
+                        "DATAX_JobRunner:StorageConnection": "[concat(variables('kvServicesBaseUri'), '/configgen-cosmosdbtableconn')]",
+                        "DATAX_JobRunner:ServiceBusConnectionString": "[concat(variables('kvServicesBaseUri'), '/configgen-sbconn')]",
+                        "DATAX_JobRunner:BlobConnectionString": "[concat(variables('kvServicesBaseUri'), '/configgen', variables('sparkStorageAccountName'), '-blobconnectionstring')]",
+                        "DATAX_JobRunner:AppInsightsIntrumentationKey": "configgen-aiInstrumentationKey",
+                        "DATAX_JobRunner:ActiveQueueName": "[parameters('activeQueueName]')",
+                        "DATAX_JobRunner:PrimaryQueueName": "[parameters('primaryQueueName]')",
+                        "DATAX_JobRunner:TestQueueName": "[parameters('testQueueName]')",
+                        "DATAX_JobRunner:EvenHubConnectionString": "[concat(variables('kvSparkBaseUri'), '/scenariotest-input-eventhubconnectionstring')]",
+                        "DATAX_JobRunner:NormalizationSnippet": "[parameters('normalizationSnippet')]",
+                        "DATAX_JobRunner:BlobUri": "[concat(variables('blobPrimaryEndpoint'), parameters('blobResourcePath'))]",
+                        "DATAX_JobRunner:FlowName": "[parameters('flowName')]",
+                        "DATAX_JobRunner:IsIotHub": "[parameters('isIotHub')]",
+                        "DATAX_JobRunner:EventHubName": "[variables('eventHubName')]",
+                        "DATAX_JobRunner:Seconds": "[parameters('seconds')]"
+                    }
+                }
+            ]
+        }
     ]
 }
