@@ -64,7 +64,21 @@
             "default": "iotDevice",
             "type": "string",
             "metadata": {
-                "description": "IotDevice base name assigned to scenarios"
+                "description": "Event hub name used for scenarios"
+            }
+        },
+        "isIotHub": {
+            "defaultValue": "true",
+            "type": "string",
+            "metatata": {
+                "description": "Tells whether the event hub is a iot hub"
+            }
+        },
+        "flowName": {
+            "defaultValue": "scenariotest",
+            "type": "string",
+            "metadata": {
+                "description": "Flow name used for scenarios"
             }
         },
         "tenantName": {
@@ -97,14 +111,6 @@
         },
         "testQueueName": {
             "defaultValue": "job_runner",
-            "type": "string"
-        },
-        "isIotHub": {
-            "defaultValue": "true",
-            "type": "string"
-        },
-        "flowName": {
-            "defaultValue": "scenariotest",
             "type": "string"
         },
         "seconds": {
@@ -145,7 +151,7 @@
         "cosmosDBName": "[concat(parameters('envPrefixId'), '-cosmostable')]",
         "authRulesName": "[concat(variables('sbNamespace'), '/RootManageSharedAccessKey')]",
         "eventHubName": "[concat(parameters('eventHubBaseName'), parameters('envSuffixId')]",
-        "eventHubId": "[resourceId('Microsoft.Devices/IotHubs', variables('eventHubName'))]"
+        "eventHubId": "[if(bool(parameters('isIotHub')), resourceId('Microsoft.Devices/IotHubs', variables('eventHubName')), resourceId('Microsoft.EventHub/namespaces', variables('eventHubName')))]"
     },
     "functions": [
         {
@@ -230,6 +236,7 @@
             "type": "Microsoft.ServiceBus/namespaces/AuthorizationRules",
             "apiVersion": "2017-04-01",
             "name": "[variables('authRulesName')]",
+            "comments": "Add auth rules for service bus",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.ServiceBus/namespaces', variables('sbNamespace'))]"
@@ -260,6 +267,7 @@
             "type": "Microsoft.ServiceBus/namespaces/queues",
             "apiVersion": "2017-04-01",
             "name": "[concat(variables('serviceBusNamespace'), '/job_runner')]",
+            "comments": "Add scenario tester job queue",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusNamespace'))]"
@@ -334,6 +342,7 @@
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2016-09-01",
             "name": "[variables('jobRunnerPlanName')]",
+            "comments": "Add service plan for job runner app",
             "location": "[resourceGroup().location]",
             "sku": {
                 "name": "S2",
@@ -355,6 +364,7 @@
             "type": "Microsoft.Web/sites",
             "apiVersion": "2016-08-01",
             "name": "[variables('jobRunnerName')]",
+            "comments": "Deploy Scenario tester",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('jobRunnerPlanName'))]"
