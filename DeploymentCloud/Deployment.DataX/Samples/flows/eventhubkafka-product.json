@@ -435,11 +435,11 @@
 			{
 				"id" : "myEventHub",
 				"type" : "eventHub",
-        "properties": {
-          "connectionString": "$keyvaultPrefix://$sparkKVName/metric-eventhubconnectionstring",
-          "format": "json",
-          "compressionType": "none"
-        },
+				"properties": {
+					"connectionString": "$keyvaultPrefix://$sparkKVName/metric-eventhubconnectionstring",
+					"format": "json",
+					"compressionType": "none"
+				},
 				"typeDisplay" : "Event Hub"
 			}
 		],

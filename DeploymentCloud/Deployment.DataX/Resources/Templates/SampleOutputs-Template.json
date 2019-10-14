@@ -27,11 +27,7 @@
                     }
                 ],
                 "enableMultipleWriteLocations": false,
-                "isVirtualNetworkFilterEnabled": false,
-                "virtualNetworkRules": [],
-                "ipRangeFilter": "",
-                "dependsOn": [],
-                "capabilities": []
+                "isVirtualNetworkFilterEnabled": false
             },
             "tags": {
                 "defaultExperience": "Core (SQL)"
