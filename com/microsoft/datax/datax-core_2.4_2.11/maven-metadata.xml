@@ -3,10 +3,9 @@
   <groupId>com.microsoft.datax</groupId>
   <artifactId>datax-core_2.4_2.11</artifactId>
   <versioning>
-    <release>1.2.0</release>
     <versions>
-      <version>1.2.0</version>
+      <version>1.2.0-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20191008181314</lastUpdated>
+    <lastUpdated>20191014175621</lastUpdated>
   </versioning>
 </metadata>
