@@ -81,6 +81,13 @@
                 "description": "Flow name used for scenarios"
             }
         },
+        "normalizationSnippet": {
+            "defaultValue": "SystemProperties AS _SystemProperties\\r\\nProperties AS _Properties\\r\\nstringToTimestamp(Raw.deviceDetails.eventTime) AS eventTimeStamp\\r\\nRaw.*",
+            "type": "string",
+            "metadata": {
+                "description": "Normalization snippet used for scenarios"
+            }
+        },
         "tenantName": {
             "type": "string",
             "defaultValue": "microsoft.onmicrosoft.com"
@@ -124,19 +131,15 @@
         "loginMicrosoftAuthority": {
             "defaultValue": "login.microsoftonline.com",
             "type": "string"
-        },
-        "normalizationSnippet": {
-            "defaultValue": "SystemProperties AS _SystemProperties\\r\\nProperties AS _Properties\\r\\nstringToTimestamp(Raw.deviceDetails.eventTime) AS eventTimeStamp\\r\\nRaw.*",
-            "type": "string"
         }
     },
     "variables": {
-        "jobRunnerSuffix": "[if(equals(parameters('sparkType'), 'databricks'), 'Databricks', '')]",
+        "jobRunnerSuffix": "[if(isDatabricksType(parameters('sparkType')), 'Databricks', '')]",
         "jobRunnerName": "[concat(parameters('jobRunnerBaseName'), variables('jobRunnerSuffix'))]",
         "jobRunnerPlanName": "[concat(variables('jobRunnerName', 'Plan'))]",
         "kvServicesName": "[concat(parameters('kvServicesBaseName'), parameters('envSuffixId'))]",
         "kvSparkName": "[concat(parameters('kvSparkBaseName'), parameters('envSuffixId'))]",
-        "kvUriPrefix": "[if(equals(parameters('sparkType'), 'databricks'), 'secretscope', 'keyvault')]",
+        "kvUriPrefix": "[if(isDatabricksType(parameters('sparkType')), 'secretscope', 'keyvault')]",
         "kvServicesBaseUri": "[concat(variables('kvUriPrefix'), '://', variables('kvServicesName'))]",
         "kvSparkBaseUri": "[concat(variables('kvUriPrefix'), '://', variables('kvSparkName'))]",
         "kvVaultId": "[resourceId('Microsoft.KeyVault/vaults', variables('kvServicesName'))]",
@@ -167,6 +170,18 @@
                     "output": {
                         "type": "string",
                         "value": "[if(equal(lastIndexOf(parameters('url'), ':'), -1), url, take(parameters('url'), lastIndexOf(parameters('url'), ':')))]"
+                    }
+                },
+                "isDatabricksType": {
+                    "parameters": [
+                        {
+                            "name": "type",
+                            "type": "string"
+                        }
+                    ],
+                    "output": {
+                        "type": "bool",
+                        "value": "[bool(if(equals(parameters('sparkType'), 'databricks'), 'true', 'false'))]"
                     }
                 }
             }
