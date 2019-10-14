@@ -19,7 +19,7 @@ serviceAppName=DataXDevServices
 clientAppName=DataXDevWeb
 
 # ResourceGroupName to generate resources 
-resourceGroupName=Andg9
+resourceGroupName=Andg8
 
 # y if you want to run spark jobs on Databricks, n for running jobs on HDinsight 
 useDatabricks=n
@@ -40,7 +40,7 @@ HDInsightVersion=4.0
 enableHDInsightAutoScaling=y
 
 # HDInsight minimal nodes 
-minNodesForHDInsightAutoScaling=1
+minNodesForHDInsightAutoScaling=3
 
 # HDInsight maximal nodes 
 maxNodesForHDInsightAutoScaling=5

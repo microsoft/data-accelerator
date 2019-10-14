@@ -92,8 +92,7 @@
         "storageAccountsResourceID": "[resourceId('Microsoft.Storage/storageAccounts',parameters('storageAccounts_spark_name'))]",
         "userAssignedIdentitiesResourceID": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',parameters('userAssignedIdentitiesName'))]",
         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
-        "subnet0Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet0Name'))]",
-        "autoScaling":"[parameters('auto_Scaling_Config')]"
+        "subnet0Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet0Name'))]"
     },
     "resources": [
         {
@@ -161,7 +160,7 @@
                             "scriptActions": []
                         },
                         {
-                            "autoscale": "[variables('autoScaling')]",
+                            "autoscale": "[parameters('auto_Scaling_Config')]",
                             "name": "workernode",
                             "targetInstanceCount": "[parameters('targetInstanceCountSparkWorkernode')]",
                             "hardwareProfile": {

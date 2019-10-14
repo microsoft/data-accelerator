@@ -3,7 +3,7 @@
 	"contentVersion": "1.0.0.0",
 	"parameters": {
 		"auto_Scaling_Config": {
-			"value": "$autoScalingConfig"
+			"value": "{ \"capacity\": { \"minInstanceCount\": 3, \"maxInstanceCount\": 5 }}"
 		},
 		"default_resource_location": {
 			"value": "$resourceLocation"
