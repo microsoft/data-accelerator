@@ -3,6 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -58,6 +59,21 @@ namespace DataX.Flow.InteractiveQuery.Databricks
             var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = new FormUrlEncodedContent(nvc) };
             var response = client.SendAsync(request).Result;
             var responseString = response.Content.ReadAsStringAsync().Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                //If request fails then return error string
+                try
+                {
+                    var responseObj = JObject.Parse(responseString);
+                    var errorMsg = responseObj["error"];
+                    return $"{response.ReasonPhrase}: {errorMsg?.ToString()}";
+                }
+                catch
+                {
+                    return $"{response.ReasonPhrase}";
+                }
+                
+            }
             string commandId = JsonConvert.DeserializeObject<ExecuteCodeDBKernelResponse>(responseString).Id;
 
             // Now get the result output
@@ -74,7 +90,6 @@ namespace DataX.Flow.InteractiveQuery.Databricks
 
             return (result.Results.Data != null) ? result.Results.Data.ToString() : "";
         }
-
     }
 
     /// <summary>

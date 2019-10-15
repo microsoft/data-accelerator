@@ -8,6 +8,8 @@ import * as Models from './flowModels';
 import { CommonHelpers } from 'datax-common';
 import { QuerySelectors } from 'datax-query';
 
+const secretScopePrefix = 'secretscope://'
+
 // Settings - Flow
 export const getFlow = state => state.flow;
 
@@ -31,6 +33,11 @@ export const getFlowDisplayName = createSelector(
 export const getFlowDatabricksToken = createSelector(
     getFlow,
     flow => flow.databricksToken
+);
+
+export const getFlowIsDatabricksSparkType = createSelector(
+    getFlow,
+    flow => flow.isDatabricksSparkType
 );
 
 // Settings - Input
@@ -235,11 +242,17 @@ export const getEnableLocalOneBox = createSelector(
 // Validation - Info
 export const validateFlowInfo = createSelector(
     getFlowDisplayName,
+    getFlowDatabricksToken,
+    getFlowIsDatabricksSparkType,
     validateInfo
 );
 
-function validateInfo(displayName) {
-    return displayName && displayName.trim() !== '';
+function validateInfo(displayName, databricksToken, isDatabricksSparkType) {
+    if (isDatabricksSparkType) {
+        return displayName && displayName.trim() !== '' && databricksToken && databricksToken.startsWith(secretScopePrefix);
+    } else {
+        return displayName && displayName.trim() !== ''
+    }
 }
 
 // Validation - Input

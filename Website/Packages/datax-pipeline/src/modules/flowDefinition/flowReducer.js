@@ -4,7 +4,7 @@
 // *********************************************************************
 import * as Actions from './flowActions';
 import * as Models from './flowModels';
-import {QueryModels, QueryActions} from 'datax-query';
+import { QueryModels, QueryActions } from 'datax-query';
 
 const INITIAL_FLOW_STATE = {
     // Flow Config
@@ -20,8 +20,8 @@ const INITIAL_FLOW_STATE = {
     scale: {
         jobNumExecutors: '4',
         jobExecutorMemory: '1000',
-        jobDatabricksAutoScale: true,
-        jobDatabricksMinWorkers: '1',
+        jobDatabricksAutoScale: false,
+        jobDatabricksMinWorkers: '3',
         jobDatabricksMaxWorkers: '8'
     },
     outputs: [Models.getMetricSinker()],
@@ -46,7 +46,8 @@ const INITIAL_FLOW_STATE = {
     resamplingInputDuration: '15',
     errorMessage: undefined,
     warningMessage: undefined,
-    enableLocalOneBox: false
+    enableLocalOneBox: false,
+    isDatabricksSparkType: false
 };
 
 export default (state = INITIAL_FLOW_STATE, action) => {
@@ -56,7 +57,7 @@ export default (state = INITIAL_FLOW_STATE, action) => {
             return Object.assign({}, INITIAL_FLOW_STATE, flow, {
                 isNew: false,
                 isDirty: false,
-                selectedFlowBatchInputIndex: flow.input.batch && flow.input.batch.length > 0 ? 0 : undefined,
+                selectedFlowBatchInputIndex: flow.batchInputs && flow.batchInputs.length > 0 ? 0 : undefined,
                 selectedReferenceDataIndex: flow.referenceData && flow.referenceData.length > 0 ? 0 : undefined,
                 selectedFunctionIndex: flow.functions && flow.functions.length > 0 ? 0 : undefined,
                 selectedSinkerIndex: flow.outputs && flow.outputs.length > 0 ? 0 : undefined,
@@ -89,6 +90,11 @@ export default (state = INITIAL_FLOW_STATE, action) => {
                 databricksToken: action.payload
             });
 
+        case Actions.FLOW_UPDATE_ISDATABRICKSSPARKTYPE:
+            return Object.assign({}, state, {
+                isDatabricksSparkType: action.payload
+            });
+
         case Actions.FLOW_UPDATE_OWNER:
             return Object.assign({}, state, { owner: action.payload });
 
@@ -109,7 +115,7 @@ export default (state = INITIAL_FLOW_STATE, action) => {
         case Actions.FLOW_UPDATE_SAMPLING_INPUT_DURATION:
             return Object.assign({}, state, {
                 samplingInputDuration: action.duration
-            });     
+            });
 
         case Actions.FLOW_UPDATE_REFERENCE_DATA_LIST:
             return Object.assign({}, state, {

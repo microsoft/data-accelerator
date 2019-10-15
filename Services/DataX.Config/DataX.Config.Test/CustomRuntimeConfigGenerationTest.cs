@@ -35,7 +35,7 @@ namespace DataX.Config.Test
                 .WithAssembly(typeof(ConfigGenConfiguration).Assembly)
                 .WithAssembly(typeof(MockBase).Assembly)
                 .WithAssembly(Assembly.GetExecutingAssembly())
-                .WithProvider(new LoggerAndInstanceExportDescriptorProvider(null, new LoggerFactory()));
+                .WithProvider(new LoggerAndInstanceExportDescriptorProvider<object>(null, new LoggerFactory()));
 
             CompositionHost = conf.CreateContainer();
         }
@@ -86,7 +86,7 @@ namespace DataX.Config.Test
 
             public override async Task<string> Process(FlowDeploymentSession flowToDeploy)
             {
-                return "done";
+                return await Task.FromResult("done");
             }
         }
 

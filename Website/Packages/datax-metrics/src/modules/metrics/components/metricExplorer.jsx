@@ -129,8 +129,7 @@ const contentStyle = {
     width: '100%',
     display: 'flex',
     flexDirection: 'column',
-    overflowY: 'auto',
-    paddingBottom: 80
+    overflowY: 'auto'
 };
 
 export default withRouter(

@@ -3,6 +3,7 @@
 // Licensed under the MIT License
 // *********************************************************************
 import * as Models from './flowModels';
+import * as Api from '../../common/api';
 
 export function isValidNumberAboveOrEqualZero(value) {
     const number = Number(value);
@@ -441,6 +442,7 @@ export function convertFlowToConfig(flow, query) {
     let outputTemplates = [...flow.outputTemplates];
     let rules = [...flow.rules];
     let batchList = flow.batchList ? [...flow.batchList] : [];
+    let batchInputs = flow.batchInputs ? [...flow.batchInputs] : [Models.getDefaultBatchInputSettings()];
 
     // sort by name
     referenceData.sort((a, b) => a.id.localeCompare(b.id));
@@ -457,7 +459,7 @@ export function convertFlowToConfig(flow, query) {
         displayName: flow.displayName.trim(),
         owner: flow.owner,
         databricksToken: flow.databricksToken,
-        input: Object.assign({}, flow.input, { referenceData: flow.referenceData, batch: flow.batchInputs }),
+        input: Object.assign({}, flow.input, { referenceData: flow.referenceData, batch: batchInputs }),
         process: {
             timestampColumn: flow.input.properties.timestampColumn,
             watermark: `${flow.input.properties.watermarkValue} ${flow.input.properties.watermarkUnit}`,
@@ -492,7 +494,7 @@ export function convertConfigToFlow(config) {
         owner: config.owner,
         databricksToken: config.databricksToken,
         input: input,
-        batchInputs: input.batch,
+        batchInputs: input.batch ? input.batch : [Models.getDefaultBatchInputSettings()],
         batchList: config.batchList ? config.batchList : [],
         referenceData: input.referenceData ? input.referenceData : [],
         functions: config.process.functions ? config.process.functions : [],

@@ -419,8 +419,8 @@
 			"jobconfig" : {
 				"jobNumExecutors" : "4",
 				"jobExecutorMemory" : "1024",
-				"jobDatabricksAutoScale" : true,
-				"jobDatabricksMinWorkers" : "1",
+				"jobDatabricksAutoScale" : false,
+				"jobDatabricksMinWorkers" : "3",
 				"jobDatabricksMaxWorkers" : "8"
 			}
 		},
@@ -538,7 +538,5 @@
 		"inputEventHubSubscriptionId" : "$keyvaultPrefix://${serviceKeyVaultName}/$clientSecretPrefix-subscriptionId",
 		"inputEventHubResourceGroupName" : "${eventHubResourceGroupName}"
 	},
-	"jobNames" : [
-		"DataXDirect-eventhubkafka"
-	]
+	"jobNames" : null
 }

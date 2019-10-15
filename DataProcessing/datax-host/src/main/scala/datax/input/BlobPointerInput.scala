@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.{JsonCreator, JsonProperty}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.microsoft.azure.eventhubs.EventData
 import datax.config._
+import datax.constants.BlobProperties
 import datax.data.FileInternal
 import datax.exception.EngineException
 import datax.input.BlobPointerInputSetting.BlobPointerInputConf
@@ -38,7 +39,7 @@ object BlobPointerInput {
     (new StructType).add("BlobPath", StringType)
   }
 
-  private val saRegex = """wasbs?://[\w-]+@([\w\d]+)\.blob.core.windows.net/.*""".r
+  private val saRegex = s"""wasbs?://[\w-]+@([\w\d]+)\${BlobProperties.BlobHostPath}/.*""".r
   private def extractSourceId(blobPath: String, regex: String): String = {
     val r = if(regex == null) saRegex else regex.r
     r.findFirstMatchIn(blobPath) match {

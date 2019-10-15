@@ -58,7 +58,7 @@ class SparkJobs extends React.Component {
             }
 
             return (
-                <Panel>
+                <div style={rootStyle}>
                     <div style={contentStyle}>
                         <div style={filterContainerStyle}>
                             <SearchBox
@@ -73,7 +73,7 @@ class SparkJobs extends React.Component {
 
                         <div style={detailsContainerStyle}>{details}</div>
                     </div>
-                </Panel>
+                </div>
             );
         }
     }
@@ -134,6 +134,13 @@ const mapStateToProps = state => ({});
 const mapDispatchToProps = () => ({});
 
 // Styles
+const rootStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    overflowX: 'hidden',
+    overflowY: 'auto'
+};
+
 const contentStyle = {
     paddingLeft: 30,
     paddingRight: 30,

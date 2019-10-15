@@ -132,7 +132,7 @@ export default class ScheduleSettingsContent extends React.Component {
                       });
                   })
                 : Models.batchTypes
-                      .filter(batchType => batchType.key != Models.batchTypeEnum.recurring)
+                      .filter(batchType => batchType.key !== Models.batchTypeEnum.recurring)
                       .map(batchType => {
                           return Object.assign({}, batchType, {
                               onClick: () => this.props.onNewBatch(batchType.key)

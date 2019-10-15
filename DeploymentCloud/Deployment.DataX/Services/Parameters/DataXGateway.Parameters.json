@@ -25,7 +25,7 @@
                 "Auth_MinReplicaSetSize": "2",
                 "SSL_Cert_Thumbprint": "$sslcertThumbprint",
                 "ClientId": "$configgenClientId",
-                "Audience": "https://$configgenTenantId/$serviceAppName",
+                "Audience": "$azureADApplicationConfiggenResourceId",
                 "ReverseProxySslThumbprint": "$certReverseProxyThumbprint",
                 "AllowedUserRoles": "$readerRole,$writerRole",
 				"Tenant": "$configgenTenantId",

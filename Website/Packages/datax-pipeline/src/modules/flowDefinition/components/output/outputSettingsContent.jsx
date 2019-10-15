@@ -125,14 +125,14 @@ export default class OutputSettingsContent extends React.Component {
     renderAddSinkerButton() {
         const menuItems = this.props.enableLocalOneBox
             ? Models.outputSinkerTypes
-                  .filter(sinkerType => sinkerType.name == 'Local')
+                  .filter(sinkerType => sinkerType.name === 'Local')
                   .map(sinkerType => {
                       return Object.assign({}, sinkerType, {
                           onClick: () => this.props.onNewSinker(sinkerType.key)
                       });
                   })
             : Models.outputSinkerTypes
-                  .filter(sinkerType => sinkerType.name != 'Local')
+                  .filter(sinkerType => sinkerType.name !== 'Local')
                   .map(sinkerType => {
                       return Object.assign({}, sinkerType, {
                           onClick: () => this.props.onNewSinker(sinkerType.key)

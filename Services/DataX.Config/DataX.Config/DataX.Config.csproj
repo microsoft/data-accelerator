@@ -31,12 +31,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="System.Composition" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\DataX.Contract\DataX.Contract.csproj" />
     <ProjectReference Include="..\..\DataX.Flow\DataX.Flow.CodegenRules\DataX.Flow.CodegenRules.csproj" />
+    <ProjectReference Include="..\..\DataX.Flow\DataX.Utilities.Composition\DataX.Utilities.Composition.csproj" />
     <ProjectReference Include="..\..\DataX.Utilities\DataX.Utility.KeyVault\DataX.Utility.KeyVault.csproj" />
   </ItemGroup>
 

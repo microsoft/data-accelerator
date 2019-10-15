@@ -82,6 +82,7 @@ namespace DataX.Flow.InteractiveQuery.Databricks
 
             try
             {
+                InitializeClusterId();
                 // Set body
                 string body = "{\"contextId\":\""+kernelId+"\", \"clusterId\":\""+_clusterId+"\"}";
                 var content = new StringContent(body);
