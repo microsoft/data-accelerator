@@ -128,9 +128,9 @@ function Setup-Secrets {
     $secretName = "eventhubbatch-output-myazureblob"
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $blobsparkconnectionString
     
-    $userContentForEventHubBatch = -join("wasbs://", $userContentContainerName, "@", $sparkBlobAccountName, ".blob.core.windows.net/eventhubbatch/")
+    $eventHubBatchSamplePath = -join("wasbs://", $sampleContainerName, "@", $sparkBlobAccountName, ".blob.core.windows.net/eventhubbatch/")
     $secretName = "eventhubbatch-input-0-inputPath"
-    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $userContentForEventHubBatch
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $eventHubBatchSamplePath
 
     $vaultName = "$servicesKVName"
     
