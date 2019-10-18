@@ -102,15 +102,15 @@ function Setup-Secrets {
     $secretValue = -join($userContentContainerLocation, "udfsample.jar");
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $secretValue
 	
-	$storageAccount = Get-AzureRmStorageAccount -resourceGroupName $resourceGroupName -Name $sparkBlobAccountName
-	$secretName = "datax-sa-fullconnectionstring-" + $sparkBlobAccountName    
-	Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $storageAccount.Context.ConnectionString
+    $storageAccount = Get-AzureRmStorageAccount -resourceGroupName $resourceGroupName -Name $sparkBlobAccountName
+    $secretName = "datax-sa-fullconnectionstring-" + $sparkBlobAccountName    
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $storageAccount.Context.ConnectionString
 	
-	if($setupAdditionalResourcesForSample -eq 'y'){
+    if($setupAdditionalResourcesForSample -eq 'y'){
 		$sqlCosmosdbCon = Get-CosmosDBConnectionString -Name $sqlDocDBName
 		$secretName = "output-samplecosmosdb"
-		Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sqlCosmosdbCon
-	}
+	    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sqlCosmosdbCon
+    }
 
     $vaultName = "$servicesKVName"
     
@@ -202,9 +202,6 @@ function Get-Tokens {
 	}
 	$tokens.Add('keyvaultPrefix', $keyvaultPrefix)
 	
-	$sqlDocDBName = 'sql' + $docDBName
-	$tokens.Add('sqlDocDBName', $sqlDocDBName)
-	
 	# Output section of DataX Query for samples
 	$dataxQueryOutputForEventhubSample = '\n\nOUTPUT DoorUnlockedSimpleAlert TO myAzureBlob;\nOUTPUT GarageOpenForFiveMinsWindowAlert TO myAzureBlob;\nOUTPUT GarageOpenFor30MinutesInHourThresholdAlert TO myAzureBlob;\nOUTPUT WindowOpenFiveMinWhileHeaterOnCombinedAlert TO myAzureBlob;'
 	$dataxQueryOutputForNativeKafkaSample = ''
@@ -265,6 +262,9 @@ $userContentContainerName = "usercontent"
 $templatePath = $resourcesTemplatePath
 $tokens = Get-Tokens
 
+$sqlDocDBName = 'sql' + $docDBName
+$tokens.Add('sqlDocDBName', $sqlDocDBName)
+
 Write-Host -ForegroundColor Green "Deploying Resources... (14/16 steps)"
 Write-Host -ForegroundColor Green "Estimated time to complete: 6 mins"
 
@@ -274,6 +274,7 @@ Setup-IotHub
 
 if($setupAdditionalResourcesForSample -eq 'y') {
     Write-Host -ForegroundColor Green "Deploying SQL type CosmosDB for output sample"
+    Write-Host -ForegroundColor Green "Estimated time to complete: 7 mins"
     Deploy-Resources -templateName "SampleOutputs-Template.json" -paramName "SampleOutputs-Parameter.json"  -templatePath $templatePath -tokens $tokens
 }
 
