@@ -1,0 +1,574 @@
+{
+	"name" : "eventhubbatch",
+	"icon" : "/img/iot.png",
+	"displayName" : "EventHub-Batch",
+	"commonProcessor" : {
+		"sparkJobConfigFolder" : "wasbs://flows@${cpConfigFolderBase}/${containerPath}/${name}",
+		"template" : {
+			"name" : "${name}",
+			"input" : {
+				"blob" : "${inputBatching}",
+				"blobSchemaFile" : "${inputSchemaFilePath}",
+				"referenceData" : "${inputReferenceData}"
+			},
+			"process" : {
+				"metric" : {
+					"eventhub" : "$keyvaultPrefix://${sparkKeyVaultName}/${metricEventHubConnectionStringKey}"
+				},
+				"timestampColumn" : "${processTimestampColumn}",
+				"watermark" : "${processWatermark}",
+				"jarUDAFs" : "${processJarUDAFs}",
+				"jarUDFs" : "${processJarUDFs}",
+				"azureFunctions" : "${processAzureFunctions}",
+				"projections" : "${processProjections}",
+				"timeWindows" : "${processTimeWindows}",
+				"transform" : "${processTransforms}",
+				"appendEventTags" : {
+				},
+				"accumulationTables" : "${processStateTables}"
+			},
+			"outputs" : "${outputs}"
+		},
+		"sparkJobTemplateRef" : "DataXBatch",
+		"jobCommonTokens" : {
+			"jobName" : "${name}",
+			"sparkJobName" : "DataXBatch-${name}",
+			"sparkJobDriverLogLevel" : "WARN",
+			"sparkJobExecutorLogLevel" : "INFO",
+			"sparkJobNumExecutors" : "${guiSparkJobNumExecutors}",
+			"sparkJobExecutorMemory" : "${guiSparkJobExecutorMemory}",
+			"sparkJobDatabricksMinWorkers" : "${guiSparkJobDatabricksMinWorkers}",
+			"sparkJobDatabricksMaxWorkers" : "${guiSparkJobDatabricksMaxWorkers}",
+			"sparkDatabricksToken" : "${guiSparkDatabricksToken}",
+			"sparkJobDatabricksAutoScale" : "${guiSparkJobDatabricksAutoScale}",
+			"processedSchemaPath" : null
+		},
+		"jobs" : [
+			{
+				"partitionJobNumber" : "1"
+			}
+		]
+	},
+	"metrics" : {
+		"sources" : [
+			{
+				"name" : "events",
+				"input" : {
+					"type" : "MetricApi",
+					"metricKeys" : [
+						"DATAX-eventhubbatch:Input_DataXProcessedInput_Events_Count"
+					]
+				},
+				"output" : {
+					"type" : "SumWithTimeChart",
+					"data" : {
+						"sum" : true,
+						"timechart" : true,
+						"average" : true,
+						"speed" : true
+					}
+				}
+			},
+			{
+				"name" : "DoorLockStatusOneForLocked",
+				"input" : {
+					"type" : "MetricApi",
+					"pollingInterval" : 30000,
+					"metricKeys" : [
+						{
+							"name" : "eventhubbatch:DoorLockStatusOneForLocked",
+							"displayName" : "DoorLockStatusOneForLocked"
+						}
+					]
+				},
+				"output" : {
+					"type" : "DirectTimeChart",
+					"data" : {
+						"timechart" : true,
+						"current" : false,
+						"table" : false
+					},
+					"chartTimeWindowInMs" : 3600000
+				}
+			},
+			{
+				"name" : "DoorUnlockedSimpleAlert",
+				"input" : {
+					"type" : "MetricDetailsApi",
+					"pollingInterval" : 30000,
+					"metricKeys" : [
+						{
+							"name" : "eventhubbatch:DoorUnlockedSimpleAlert",
+							"displayName" : "DoorUnlockedSimpleAlert"
+						}
+					]
+				},
+				"output" : {
+					"type" : "DirectTable",
+					"data" : {
+						"timechart" : false,
+						"current" : false,
+						"table" : true
+					},
+					"chartTimeWindowInMs" : 3600000
+				}
+			},
+			{
+				"name" : "GarageDoorStatusOneForLocked, GarageDoorMinutesOpenedIn5minutes, GarageMinutesOpenedInAnHour",
+				"input" : {
+					"type" : "MetricApi",
+					"pollingInterval" : 30000,
+					"metricKeys" : [
+						{
+							"name" : "eventhubbatch:GarageDoorStatusOneForLocked",
+							"displayName" : "GarageDoorStatusOneForLocked"
+						},
+						{
+							"name" : "eventhubbatch:GarageDoorMinutesOpenedIn5minutes",
+							"displayName" : "GarageDoorMinutesOpenedIn5minutes"
+						},
+						{
+							"name" : "eventhubbatch:GarageMinutesOpenedInAnHour",
+							"displayName" : "GarageMinutesOpenedInAnHour"
+						}
+					]
+				},
+				"output" : {
+					"type" : "DirectTimeChart",
+					"data" : {
+						"timechart" : true,
+						"current" : false,
+						"table" : false
+					},
+					"chartTimeWindowInMs" : 3600000
+				}
+			},
+			{
+				"name" : "GarageOpenForFiveMinsWindowAlert",
+				"input" : {
+					"type" : "MetricDetailsApi",
+					"pollingInterval" : 30000,
+					"metricKeys" : [
+						{
+							"name" : "eventhubbatch:GarageOpenForFiveMinsWindowAlert",
+							"displayName" : "GarageOpenForFiveMinsWindowAlert"
+						}
+					]
+				},
+				"output" : {
+					"type" : "DirectTable",
+					"data" : {
+						"timechart" : false,
+						"current" : false,
+						"table" : true
+					},
+					"chartTimeWindowInMs" : 3600000
+				}
+			},
+			{
+				"name" : "GarageOpenFor30MinutesInHourThresholdAlert",
+				"input" : {
+					"type" : "MetricDetailsApi",
+					"pollingInterval" : 30000,
+					"metricKeys" : [
+						{
+							"name" : "eventhubbatch:GarageOpenFor30MinutesInHourThresholdAlert",
+							"displayName" : "GarageOpenFor30MinutesInHourThresholdAlert"
+						}
+					]
+				},
+				"output" : {
+					"type" : "DirectTable",
+					"data" : {
+						"timechart" : false,
+						"current" : false,
+						"table" : true
+					},
+					"chartTimeWindowInMs" : 3600000
+				}
+			},
+			{
+				"name" : "HeaterStateOneIsOn, WindowLockStateOneIsLocked, WindowLockStateWindowed",
+				"input" : {
+					"type" : "MetricApi",
+					"pollingInterval" : 30000,
+					"metricKeys" : [
+						{
+							"name" : "eventhubbatch:HeaterStateOneIsOn",
+							"displayName" : "HeaterStateOneIsOn"
+						},
+						{
+							"name" : "eventhubbatch:WindowLockStateOneIsLocked",
+							"displayName" : "WindowLockStateOneIsLocked"
+						},
+						{
+							"name" : "eventhubbatch:WindowLockStateWindowed",
+							"displayName" : "WindowLockStateWindowed"
+						}
+					]
+				},
+				"output" : {
+					"type" : "DirectTimeChart",
+					"data" : {
+						"timechart" : true,
+						"current" : false,
+						"table" : false
+					},
+					"chartTimeWindowInMs" : 3600000
+				}
+			},
+			{
+				"name" : "WindowOpenFiveMinWhileHeaterOnCombinedAlert",
+				"input" : {
+					"type" : "MetricDetailsApi",
+					"pollingInterval" : 30000,
+					"metricKeys" : [
+						{
+							"name" : "eventhubbatch:WindowOpenFiveMinWhileHeaterOnCombinedAlert",
+							"displayName" : "WindowOpenFiveMinWhileHeaterOnCombinedAlert"
+						}
+					]
+				},
+				"output" : {
+					"type" : "DirectTable",
+					"data" : {
+						"timechart" : false,
+						"current" : false,
+						"table" : true
+					},
+					"chartTimeWindowInMs" : 3600000
+				}
+			},
+			{
+				"name" : "CLOSEAlert",
+				"input" : {
+					"type" : "MetricDetailsApi",
+					"pollingInterval" : 30000,
+					"metricKeys" : [
+						{
+							"name" : "eventhubbatch:CLOSEAlert",
+							"displayName" : "CLOSEAlert"
+						}
+					]
+				},
+				"output" : {
+					"type" : "DirectTable",
+					"data" : {
+						"timechart" : false,
+						"current" : false,
+						"table" : true
+					},
+					"chartTimeWindowInMs" : 3600000
+				}
+			}
+		],
+		"widgets" : [
+			{
+				"name" : "eventsChart",
+				"displayName" : "Events/Second",
+				"data" : "events_timechart",
+				"position" : "TimeCharts",
+				"type" : "StackAreaChart"
+			},
+			{
+				"name" : "totalEvents",
+				"displayName" : "Events Ingested Today",
+				"data" : "events_sum",
+				"formatter" : "longint",
+				"position" : "FirstRow",
+				"type" : "SimpleBox"
+			},
+			{
+				"name" : "averageEvents",
+				"displayName" : "Avg. Events/Minute",
+				"data" : "events_average",
+				"formatter" : "longint",
+				"position" : "FirstRow",
+				"type" : "SimpleBox"
+			},
+			{
+				"name" : "DoorLockStatusOneForLocked",
+				"displayName" : "DoorLockStatusOneForLocked",
+				"data" : "DoorLockStatusOneForLocked_timechart",
+				"position" : "TimeCharts",
+				"type" : "MultiLineChart"
+			},
+			{
+				"name" : "DoorUnlockedSimpleAlert",
+				"displayName" : "DoorUnlockedSimpleAlert",
+				"data" : "DoorUnlockedSimpleAlert_table",
+				"position" : "TimeCharts",
+				"type" : "DetailsList"
+			},
+			{
+				"name" : "GarageDoorStatusOneForLocked, GarageDoorMinutesOpenedIn5minutes, GarageMinutesOpenedInAnHour",
+				"displayName" : "GarageDoorStatusOneForLocked, GarageDoorMinutesOpenedIn5minutes, GarageMinutesOpenedInAnHour",
+				"data" : "GarageDoorStatusOneForLocked, GarageDoorMinutesOpenedIn5minutes, GarageMinutesOpenedInAnHour_timechart",
+				"position" : "TimeCharts",
+				"type" : "MultiLineChart"
+			},
+			{
+				"name" : "GarageOpenForFiveMinsWindowAlert",
+				"displayName" : "GarageOpenForFiveMinsWindowAlert",
+				"data" : "GarageOpenForFiveMinsWindowAlert_table",
+				"position" : "TimeCharts",
+				"type" : "DetailsList"
+			},
+			{
+				"name" : "GarageOpenFor30MinutesInHourThresholdAlert",
+				"displayName" : "GarageOpenFor30MinutesInHourThresholdAlert",
+				"data" : "GarageOpenFor30MinutesInHourThresholdAlert_table",
+				"position" : "TimeCharts",
+				"type" : "DetailsList"
+			},
+			{
+				"name" : "HeaterStateOneIsOn, WindowLockStateOneIsLocked, WindowLockStateWindowed",
+				"displayName" : "HeaterStateOneIsOn, WindowLockStateOneIsLocked, WindowLockStateWindowed",
+				"data" : "HeaterStateOneIsOn, WindowLockStateOneIsLocked, WindowLockStateWindowed_timechart",
+				"position" : "TimeCharts",
+				"type" : "MultiLineChart"
+			},
+			{
+				"name" : "WindowOpenFiveMinWhileHeaterOnCombinedAlert",
+				"displayName" : "WindowOpenFiveMinWhileHeaterOnCombinedAlert",
+				"data" : "WindowOpenFiveMinWhileHeaterOnCombinedAlert_table",
+				"position" : "TimeCharts",
+				"type" : "DetailsList"
+			},
+			{
+				"name" : "CLOSEAlert",
+				"displayName" : "CLOSEAlert",
+				"data" : "CLOSEAlert_table",
+				"position" : "TimeCharts",
+				"type" : "DetailsList"
+			}
+		],
+		"initParameters" : {
+			"widgetSets" : [
+				"direct"
+			],
+			"jobNames" : {
+				"type" : "getCPSparkJobNames"
+			}
+		}
+	},
+	"gui" : {
+		"name" : "eventhubbatch",
+		"displayName" : "EventHub-Batch",
+		"databricksToken" : "",
+		"owner" : "eventhubbatch",
+		"input" : {
+			"mode" : "batching",
+			"type" : "blob",
+			"properties" : {
+				"inputEventhubName" : "",
+				"inputEventhubConnection" : "",
+				"windowDuration" : "30",
+				"timestampColumn" : "",
+				"watermarkValue" : "0",
+				"watermarkUnit" : "second",
+				"maxRate" : "1000",
+				"inputSchemaFile" : "{\"type\":\"struct\",\"fields\":[{\"name\":\"_SystemProperties\",\"type\":{\"type\":\"struct\",\"fields\":[{\"name\":\"x-opt-sequence-number\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"x-opt-offset\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"x-opt-enqueued-time\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}}]},\"nullable\":true,\"metadata\":{}},{\"name\":\"_Properties\",\"type\":{\"type\":\"struct\",\"fields\":[]},\"nullable\":true,\"metadata\":{}},{\"name\":\"eventTimeStamp\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"deviceDetails\",\"type\":{\"type\":\"struct\",\"fields\":[{\"name\":\"deviceId\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"deviceType\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"eventTime\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}},{\"name\":\"homeId\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}},{\"name\":\"status\",\"type\":\"long\",\"nullable\":true,\"metadata\":{}}]},\"nullable\":true,\"metadata\":{}}]}",
+				"showNormalizationSnippet" : false,
+				"normalizationSnippet" : "Raw.*",
+				"inputSubscriptionId" : "",
+				"inputResourceGroup" : ""
+			},
+			"referenceData" : [
+				{
+					"id" : "myDevicesRefData",
+					"type" : "csv",
+					"typeDisplay" : "CSV/TSV File",
+					"properties" : {
+						"path" : "$keyvaultPrefix://$sparkKVName/eventhubbatch-referencedata-devicesdata",
+						"delimiter" : ",",
+						"header" : true
+					}
+				}
+			],
+			"batch" : [
+				{
+					"type" : "blob",
+					"properties" : {
+						"connection" : "$keyvaultPrefix://$sparkKVName/eventhubbatch-input-0-inputConnection",
+						"path" : "$keyvaultPrefix://$sparkKVName/eventhubbatch-input-0-inputPath",
+						"formatType" : "json",
+						"compressionType" : "none"
+					}
+				}
+			]
+		},
+		"process" : {
+			"timestampColumn" : "",
+			"watermark" : "0 second",
+			"functions" : [
+				{
+					"id" : "whoOpened",
+					"type" : "jarUDF",
+					"properties" : {
+						"name" : null,
+						"path" : "$keyvaultPrefix://$sparkKVName/eventhubbatch-jarpath-udfsample",
+						"class" : "datax.sample.udf.UdfHelloWorld",
+						"libs" : [ ]
+					},
+					"typeDisplay" : "UDF"
+				}
+			],
+			"queries" : [
+				"--DataXStates--\nCREATE TABLE eventhubbatch_GarageDoor_status_accumulated\n    (deviceId long, deviceType string, homeId long, EventTime Timestamp, Reading long);\n\n--DataXQuery--\nDeviceWindowedInput = SELECT \n                        deviceDetails.deviceId,\n                        deviceDetails.deviceType,\n                        eventTimeStamp,\n                        deviceDetails.homeId,\n                        deviceDetails.status\n                    FROM DataXProcessedInput\n                   GROUP BY deviceId, deviceType, eventTimeStamp, homeId, status;\n\n--DataXQuery--\nDeviceNotWindowedInputWithName = SELECT \n                        DataXProcessedInput.deviceDetails.deviceId,\n                        DataXProcessedInput.deviceDetails.deviceType,\n                        eventTimeStamp,\n                        DataXProcessedInput.deviceDetails.homeId,\n                        DataXProcessedInput.deviceDetails.status,\n                        myDevicesRefdata.deviceName\n                    FROM DataXProcessedInput \n                    JOIN myDevicesRefdata \n                    ON DataXProcessedInput.deviceDetails.deviceId = myDevicesRefdata.deviceId \n                    AND DataXProcessedInput.deviceDetails.homeId = myDevicesRefdata.homeId;\n\n--DataXQuery--\nDeviceNotWindowedInputWithNameAndWho = SELECT \n                        deviceId,\n                        deviceType,\n                        eventTimeStamp,\n                        homeId,\n                        status,\n                        deviceName,\n                        whoOpened(CAST(deviceId AS String)) AS whoOpened\n                    FROM DeviceNotWindowedInputWithName; \n\n--DataXQuery--\nDeviceInfoTimeWindow = SELECT \n                    deviceId,\n                    deviceType,\n                    homeId,\n                    MAX(eventTimeStamp) AS MaxEventTime,\n                    MIN(status) AS MinReading,\n                    MAX(status) AS MaxReading\n                FROM DeviceWindowedInput\n                GROUP BY deviceId, deviceType, homeId;\n\n--DataXQuery--\nHeaterStateFiltered = SELECT \n                        eventTimeStamp,\n                        deviceDetails.deviceId,\n                        deviceDetails.deviceType,\n                        deviceDetails.homeId,\n                        deviceDetails.status\n\t\t\t\t\tFROM DataXProcessedInput\n\t\t\t\t\tWHERE deviceDetails.homeId = 150\n\t\t\t\t\t\tAND deviceDetails.deviceType = 'Heating'\n\t\t\t\t\tGROUP BY eventTimeStamp, deviceId, deviceType, homeId, status;\n\n--DataXQuery--\nHeaterStateOneIsOn = CreateMetric(HeaterStateFiltered, status);\n\n--DataXQuery--\nWindowLockStateFiltered = SELECT \n                                eventTimeStamp,\n                                deviceDetails.deviceId,\n                                deviceDetails.deviceType,\n                                deviceDetails.homeId,\n                                deviceDetails.status\n\t\t\t\t\t\t\tFROM DataXProcessedInput\n\t\t\t\t\t\t\tWHERE deviceDetails.homeId = 150\n\t\t\t\t\t\t\t\tAND deviceDetails.deviceType = 'WindowLock'\n\t\t\t\t\t\t\tGROUP BY eventTimeStamp, deviceId, deviceType, homeId, status;\n                    \n--DataXQuery--\nWindowLockStateOneIsLocked =  CreateMetric(WindowLockStateFiltered, status);\n\n--DataXQuery--\nWindowLockWindowedFiltered = SELECT *\n\t\t\t\t\t\t\tFROM DeviceInfoTimeWindow\n\t\t\t\t\t\t\tINNER JOIN WindowLockStateFiltered ON WindowLockStateFiltered.eventTimeStamp = DeviceInfoTimeWindow.MaxEventTime\n\t\t\t\t\t\t\tWHERE DeviceInfoTimeWindow.homeId = 150\n\t\t\t\t\t\t\t\tAND DeviceInfoTimeWindow.deviceType = 'WindowLock';\n\n--DataXQuery--\nWindowLockStateWindowed = CreateMetric(WindowLockWindowedFiltered, MaxReading);\n\n--DataXQuery--\nWindowOpenFiveMin = SELECT\n                        MaxEventTime,\n                        MaxReading\n                    FROM DeviceInfoTimeWindow\n                    INNER JOIN WindowLockStateFiltered ON WindowLockStateFiltered.eventTimeStamp = DeviceInfoTimeWindow.MaxEventTime\n                    WHERE DeviceInfoTimeWindow.homeId = 150\n                        AND DeviceInfoTimeWindow.MaxReading = 0\n                        AND DeviceInfoTimeWindow.deviceType = 'WindowLock';\n\t\t\t\t\t\t\n--DataXQuery--\nWindowOpenFiveMinWhileHeaterOnCombinedAlert = SELECT\n                                    MaxEventTime AS EventTime,\n                                    'WindowOpenFiveMinWhileHeaterOnCombinedAlert' AS MetricName,\n                                    0 AS Metric,\n                                    'eventhubbatch' AS Product, \n                                    'Window open for 5+ minutes while heater is on.' AS Pivot1\n                                FROM WindowOpenFiveMin\n                                INNER JOIN HeaterStateFiltered ON HeaterStateFiltered.eventTimeStamp = WindowOpenFiveMin.MaxEventTime\n                                WHERE WindowOpenFiveMin.MaxReading = 0\n                                    AND HeaterStateFiltered.status = 1;\n\n--DataXQuery--\nDoorLockStatusFiltered = SELECT *\n\t\t\t\t\t\tFROM DataXProcessedInput\n\t\t\t\t\t\tWHERE deviceDetails.homeId = 150                  \n\t\t\t\t\t\t\tAND deviceDetails.deviceType = 'DoorLock';\n\n--DataXQuery--\nDoorLockStatusOneForLocked =  CreateMetric(DoorLockStatusFiltered, deviceDetails.status);\n\n--DataXQuery--\nDoorUnlockedSimpleAlert = SELECT DISTINCT\n                        eventTimeStamp AS EventTime,\n                        'DoorUnlockedSimpleAlert' AS MetricName,\n                        0 AS Metric,\n                        'eventhubbatch' AS Product, \n                        CONCAT('Door unlocked: ', deviceName, ' at home ', homeId) AS Pivot1\n                        FROM DeviceNotWindowedInputWithNameAndWho\n                        WHERE deviceType = 'DoorLock' AND\n                        homeId = 150 AND\n                        status = 0;\n\n--DataXQuery--\nGarageDoorStatusFiltered = SELECT \n\t\t\t\t\t\t\teventTimeStamp,\n\t\t\t\t\t\t\tdeviceDetails.deviceId,\n\t\t\t\t\t\t\tdeviceDetails.deviceType,\n\t\t\t\t\t\t\tdeviceDetails.homeId,\n\t\t\t\t\t\t\tdeviceDetails.status\n\t\t\t\t\t\tFROM DataXProcessedInput\n\t\t\t\t\t\tWHERE deviceDetails.homeId = 150\n\t\t\t\t\t\t\tAND deviceDetails.deviceType = 'GarageDoorLock'\n\t\t\t\t\t\tGROUP BY eventTimeStamp, deviceId, deviceType, homeId, status;\n\n--DataXQuery--\nGarageDoorStatusOneForLocked = CreateMetric(GarageDoorStatusFiltered, status);\n\n--DataXQuery--\nGarageDoorAccumalator = SELECT \n                            deviceId,\n                            deviceType,\n                            homeId,\n                            eventTimeStamp AS EventTime,\n                            status AS Reading\n                        FROM DeviceNotWindowedInputWithName\n                        WHERE homeId = 150\n                            AND deviceType = 'GarageDoorLock'\n                        UNION ALL\n                        SELECT \n                            deviceId,\n                            deviceType,\n                            homeId,\n                            EventTime,\n                            Reading\n                        FROM eventhubbatch_GarageDoor_status_accumulated\n                        WHERE hour(EventTime) = hour(current_timestamp());\n\n--DataXQuery--\neventhubbatch_GarageDoor_status_accumulated = SELECT deviceId, deviceType, homeId, EventTime, Reading\nFROM GarageDoorAccumalator;\n\n--DataXQuery--\nGarageDoorOpenInAnHour = SELECT COUNT(DISTINCT EventTime) AS MinsGarageOpenedInHour,\n                                    MAX(EventTime) AS EventTime\n                                FROM eventhubbatch_GarageDoor_status_accumulated\n                                WHERE homeId = 150\n                                    AND deviceType = 'GarageDoorLock'\n                                    AND Reading = 0\n                                    AND unix_timestamp() - to_unix_timestamp(EventTime,'yyyy-MM-dd') < 3600;\n\n--DataXQuery--\nGarageDoorMinutesOpenedFiltered = SELECT\n\t\t\t\t\t\t\t\t\t\t\tMAX(eventTimeStamp) AS EventTime,\n\t\t\t\t\t\t\t\t\t\t\tCOUNT(DISTINCT eventTimeStamp) AS MinutesCount\n\t\t\t\t\t\t\t\t\t\tFROM DeviceWindowedInput\n\t\t\t\t\t\t\t\t\t\tWHERE homeId = 150\n\t\t\t\t\t\t\t\t\t\t\tAND deviceType = 'GarageDoorLock'\n\t\t\t\t\t\t\t\t\t\t\tAND status = 0;\n\n--DataXQuery--\nGarageDoorMinutesOpenedIn5minutes = CreateMetric(GarageDoorMinutesOpenedFiltered, MinutesCount);\n\n--DataXQuery--\nGarageOpenForFiveMinsWindowAlert = SELECT\n                                EventTime AS EventTime,\n                                'GarageOpenForFiveMinsWindowAlert' AS MetricName,\n                                0 AS Metric,\n                                'eventhubbatch' AS Product, \n                                'Garage door opened for >=5 mins' AS Pivot1\n                                FROM GarageDoorMinutesOpenedIn5minutes\n                                WHERE Metric >= 5;\n\n--DataXQuery--\nGarageMinutesOpenedInAnHour = CreateMetric(GarageDoorOpenInAnHour, MinsGarageOpenedInHour);\n\n--DataXQuery--\nGarageOpenFor30MinutesInHourThresholdAlert = SELECT \n                                EventTime AS EventTime,\n                                'GarageOpenFor30MinutesInHourThresholdAlert' AS MetricName,\n                                0 AS Metric,\n                                'eventhubbatch' AS Product, \n                                CONCAT('Garage door opened for >= 30 minutes in last hour: ', Metric) AS Pivot1\n                                FROM GarageMinutesOpenedInAnHour\n                                WHERE Metric >= 30;\n\n--DataXQuery--\nRules = ProcessRules(DataXProcessedInput);\n\nOUTPUT DoorLockStatusOneForLocked TO Metrics;\nOUTPUT DoorUnlockedSimpleAlert TO Metrics;\nOUTPUT GarageDoorStatusOneForLocked, GarageDoorMinutesOpenedIn5minutes, GarageMinutesOpenedInAnHour TO myAzureBlob;\nOUTPUT GarageOpenForFiveMinsWindowAlert TO myAzureBlob;\nOUTPUT GarageOpenFor30MinutesInHourThresholdAlert TO myAzureBlob;\nOUTPUT HeaterStateOneIsOn, WindowLockStateOneIsLocked, WindowLockStateWindowed TO myAzureBlob;\nOUTPUT WindowOpenFiveMinWhileHeaterOnCombinedAlert TO myAzureBlob;\n\nOUTPUT DataXProcessedInput TO myAzureBlob;"
+			],
+			"jobconfig" : {
+				"jobNumExecutors" : "4",
+				"jobExecutorMemory" : "1000",
+				"jobDatabricksAutoScale" : false,
+				"jobDatabricksMinWorkers" : "3",
+				"jobDatabricksMaxWorkers" : "8"
+			}
+		},
+		"outputs" : [
+			{
+				"id" : "Metrics",
+				"type" : "metric",
+				"properties" : {
+				},
+				"typeDisplay" : "Metrics"
+			},
+			{
+				"id" : "myAzureBlob",
+				"type" : "blob",
+				"properties" : {
+					"connectionString" : "$keyvaultPrefix://$sparkKVName/eventhubbatch-output-myazureblob",
+					"containerName" : "outputs",
+					"blobPrefix" : "eventhubbatch",
+					"blobPartitionFormat" : "yyyy-MM-dd/HH",
+					"format" : "json",
+					"compressionType" : "none"
+				},
+				"typeDisplay" : "Azure Blob"
+			}
+		],
+		"outputTemplates" : [ ],
+		"rules" : [
+			{
+				"id" : "DoorLock Close",
+				"type" : "tag",
+				"properties" : {
+					"_S_productId" : "",
+					"_S_ruleType" : "SimpleRule",
+					"_S_ruleId" : "",
+					"_S_ruleDescription" : "DoorLock Close",
+					"_S_condition" : "deviceDetails.deviceType = 'DoorLock' AND deviceDetails.status = 1",
+					"_S_tagName" : "Tag",
+					"_S_tag" : "CLOSE",
+					"_S_aggs" : [ ],
+					"_S_pivots" : [ ],
+					"_S_isAlert" : true,
+					"_S_severity" : "Critical",
+					"_S_alertSinks" : [
+						"Metrics"
+					],
+					"_S_outputTemplate" : "",
+					"schemaTableName" : "DataXProcessedInput",
+					"conditions" : {
+						"type" : "group",
+						"conjunction" : "or",
+						"conditions" : [
+							{
+								"type" : "condition",
+								"conjunction" : "or",
+								"aggregate" : "AVG",
+								"field" : "deviceDetails.deviceType",
+								"operator" : "stringEqual",
+								"value" : "DoorLock"
+							},
+							{
+								"type" : "condition",
+								"conjunction" : "and",
+								"aggregate" : "AVG",
+								"field" : "deviceDetails.status",
+								"operator" : "equal",
+								"value" : "1"
+							}
+						]
+					}
+				}
+			},
+			{
+				"id" : "DoorLock Open",
+				"type" : "tag",
+				"properties" : {
+					"_S_productId" : "",
+					"_S_ruleType" : "SimpleRule",
+					"_S_ruleId" : "",
+					"_S_ruleDescription" : "DoorLock Open",
+					"_S_condition" : "deviceDetails.deviceType = 'DoorLock' AND deviceDetails.status = 0 AND deviceDetails.homeId = 150",
+					"_S_tagName" : "Tag",
+					"_S_tag" : "OPEN",
+					"_S_aggs" : [ ],
+					"_S_pivots" : [ ],
+					"_S_isAlert" : false,
+					"_S_severity" : "Critical",
+					"_S_alertSinks" : [
+						"Metrics"
+					],
+					"_S_outputTemplate" : "",
+					"schemaTableName" : "DataXProcessedInput",
+					"conditions" : {
+						"type" : "group",
+						"conjunction" : "or",
+						"conditions" : [
+							{
+								"type" : "condition",
+								"conjunction" : "or",
+								"aggregate" : "AVG",
+								"field" : "deviceDetails.deviceType",
+								"operator" : "stringEqual",
+								"value" : "DoorLock"
+							},
+							{
+								"type" : "condition",
+								"conjunction" : "and",
+								"aggregate" : "AVG",
+								"field" : "deviceDetails.status",
+								"operator" : "equal",
+								"value" : "0"
+							},
+							{
+								"type" : "condition",
+								"conjunction" : "and",
+								"aggregate" : "AVG",
+								"field" : "deviceDetails.homeId",
+								"operator" : "equal",
+								"value" : "150"
+							}
+						]
+					}
+				}
+			}
+		],
+		"batchList" : [
+			{
+				"id" : "oneTime",
+				"type" : "oneTime",
+				"properties" : {
+					"interval" : "1",
+					"intervalType" : "day",
+					"delay" : "0",
+					"delayType" : "day",
+					"window" : "1",
+					"windowType" : "day",
+					"startTime" : "$deploymentDateT07:00:00Z",
+					"endTime" : "$deploymentDateT08:00:00Z",
+					"lastProcessedTime" : ""
+				},
+				"disabled" : false
+			}
+		],
+		"subscription" : ""
+	},
+	"properties" : {
+		"inputEventHubSubscriptionId" : "$keyvaultPrefix://${serviceKeyVaultName}/web-subscriptionId",
+		"inputEventHubResourceGroupName" : "${eventHubResourceGroupName}"
+	},
+	"jobNames" : null
+}

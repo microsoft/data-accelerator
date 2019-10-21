@@ -112,6 +112,26 @@ function Setup-Secrets {
 	    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sqlCosmosdbCon
     }
 
+    # EventHub Batch sample
+	$secretName = "eventhubbatch-referencedata-devicesdata"
+    $secretValue = -join($userContentContainerLocation, "devices.csv");
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $secretValue
+
+    $secretName = "eventhubbatch-jarpath-udfsample"
+    $secretValue = -join($userContentContainerLocation, "udfsample.jar");
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $secretValue
+
+    $blobsparkconnectionString = Get-StorageAccountConnectionString -Name $sparkBlobAccountName
+    $secretName = "eventhubbatch-input-0-inputConnection"
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $blobsparkconnectionString
+    
+    $secretName = "eventhubbatch-output-myazureblob"
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $blobsparkconnectionString
+    
+    $eventHubBatchSamplePath = -join("wasbs://", $sampleContainerName, "@", $sparkBlobAccountName, ".blob.core.windows.net/eventhubbatch/")
+    $secretName = "eventhubbatch-input-0-inputPath"
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $eventHubBatchSamplePath
+
     $vaultName = "$servicesKVName"
     
     $secretName = "datagen-iotHubConnectionString"
@@ -189,12 +209,15 @@ function Add-CosmosDBData ([string]$filePath) {
 function Get-Tokens {
     $tokens = Get-DefaultTokens
 
-    $tokens.Add('subscriptionId', $subscriptionId )
+    $tokens.Add('subscriptionId', $subscriptionId)
     $tokens.Add('resourceLocation', $resourceGroupLocation)
     $tokens.Add('iotHubName', $iotHubName)
     $tokens.Add('kafkaName', $kafkaName)
     $tokens.Add('kafkaEventHubNamespaceName', $kafkaEventHubNamespaceName)
     $tokens.Add('clientSecretPrefix', $clientSecretPrefix)
+
+    $deploymentDate = Get-Date -Format "yyyy-MM-dd"
+    $tokens.Add('deploymentDate', $deploymentDate)
 	
 	$keyvaultPrefix = 'keyvault'
 	if ($useDatabricks -eq 'y') {
@@ -259,6 +282,7 @@ Check-Credential -SubscriptionId $subscriptionId -TenantId $tenantId
 # Deploy IotHub and add devices to the IotHub
 # This will take about 5 mins 
 $userContentContainerName = "usercontent"
+$sampleContainerName = "samples"
 $templatePath = $resourcesTemplatePath
 $tokens = Get-Tokens
 
@@ -306,14 +330,16 @@ $parameterPath = Fix-ApplicationTypeVersion -parametersPath $parameterFileFolder
 # Copy files Simulated service needs
 Add-CosmosDBData -filePath ".\Samples\flows\iotsample-product.json"
 Add-CosmosDBData -filePath ".\Samples\flows\eventhub-product.json"
+Add-CosmosDBData -filePath ".\Samples\flows\eventhubbatch-product.json"
 
 if($enableKafkaSample -eq 'y') {
     Add-CosmosDBData -filePath ".\Samples\flows\nativekafka-product.json"
     Add-CosmosDBData -filePath ".\Samples\flows\eventhubkafka-product.json"
 }
 
-Deploy-Files -saName $sparkBlobAccountName -containerName "samples" -filter "iotsample.json" -filesPath ".\Samples\samples\iotDevice" -targetPath "iotdevice"
-Deploy-Files -saName $sparkBlobAccountName -containerName "samples" -filter "*.json" -filesPath ".\Samples\samples" -targetPath ""
+Deploy-Files -saName $sparkBlobAccountName -containerName $sampleContainerName -filter "iotsample.json" -filesPath ".\Samples\samples\iotDevice" -targetPath "iotdevice"
+Deploy-Files -saName $sparkBlobAccountName -containerName $sampleContainerName -filter "eventhubbatch-sample.json" -filesPath ".\Samples\samples\eventHubBatch" -targetPath "eventhubbatch"
+Deploy-Files -saName $sparkBlobAccountName -containerName $sampleContainerName -filter "*.json" -filesPath ".\Samples\samples" -targetPath ""
 Deploy-Files -saName $sparkBlobAccountName -containerName $userContentContainerName -filter "*.*" -filesPath ".\Samples\usercontent" -targetPath "iotsample"
 
 # Deploy Simulated service
