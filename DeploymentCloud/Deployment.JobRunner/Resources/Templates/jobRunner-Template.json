@@ -162,6 +162,17 @@
         "aspNetCoreDetailedErrorsEnabled": {
             "defaultValue": "false",
             "type": "string"
+        },
+        "secretsPermissions": {
+            "type": "array",
+            "defaultValue": [
+                "get",
+                "list",
+                "set"
+            ],
+            "metadata": {
+                "description": "Specifies the permissions to secrets in the vault. Valid values are: all, get, list, set, delete, backup, restore, recover, and purge."
+            }
         }
     },
     "variables": {
@@ -412,7 +423,7 @@
         },
         {
             "type": "Microsoft.Web/sites",
-            "apiVersion": "2016-08-01",
+            "apiVersion": "2018-11-01",
             "name": "[parameters('jobRunnerName')]",
             "comments": "Deploy Scenario tester",
             "location": "[resourceGroup().location]",
@@ -443,6 +454,9 @@
                 "containerSize": 0,
                 "dailyMemoryTimeQuota": 0,
                 "httpsOnly": true,
+                "siteConfig": {
+                    "alwaysOn": true
+                },
                 "appSettings": []
             },
             "resources": [
@@ -480,8 +494,49 @@
                         "DATAX_JobRunner:EventHubName": "[parameters('eventHubName')]",
                         "DATAX_JobRunner:Seconds": "[parameters('seconds')]"
                     }
+                },
+                {
+                    "type": "Microsoft.KeyVault/vaults/accessPolicies",
+                    "name": "[concat(parameters('kvServicesName'), '/add')]",
+                    "apiVersion": "2018-02-14",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', parameters('jobRunnerName'))]"
+                    ],
+                    "properties": {
+                        "accessPolicies": [
+                            {
+                                "tenantId": "[parameters('tenantId')]",
+                                "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('jobRunnerName')), '2018-11-01', 'Full').identity.principalId]",
+                                "permissions": {
+                                "secrets": "[parameters('secretsPermissions')]"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Microsoft.KeyVault/vaults/accessPolicies",
+                    "name": "[concat(parameters('kvSparkName'), '/add')]",
+                    "apiVersion": "2018-02-14",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', parameters('jobRunnerName'))]"
+                    ],
+                    "properties": {
+                        "accessPolicies": [
+                            {
+                                "tenantId": "[parameters('tenantId')]",
+                                "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('jobRunnerName')), '2018-11-01', 'Full').identity.principalId]",
+                                "permissions": {
+                                "secrets": "[parameters('secretsPermissions')]"
+                                }
+                            }
+                        ]
+                    }
                 }
-            ]
+            ],
+            "identity": {
+                "type": "SystemAssigned"
+            }
         }
     ]
 }
