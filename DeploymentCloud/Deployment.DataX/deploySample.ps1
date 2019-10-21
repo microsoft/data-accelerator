@@ -101,6 +101,16 @@ function Setup-Secrets {
     $secretName = "eventhub-jarpath-udfsample"
     $secretValue = -join($userContentContainerLocation, "udfsample.jar");
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $secretValue
+	
+    $storageAccount = Get-AzureRmStorageAccount -resourceGroupName $resourceGroupName -Name $sparkBlobAccountName
+    $secretName = "datax-sa-fullconnectionstring-" + $sparkBlobAccountName    
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $storageAccount.Context.ConnectionString
+	
+    if($setupAdditionalResourcesForSample -eq 'y'){
+		$sqlCosmosdbCon = Get-CosmosDBConnectionString -Name $sqlDocDBName
+		$secretName = "output-samplecosmosdb"
+	    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sqlCosmosdbCon
+    }
 
     $vaultName = "$servicesKVName"
     
@@ -191,6 +201,30 @@ function Get-Tokens {
 		$keyvaultPrefix = 'secretscope'
 	}
 	$tokens.Add('keyvaultPrefix', $keyvaultPrefix)
+	
+	# Output section of DataX Query for samples
+	$dataxQueryOutputForEventhubSample = '\n\nOUTPUT DoorUnlockedSimpleAlert TO myAzureBlob;\nOUTPUT GarageOpenForFiveMinsWindowAlert TO myAzureBlob;\nOUTPUT GarageOpenFor30MinutesInHourThresholdAlert TO myAzureBlob;\nOUTPUT WindowOpenFiveMinWhileHeaterOnCombinedAlert TO myAzureBlob;'
+	$dataxQueryOutputForNativeKafkaSample = ''
+	
+	if ($setupAdditionalResourcesForSample -eq 'y') {
+		$dataxQueryOutputForEventhubSample += '\n\nOUTPUT DoorUnlockedSimpleAlert TO myCosmosDB;\nOUTPUT GarageOpenForFiveMinsWindowAlert TO myCosmosDB;\nOUTPUT GarageOpenFor30MinutesInHourThresholdAlert TO myCosmosDB;\nOUTPUT WindowOpenFiveMinWhileHeaterOnCombinedAlert TO myCosmosDB;'
+		$dataxQueryOutputForNativeKafkaSample += '\n\nOUTPUT DoorUnlockedSimpleAlert TO myCosmosDB;\nOUTPUT GarageOpenForFiveMinsWindowAlert TO myCosmosDB;\nOUTPUT GarageOpenFor30MinutesInHourThresholdAlert TO myCosmosDB;\nOUTPUT WindowOpenFiveMinWhileHeaterOnCombinedAlert TO myCosmosDB;'
+	}
+	
+	$tokens.Add('dataxQueryOutputForEventhubSample', $dataxQueryOutputForEventhubSample)
+	$tokens.Add('dataxQueryOutputForNativeKafkaSample', $dataxQueryOutputForNativeKafkaSample)
+	
+	# Output Sinks for samples
+	$outputSinkForEventhubSample = '{"id" : "Metrics", "type" : "metric", "properties" : {}, "typeDisplay" : "Metrics"}, { "id" : "myAzureBlob", "type" : "blob", "properties": { "connectionString": "'+$keyvaultPrefix+'://'+$sparkKVName+'/datax-sa-fullconnectionstring-'+$sparkBlobAccountName+'", "containerName": "outputs", "blobPrefix": "EventHub", "blobPartitionFormat": "yyyy/MM/dd/HH", "format": "json", "compressionType": "none"}, "typeDisplay" : "Azure Blob"}'
+	$outputSinkForNativeKafkaSample = '{"id" : "Metrics", "type" : "metric", "properties" : {}, "typeDisplay" : "Metrics"}'
+			
+	if ($setupAdditionalResourcesForSample -eq 'y') {
+		$outputSinkForEventhubSample += ',{ "id" : "myCosmosDB", "type" : "cosmosdb", "properties" : { "connectionString" : "'+$keyvaultPrefix+'://'+$sparkKVName+'/output-samplecosmosdb", "db" : "dataxdb", "collection" : "eventhubsample"}, "typeDisplay" : "Cosmos DB"}'
+		$outputSinkForNativeKafkaSample += ',{ "id" : "myCosmosDB", "type" : "cosmosdb", "properties" : { "connectionString" : "'+$keyvaultPrefix+'://'+$sparkKVName+'/output-samplecosmosdb", "db" : "dataxdb", "collection" : "nativekafkasample"}, "typeDisplay" : "Cosmos DB"}'
+	}
+	
+	$tokens.Add('outputSinkForEventhubSample', $outputSinkForEventhubSample)
+	$tokens.Add('outputSinkForNativeKafkaSample', $outputSinkForNativeKafkaSample)
 
     $tokens
 }
@@ -228,12 +262,21 @@ $userContentContainerName = "usercontent"
 $templatePath = $resourcesTemplatePath
 $tokens = Get-Tokens
 
+$sqlDocDBName = 'sql' + $docDBName
+$tokens.Add('sqlDocDBName', $sqlDocDBName)
+
 Write-Host -ForegroundColor Green "Deploying Resources... (14/16 steps)"
 Write-Host -ForegroundColor Green "Estimated time to complete: 6 mins"
 
 Write-Host -ForegroundColor Green "For the sample Flow, deploying IotHub..."
 Deploy-Resources -templateName "IotHub-Template.json" -paramName "IotHub-parameter.json" -templatePath $templatePath -tokens $tokens
 Setup-IotHub
+
+if($setupAdditionalResourcesForSample -eq 'y') {
+    Write-Host -ForegroundColor Green "Deploying SQL type CosmosDB for output sample"
+    Write-Host -ForegroundColor Green "Estimated time to complete: 7 mins"
+    Deploy-Resources -templateName "SampleOutputs-Template.json" -paramName "SampleOutputs-Parameter.json"  -templatePath $templatePath -tokens $tokens
+}
 
 if($enableKafkaSample -eq 'y') {
     Setup-SecretsForKafka

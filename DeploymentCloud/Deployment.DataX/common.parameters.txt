@@ -20,6 +20,9 @@ subscriptionId=
 # ResourceGroupName to generate resources 
 resourceGroupName=DataX
 
+# y if you want to setup Cosmos Db output sinks for samples
+setupAdditionalResourcesForSample=n
+
 # y if you want to run spark jobs on Databricks, n for running jobs on HDinsight 
 useDatabricks=n
 

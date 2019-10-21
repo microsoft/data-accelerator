@@ -185,7 +185,7 @@ function Get-Tokens {
 	$tokens.Add('dataxJobTemplate', $dataxJobTemplate)
 	$tokens.Add('dataxKafkaJobTemplate', $dataxKafkaJobTemplate)
 	$tokens.Add('dataxBatchJobTemplate', $dataxBatchJobTemplate)
-    
+	
     # CosmosDB
     $tokens.Add('blobopsconnectionString', $blobopsconnectionString )
     $tokens.Add('configgenClientId', $azureADApplicationConfiggenApplicationId )
