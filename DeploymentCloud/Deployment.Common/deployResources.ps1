@@ -864,7 +864,7 @@ if($sparkCreation -eq 'y') {
             $sparkTemplate = "Spark-AutoScale-Template.json"
             $sparkParameter = "Spark-AutoScale-parameter.json"
         }      
-        Write-Host "sparkTempalte: '$sparkTemplate' ; sparkParameter: '$sparkParameter'"
+        Write-Host "sparkTemplate: '$sparkTemplate' ; sparkParameter: '$sparkParameter'"
 
 		Write-Host -ForegroundColor Green "Estimated time to complete: 20 mins"
 		Deploy-Resources -templateName  $sparkTemplate -paramName $sparkParameter -templatePath $templatePath -tokens $tokens
