@@ -10,16 +10,6 @@ param(
     [string]
     $appSecretKey,
     [string]
-    $productName,
-    [string]
-    $sparkType,
-    [string]
-    $sparkStorageAccountName,
-    [string]
-    $kvSparkName,
-    [string]
-    $kvServicesName,
-    [string]
     $flowName='scenariotest'
 )
 Import-Module ./utilities.psm1
@@ -47,25 +37,21 @@ $appAccInfo = Get-AppInfo -applicationId $applicationId -tenantName $tenantName
 $stInfo = Get-ScenarioTesterInfo `
     -subscriptionId $subscriptionId `
     -resourceGroupName $resourceGroupName `
-    -productName $productName `
-    -sparkType $sparkType `
-    -kvSparkName $kvSparkName `
-    -sparkStorageAccountName $sparkStorageAccountName `
     -flowName $flowName
 
 $params = @{
     tenantId = $tenantId
-    productName = $productName
+    productName = $stInfo.productName
     applicationObjectId = $appAccInfo.objectId
     applicationId = $appAccInfo.applicationId
     applicationIdentifierUri = $appAccInfo.identifierUri
     authorityUri = $appAccInfo.authorityUri
     serviceUrl = $stInfo.serviceUrl
     secretKey = $appSecretKey
-    kvServicesName = $kvServicesName
-    kvSparkName = $kvSparkName
+    kvServicesName = $stInfo.kvServicesName
+    kvSparkName = $stInfo.kvSparkName
     blobUri = $stInfo.blobUri
-    sparkStorageAccountName = $sparkStorageAccountName
+    sparkStorageAccountName = $stInfo.sparkStorageAccountName
     eventHubName = $stInfo.eventHubName 
     eventHubConnectionString = $stInfo.eventHubConnectionString
     isIotHub = $stInfo.isIotHub

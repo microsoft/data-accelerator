@@ -1,3 +1,5 @@
+$ErrorActionPreference = "stop"
+
 function Login([string]$subscriptionId, [string]$tenantId)
 {
     # sign in
@@ -98,11 +100,7 @@ function Get-ScenarioTesterInfo
 {
     param(
         [string]$subscriptionId, 
-        [string]$resourceGroupName, 
-        [string]$productName, 
-        [string]$sparkType, 
-        [string]$kvSparkName, 
-        [string]$sparkStorageAccountName, 
+        [string]$resourceGroupName,
         [string]$flowName
     )
     $blobContainerName="samples"
@@ -114,7 +112,20 @@ function Get-ScenarioTesterInfo
     $isIotHub = "true"
     $eventHubType = "iothub"
 
-    $sfClusterName = $productName + "-sf"
+    $deployment = (Get-AzureRmResourceGroupDeployment -ResourceGroupName $resourceGroupName | where DeploymentName -Like 'deployment-Resource-Template.json*')
+
+    $productName = $deployment.Parameters.sites_web_name.Value
+
+    $kvSparkName = $deployment.Parameters.vaults_sparkKV_name.Value
+
+    $kvServicesName = $deployment.Parameters.vaults_servicesKV_name.Value
+
+    $sparkStorageAccountName = $deployment.Parameters.storageAccounts_spark_name.Value
+
+    $sparkType = $deployment.Parameters.sparkType.Value
+
+    $sfClusterName = $deployment.Parameters.clusterName.Value
+
     $sfCluster = Get-AzureRmResource -ResourceGroupName $resourceGroupName -ResourceType Microsoft.ServiceFabric/clusters -Name $sfClusterName
     $sfClusterManageEndpoint = [uri]$sfCluster.Properties.managementEndpoint
     $sfClusterServiceUrl = $sfClusterManageEndpoint.scheme + "://" +$sfClusterManageEndpoint.Host
@@ -197,6 +208,7 @@ function Get-ScenarioTesterInfo
     Write-Host "Blob uri: $blobUri"
 
     @{
+        productName = $productName
         blobUri = $blobUri
         eventHubName = $eventHubName
         eventHubConnectionString = $eventHubConnectionString
@@ -206,6 +218,9 @@ function Get-ScenarioTesterInfo
         databricksToken = $databricksToken
         referenceDataUri = $referenceDataUri
         udfSampleUri = $udfSampleUri
+        kvSparkName = $kvSparkName
+        kvServicesName = $kvServicesName
+        sparkStorageAccountName = $sparkStorageAccountName
     }
 }
 
