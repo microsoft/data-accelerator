@@ -395,7 +395,7 @@
               "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDBName'))]"
             ],
             "properties": {
-              "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDBName')),'2015-04-08').connectionStrings[0].connectionString]"
+              "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDBName')),'2015-04-08').connectionStrings[4].connectionString]"
             }
         },
         
