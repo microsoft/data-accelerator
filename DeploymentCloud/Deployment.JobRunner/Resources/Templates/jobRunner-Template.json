@@ -480,7 +480,7 @@
                         "DATAX_JobRunner:DatabricksToken": "[concat(variables('kvServicesBaseUri'), '/scenariotest-info-databricksToken')]",
                         "DATAX_JobRunner:StorageConnection": "[concat(variables('kvServicesBaseUri'), '/configgen-cosmosdbtableconn')]",
                         "DATAX_JobRunner:ServiceBusConnectionString": "[concat(variables('kvServicesBaseUri'), '/configgen-sbconn')]",
-                        "DATAX_JobRunner:BlobConnectionString": "[concat(variables('kvServicesBaseUri'), '/configgen', parameters('sparkStorageAccountName'), '-blobconnectionstring')]",
+                        "DATAX_JobRunner:BlobConnectionString": "[concat(variables('kvServicesBaseUri'), '/configgen-', parameters('sparkStorageAccountName'), '-blobconnectionstring')]",
                         "DATAX_JobRunner:AppInsightsIntrumentationKey": "configgen-aiInstrumentationKey",
                         "DATAX_JobRunner:ActiveQueueName": "[parameters('activeQueueName')]",
                         "DATAX_JobRunner:PrimaryQueueName": "[parameters('primaryQueueName')]",
