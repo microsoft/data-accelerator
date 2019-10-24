@@ -469,7 +469,6 @@
                     ],
                     "properties": {
                         "ASPNETCORE_DETAILEDERRORS": "[parameters('aspNetCoreDetailedErrorsEnabled')]",
-                        "WEBSITE_RUN_FROM_PACKAGE": "1",
                         "DATAX_JobRunner:ServiceUrl": "[parameters('serviceUrl')]",
                         "DATAX_JobRunner:SparkType": "[parameters('sparkType')]",
                         "DATAX_JobRunner:ServiceKeyVaultName": "[parameters('kvServicesName')]",
@@ -485,7 +484,7 @@
                         "DATAX_JobRunner:AppInsightsIntrumentationKey": "configgen-aiInstrumentationKey",
                         "DATAX_JobRunner:ActiveQueueName": "[parameters('activeQueueName')]",
                         "DATAX_JobRunner:PrimaryQueueName": "[parameters('primaryQueueName')]",
-                        "DATAX_JobRunner:TestQueueName": "[parameters('testQueueName'])",
+                        "DATAX_JobRunner:TestQueueName": "[parameters('testQueueName')]",
                         "DATAX_JobRunner:EvenHubConnectionString": "[concat(variables('kvSparkBaseUri'), '/scenariotest-input-eventhubconnectionstring')]",
                         "DATAX_JobRunner:NormalizationSnippet": "[parameters('normalizationSnippet')]",
                         "DATAX_JobRunner:BlobUri": "[parameters('blobUri')]",
