@@ -277,6 +277,46 @@
             }
         },
         {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(parameters('kvSparkName'), '/', 'scenariotest-info-databricksToken')]",
+            "comments": "Add databricks token to the keyvault",
+            "apiVersion": "2015-06-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+              "value": "[parameters('databricksToken')]"
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(parameters('kvSparkName'), '/', 'scenariotest-input-eventhubconnectionstring')]",
+            "comments": "Connection string to event hub used for scenarios",
+            "apiVersion": "2015-06-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+              "value": "[parameters('eventHubConnectionString')]"
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(parameters('kvSparkName'), '/', 'scenariotest-jarpath-udfsample')]",
+            "comments": "Connection uri to udf sample",
+            "apiVersion": "2015-06-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+              "value": "[parameters('udfSampleUri')]"
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(parameters('kvSparkName'), '/', 'scenariotest-referencedata-devicesdata')]",
+            "comments": "Connection uri to devices reference data",
+            "apiVersion": "2015-06-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+              "value": "[parameters('referenceDataUri')]"
+            }
+        },
+        {
             "type": "Microsoft.ServiceBus/namespaces",
             "apiVersion": "2017-04-01",
             "name": "[variables('sbNamespace')]",

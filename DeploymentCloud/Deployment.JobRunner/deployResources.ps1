@@ -10,7 +10,9 @@ param(
     [string]
     $appSecretKey,
     [string]
-    $flowName='scenariotest'
+    $flowName='scenariotest',
+    [string]
+    $skipServerCertificateValidation='false'
 )
 Import-Module ./utilities.psm1
 
@@ -59,6 +61,7 @@ $params = @{
     databricksToken = $stInfo.databricksToken
     referenceDataUri = $stInfo.referenceDataUri
     udfSampleUri = $stInfo.udfSampleUri
+    skipServerCertificateValidation = $skipServerCertificateValidation
 }
 
 $templateName = $flowName
