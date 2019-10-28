@@ -173,6 +173,27 @@
             "metadata": {
                 "description": "Specifies the permissions to secrets in the vault. Valid values are: all, get, list, set, delete, backup, restore, recover, and purge."
             }
+        },
+        "eventHubConnectionStringKVName": {
+            "type": "string"
+        },
+        "referenceDataKVName": {
+            "type": "string"
+        },
+        "udfSampleKVName": {
+            "type": "string"
+        },
+        "databricksTokenKVName": {
+            "type": "string"
+        },
+        "clientIdKVName": {
+            "type": "string"
+        },
+        "secretKeyKVName": {
+            "type": "string"
+        },
+        "testClientId": {
+            "type": "string"
         }
     },
     "variables": {
@@ -208,7 +229,7 @@
     "resources": [
         {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('kvServicesName'), '/', 'configgen-testClientId')]",
+            "name": "[concat(parameters('kvServicesName'), '/', parameters('testClientId'))]",
             "comments": "Api client id that will be whitelisted in gateway",
             "apiVersion": "2015-06-01",
             "location": "[resourceGroup().location]",
@@ -218,7 +239,7 @@
         },
         {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('kvServicesName'), '/', 'configgen-scenarioTester-clientId')]",
+            "name": "[concat(parameters('kvServicesName'), '/', parameters('clientIdKVName'))]",
             "comments": "Api client id that scenario tester uses to make api calls",
             "apiVersion": "2015-06-01",
             "location": "[resourceGroup().location]",
@@ -228,7 +249,7 @@
         },
         {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('kvServicesName'), '/', 'configgen-scenarioTester-secretKey')]",
+            "name": "[concat(parameters('kvServicesName'), '/', parameters('secretKeyKVName'))]",
             "comments": "Api secret key that scenario tester uses to make api calls",
             "apiVersion": "2015-06-01",
             "location": "[resourceGroup().location]",
@@ -237,8 +258,9 @@
             }
         },
         {
+            "condition": "[DataX.isDatabricksType(parameters('sparkType'))]",
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('kvServicesName'), '/', 'scenariotest-info-databricksToken')]",
+            "name": "[concat(parameters('kvServicesName'), '/', parameters('databricksTokenKVName'))]",
             "comments": "Add databricks token to the keyvault",
             "apiVersion": "2015-06-01",
             "location": "[resourceGroup().location]",
@@ -248,7 +270,7 @@
         },
         {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('kvServicesName'), '/', 'scenariotest-input-eventhubconnectionstring')]",
+            "name": "[concat(parameters('kvServicesName'), '/', parameters('eventHubConnectionStringKVName'))]",
             "comments": "Connection string to event hub used for scenarios",
             "apiVersion": "2015-06-01",
             "location": "[resourceGroup().location]",
@@ -258,7 +280,7 @@
         },
         {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('kvServicesName'), '/', 'scenariotest-jarpath-udfsample')]",
+            "name": "[concat(parameters('kvServicesName'), '/', parameters('udfSampleKVName'))]",
             "comments": "Connection uri to udf sample",
             "apiVersion": "2015-06-01",
             "location": "[resourceGroup().location]",
@@ -268,7 +290,7 @@
         },
         {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('kvServicesName'), '/', 'scenariotest-referencedata-devicesdata')]",
+            "name": "[concat(parameters('kvServicesName'), '/', parameters('referenceDataKVName'))]",
             "comments": "Connection uri to devices reference data",
             "apiVersion": "2015-06-01",
             "location": "[resourceGroup().location]",
@@ -277,8 +299,9 @@
             }
         },
         {
+            "condition": "[DataX.isDatabricksType(parameters('sparkType'))]",
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('kvSparkName'), '/', 'scenariotest-info-databricksToken')]",
+            "name": "[concat(parameters('kvSparkName'), '/', parameters('databricksTokenKVName'))]",
             "comments": "Add databricks token to the keyvault",
             "apiVersion": "2015-06-01",
             "location": "[resourceGroup().location]",
@@ -288,7 +311,7 @@
         },
         {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('kvSparkName'), '/', 'scenariotest-input-eventhubconnectionstring')]",
+            "name": "[concat(parameters('kvSparkName'), '/', parameters('eventHubConnectionStringKVName'))]",
             "comments": "Connection string to event hub used for scenarios",
             "apiVersion": "2015-06-01",
             "location": "[resourceGroup().location]",
@@ -298,7 +321,7 @@
         },
         {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('kvSparkName'), '/', 'scenariotest-jarpath-udfsample')]",
+            "name": "[concat(parameters('kvSparkName'), '/', parameters('udfSampleKVName'))]",
             "comments": "Connection uri to udf sample",
             "apiVersion": "2015-06-01",
             "location": "[resourceGroup().location]",
@@ -308,7 +331,7 @@
         },
         {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('kvSparkName'), '/', 'scenariotest-referencedata-devicesdata')]",
+            "name": "[concat(parameters('kvSparkName'), '/', parameters('referenceDataKVName'))]",
             "comments": "Connection uri to devices reference data",
             "apiVersion": "2015-06-01",
             "location": "[resourceGroup().location]",

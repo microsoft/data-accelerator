@@ -10,6 +10,8 @@ param(
     [string]
     $appSecretKey,
     [string]
+    $kvBaseNamePrefix='configgen',
+    [string]
     $flowName='scenariotest',
     [string]
     $skipServerCertificateValidation='false'
@@ -19,6 +21,8 @@ Import-Module ./utilities.psm1
 $ErrorActionPreference = "stop"
 
 Push-Location $PSScriptRoot
+
+$scenarioTestKVBaseName = $flowName
 
 $jobRunnerBasePath = $PSScriptRoot
 $resourcesPath = $jobRunnerBasePath + "\Resources"
@@ -39,7 +43,10 @@ $appAccInfo = Get-AppInfo -applicationId $applicationId -tenantName $tenantName
 $stInfo = Get-ScenarioTesterInfo `
     -subscriptionId $subscriptionId `
     -resourceGroupName $resourceGroupName `
-    -flowName $flowName
+    -flowName $flowName `
+    -scenarioTestKVBaseName $scenarioTestKVBaseName
+
+$kvInfo = Get-KVKeyInfo -baseNamePrefix $kvBaseNamePrefix
 
 $params = @{
     tenantId = $tenantId
@@ -62,6 +69,13 @@ $params = @{
     referenceDataUri = $stInfo.referenceDataUri
     udfSampleUri = $stInfo.udfSampleUri
     skipServerCertificateValidation = $skipServerCertificateValidation
+    eventHubConnectionStringKVName = $stInfo.eventHubConnectionStringKVName
+    referenceDataKVName = $stInfo.referenceDataKVName
+    udfSampleKVName = $stInfo.udfSampleKVName
+    databricksTokenKVName = $stInfo.databricksTokenKVName
+    secretKeyKVName = $kvInfo.secretKeyKVName
+    clientIdKVName = $kvInfo.clientIdKVName
+    testClientId = $kvInfo.testClientId
 }
 
 $templateName = $flowName

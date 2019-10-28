@@ -101,7 +101,8 @@ function Get-ScenarioTesterInfo
     param(
         [string]$subscriptionId, 
         [string]$resourceGroupName,
-        [string]$flowName
+        [string]$flowName,
+        [string]$scenarioTestKVBaseName
     )
     $blobContainerName="samples"
     $blobPath="iotdevice/ScenarioTest.json"
@@ -183,15 +184,19 @@ function Get-ScenarioTesterInfo
         $kvSparkBase = "keyvault://$kvSparkName"
     }
 
+    $eventHubConnectionStringKVName = "${scenarioTestKVBaseName}-input-eventhubconnectionstring"
+    $referenceDataKVName = "${scenarioTestKVBaseName}-referencedata-devicesdata"
+    $udfSampleKVName = "${scenarioTestKVBaseName}-jarpath-udfsample"
+
     $jsonInputFilePath = $PSScriptRoot + "\" + $jsonFileName
     $scenarioTestJson = Get-Content -Raw -Path $jsonInputFilePath
     $scenarioTestJson = $scenarioTestJson.Replace('$flowName', $flowName)
     $scenarioTestJson = $scenarioTestJson.Replace('$eventHubName', $eventHubName)
     $scenarioTestJson = $scenarioTestJson.Replace('$eventHubType', $eventHubType)
-    $scenarioTestJson = $scenarioTestJson.Replace('$referenceDataUri', "$kvSparkBase/scenariotest-referencedata-devicesdata")
-    $scenarioTestJson = $scenarioTestJson.Replace('$udfSampleUri', "$kvSparkBase/scenariotest-jarpath-udfsample")
+    $scenarioTestJson = $scenarioTestJson.Replace('$referenceDataUri', "$kvSparkBase/$referenceDataKVName")
+    $scenarioTestJson = $scenarioTestJson.Replace('$udfSampleUri', "$kvSparkBase/$udfSampleKVName")
     $scenarioTestJson = $scenarioTestJson.Replace('$subscriptionId', $subscriptionId)
-    $scenarioTestJson = $scenarioTestJson.Replace('$eventHubConnectionString', "$kvSparkBase/scenariotest-input-eventhubconnectionstring")
+    $scenarioTestJson = $scenarioTestJson.Replace('$eventHubConnectionString', "$kvSparkBase/$eventHubConnectionStringKVName")
     if($sparkType.Equals("databricks")) 
     {
         $scenarioTestJson = $scenarioTestJson.Replace('$databricksToken', $databricksToken)
@@ -221,6 +226,22 @@ function Get-ScenarioTesterInfo
         kvSparkName = $kvSparkName
         kvServicesName = $kvServicesName
         sparkStorageAccountName = $sparkStorageAccountName
+        eventHubConnectionStringKVName = $eventHubConnectionStringKVName
+        referenceDataKVName = $referenceDataKVName
+        udfSampleKVName = $udfSampleKVName
+        databricksTokenKVName = "${scenarioTestKVBaseName}-info-databricksToken"
+    }
+}
+
+function Get-KVKeyInfo {
+    param(
+        [string]$baseNamePrefix
+    )
+
+    return @{
+        testClientId = "$baseNamePrefix-testClientId"
+        secretKeyKVName = "$baseNamePrefix-scenarioTester-secretKey"
+        clientIdKVName = "$baseNamePrefix-scenarioTester-clientId"
     }
 }
 
