@@ -1,0 +1,67 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- master
+
+jobs:
+- job: build
+  pool:
+    vmImage: 'windows-latest'
+
+  steps:
+  - task: NuGetToolInstaller@1
+    displayName: 'Use NuGet 4.4.1'
+    inputs:
+      versionSpec: 4.4.1
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore'
+
+  - task: VSBuild@1
+    displayName: 'Build solution Services/DataX.Flow/DataX.Flow.sln'
+    inputs:
+      solution: 'Services/DataX.Flow/DataX.Flow.sln'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact'
+    inputs:
+      PathtoPublish: '$(build.sourcesdirectory)'
+      ArtifactName: 'inferinput'
+      publishLocation: 'Container'
+
+- job: run_infer
+  # TODO: Replace with the previous job name.
+  dependsOn: build
+  pool:
+    # Microsoft-hosted Windows pools only support Windows containers, but Infer requires Linux, so is its Docker image.
+    vmImage: 'ubuntu-16.04'
+  container:
+    image: infersharpimages.azurecr.io/infersharp/release:latest
+    endpoint: infersharpimages-pull-connection
+    
+  steps:
+  # Download your build binaries from the publish location specified above.
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download binaries'
+    inputs:
+      buildType: 'current'
+      downloadType: 'single'
+      artifactName: 'inferinput'
+      downloadPath: '$(System.ArtifactsDirectory)'
+
+  # Run Infer analysis.
+  - script: |
+      sudo dotnet /app/Cilsil/bin/Debug/netcoreapp2.2/Cilsil.dll translate $(System.ArtifactsDirectory)/inferinput/ --outcfg $(Build.ArtifactStagingDirectory)/cfg.json --outtenv $(Build.ArtifactStagingDirectory)/tenv.json
+      sudo infer capture
+      sudo mkdir infer-out/captured
+      sudo infer analyzejson --debug --cfg-json $(Build.ArtifactStagingDirectory)/cfg.json --tenv-json $(Build.ArtifactStagingDirectory)/tenv.json
+      sudo chmod -R 777 $(Build.SourcesDirectory)/infer-out/
+      sudo dotnet /app/InferTelemetrySender/InferTelemetrySender/bin/Debug/netcoreapp2.2/InferTelemetrySender.dll $(Build.ArtifactStagingDirectory)/cfg.json $(Build.ArtifactStagingDirectory)/tenv.json $(Build.SourcesDirectory)/infer-out/bugs.txt $(Build.Repository.Name) $(Build.BuildId)
+    displayName: 'Run Infer analysis'
+
+  # Display Infer analysis result.
+  - script: cat $(Build.SourcesDirectory)/infer-out/bugs.txt
+    displayName: 'Infer analysis result'
