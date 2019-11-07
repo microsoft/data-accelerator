@@ -37,7 +37,8 @@ namespace JobRunner.Jobs
                 DataXHost.InitializeKernel,
                 DataXHost.RefreshSampleAndKernel,
                 DataXHost.RefreshKernel,
-                DataXHost.RefreshSample
+                DataXHost.RefreshSample,
+                DataXHost.DeleteKernel
                );
         }
         /// <summary>
@@ -57,6 +58,7 @@ namespace JobRunner.Jobs
             using (var context = new ScenarioContext())
             {
                 context[Context.ServiceUrl] = _config.ServiceUrl;
+                context[Context.SkipServerCertificateValidation] = _config.SkipServerCertificateValidation;
                 context[Context.ApplicationId] = KeyVault.GetSecretFromKeyvault(_config.ApplicationId);
                 context[Context.ApplicationIdentifierUri] = _config.ApplicationIdentifierUri;
                 context[Context.SecretKey] = KeyVault.GetSecretFromKeyvault(_config.SecretKey);
@@ -66,14 +68,6 @@ namespace JobRunner.Jobs
                 context[Context.IsIotHub] = _config.IsIotHub;
                 context[Context.Seconds] = _config.Seconds;
                 context[Context.FlowName] = _config.FlowName;
-                if (_config.SparkType == "databricks")
-                {
-                    context[Context.DataBricksToken] = KeyVault.GetSecretFromKeyvault(_config.DatabricksToken);
-                }
-                else
-                {
-                    context[Context.DataBricksToken] = "";
-                }
                 context[Context.SparkType] = _config.SparkType;
                 context[Context.FlowConfigContent] = await Task.Run(() => BlobUtility.GetBlobContent(KeyVault.GetSecretFromKeyvault(_config.BlobConnectionString), _config.BlobUri));
                 context[Context.NormalizationSnippet] = JsonConvert.SerializeObject(_config.NormalizationSnippet);

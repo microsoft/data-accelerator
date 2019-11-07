@@ -4,10 +4,6 @@
 // *********************************************************************
 using ScenarioTester;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Text;
-using System.Threading.Tasks;
 using DataXScenarios;
 
 namespace DataX.ServerScenarios
@@ -17,107 +13,134 @@ namespace DataX.ServerScenarios
     /// </summary>
     public partial class DataXHost
     {
+        /// <summary>
+        /// Creating a helper function for constructing GetInferSchemaJson
+        /// </summary>
+        /// <returns></returns>
+        public static string GetInferSchemaJson(ContextHelper helper)
+        {
+            string flowName = helper.GetContextValue<string>(Context.FlowName);
+            string eventHubConnectionString = helper.GetContextValue<string>(Context.EventhubConnectionString);
+            string eventHubName = helper.GetContextValue<string>(Context.EventHubName);
+            string seconds = helper.GetContextValue<string>(Context.Seconds);
+            return helper.SetContextValue(Context.InferSchemaInputJson,
+                $"{{\"name\": \"{flowName}\", \"userName\": \"{flowName}\", \"eventhubConnectionString\": \"{eventHubConnectionString}\", \"eventHubNames\": \"{eventHubName}\", \"inputType\": \"iothub\", \"seconds\": \"{seconds}\"}}"
+            );
+        }
+
+        /// <summary>
+        /// Creating a helper function for constructing the InitializeKernelJson
+        /// </summary>
+        /// <returns></returns>
+        public static string GetInitializeKernelJson(ContextHelper helper)
+        {
+            string flowName = helper.GetContextValue<string>(Context.FlowName);
+            string eventHubConnectionString = helper.GetContextValue<string>(Context.EventhubConnectionString);
+            string eventHubName = helper.GetContextValue<string>(Context.EventHubName);
+            string inputSchema = helper.GetContextValue<string>(Context.InputSchema);
+            string kernelId = helper.GetContextValue<string>(Context.KernelId);
+            string normalizationSnippet = helper.GetContextValue<string>(Context.NormalizationSnippet);
+            return helper.SetContextValue(Context.InitializeKernelJson,
+                $"{{\"name\": \"{flowName}\", \"userName\": \"{flowName}\", \"eventhubConnectionString\": \"{eventHubConnectionString}\", \"eventHubNames\": \"{eventHubName}\", \"inputType\": \"iothub\", \"inputSchema\": {inputSchema}, \"kernelId\": \"{kernelId}\", \"normalizationSnippet\": {normalizationSnippet}}}"
+            );
+        }
+
+        /// <summary>
+        /// Create a helper function for constructing the DeleteKernelJson
+        /// </summary>
+        /// <returns></returns>
+        public static string GetDeleteKernelJson(ContextHelper helper)
+        {
+            string kernelId = helper.GetContextValue<string>(Context.KernelId);
+            string flowName = helper.GetContextValue<string>(Context.FlowName);
+            return helper.SetContextValue(Context.DeleteKernelJson,
+                $"{{\"kernelId\": \"{kernelId}\", \"name\": \"{flowName}\"}}"
+            );
+        }
+
         [Step("inferSchema")]
         public static StepResult InferSchema(ScenarioContext context)
         {
-            var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.SchemaInferenceService/inputdata/inferschema";
-            context[Context.InferSchemaInputJson] = $"{{\"name\": \"{context[Context.FlowName] as string}\", \"userName\": \"{context[Context.FlowName] as string}\", \"eventhubConnectionString\": \"{context[Context.EventhubConnectionString] as string}\", \"eventHubNames\": \"{context[Context.EventHubName] as string}\", \"inputType\": \"iothub\", \"seconds\": \"{context[Context.Seconds] as string}\", \"databricksToken\": \"{context[Context.DataBricksToken] as string}\"}}";
-            string jsonResult = Request.Post(baseAddress,
-                    RequestContent.EncodeAsJson(
-                        JObject.Parse(context[Context.InferSchemaInputJson] as string)),
-                    context[Context.AuthToken] as string);
-            dynamic result = JObject.Parse(jsonResult);
-            context[Context.InputSchema] = JsonConvert.SerializeObject((string)result.result.Schema);
-            return new StepResult(!string.IsNullOrWhiteSpace(context[Context.InputSchema] as string),
-                nameof(InferSchema),
-                $"Inferring Schema '{context[Context.InputSchema]}' ");
+            ContextHelper helper = new ContextHelper(context);
+            var baseAddress = helper.CreateUrl(ScenarioUri.InferSchema);
+            dynamic result = helper.DoHttpPostJsonObject(baseAddress, GetInferSchemaJson(helper));
+            string inputSchema = JsonConvert.SerializeObject(result.result.Schema.ToString());
+            helper.SetContextValue<string>(Context.InputSchema, inputSchema);
+            return new StepResult(
+                success: !string.IsNullOrWhiteSpace(inputSchema),
+                description: nameof(InferSchema),
+                result: $"Inferring Schema '{inputSchema}' ");
         }
 
         [Step("initializeKernel")]
         public static StepResult InitializeKernel(ScenarioContext context)
         {
-            var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.InteractiveQueryService/kernel";
-
-            Helper helper = new Helper();
-            context[Context.InitializeKernelJson] = helper.GetInitializeKernelJson(context);
-            string jsonResult = Request.Post(baseAddress,
-                    RequestContent.EncodeAsJson(
-                        JObject.Parse(context[Context.InitializeKernelJson] as string)),
-                    context[Context.AuthToken] as string);
-
-            dynamic result = JObject.Parse(jsonResult);
-            context[Context.KernelId] = (string)result.result.result;
-
-            context[Context.InitializeKernelJson] = helper.GetInitializeKernelJson(context);
-
-
-            return new StepResult(!(string.IsNullOrWhiteSpace(context[Context.KernelId] as string) && (string) result.result.message==""),
-                nameof(InitializeKernel),
-                $"Initialize a kernel '{context[Context.KernelId]}' ");
+            ContextHelper helper = new ContextHelper(context);
+            var baseAddress = helper.CreateUrl(ScenarioUri.initializeKernel);
+            dynamic result = helper.DoHttpPostJsonObject(baseAddress, GetInitializeKernelJson(helper));
+            string kernelId = result.result.result.ToString();
+            string message = result.result.message.ToString();
+            helper.SetContextValue<string>(Context.KernelId, kernelId);
+            return new StepResult(
+                success: !(string.IsNullOrWhiteSpace(kernelId) && message == ""),
+                description: nameof(InitializeKernel),
+                result: $"Initialize a kernel '{kernelId}' ");
         }
 
         [Step("refreshKernel")]
         public static StepResult RefreshKernel(ScenarioContext context)
         {
-            var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.InteractiveQueryService/kernel/refresh";
-            
-            string jsonResult = Request.Post(baseAddress,
-                    RequestContent.EncodeAsJson(
-                        JObject.Parse(context[Context.InitializeKernelJson] as string)),
-                    context[Context.AuthToken] as string);
-
-            dynamic result = JObject.Parse(jsonResult);
-            context[Context.KernelId] = (string)result.result.result;
-            return new StepResult(!(string.IsNullOrWhiteSpace(context[Context.KernelId] as string) && (string)result.result.message == ""),
-                nameof(RefreshKernel),
-                $"Refresh the kernel '{context[Context.KernelId]}' ");
+            ContextHelper helper = new ContextHelper(context);
+            var baseAddress = helper.CreateUrl(ScenarioUri.RefreshKernel);
+            dynamic result = helper.DoHttpPostJsonObject(baseAddress, GetInitializeKernelJson(helper));
+            string kernelId = result.result.result.ToString();
+            string message = result.result.message.ToString();
+            helper.SetContextValue<string>(Context.KernelId, kernelId);
+            return new StepResult(
+                success: !(string.IsNullOrWhiteSpace(kernelId) && message == ""),
+                description: nameof(RefreshKernel),
+                result: $"Refresh the kernel '{kernelId}' ");
         }
 
         [Step("refreshSample")]
         public static StepResult RefreshSample(ScenarioContext context)
         {
-            var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.SchemaInferenceService/inputdata/refreshsample";
-            
-            string jsonResult = Request.Post(baseAddress,
-                    RequestContent.EncodeAsJson(
-                        JObject.Parse(context[Context.InferSchemaInputJson] as string)),
-                    context[Context.AuthToken] as string);
-            dynamic result = JObject.Parse(jsonResult);
-            return new StepResult(((string)result.result).Contains("success"),
-                nameof(RefreshSample),
-                $"Refreshing Sample");
+            ContextHelper helper = new ContextHelper(context);
+            var baseAddress = helper.CreateUrl(ScenarioUri.RefreshSample);
+            dynamic result = helper.DoHttpPostJsonObject(baseAddress, GetInferSchemaJson(helper));
+            string response = result.result.ToString();
+            return new StepResult(
+                success: response.Contains("success"),
+                description: nameof(RefreshSample),
+                result: $"Refreshing Sample");
         }
 
         [Step("refreshSampleAndKernel")]
         public static StepResult RefreshSampleAndKernel(ScenarioContext context)
         {
-            var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.LiveDataService/inputdata/refreshsampleandkernel";
-            context[Context.InitializeKernelJson] = new Helper().GetInitializeKernelJson(context);
-
-            string jsonResult = Request.Post(baseAddress,
-                    RequestContent.EncodeAsJson(
-                        JObject.Parse(context[Context.InitializeKernelJson] as string)),
-                    context[Context.AuthToken] as string);
-
-            dynamic result = JObject.Parse(jsonResult);
-            context[Context.KernelId] = (string)result.result.result;
-            return new StepResult(!(string.IsNullOrWhiteSpace(context[Context.KernelId] as string) && (string)result.result.message == ""),
-                nameof(RefreshSampleAndKernel),
-                $"Refresh the sample and kernel '{context[Context.KernelId]}' ");
+            ContextHelper helper = new ContextHelper(context);
+            var baseAddress = helper.CreateUrl(ScenarioUri.RefreshSampleAndKernel);
+            dynamic result = helper.DoHttpPostJsonObject(baseAddress, GetInitializeKernelJson(helper));
+            string kernelId = result.result.result.ToString();
+            string message = result.result.message.ToString();
+            helper.SetContextValue<string>(Context.KernelId, kernelId);
+            return new StepResult(
+                success: !(string.IsNullOrWhiteSpace(kernelId) && message == ""),
+                description: nameof(RefreshSampleAndKernel),
+                result: $"Refresh the sample and kernel '{kernelId}' ");
         }
 
         [Step("deleteKernel")]
         public static StepResult DeleteKernel(ScenarioContext context)
         {
-            var baseAddress = $"{context[Context.ServiceUrl] as string}/api/DataX.Flow/Flow.InteractiveQueryService/kernel/delete";
-            string json = JsonConvert.SerializeObject((string)context[Context.KernelId]);
-            string jsonResult = Request.Post(baseAddress,
-                    new RequestContent(Encoding.UTF8.GetBytes(json), "application/json"),
-                    context[Context.AuthToken] as string);
-            dynamic result = JObject.Parse(jsonResult);
-            return new StepResult(((string)result.result).Contains("Success"),
-                nameof(DeleteKernel),
-                $"Delete the kernel '{context[Context.KernelId]}' ");
+            ContextHelper helper = new ContextHelper(context);
+            var baseAddress = helper.CreateUrl(ScenarioUri.DeleteKernel);
+            dynamic result = helper.DoHttpPostJsonObject(baseAddress, GetDeleteKernelJson(helper));
+            string response = result.result.ToString();
+            return new StepResult(
+                success: response.Contains("Success"),
+                description: nameof(DeleteKernel),
+                result: $"Delete the kernel '{helper.GetContextValue<string>(Context.KernelId)}' ");
         }
 
     }
