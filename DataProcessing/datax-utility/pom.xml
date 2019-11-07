@@ -51,7 +51,7 @@ SOFTWARE
 
     <groupId>com.microsoft.datax</groupId>
     <artifactId>datax-utility_2.4_2.11</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.2-SNAPSHOT</version>
 
     <properties>
         <spark.version>2.4.0</spark.version>
@@ -120,7 +120,7 @@ SOFTWARE
         <dependency>
             <groupId>com.microsoft.datax</groupId>
             <artifactId>datax-core_2.4_2.11</artifactId>
-            <version>1.2.0-SNAPSHOT</version>
+            <version>1.2.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
@@ -130,7 +130,7 @@ SOFTWARE
         <dependency>
             <groupId>com.microsoft.datax</groupId>
             <artifactId>datax-keyvault_2.4_2.11</artifactId>
-            <version>1.2.0-SNAPSHOT</version>
+            <version>1.2.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
