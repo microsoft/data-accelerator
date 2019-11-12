@@ -54,7 +54,10 @@ jobs:
   
   # Run Infer analysis.
   - script: |
-      sudo dotnet /app/Cilsil/bin/Debug/netcoreapp2.2/Cilsil.dll translate $(System.ArtifactsDirectory)/inferinput/ --outcfg $(Build.ArtifactStagingDirectory)/cfg.json --outtenv $(Build.ArtifactStagingDirectory)/tenv.json
+      sudo dotnet /app/BinaryFilter/BinaryFilter/bin/Debug/netcoreapp2.2/BinaryFilter.dll $(Build.SourcesDirectory) $(System.ArtifactsDirectory)/inferinput $(System.ArtifactsDirectory)/binaryPaths.txt
+      binaryPaths=`cat $(System.ArtifactsDirectory)/binaryPaths.txt`
+      echo "$binaryPaths"
+      sudo dotnet /app/Cilsil/bin/Debug/netcoreapp2.2/Cilsil.dll translate $binaryPaths --outcfg $(Build.ArtifactStagingDirectory)/cfg.json --outtenv $(Build.ArtifactStagingDirectory)/tenv.json
       sudo infer capture
       sudo mkdir infer-out/captured
       sudo infer analyzejson --debug --cfg-json $(Build.ArtifactStagingDirectory)/cfg.json --tenv-json $(Build.ArtifactStagingDirectory)/tenv.json
