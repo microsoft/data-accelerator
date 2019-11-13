@@ -58,9 +58,11 @@ jobs:
       sudo dotnet /app/BinaryFilter/BinaryFilter/bin/Debug/netcoreapp2.2/BinaryFilter.dll $(Build.SourcesDirectory) $(System.ArtifactsDirectory)/inferinput $(System.ArtifactsDirectory)/binaryPaths.txt
       binaryPaths=`cat $(System.ArtifactsDirectory)/binaryPaths.txt`
       echo "$binaryPaths"
-      echo "Copy binaries to infer folder..."
-      sudo cp $binaryPaths $(System.ArtifactsDirectory)/infer
-      echo "Run InferSharp translation..."
+      echo "Copy binaries to another folder..."
+      sudo mkdir -p $(System.ArtifactsDirectory)/infer
+      sudo cp $binaryPaths $(System.ArtifactsDirectory)/infer/
+      sudo chmod -R 777 $(System.ArtifactsDirectory)/infer/
+      echo "Run InferSharp translation..."      
       sudo dotnet /app/Cilsil/bin/Debug/netcoreapp2.2/Cilsil.dll translate $(System.ArtifactsDirectory)/infer --outcfg $(Build.ArtifactStagingDirectory)/cfg.json --outtenv $(Build.ArtifactStagingDirectory)/tenv.json
       sudo infer capture
       sudo mkdir infer-out/captured
