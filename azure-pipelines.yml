@@ -62,8 +62,9 @@ jobs:
       sudo mkdir -p $(System.ArtifactsDirectory)/infer
       sudo cp $binaryPaths $(System.ArtifactsDirectory)/infer/
       sudo chmod -R 777 $(System.ArtifactsDirectory)/infer/
+      sudo ls $(System.ArtifactsDirectory)/infer/
       echo "Run InferSharp translation..."      
-      sudo dotnet /app/Cilsil/bin/Debug/netcoreapp2.2/Cilsil.dll translate $(System.ArtifactsDirectory)/infer --outcfg $(Build.ArtifactStagingDirectory)/cfg.json --outtenv $(Build.ArtifactStagingDirectory)/tenv.json
+      sudo dotnet /app/Cilsil/bin/Debug/netcoreapp2.2/Cilsil.dll translate $(System.ArtifactsDirectory)/infer/ --outcfg $(Build.ArtifactStagingDirectory)/cfg.json --outtenv $(Build.ArtifactStagingDirectory)/tenv.json
       sudo infer capture
       sudo mkdir infer-out/captured
       echo "Run Infer..."
