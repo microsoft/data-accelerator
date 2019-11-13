@@ -54,12 +54,17 @@ jobs:
   
   # Run Infer analysis.
   - script: |
+      echo "Exclude third party libraries..."
       sudo dotnet /app/BinaryFilter/BinaryFilter/bin/Debug/netcoreapp2.2/BinaryFilter.dll $(Build.SourcesDirectory) $(System.ArtifactsDirectory)/inferinput $(System.ArtifactsDirectory)/binaryPaths.txt
       binaryPaths=`cat $(System.ArtifactsDirectory)/binaryPaths.txt`
       echo "$binaryPaths"
-      sudo dotnet /app/Cilsil/bin/Debug/netcoreapp2.2/Cilsil.dll translate $binaryPaths --outcfg $(Build.ArtifactStagingDirectory)/cfg.json --outtenv $(Build.ArtifactStagingDirectory)/tenv.json
+      echo "Copy binaries to infer folder..."
+      sudo cp $binaryPaths $(System.ArtifactsDirectory)/infer
+      echo "Run InferSharp translation..."
+      sudo dotnet /app/Cilsil/bin/Debug/netcoreapp2.2/Cilsil.dll translate $(System.ArtifactsDirectory)/infer --outcfg $(Build.ArtifactStagingDirectory)/cfg.json --outtenv $(Build.ArtifactStagingDirectory)/tenv.json
       sudo infer capture
       sudo mkdir infer-out/captured
+      echo "Run Infer..."
       sudo infer analyzejson --debug --cfg-json $(Build.ArtifactStagingDirectory)/cfg.json --tenv-json $(Build.ArtifactStagingDirectory)/tenv.json
       sudo chmod -R 777 $(Build.SourcesDirectory)/infer-out/
       sudo dotnet /app/InferTelemetrySender/InferTelemetrySender/bin/Debug/netcoreapp2.2/InferTelemetrySender.dll $(Build.ArtifactStagingDirectory)/cfg.json $(Build.ArtifactStagingDirectory)/tenv.json $(Build.SourcesDirectory)/infer-out/bugs.txt $(Build.Repository.Name) $(Build.BuildId)
