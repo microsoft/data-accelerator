@@ -28,7 +28,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact'
     inputs:
-      PathtoPublish: '$(build.sourcesdirectory)'
+      PathtoPublish: '$(build.sourcesdirectory)/Services/DataX.Flow'
       ArtifactName: 'inferinput'
       publishLocation: 'Container'
 
