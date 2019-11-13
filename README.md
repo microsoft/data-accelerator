@@ -31,7 +31,8 @@ We have also enabled a "hello world" experience that you try out locally by runn
 To run Data Accelerator locally, [deploy locally](https://github.com/Microsoft/data-accelerator/wiki/Local-mode-with-Docker) and then check out the [local mode tutorials](https://github.com/Microsoft/data-accelerator/wiki/Tutorials#local-mode).<br/>
 
 Data Accelerator for Spark runs on the following:
- - HDInsights with Spark 2.4 (2.3 also supported)
+ - Azure HDInsight with Spark 2.4 (2.3 also supported)
+ - Azure Databricks with Spark 2.4
  - Service Fabric (v6.4.637.9590) with
    - .NET Core 2.2
    - ASP.NET
