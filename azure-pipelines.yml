@@ -74,6 +74,6 @@ jobs:
     displayName: 'Run Infer analysis'
   
   # Display Infer analysis result.
-  - script: cat $(Build.SourcesDirectory)/infer-out/bugs.txt
+  - script: cat $(Build.SourcesDirectory)/infer-out/bugs.txt | sed -E -e '/ANALYSIS_STOP|Bad_footprint|Missing_fld|PRECONDITION_NOT_MET|Assert_failure|CLASS_CAST_EXCEPTION|Summary of the reports/,/^[[:space:]]*$/d'
     displayName: 'Infer analysis result'
 
