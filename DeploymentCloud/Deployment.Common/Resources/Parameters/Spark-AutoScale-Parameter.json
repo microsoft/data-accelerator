@@ -58,6 +58,12 @@
 		"sparkManagedIdentity": {	
 			"value": "$sparkManagedIdentityName"	
 		},
+		"minNodesForHDInsightAutoScaling": {
+			"value": $minNodesForHDInsightAutoScaling
+		},
+		"maxNodesForHDInsightAutoScaling": {
+			"value": $maxNodesForHDInsightAutoScaling
+		},
 		"minInstanceCountSparkHeadnode": {
 			"value": $minInstanceCountSparkHeadnode
 		},

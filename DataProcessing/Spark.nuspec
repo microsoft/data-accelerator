@@ -34,6 +34,7 @@
 <file src="**\hadoop-azure-2.7.3.jar" target="lib" />
 <file src="**\jetty-util-6.1.25.jar" target="lib" />
 <file src="**\json-20180813.jar" target="lib" />
+<file src="**\json4s-jackson_2.11-3.2.11.jar" target="lib" />
 <file src="**\azure-storage-3.1.0.jar" target="lib" />
 <file src="NOTICE.txt" target="" />
   </files>

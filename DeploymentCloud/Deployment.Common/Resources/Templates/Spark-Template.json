@@ -28,6 +28,12 @@
 				"description": "HDInsight cluster version."
 			}
 		},
+		"sparkComponentVersion": {
+			"type": "string",
+			"metadata": {
+				"description": "HDInsight cluster spark component version."
+			}
+		},
 		"sparkClusterWorkerNodeCount": {
 			"type": "int",
 			"metadata": {
@@ -113,7 +119,7 @@
 				"clusterDefinition": {
 					"kind": "[parameters('sparkClusterKind')]",
 					"componentVersion": {
-						"Spark": "2.3"
+						"Spark": "[parameters('sparkComponentVersion')]"
 					},
 					"configurations": {
 						"gateway": {

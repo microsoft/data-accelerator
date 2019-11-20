@@ -148,7 +148,8 @@
 				"wasbs:///datax/bin/java-uuid-generator-3.1.5.jar",
 				"wasbs:///datax/bin/proton-j-0.31.0.jar",
 				"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar",
-				"wasbs:///datax/bin/azure-sqldb-spark-1.0.2.jar"
+				"wasbs:///datax/bin/azure-sqldb-spark-1.0.2.jar",
+				"wasbs:///datax/bin/json4s-jackson_2.11-3.2.11.jar"
 			],
 			"driverMemory": "1024m",
 			"executorCores": 2,
@@ -674,7 +675,8 @@
 							"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar",
 							"wasbs:///datax/bin/spark-streaming-kafka-0-10_2.11-2.4.0.jar",
 							"wasbs:///datax/bin/kafka-clients-2.0.0.jar",
-							"wasbs:///datax/bin/azure-sqldb-spark-1.0.2.jar"
+							"wasbs:///datax/bin/azure-sqldb-spark-1.0.2.jar",
+							"wasbs:///datax/bin/json4s-jackson_2.11-3.2.11.jar"
 				],
 				"driverMemory" : "1024m",
 				"executorCores" : 2,
@@ -1078,7 +1080,8 @@
 					"wasbs:///datax/bin/java-uuid-generator-3.1.5.jar", 
 					"wasbs:///datax/bin/proton-j-0.31.0.jar",
 					"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar",
-					"wasbs:///datax/bin/azure-sqldb-spark-1.0.2.jar"
+					"wasbs:///datax/bin/azure-sqldb-spark-1.0.2.jar",
+					"wasbs:///datax/bin/json4s-jackson_2.11-3.2.11.jar"
 				],
 				"driverMemory" : "1024m",
 				"executorCores" : 2,
