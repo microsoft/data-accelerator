@@ -95,7 +95,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                         CompressionType = rd.Properties.CompressionType,
                         ProcessStartTime = "",
                         ProcessEndTime = "",
-                        PartitionIncrement = GetPartitionIncrement(inputPath).ToString(CultureInfo.InvariantCulture),
+                        PartitionIncrement = ConfigHelper.GetPartitionIncrement(inputPath).ToString(CultureInfo.InvariantCulture),
                     };
                 }).ToArray();
 
@@ -105,38 +105,6 @@ namespace DataX.Config.ConfigGeneration.Processor
             }
 
             return "done";
-        }
-
-        private static long GetPartitionIncrement(string path)
-        {
-            Regex regex = new Regex(@"\{([yMdHhmsS\-\/.,: ]+)\}*", RegexOptions.IgnoreCase);
-            Match mc = regex.Match(path);
-
-            if (mc != null && mc.Success && mc.Groups.Count > 1)
-            {
-                var value = mc.Groups[1].Value.Trim();
-
-                value = value.Replace(@"[\/:\s-]", "", StringComparison.InvariantCultureIgnoreCase).Replace(@"(.)(?=.*\1)", "", StringComparison.InvariantCultureIgnoreCase);
-
-                if (value.Contains("h", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return 1 * 60;
-                }
-                else if (value.Contains("d", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return 1 * 60 * 24;
-                }
-                else if (value.Contains("M", StringComparison.InvariantCulture))
-                {
-                    return 1 * 60 * 24 * 30;
-                }
-                else if (value.Contains("y", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return 1 * 60 * 24 * 30 * 12;
-                }
-            }
-
-            return 1;
         }
     }
 }

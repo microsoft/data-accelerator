@@ -178,7 +178,7 @@ namespace DataX.Config.ConfigGeneration.Processor
                             }
                         case "sqlserver":
                             {
-                                var sqlOutput = await ProcessOutputSql(configName, output);
+                                var sqlOutput = await ProcessOutputSql(configName, output).ConfigureAwait(false);
                                 Ensure.EnsureNullElseThrowNotSupported(flowOutput.SqlOutput, "Multiple target Sql output for same dataset not supported.");
                                 flowOutput.SqlOutput = sqlOutput;
                                 break;
@@ -194,56 +194,16 @@ namespace DataX.Config.ConfigGeneration.Processor
             return fOutputList.ToArray();
         }
 
-        private string TransformPartitionFormat(string partitionFormat)
-        {
-            var parts = partitionFormat.Split(new char[] { ',', '/', ':', '-', ' ' });
-
-            string value = "";
-            foreach (var part in parts)
-            {
-                value = "";
-                switch (part.Substring(0, 1))
-                {
-                    case "s":
-                        value = "%1$tS";
-                        break;
-                    case "m":
-                        value = "%1$tM";
-                        break;
-                    case "h":
-                    case "H":
-                        value = "%1$tH";
-                        break;
-                    case "d":
-                        value = "%1$td";
-                        break;
-                    case "M":
-                        value = "%1$tm";
-                        break;
-                    case "y":
-                        value = "%1$ty";
-                        break;
-                    default:
-                        value = "";
-                        break;
-                }
-
-                partitionFormat = partitionFormat.Replace(part, value);
-
-            }
-
-            return partitionFormat;
-        }
-
         private async Task<FlowBlobOutputSpec> ProcessOutputBlob(string inputMode, string configName, FlowGuiOutput uiOutput)
         {
             if (uiOutput != null && uiOutput.Properties != null)
             {
                 var sparkKeyVaultName = Configuration[Constants.ConfigSettingName_RuntimeKeyVaultName];
 
-                string connectionString = await KeyVaultClient.ResolveSecretUriAsync(uiOutput.Properties.ConnectionString);
+                string connectionString = await KeyVaultClient.ResolveSecretUriAsync(uiOutput.Properties.ConnectionString).ConfigureAwait(false);
                 var accountName = ConfigHelper.ParseBlobAccountName(connectionString);
-                var timeFormat = inputMode != Constants.InputMode_Batching ? $"%1$tY/%1$tm/%1$td/%1$tH/${{quarterBucket}}/${{minuteBucket}}" : $"{TransformPartitionFormat(uiOutput.Properties.BlobPartitionFormat)}";
+                var timeFormat = ConfigHelper.GetBlobPartitionFormat(inputMode, uiOutput.Properties.BlobPartitionFormat);
+
                 var blobPath = $"wasbs://{uiOutput.Properties.ContainerName}@{accountName}.blob.core.windows.net/{uiOutput.Properties.BlobPrefix}/{timeFormat}";
                 var secretId = $"{configName}-output";
                 var sparkType = Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string value) ? value : null;
@@ -379,10 +339,10 @@ namespace DataX.Config.ConfigGeneration.Processor
 
                 string connectionString = await KeyVaultClient.ResolveSecretUriAsync(uiOutput.Properties.ConnectionString).ConfigureAwait(false);
 
-                var database = GetValueFromJdbcConnection(connectionString, "database");
-                var user = GetValueFromJdbcConnection(connectionString, "user");
-                var pwd = GetValueFromJdbcConnection(connectionString, "password");
-                var url = GetUrlFromJdbcConnection(connectionString);
+                var database = ConfigHelper.GetValueFromJdbcConnection(connectionString, "database");
+                var user = ConfigHelper.GetValueFromJdbcConnection(connectionString, "user");
+                var pwd = ConfigHelper.GetValueFromJdbcConnection(connectionString, "password");
+                var url = ConfigHelper.GetUrlFromJdbcConnection(connectionString);
 
                 var sparkType = Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string value) ? value : null;
 
@@ -409,33 +369,6 @@ namespace DataX.Config.ConfigGeneration.Processor
             else
             {
                 return null;
-            }
-        }
-
-        private string GetValueFromJdbcConnection(string connectionString, string key)
-        {
-            try
-            {
-                Match match = Regex.Match(connectionString, $"{key}=([^;]*);", RegexOptions.IgnoreCase);
-                string value = match.Groups[1].Value;
-                return value;
-            }
-            catch (Exception)
-            {
-                throw new Exception($"{key} not found in jdbc connection string");
-            }
-        }
-        private string GetUrlFromJdbcConnection(string connectionString)
-        {
-            try
-            {
-                Match match = Regex.Match(connectionString, @"jdbc:sqlserver://(.*):", RegexOptions.IgnoreCase);
-                string value = match.Groups[1].Value;
-                return value;
-            }
-            catch (Exception)
-            {
-                throw new Exception("url pattern not found in jdbc connecton string");
             }
         }
     }

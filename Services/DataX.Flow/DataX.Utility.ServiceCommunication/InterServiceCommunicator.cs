@@ -15,7 +15,7 @@ namespace DataX.Utility.ServiceCommunication
     /// <summary>
     /// Concrete implementation of inter-service communication client.
     /// </summary>
-    public class InterServiceCommunicator
+    public class InterServiceCommunicator : IDisposable
     {
         private const string _ReverseProxyPort = "19081";
         private readonly HttpClient _httpClient;
@@ -40,13 +40,27 @@ namespace DataX.Utility.ServiceCommunication
             };
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _httpClient.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
         /// <summary>
         /// Make request using reverse proxy
         /// </summary>
         /// <returns></returns>
         public virtual async Task<ApiResult> InvokeServiceAsync(HttpMethod httpMethod, string application, string service, string method, Dictionary<string, string> headers = null, string content = null)
         {
-            return await InvokeServiceAsAsyncHelper(httpMethod, application, service, method, headers, content);
+            return await InvokeServiceAsAsyncHelper(httpMethod, application, service, method, headers, content).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -82,7 +96,7 @@ namespace DataX.Utility.ServiceCommunication
             HttpResponseMessage response = null;
             try
             {
-                response = await _httpClient.SendAsync(request);
+                response = await _httpClient.SendAsync(request).ConfigureAwait(false);
             }
             catch (Exception)
             {
@@ -101,7 +115,7 @@ namespace DataX.Utility.ServiceCommunication
         /// <returns></returns>
         private async void ProxyResponse(ApiResult result, HttpResponseMessage response)
         {
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             // Handle the case where content is empty and preserve the original error reason (else will result in json parse error)
             if (string.IsNullOrEmpty(content))

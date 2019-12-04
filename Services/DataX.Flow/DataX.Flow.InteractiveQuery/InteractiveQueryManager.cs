@@ -28,7 +28,6 @@ namespace DataX.Flow.InteractiveQuery
         private readonly ILogger _logger;
         private const string _HDInsight = Config.ConfigDataModel.Constants.SparkTypeHDInsight;
         private const string _DataBricks = Config.ConfigDataModel.Constants.SparkTypeDataBricks;
-        private readonly string _sparkType = _HDInsight;
         private readonly IConfiguration _configuration;
 
         public InteractiveQueryManager(ILogger logger, IConfiguration configuration)
@@ -507,7 +506,7 @@ namespace DataX.Flow.InteractiveQuery
         /// <param name="jars">jars to load per cosmosdb</param>
         /// <param name="storageAccountName">The storage account from where these jars are to be loaded</param>
         /// <returns></returns>
-        private static string TranslateBinNames(JArray jars, string storageAccountName, string interactiveQueryDefaultContainer)
+        public static string TranslateBinNames(JArray jars, string storageAccountName, string interactiveQueryDefaultContainer)
         {
 
             string binaryNames = string.Empty;

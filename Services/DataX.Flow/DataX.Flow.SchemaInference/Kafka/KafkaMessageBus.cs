@@ -19,7 +19,7 @@ using System.Timers;
 
 namespace DataX.Flow.SchemaInference.Kafka
 {
-    public class KafkaMessageBus : IMessageBus
+    public class KafkaMessageBus : IMessageBus, IDisposable
     {
         private readonly string _brokerList = string.Empty;
         private readonly string _connectionString = null;
@@ -48,6 +48,20 @@ namespace DataX.Flow.SchemaInference.Kafka
             _inputType = inputType;
             _logger = logger;
 
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _timer.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         private void StartTimer(int seconds)

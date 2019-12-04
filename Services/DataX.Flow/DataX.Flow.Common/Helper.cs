@@ -4,6 +4,7 @@
 // *********************************************************************
 using DataX.Contract.Exception;
 using DataX.Utilities.KeyVault;
+using DataX.Utility.KeyVault;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,7 +33,7 @@ namespace DataX.Flow.Common
             }
 
             return template;
-        }     
+        }
 
         /// <summary>
         /// Checks if the value is a keyvault and if it is, gets the value from a keyvault
@@ -133,7 +134,7 @@ namespace DataX.Flow.Common
                 }
             }
 
-            return null;            
+            return null;
         }
 
         /// <summary>
@@ -198,7 +199,6 @@ namespace DataX.Flow.Common
             var map = ConnectionStringToKeyValueMap(connectionString);
             return map.ContainsKey(key) ? map[key] : null;
         }
-    
 
         /// <summary>
         /// Parses the eventhub policy from connection string
@@ -250,7 +250,7 @@ namespace DataX.Flow.Common
             }
 
             return matched;
-        }         
+        }
 
         /// <summary>
         /// Generates a hashcode for the input
@@ -263,7 +263,6 @@ namespace DataX.Flow.Common
             var hashedValue = hash.ComputeHash(Encoding.UTF8.GetBytes(value));
             return BitConverter.ToString(hashedValue).Replace("-", string.Empty).Substring(0, 32);
         }
-      
 
         /// <summary>
         /// Generates a map for the input connectionstring
@@ -272,7 +271,7 @@ namespace DataX.Flow.Common
         /// <returns>map for the connectionstring</returns>
         private static IDictionary<string, string> ConnectionStringToKeyValueMap(string connectionString)
         {
-           var keyValueMap = new Dictionary<string, string>();
+            var keyValueMap = new Dictionary<string, string>();
 
             if (!string.IsNullOrWhiteSpace(connectionString))
             {
@@ -309,20 +308,8 @@ namespace DataX.Flow.Common
         {
             if (path != null && Config.Utility.KeyVaultUri.IsSecretUri(path))
             {
-                Regex r = new Regex(@"^((keyvault|secretscope:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
-                var keyvault = string.Empty;
-
-                var secret = string.Empty;
-                MatchCollection match = r.Matches(path);
-                if (match != null && match.Count > 0)
-                {
-                    foreach (Match m in match)
-                    {
-                        keyvault = m.Groups[3].Value.Trim();
-                        secret = m.Groups[5].Value.Trim();
-                    }
-                }
-                var secretUri = KeyVault.GetSecretFromKeyvault(keyvault, secret);
+                SecretUriParser.ParseSecretUri(path, out string keyvalut, out string secret);
+                var secretUri = KeyVault.GetSecretFromKeyvault(keyvalut, secret);
 
                 return secretUri;
             }
