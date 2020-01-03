@@ -9,7 +9,7 @@ import java.sql.Timestamp
 class InputTests extends FunSuite with SharedSparkContext {
 
   test("test BlobPointerInput.pathsToGroups") {
-    // data
+    // test data
     val blob1 = "wasbs://container@account1.blob.core.windows.net/data/2019-08-14/03/m8beaef7-6f6e-4b6d-9461-a19936089626_20190814_032621.blob"
     val blob2 = "wasbs://container@account1.blob.core.windows.net/data/2019-08-14/03/n8beaef7-6f6e-4b6d-9471-a19936089626_20190814_032621.blob"
     val blob3 = "wasbs://container@account2.blob.core.windows.net/data/2019-08-14/03/p8beaef7-6f6e-4b6d-9481-a19936089626_20190814_032621.blob"

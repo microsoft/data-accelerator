@@ -68,7 +68,7 @@ class UtilityTests extends FlatSpec with Matchers {
     assert(DataNormalization.sanitizeColumnName("name.1")==="`name.1`")
   }
 
-  "DateTimeUtil" should "format timestamp correctly" in {
+  "DateTimeUtil" should "format timestamp value correctly" in {
     val time = Timestamp.valueOf("2019-09-06 17:11:21")
     val result = DateTimeUtil.formatSimple(time)
     println("DateTimeUtil result="+result)
