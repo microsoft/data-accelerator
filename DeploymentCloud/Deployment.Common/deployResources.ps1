@@ -133,6 +133,15 @@ function Install-Modules {
                 $moduleInstalled = $true
                 Install-Module -Name $_ -Force -AllowClobber -Scope CurrentUser -Repository PSGallery
             }
+	    
+	    # Since, Mdbc PS module doesn't support New-MdbcQuery cmdlet from v6.0.0, we have to make sure correct Mdbc module is installed.
+            # https://github.com/nightroman/Mdbc/blob/master/Release-Notes.md#v600
+            if ($_ -eq 'mdbc' -and !(Get-InstalledModule -Name $_ -RequiredVersion $modules.Item($_) -ErrorAction SilentlyContinue)) {
+                Write-Host "Install Module: " $_ " Version: "$modules.Item($_)
+                $moduleInstalled = $true
+                Install-Module -Name $_ -RequiredVersion $modules.Item($_) -Force -AllowClobber -Scope CurrentUser -Repository PSGallery
+                Import-Module -Name $_ -RequiredVersion $modules.Item($_)
+            }
     }
 
     if ($moduleInstalled) {
