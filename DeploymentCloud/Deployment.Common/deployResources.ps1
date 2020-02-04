@@ -126,27 +126,27 @@ function Install-Modules {
     $modules.Add("mdbc", " 5.1.4")
         
     $moduleInstalled = $false
+    # Make sure to install correct required version of PS modules.
+    # Since, Mdbc PS module doesn't support New-MdbcQuery cmdlet from v6.0.0, we have to make sure correct Mdbc module is installed.
+    # https://github.com/nightroman/Mdbc/blob/master/Release-Notes.md#v600
     $modules.Keys | foreach {
-            if (!(Get-installedModule -name $_ -MinimumVersion $modules.Item($_) -ErrorAction SilentlyContinue )) {
-    
+            if (!(Get-installedModule -name $_ -RequiredVersion $modules.Item($_) -ErrorAction SilentlyContinue )) {    
                 Write-Host "Install Module: " $_
                 $moduleInstalled = $true
                 Install-Module -Name $_ -Force -AllowClobber -Scope CurrentUser -Repository PSGallery
-            }
-	    
-	    # Since, Mdbc PS module doesn't support New-MdbcQuery cmdlet from v6.0.0, we have to make sure correct Mdbc module is installed.
-            # https://github.com/nightroman/Mdbc/blob/master/Release-Notes.md#v600
-            if ($_ -eq 'mdbc' -and !(Get-InstalledModule -Name $_ -RequiredVersion $modules.Item($_) -ErrorAction SilentlyContinue)) {
-                Write-Host "Install Module: " $_ " Version: "$modules.Item($_)
-                $moduleInstalled = $true
-                Install-Module -Name $_ -RequiredVersion $modules.Item($_) -Force -AllowClobber -Scope CurrentUser -Repository PSGallery
-                Import-Module -Name $_ -RequiredVersion $modules.Item($_)
             }
     }
 
     if ($moduleInstalled) {
         Write-Host -ForegroundColor Yellow "The script execution completed after one or more packages have been installed. In order to use the latest packages, please close this prompt, open a new command prompt as admin and run deploy.bat again"
         Exit 10
+    } else{
+        # Import correct version of PS modules.
+        $modules.Keys | ForEach-Object {
+            Write-Host "Importing Module: "$_" Version: "$modules.Item($_)
+            Import-Module -Name $_ -RequiredVersion $modules.Item($_) -Force
+            Write-Host "Imported Module: "$_" Version: "$modules.Item($_)
+        }
     }
 }
 
