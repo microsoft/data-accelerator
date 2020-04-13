@@ -54,7 +54,7 @@ SOFTWARE
     <version>1.2.2-SNAPSHOT</version>
 
     <properties>
-        <spark.version>2.4.0</spark.version>
+        <spark.version>2.4.5</spark.version>
         <scala.version.major>2.11</scala.version.major>
         <scala.version.minor>8</scala.version.minor>
         <scala.version>${scala.version.major}.${scala.version.minor}</scala.version>
@@ -135,7 +135,7 @@ SOFTWARE
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-keyvault-webkey</artifactId>
-            <version>1.1</version>
+            <version>1.2.2</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
@@ -165,7 +165,7 @@ SOFTWARE
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>5.0.4.RELEASE</version>
+            <version>5.2.2.RELEASE</version>
         </dependency>
     </dependencies>
 

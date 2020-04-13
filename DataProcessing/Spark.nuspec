@@ -16,10 +16,10 @@
   </metadata>
   <files>
 <file src="**\applicationinsights-core-2.2.1.jar" target="lib" />
-<file src="**\azure-documentdb-1.16.1.jar" target="lib" />
+<file src="**\azure-documentdb-2.4.7.jar" target="lib" />
 <file src="**\azure-eventhubs-1.2.1.jar" target="lib" />
 <file src="**\azure-eventhubs-spark_2.11-2.3.6.jar" target="lib" />
-<file src="**\azure-keyvault-webkey-1.1.jar" target="lib" />
+<file src="**\azure-keyvault-webkey-1.2.2.jar" target="lib" />
 <file src="**\datax-core*.jar" target="lib" />
 <file src="**\datax-host*.jar" target="lib" />
 <file src="**\datax-utility*.jar" target="lib" />
@@ -28,10 +28,10 @@
 <file src="**\java-uuid-generator-3.1.5.jar" target="lib" />
 <file src="**\proton-j-0.31.0.jar" target="lib" />
 <file src="**\scala-java8-compat_2.11-0.9.0.jar" target="lib" />
-<file src="**\kafka-clients-2.0.0.jar" target="lib" />
-<file src="**\spark-streaming-kafka-0-10_2.11-2.4.0.jar" target="lib" />
+<file src="**\kafka-clients-2.4.1.jar" target="lib" />
+<file src="**\spark-streaming-kafka-0-10_2.11-2.4.5.jar" target="lib" />
 <file src="**\azure-sqldb-spark-1.0.2.jar" target="lib" />
-<file src="**\hadoop-azure-2.7.3.jar" target="lib" />
+<file src="**\hadoop-azure-3.2.1.jar" target="lib" />
 <file src="**\jetty-util-6.1.25.jar" target="lib" />
 <file src="**\json-20180813.jar" target="lib" />
 <file src="**\json4s-jackson_2.11-3.2.11.jar" target="lib" />
