@@ -49,6 +49,19 @@ namespace DataX.Config.PublicService
             return await this.SparkJobOperation.RestartJobWithRetries(jobName, timeout, _DefaultRetryInterval);
         }
 
+        public async Task<Result[]> RestartAllJobs()
+        {
+            var jobs = await SparkJobData.GetAll();
+            var results = new List<Result>();
+            foreach (var job in jobs)
+            {
+                var result = await RestartJob(job.Name);
+                results.Add(result);     
+            }
+
+            return results.ToArray<Result>();
+        }
+
         protected static async Task<SparkJobFrontEnd[]> ConvertToFrontEnd(Task<SparkJobConfig[]> tasks)
         {
             var jobs = await tasks;

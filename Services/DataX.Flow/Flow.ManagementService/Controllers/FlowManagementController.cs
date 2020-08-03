@@ -422,6 +422,25 @@ namespace Flow.Management.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("job/restartall")]
+        [DataXWriter]
+        public async Task<ApiResult> RestartAllJobs()
+        {
+            try
+            {
+                RolesCheck.EnsureWriter(Request, _isLocal);
+
+                var jobOpResult = await _jobOperation.RestartAllJobs();
+                return ApiResult.CreateSuccess(JToken.FromObject(jobOpResult));
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return ApiResult.CreateError(e.Message);
+            }
+        }
+
 
         [HttpGet]
         [Route("job/syncall")]
