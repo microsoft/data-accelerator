@@ -422,16 +422,16 @@ namespace Flow.Management.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("job/restartall")]
         [DataXWriter]
-        public async Task<ApiResult> RestartAllJobs()
+        public async Task<ApiResult> RestartAllJobs([FromBody] string[] jobNames)
         {
             try
             {
                 RolesCheck.EnsureWriter(Request, _isLocal);
 
-                var jobOpResult = await _jobOperation.RestartAllJobs();
+                var jobOpResult = await _jobOperation.RestartAllJobs(jobNames);
                 return ApiResult.CreateSuccess(JToken.FromObject(jobOpResult));
             }
             catch (Exception e)
@@ -440,7 +440,6 @@ namespace Flow.Management.Controllers
                 return ApiResult.CreateError(e.Message);
             }
         }
-
 
         [HttpGet]
         [Route("job/syncall")]
@@ -482,5 +481,42 @@ namespace Flow.Management.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("job/waittilljobsrunning")]
+        public async Task<ApiResult> WaitTillJobsRunning([FromBody] WaitTillJobsRunningRequest waitRequest)
+        {
+            try
+            {
+                RolesCheck.EnsureWriter(Request, _isLocal);
+
+                var maxRetryTimes = waitRequest.MaxRetryTimes;
+                var jobNames = waitRequest.JobNames;
+                var intervalsBetweenRetriesInSeconds = waitRequest.IntervalsBetweenRetriesInSeconds;
+
+                int retryTimes = 0;
+                SparkJobFrontEnd[] jobOpResult = null;
+                while (retryTimes++ < maxRetryTimes)
+                {
+                    jobOpResult = jobNames != null && jobNames.Any() ?
+                                await _jobOperation.SyncJobStateByNames(jobNames)
+                                : await _jobOperation.SyncAllJobState();
+
+                    var startingJobs = jobOpResult.Where(r => r.JobState == JobState.Starting);
+                    if (!startingJobs.Any())
+                    {
+                        break;
+                    }
+
+                    System.Threading.Thread.Sleep(intervalsBetweenRetriesInSeconds * 1000);
+                }
+
+                return ApiResult.CreateSuccess(JToken.FromObject(jobOpResult));
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return ApiResult.CreateError(e.Message);
+            }
+        }
     }
 }

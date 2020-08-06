@@ -49,13 +49,19 @@ namespace DataX.Config.PublicService
             return await this.SparkJobOperation.RestartJobWithRetries(jobName, timeout, _DefaultRetryInterval);
         }
 
-        public async Task<Result[]> RestartAllJobs()
+        public async Task<Result[]> RestartAllJobs(string[] jobNames = null)
         {
-            var jobs = await SparkJobData.GetAll();
-            var results = new List<Result>();
-            foreach (var job in jobs)
+            string[] actualJobNames = jobNames;
+            if(actualJobNames == null || !actualJobNames.Any())
             {
-                var result = await RestartJob(job.Name);
+                var jobs = await SparkJobData.GetAll();
+                actualJobNames = jobs.Select(j => j.Name).ToArray();
+            }    
+
+            var results = new List<Result>();
+            foreach (var jobName in actualJobNames)
+            {
+                var result = await RestartJob(jobName);
                 results.Add(result);     
             }
 
