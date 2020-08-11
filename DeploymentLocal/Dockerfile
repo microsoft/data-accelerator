@@ -1,4 +1,8 @@
-FROM microsoft/dotnet:3.1-aspnetcore-runtime
+FROM microsoft/dotnet:2.2-sdk
+
+WORKDIR /app/aspnetcore
+
+FROM microsoft/dotnet:2.2-aspnetcore-runtime
 
 WORKDIR /app/aspnetcore
 
