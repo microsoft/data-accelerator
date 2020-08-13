@@ -1,18 +1,37 @@
+#
+#  DeployResources Deploy Script
+#
+#  This script deploys all the resources to an azure subscription and resource group that are required for the scenario tester job runner.
+#  This asumes that the target subscription contains a data-accelerator environment already deployed and a keyvault already initialized.
+#  This script takes the values from the data-accelerator environment keyvault to initialize the new resources used by scenario tester.
+#  This script also requires that an application id and secret are already created from a registered app, and that registered app is already onboarded
+#  to the Gateway Service. Finally, you can skip certificate validation in case it is required for your test client run cases.
+#
+#  Output: Scenario tester is deployed into an existing data-accelerator environment
+#
 param(
+    # Tenant id where data-accelerator environment is deployed
     [string]
     $tenantId,
+    # Subscription id where data-accelerator environment is deployed
     [string]
     $subscriptionId,
+    # Resource Group name where data-accelerator environment is deployed
     [string]
     $resourceGroupName,
+    # Application id that job runner is going to run in behalf of
     [string]
     $applicationId,
+    # Application secret for the target application id
     [string]
     $appSecretKey,
+    # Prefix chosen for deployed secrets of data-accelerator main keyvault
     [string]
     $kvBaseNamePrefix='configgen',
+    # Name for scenario test flow
     [string]
     $flowName='scenariotest',
+    # Skip server certificate validation (TLS check from client side)
     [string]
     $skipServerCertificateValidation='false'
 )

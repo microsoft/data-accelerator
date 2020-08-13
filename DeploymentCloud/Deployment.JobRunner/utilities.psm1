@@ -1,5 +1,11 @@
+#  Stop execution if any exception happens at some step of the script
 $ErrorActionPreference = "stop"
 
+#
+#  Login
+#
+#  Prompts the caller authentication in order to be granted access to the target subscription id and tenant id
+#
 function Login([string]$subscriptionId, [string]$tenantId)
 {
     # sign in
@@ -55,6 +61,11 @@ function Login([string]$subscriptionId, [string]$tenantId)
     }
 }
 
+#
+#  Get-AppInfo
+#
+#  Retrieves additional identifiers from a given application id and tenant such object, authorityuri and app name
+#
 function Get-AppInfo([string]$applicationId, [string]$tenantName) 
 {
     $app = Get-AzureRmADApplication -ApplicationId $applicationId
@@ -96,6 +107,12 @@ function Get-AppInfo([string]$applicationId, [string]$tenantName)
     }
 }
 
+#
+#  Get-ScenarioTesterInfo
+#
+#  Gathers information of existing deployed resources from a previous data-accelerator deployment. Information from this step will be used
+#  to generate the resources used by Scenario Tester Job Runner
+#
 function Get-ScenarioTesterInfo
 {
     param(
@@ -233,6 +250,12 @@ function Get-ScenarioTesterInfo
     }
 }
 
+#
+#  Get-KVKeyInfo
+#
+#  Utility function to easily retrieve secrets from a data-accelerator deployment given a base name prefix. This prefix is part of the initial parameters
+#  of the previous data-accelerator deployment.
+#
 function Get-KVKeyInfo {
     param(
         [string]$baseNamePrefix
