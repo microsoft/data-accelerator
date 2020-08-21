@@ -47,12 +47,18 @@ namespace DataX.Config.ConfigGeneration.Processor
 
             var runtimeKeyVaultName = flowToDeploy.GetTokenString(PortConfigurationSettings.TokenName_RuntimeKeyVaultName);
             Ensure.NotNull(runtimeKeyVaultName, "runtimeKeyVaultName");
-
-            var secretName = $"{config.Name}-projectionfile";
-            Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType);
-            var uriPrefix = KeyVaultClient.GetUriPrefix(sparkType);
-            var projectionFileSecret = SecretUriParser.ComposeUri(runtimeKeyVaultName, secretName, uriPrefix);
-            flowToDeploy.SetObjectToken(TokenName_ProjectionFiles, new string[] { projectionFileSecret });
+            if (runtimeKeyVaultName != "local")
+            {
+                var secretName = $"{config.Name}-projectionfile";
+                Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType);
+                var uriPrefix = KeyVaultClient.GetUriPrefix(sparkType);
+                var projectionFileSecret = SecretUriParser.ComposeUri(runtimeKeyVaultName, secretName, uriPrefix);
+                flowToDeploy.SetObjectToken(TokenName_ProjectionFiles, new string[] { projectionFileSecret });
+            }
+            else
+            {
+                flowToDeploy.SetObjectToken(TokenName_ProjectionFiles, new string[] { flowToDeploy.ResultProperties[PrepareJobConfigVariables.ResultPropertyName_RuntimeConfigFolder].ToString() + "/projection.txt" });
+            }
 
             await Task.CompletedTask;
             return "done";

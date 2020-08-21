@@ -65,12 +65,18 @@ namespace DataX.Config.ConfigGeneration.Processor
 
             var runtimeKeyVaultName = flowToDeploy.GetTokenString(PortConfigurationSettings.TokenName_RuntimeKeyVaultName);
             Ensure.NotNull(runtimeKeyVaultName, "runtimeKeyVaultName");
-
-            var secretName = $"{config.Name}-transform";
-            Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType);
-            var uriPrefix = KeyVaultClient.GetUriPrefix(sparkType);
-            var transformFileSecret = SecretUriParser.ComposeUri(runtimeKeyVaultName, secretName, uriPrefix);
-            flowToDeploy.SetStringToken(TokenName_TransformFile, transformFileSecret);
+            if (runtimeKeyVaultName != "local")
+            {
+                var secretName = $"{config.Name}-transform";
+                Configuration.TryGet(Constants.ConfigSettingName_SparkType, out string sparkType);
+                var uriPrefix = KeyVaultClient.GetUriPrefix(sparkType);
+                var transformFileSecret = SecretUriParser.ComposeUri(runtimeKeyVaultName, secretName, uriPrefix);
+                flowToDeploy.SetStringToken(TokenName_TransformFile, transformFileSecret);
+            }
+            else
+            {
+                flowToDeploy.SetStringToken(TokenName_TransformFile, flowToDeploy.ResultProperties[PrepareJobConfigVariables.ResultPropertyName_RuntimeConfigFolder].ToString() + $"/{config.Name}-combined.txt");
+            }
 
             await Task.CompletedTask;
             return "done";
