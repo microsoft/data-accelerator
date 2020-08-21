@@ -1,10 +1,14 @@
+FROM microsoft/dotnet:2.2-sdk AS build-env
+
+WORKDIR /app/aspnetcore
+
 FROM microsoft/dotnet:2.2-aspnetcore-runtime
 
 WORKDIR /app/aspnetcore
 
 COPY "finalrun.sh" "devices.csv" "./" 
 
-ENV NODE_VERSION="8.9.4"  NODE_DOWNLOAD_SHA="21fb4690e349f82d708ae766def01d7fec1b085ce1f5ab30d9bda8ee126ca8fc" \
+ENV NODE_VERSION="14.3.0"  NODE_DOWNLOAD_SHA="ea08acdf403d13ab67303d503eab080a5285c005c75c0710551d928f3cc74057" \
     DATAX_ENABLE_ONEBOX="true"  DATAX_ONEBOX_ROOT="./datax"  NPM_CONFIG_LOGLEVEL="info" \
     SPARK_VERSION="2.3.0" ASPNETCORE_URLS="http://+:5000" port="2020" \
     DATAXDEV_FLOW_MANAGEMENT_LOCAL_SERVICE="http://localhost:5000"  NODE_ENV="production" 
