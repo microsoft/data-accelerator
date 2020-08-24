@@ -42,6 +42,11 @@ RUN curl -sL --retry 3 \
     | tar vxz -C /usr/ \
     && mv /usr/$SPARK_PACKAGE $SPARK_HOME \
     && chown -R root:root "$SPARK_HOME"
+	
+# Debian security updates
+RUN apt-get update || true && apt-get -y install apt-transport-https
+RUN echo "deb http://security.debian.org/debian-security buster/updates main contrib non-free" >> /etc/apt/sources.list
+RUN apt-get update && apt-get upgrade -y
 
 ADD "FlowManagement.tar" "deployment.tar"  "./"
 ADD   "datax.tar"  "./datax/bin"
