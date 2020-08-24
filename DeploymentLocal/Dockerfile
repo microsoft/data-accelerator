@@ -19,6 +19,11 @@ ENV JAVA_HOME="/usr/lib/jvm/zulu-8-amd64" \
 
 ENV PATH="$PATH:$JAVA_HOME/bin:${SPARK_HOME}/bin:/app/aspnetcore"
 
+# Debian security updates
+RUN apt-get install apt-transport-https ca-certificates
+RUN echo "deb http://security.debian.org/debian-security buster/updates main contrib non-free" >> /etc/apt/sources.list
+RUN apt-get update && apt-get upgrade -y
+
 # Install node
 RUN curl -SL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz" --output "nodejs.tar.gz" \
     && echo "$NODE_DOWNLOAD_SHA nodejs.tar.gz" | sha256sum -c - \
@@ -41,12 +46,7 @@ RUN curl -sL --retry 3 \
     "https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_PACKAGE}.tgz" \
     | tar vxz -C /usr/ \
     && mv /usr/$SPARK_PACKAGE $SPARK_HOME \
-    && chown -R root:root "$SPARK_HOME"
-
-# Debian security updates
-RUN echo "deb http://security.debian.org/debian-security buster/updates main contrib non-free" >> /etc/apt/sources.list
-RUN apt-get update 
-RUN apt-get upgrade -y	
+    && chown -R root:root "$SPARK_HOME"	
 	
 ADD "FlowManagement.tar" "deployment.tar"  "./"
 ADD   "datax.tar"  "./datax/bin"
