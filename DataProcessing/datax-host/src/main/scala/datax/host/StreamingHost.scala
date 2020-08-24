@@ -65,7 +65,7 @@ import scala.concurrent.duration._
       createStreamContextLogger.warn(s"Create streaming context checkpoints folder=${streamingConf.checkpointDir}, internalInSeconds=${streamingConf.intervalInSeconds}")
       val streamingContext = createStreamingContext(spark, streamingConf.intervalInSeconds)
       val batchInterval = streamingConf.intervalInSeconds.seconds
-      val repartitionNumber = inputConf.repartition.getOrElse(0)
+      val repartitionNumber = if (inputConf.repartition != null) inputConf.repartition.getOrElse(0) else 0
       val repartition = if(repartitionNumber==0) (r:RDD[T])=>r else (r:RDD[T])=>r.repartition(repartitionNumber)
       streamingFactory.getStream(streamingContext, inputConf, (rdd, time) => {
         val streamingLogger = LogManager.getLogger("StreamingLoop")
