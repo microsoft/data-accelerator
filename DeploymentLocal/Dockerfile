@@ -45,7 +45,8 @@ RUN curl -sL --retry 3 \
 
 # Debian security updates
 RUN echo "deb http://security.debian.org/debian-security buster/updates main contrib non-free" >> /etc/apt/sources.list
-RUN apt-get update && apt-get upgrade -y	
+RUN apt-get update 
+RUN apt-get upgrade -y	
 	
 ADD "FlowManagement.tar" "deployment.tar"  "./"
 ADD   "datax.tar"  "./datax/bin"
