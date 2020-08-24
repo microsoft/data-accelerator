@@ -44,8 +44,8 @@ RUN curl -sL --retry 3 \
     && chown -R root:root "$SPARK_HOME"	
 	
 # Debian security updates
+RUN apt-get update && apt-get -y install apt-transport-https
 RUN echo "deb http://security.debian.org/debian-security buster/updates main contrib non-free" >> /etc/apt/sources.list
-RUN apt-get install apt-transport-https ca-certificates
 RUN apt-get update && apt-get upgrade -y
 	
 ADD "FlowManagement.tar" "deployment.tar"  "./"
