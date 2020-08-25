@@ -111,7 +111,7 @@ function Get-AppInfo([string]$applicationId, [string]$tenantName)
 #  Get-ScenarioTesterInfo
 #
 #  Gathers information of existing deployed resources from a previous data-accelerator deployment. Information from this step will be used
-#  to generate the resources used by Scenario Tester Job Runner
+#  to generate the resources used by Scenario Tester Job Runner and are the initial parameters used to deploy data-accelerator.
 #
 function Get-ScenarioTesterInfo
 {
