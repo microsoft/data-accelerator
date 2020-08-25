@@ -1,0 +1,90 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+        "tenantId": {
+            "value" : "$tenantId"
+        },
+        "productName": {
+            "value" : "$productName"
+        },
+        "applicationObjectId": {
+            "value" : "$applicationObjectId"
+        },
+        "applicationId": {
+            "value" : "$applicationId"
+        },
+        "applicationIdentifierUri": {
+            "value" : "$applicationIdentifierUri"
+        },
+        "authorityUri": {
+            "value" : "$authorityUri"
+        },
+        "serviceUrl": {
+            "value" : "$serviceUrl"
+        },
+        "secretKey": {
+            "value" : "$secretKey"
+        },
+        "jobRunnerName": {
+            "value" : "$jobRunnerName"
+        },
+        "sparkType": {
+            "value" : "$sparkType"
+        },
+        "databricksToken": {
+            "value" : "$databricksToken"
+        },
+        "eventHubConnectionString": {
+            "value" : "$eventHubConnectionString"
+        },
+        "eventHubName": {
+            "value" : "$eventHubName"
+        },
+        "isIotHub": {
+            "value" : "$isIotHub"
+        },
+        "blobUri": {
+            "value" : "$blobUri"
+        },
+        "sparkStorageAccountName": {
+            "value" : "$sparkStorageAccountName"
+        },
+        "flowName": {
+            "value" : "$flowName"
+        },
+        "normalizationSnippet": {
+            "value" : "$normalizationSnippet"
+        },
+        "referenceDataUri": {
+            "value" : "$referenceDataUri"
+        },
+        "udfSampleUri": {
+            "value" : "$udfSampleUri"
+        },
+        "kvServicesName": {
+            "value" : "$kvServicesName"
+        },
+        "kvSparkName": {
+            "value" : "$kvSparkName"
+        },
+        "skipServerCertificateValidation": {
+            "value" : "$skipServerCertificateValidation"
+        },
+        "primaryQueueName": {
+            "value" : "$primaryQueueName"
+        },
+        "activeQueueName": {
+            "value" : "$activeQueueName"
+        },
+        "testQueueName": {
+            "value" : "$testQueueName"
+        },
+        "seconds": {
+            "value" : "$seconds"
+        },
+        "aspNetCoreDetailedErrorsEnabled": {
+            "value" : "$aspNetCoreDetailedErrorsEnabled"
+        }
+	}
+}
