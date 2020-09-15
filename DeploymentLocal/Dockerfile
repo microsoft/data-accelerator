@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.2-sdk AS build-env
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build-env
 
 WORKDIR /app/aspnetcore
 
