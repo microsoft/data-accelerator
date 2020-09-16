@@ -2,10 +2,6 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build-env
 
 WORKDIR /app/aspnetcore
 
-FROM microsoft/dotnet:2.2-aspnetcore-runtime
-
-WORKDIR /app/aspnetcore
-
 COPY "finalrun.sh" "devices.csv" "./" 
 
 ENV NODE_VERSION="14.3.0"  NODE_DOWNLOAD_SHA="ea08acdf403d13ab67303d503eab080a5285c005c75c0710551d928f3cc74057" \
@@ -42,11 +38,6 @@ RUN curl -sL --retry 3 \
     | tar vxz -C /usr/ \
     && mv /usr/$SPARK_PACKAGE $SPARK_HOME \
     && chown -R root:root "$SPARK_HOME"
-	
-# Debian security updates
-RUN apt-get update || true && apt-get -y install apt-transport-https
-RUN echo "deb http://security.debian.org/debian-security buster/updates main contrib non-free" >> /etc/apt/sources.list
-RUN apt-get update && apt-get upgrade -y
 
 ADD "FlowManagement.tar" "deployment.tar"  "./"
 ADD   "datax.tar"  "./datax/bin"
