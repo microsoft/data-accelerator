@@ -18,7 +18,7 @@ import {
     MessageBar,
     MessageBarType
 } from 'office-ui-fabric-react';
-import { Colors, Panel, PanelHeader, PanelHeaderButtons, LoadingPanel, IconButtonStyles } from 'datax-common';
+import { Colors, PageHeader, Panel, PanelHeaderButtons, LoadingPanel, IconButtonStyles } from 'datax-common';
 import { functionEnabled } from '../../../common/api';
 
 const columns = [
@@ -62,7 +62,7 @@ class FlowListPanel extends React.Component {
     render() {
         return (
             <Panel>
-                <PanelHeader>Flows</PanelHeader>
+                <PageHeader>Flows</PageHeader>
                 <PanelHeaderButtons>{this.renderNewButton()}</PanelHeaderButtons>
                 {this.renderMessageBar()}
                 {this.renderContent()}
@@ -90,7 +90,7 @@ class FlowListPanel extends React.Component {
                             <DetailsList
                                 items={items}
                                 columns={columns}
-                                onActiveItemChanged={item => this.onEditItem(item)}
+                                onItemInvoked={item => this.onEditItem(item)}
                                 setKey="flowslist"
                                 layoutMode={DetailsListLayoutMode.justified}
                                 selectionMode={SelectionMode.single}

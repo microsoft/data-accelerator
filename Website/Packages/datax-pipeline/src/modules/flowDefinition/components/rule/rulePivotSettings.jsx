@@ -4,7 +4,7 @@
 // *********************************************************************
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Label, TextField, DefaultButton, Dropdown } from 'office-ui-fabric-react';
+import { Label, TextField, DefaultButton, ComboBox } from 'office-ui-fabric-react';
 import { Colors, IconButtonStyles } from 'datax-common';
 
 const useDropdownControl = true;
@@ -68,7 +68,7 @@ export default class RulePivotSettings extends React.Component {
 
             return (
                 <div style={pivotColumnSectionStyle}>
-                    <Dropdown
+                    <ComboBox
                         className="ms-font-m"
                         options={options}
                         placeholder="column name"

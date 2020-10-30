@@ -6,7 +6,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import * as Helpers from '../../flowHelpers';
 import * as Models from '../../flowModels';
-import { TextField, Label, Dropdown } from 'office-ui-fabric-react';
+import { TextField, Label, ComboBox } from 'office-ui-fabric-react';
 
 export default class EventHubSinkerSettings extends React.Component {
     constructor(props) {
@@ -68,7 +68,7 @@ export default class EventHubSinkerSettings extends React.Component {
         return (
             <div style={sectionStyle}>
                 <Label className="ms-font-m info-settings-textbox">Format</Label>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m info-settings-textbox"
                     options={options}
                     selectedKey={this.props.sinker.properties.format}
@@ -90,7 +90,7 @@ export default class EventHubSinkerSettings extends React.Component {
         return (
             <div style={sectionStyle}>
                 <Label className="ms-font-m info-settings-textbox">Compression</Label>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m info-settings-textbox"
                     options={options}
                     selectedKey={this.props.sinker.properties.compressionType}

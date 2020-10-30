@@ -6,7 +6,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import * as Helpers from '../../flowHelpers';
 import * as Models from '../../flowModels';
-import { Label, TextField, Toggle, Dropdown, DefaultButton } from 'office-ui-fabric-react';
+import { Label, TextField, Toggle, DefaultButton, ComboBox } from 'office-ui-fabric-react';
 import ace from 'brace';
 import 'brace/mode/json';
 import 'brace/theme/textmate';
@@ -158,7 +158,7 @@ export default class InputSettingsContent extends React.Component {
         return (
             <div style={typeDropdownStyle}>
                 <Label className="ms-font-m">Mode</Label>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m"
                     options={options}
                     selectedKey={this.props.input.mode}
@@ -201,7 +201,7 @@ export default class InputSettingsContent extends React.Component {
         return (
             <div style={typeDropdownStyle}>
                 <Label className="ms-font-m">Type</Label>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m"
                     options={options}
                     selectedKey={this.props.input.type}
@@ -337,7 +337,7 @@ export default class InputSettingsContent extends React.Component {
             return (
                 <div style={sectionStyle}>
                     <Label className="ms-font-m">Format</Label>
-                    <Dropdown
+                    <ComboBox
                         className="ms-font-m"
                         options={options}
                         selectedKey={value}
@@ -365,7 +365,7 @@ export default class InputSettingsContent extends React.Component {
             return (
                 <div style={sectionStyle}>
                     <Label className="ms-font-m">Compression</Label>
-                    <Dropdown
+                    <ComboBox
                         className="ms-font-m"
                         options={options}
                         selectedKey={value}
@@ -470,7 +470,7 @@ export default class InputSettingsContent extends React.Component {
 
         return (
             <div style={watermarkUnitDropdownStyle}>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m"
                     options={options}
                     selectedKey={this.props.input.properties.watermarkUnit}

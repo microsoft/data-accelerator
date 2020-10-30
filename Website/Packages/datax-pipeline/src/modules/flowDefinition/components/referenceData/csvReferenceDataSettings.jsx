@@ -6,7 +6,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import * as Helpers from '../../flowHelpers';
 import * as Models from '../../flowModels';
-import { TextField, Toggle, Label, Dropdown } from 'office-ui-fabric-react';
+import { TextField, Toggle, Label, ComboBox } from 'office-ui-fabric-react';
 
 export default class CsvReferenceDataSettings extends React.Component {
     constructor(props) {
@@ -78,7 +78,7 @@ export default class CsvReferenceDataSettings extends React.Component {
         return (
             <div style={sectionStyle}>
                 <Label className="ms-font-m info-settings-textbox">Delimiter</Label>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m info-settings-textbox"
                     options={options}
                     selectedKey={this.props.referenceData.properties.delimiter}

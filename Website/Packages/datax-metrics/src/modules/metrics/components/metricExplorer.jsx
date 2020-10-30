@@ -11,7 +11,7 @@ import NavigationPanel from './navigationPanel';
 import NavigationItem from './navigationItem';
 import * as Actions from '../actions';
 import * as Selectors from '../selectors';
-import { LoadingPanel, Panel, getApiErrorMessage } from 'datax-common';
+import { LoadingPanel, PageHeader, Panel, getApiErrorMessage } from 'datax-common';
 import { ColorClassNames, FontClassNames } from '@uifabric/styling';
 import { MessageBar, MessageBarType } from 'office-ui-fabric-react';
 
@@ -77,12 +77,15 @@ class MetricExplorer extends React.Component {
         }
 
         return (
-            <div style={rootStyle}>
-                <NavigationPanel>{navItems}</NavigationPanel>
-                <div className={`${FontClassNames.large} ${ColorClassNames.themePrimary}`} style={contentStyle}>
-                    {content}
+            <Panel>
+                <PageHeader>Metrics</PageHeader>
+                <div style={rootStyle}>
+                    <NavigationPanel>{navItems}</NavigationPanel>
+                    <div className={`${FontClassNames.large} ${ColorClassNames.themePrimary}`} style={contentStyle}>
+                        {content}
+                    </div>
                 </div>
-            </div>
+            </Panel>
         );
     }
 

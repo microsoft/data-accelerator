@@ -8,7 +8,7 @@ import { withRouter } from 'react-router';
 import { PrimaryButton, SearchBox, Spinner, SpinnerSize, MessageBar, MessageBarType } from 'office-ui-fabric-react';
 import SparkJobsList from './sparkJobsList';
 import * as Api from '../api';
-import { Colors, Panel, PanelHeader, getApiErrorMessage } from 'datax-common';
+import { Colors, PageHeader, Panel, getApiErrorMessage } from 'datax-common';
 
 class SparkJobs extends React.Component {
     constructor() {
@@ -29,7 +29,7 @@ class SparkJobs extends React.Component {
     render() {
         return (
             <Panel>
-                <PanelHeader>Jobs</PanelHeader>
+                <PageHeader>Jobs</PageHeader>
                 {this.renderMessageBar()}
                 {this.renderContent()}
             </Panel>

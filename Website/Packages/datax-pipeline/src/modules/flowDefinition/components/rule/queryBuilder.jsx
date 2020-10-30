@@ -5,7 +5,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import * as Models from '../../flowModels';
-import { TextField, DefaultButton, Dropdown } from 'office-ui-fabric-react';
+import { TextField, DefaultButton, ComboBox } from 'office-ui-fabric-react';
 import { Colors, IconButtonStyles } from 'datax-common';
 
 const maxGroupCycleDepth = 4;
@@ -81,7 +81,7 @@ export default class QueryBuilder extends React.Component {
         } else {
             return (
                 <div style={groupConjunctionDropdownStyle}>
-                    <Dropdown
+                    <ComboBox
                         className="ms-font-m"
                         options={this.props.conjunctionOptions}
                         selectedKey={group.conjunction}
@@ -103,7 +103,7 @@ export default class QueryBuilder extends React.Component {
         } else {
             return (
                 <div style={conditionConjunctionDropdownStyle}>
-                    <Dropdown
+                    <ComboBox
                         className="ms-font-m"
                         options={this.props.conjunctionOptions}
                         selectedKey={condition.conjunction}
@@ -118,7 +118,7 @@ export default class QueryBuilder extends React.Component {
         if (this.props.supportAggregate) {
             return (
                 <div style={aggregateDropdownStyle}>
-                    <Dropdown
+                    <ComboBox
                         className="ms-font-m"
                         options={this.props.aggregateOptions}
                         selectedKey={condition.aggregate}
@@ -134,7 +134,7 @@ export default class QueryBuilder extends React.Component {
     renderFieldDropdown(condition) {
         return (
             <div style={fieldDropdownStyle}>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m"
                     options={this.props.fieldOptions}
                     placeholder={this.props.fieldPlaceHolder}
@@ -153,7 +153,7 @@ export default class QueryBuilder extends React.Component {
 
         return (
             <div style={operatorDropdownStyle}>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m"
                     options={operatorOptions}
                     selectedKey={condition.operator}

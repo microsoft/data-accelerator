@@ -26,8 +26,8 @@ import RulesSettingsContent from './rule/rulesSettingsContent';
 import { functionEnabled } from '../../../common/api';
 import {
     Colors,
+    PageHeader,
     Panel,
-    PanelHeader,
     PanelHeaderButtons,
     LoadingPanel,
     IconButtonStyles,
@@ -203,7 +203,7 @@ class FlowDefinitionPanel extends React.Component {
     render() {
         return (
             <Panel>
-                <PanelHeader>Flow Definition</PanelHeader>
+                <PageHeader>Flow Definition</PageHeader>
                 <PanelHeaderButtons>{this.renderButtons()}</PanelHeaderButtons>
 
                 {this.renderMessageBar()}
