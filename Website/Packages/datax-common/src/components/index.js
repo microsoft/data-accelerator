@@ -30,6 +30,7 @@ export { default as LoadingPanel } from './loadingPanel';
 
 // Page
 export { default as IFramePage } from './iFramePage';
+export { default as PageHeader } from './pageHeader';
 
 // Content
 export { default as VerticalTabs } from './verticalTabs';

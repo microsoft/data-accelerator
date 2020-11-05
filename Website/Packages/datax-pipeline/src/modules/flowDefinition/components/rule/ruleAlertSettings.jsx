@@ -5,7 +5,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import * as Models from '../../flowModels';
-import { Label, Toggle, Dropdown, DropdownMenuItemType } from 'office-ui-fabric-react';
+import { Label, Toggle, ComboBox, DropdownMenuItemType } from 'office-ui-fabric-react';
 import { Colors } from 'datax-common';
 
 export default class RuleAlertSettings extends React.Component {
@@ -57,7 +57,7 @@ export default class RuleAlertSettings extends React.Component {
         return (
             <div style={alertSinkDropdownStyle}>
                 <Label className="ms-font-m">Output Sinks</Label>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m"
                     multiSelect
                     options={options}
@@ -81,7 +81,7 @@ export default class RuleAlertSettings extends React.Component {
         return (
             <div style={typeDropdownStyle}>
                 <Label className="ms-font-m">Severity</Label>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m"
                     options={options}
                     selectedKey={this.props.rule.properties.severity}

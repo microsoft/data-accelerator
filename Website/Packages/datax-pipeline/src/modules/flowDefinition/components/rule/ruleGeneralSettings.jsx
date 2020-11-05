@@ -5,7 +5,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import * as Models from '../../flowModels';
-import { Label, TextField, Dropdown } from 'office-ui-fabric-react';
+import { Label, TextField, ComboBox } from 'office-ui-fabric-react';
 import { Colors } from 'datax-common';
 
 export default class RuleGeneralSettings extends React.Component {
@@ -61,7 +61,7 @@ export default class RuleGeneralSettings extends React.Component {
         return (
             <div style={typeDropdownStyle}>
                 <Label className="ms-font-m">Sub Type</Label>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m"
                     options={options}
                     selectedKey={this.props.rule.properties.ruleType}
@@ -89,7 +89,7 @@ export default class RuleGeneralSettings extends React.Component {
         return (
             <div style={typeDropdownStyle}>
                 <Label className="ms-font-m">Target Table</Label>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m"
                     options={options}
                     selectedKey={this.props.rule.properties.schemaTableName}
