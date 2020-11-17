@@ -119,7 +119,7 @@ class MetricWidgetStackedAreaChart extends React.Component {
     render() {
         return (
             <div>
-                <h3 style={{ fontWeight: 'normal' }}>{this.props.displayName}</h3>
+                <h3 style={{ fontWeight: 'normal' }} tabindex="0" >{this.props.displayName}</h3>
                 <div
                     ref={div => {
                         this.graphDiv = div;

@@ -9,7 +9,7 @@ import Icon from './icon';
 export default class AppLogo extends React.Component {
     render() {
         return (
-            <a style={rootStyle} href="/">
+            <a style={rootStyle} href="/" aria-label="Data Accelerator Home Link">
                 <Icon />
             </a>
         );

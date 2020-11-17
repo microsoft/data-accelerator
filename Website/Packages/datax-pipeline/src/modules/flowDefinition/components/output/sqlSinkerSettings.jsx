@@ -79,9 +79,9 @@ export default class SqlSinkerSettings extends React.Component {
 
         return (
             <div style={sectionStyle}>
-                <Label className="ms-font-m info-settings-textbox">Write Mode</Label>
                 <ComboBox
                     className="ms-font-m info-settings-textbox"
+                    label="Write Mode"
                     options={options}
                     selectedKey={this.props.sinker.properties.writeMode}
                     onChange={(event, selection) => this.props.onUpdateSqlWriteMode(selection.key)}

@@ -77,9 +77,9 @@ export default class CsvReferenceDataSettings extends React.Component {
 
         return (
             <div style={sectionStyle}>
-                <Label className="ms-font-m info-settings-textbox">Delimiter</Label>
                 <ComboBox
                     className="ms-font-m info-settings-textbox"
+                    label="Delimiter"
                     options={options}
                     selectedKey={this.props.referenceData.properties.delimiter}
                     onChange={(event, selection) => this.props.onUpdateCsvDelimiter(selection.key)}
@@ -95,6 +95,7 @@ export default class CsvReferenceDataSettings extends React.Component {
                     label="First Row Contains Header?"
                     onText="Yes"
                     offText="No"
+                    title="First Row Contains Header?"
                     checked={this.props.referenceData.properties.header}
                     onChange={(event, value) => this.props.onUpdateCsvContainsHeader(value)}
                 />

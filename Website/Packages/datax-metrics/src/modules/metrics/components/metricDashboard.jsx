@@ -68,7 +68,7 @@ class MetricDashboard extends React.Component {
             const message = 'No metrics to display. No job for the flow is created. Please start the job to see metrics.';
             return (
                 <div>
-                    <div style={headerStyle}>{product.displayName} Metrics</div>
+                    <div style={headerStyle} tabindex="0">{product.displayName} Metrics</div>
                     <StatementBox icon="IncidentTriangle" overrideRootStyle={messageStyle} statement={message} />
                 </div>
             );
@@ -76,7 +76,7 @@ class MetricDashboard extends React.Component {
             const message = 'Metrics is not supported for the batch job.';
             return (
                 <div>
-                    <div style={headerStyle}>{product.displayName} Metrics</div>
+                    <div style={headerStyle} tabindex="0">{product.displayName} Metrics</div>
                     <StatementBox icon="IncidentTriangle" overrideRootStyle={messageStyle} statement={message} />
                 </div>
             );
@@ -90,7 +90,7 @@ class MetricDashboard extends React.Component {
 
             return (
                 <div>
-                    <div style={headerStyle}>{product.displayName} Metrics</div>
+                    <div style={headerStyle} tabindex="0">{product.displayName} Metrics</div>
                     <StatementBox icon="IncidentTriangle" overrideRootStyle={messageStyle} statement={message} />
                 </div>
             );
@@ -123,7 +123,7 @@ class MetricDashboard extends React.Component {
 
             return (
                 <div>
-                    <div style={headerStyle}>{product.displayName} Metrics</div>
+                    <div style={headerStyle} tabindex="0">{product.displayName} Metrics</div>
                     <div style={rowItemContainerStyle}>{firstRowBoxes}</div>
                     <div style={rowItemContainerStyle}>{secondRowBoxes}</div>
                     {timeCharts}

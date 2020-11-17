@@ -60,9 +60,9 @@ export default class RuleGeneralSettings extends React.Component {
 
         return (
             <div style={typeDropdownStyle}>
-                <Label className="ms-font-m">Sub Type</Label>
                 <ComboBox
                     className="ms-font-m"
+                    label="Sub Type"
                     options={options}
                     selectedKey={this.props.rule.properties.ruleType}
                     onChange={(event, selection) => this.props.onUpdateRuleSubType(selection.key)}
@@ -88,9 +88,9 @@ export default class RuleGeneralSettings extends React.Component {
 
         return (
             <div style={typeDropdownStyle}>
-                <Label className="ms-font-m">Target Table</Label>
                 <ComboBox
                     className="ms-font-m"
+                    label="Target Table"
                     options={options}
                     selectedKey={this.props.rule.properties.schemaTableName}
                     onChange={(event, selection) => this.props.onUpdateSchemaTableName(selection.key)}
