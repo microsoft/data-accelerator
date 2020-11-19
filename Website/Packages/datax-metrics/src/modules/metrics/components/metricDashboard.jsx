@@ -9,7 +9,7 @@ import { renderWidget } from './metricWidgetGeneric';
 import metricsDatasource from '../metrics.datasource';
 import ServiceGroup from '../serviceGroup';
 import * as Api from '../api';
-import { LoadingPanel, StatementBox } from 'datax-common';
+import { Colors, LoadingPanel, StatementBox } from 'datax-common';
 import { Constants } from '../apiConstants';
 
 class MetricDashboard extends React.Component {
@@ -153,7 +153,8 @@ const messageStyle = {
 const headerStyle = {
     fontSize: 24,
     paddingBottom: 30,
-    fontWeight: 'normal'
+    fontWeight: 'normal',
+    color: `${Colors.themeDarker}`
 };
 
 export default withRouter(

@@ -77,7 +77,7 @@ class MetricWidgetLineChart extends React.Component {
     render() {
         return (
             <div>
-                <h3 style={{ fontWeight: 'normal' }} tabindex="0">{this.props.displayName}</h3>
+                <h3 style={{ fontWeight: 'normal', color: `${Colors.themeDarker}` }} tabindex="0">{this.props.displayName}</h3>
                 <div
                     ref={div => {
                         this.graphDiv = div;

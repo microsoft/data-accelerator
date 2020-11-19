@@ -79,7 +79,7 @@ export default class ConditionsPreview extends React.Component {
     renderValue(operator, value) {
         const isNumber = Helpers.isNumberOperator(operator);
         const style = {
-            color: isNumber ? Colors.themeDarkAlt : Colors.orange
+            color: isNumber ? Colors.themeDarkAlt : Colors.redDark
         };
 
         return (
@@ -167,5 +167,5 @@ const aggregateStyle = {
 };
 
 const conjunctionStyle = {
-    color: '#909090'
+    color: '#333333'
 };

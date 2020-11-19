@@ -9,7 +9,7 @@ import * as Models from '../../flowModels';
 import { Label, TextField, Toggle, DefaultButton, ComboBox } from 'office-ui-fabric-react';
 import ace from 'brace';
 import 'brace/mode/json';
-import 'brace/theme/textmate';
+import 'brace/theme/dawn';
 import 'datax-query/dist/css/index.css';
 import 'brace/mode/sql';
 import 'brace/theme/xcode';
@@ -583,7 +583,7 @@ export default class InputSettingsContent extends React.Component {
                     <JsonEditor
                         ace={ace}
                         mode={this.props.inputSchemaEditorEnabled ? 'code' : 'view'}
-                        theme="ace/theme/textmate"
+                        theme="ace/theme/dawn"
                         allowedModes={this.props.inputSchemaEditorEnabled ? ['code', 'tree'] : ['view']}
                         value={this.getSchemaAsJsonObject(value)}
                         onChange={value => this.onJsonSchemaChange(value)}
@@ -817,7 +817,7 @@ const linkStyle = {
     fontSize: 14,
     float: 'right',
     lineHeight: '29px',
-    color: Colors.themePrimary
+    color: Colors.themeDarker
 };
 
 const watermarkContainerStyle = {

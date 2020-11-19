@@ -598,7 +598,7 @@ const linkStyle = {
     paddingLeft: 20,
     fontSize: 14,
     lineHeight: '27px',
-    color: Colors.themePrimary
+    color: Colors.themeDarker
 };
 
 const toggleStyle = {

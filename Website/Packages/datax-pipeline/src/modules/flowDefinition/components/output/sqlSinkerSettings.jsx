@@ -100,6 +100,7 @@ export default class SqlSinkerSettings extends React.Component {
                         label="Use SQL Bulk Insert?"
                         onText="Yes"
                         offText="No"
+                        title="Use SQL Bulk Insert?"
                         checked={isbulkInsert}
                         onChange={(event, value) => this.props.onUpdateSqlUseBulkInsert(value)}
                     />

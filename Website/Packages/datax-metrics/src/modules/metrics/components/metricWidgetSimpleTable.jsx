@@ -68,7 +68,7 @@ class MetricWidgetSimpleTable extends React.Component {
 
         return (
             <div>
-                <h3 style={{ fontWeight: 'normal' }} tabindex="0">{this.props.displayName}</h3>
+                <h3 style={{ fontWeight: 'normal', color: `${Colors.themeDarker}` }} tabindex="0">{this.props.displayName}</h3>
                 <div style={{ width: 'auto', height: 300 }}>{this.renderTable(headers, body)}</div>
             </div>
         );

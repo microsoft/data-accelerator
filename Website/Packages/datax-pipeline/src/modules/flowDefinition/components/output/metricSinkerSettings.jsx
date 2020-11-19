@@ -96,5 +96,5 @@ const statementBoxStyle = {
 const linkStyle = {
     fontSize: 14,
     lineHeight: '29px',
-    color: Colors.themePrimary
+    color: Colors.themeDarker
 };
