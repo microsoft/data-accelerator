@@ -226,7 +226,7 @@ class SparkJobsList extends React.Component {
         return {
             key: functionName,
             fieldName: functionName,
-            name: '',
+            name: functionName,
             minWidth: 20,
             maxWidth: 50,
             onRender: (item, index) => {
@@ -238,9 +238,10 @@ class SparkJobsList extends React.Component {
                             <button
                                 className={`clickable-noselect ms-Icon ms-Icon--${iconName}`}
                                 aria-hidden="true"
+                                aria-label={`${functionName} Job`}
                                 onClick={handler.bind(this, item, index)}
                             />
-                        </div>
+                        </div>    
                     );
                 }
             }

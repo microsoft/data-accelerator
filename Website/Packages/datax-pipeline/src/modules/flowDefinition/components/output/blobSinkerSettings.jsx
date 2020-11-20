@@ -99,9 +99,9 @@ export default class BlobSinkerSettings extends React.Component {
 
         return (
             <div style={sectionStyle}>
-                <Label className="ms-font-m info-settings-textbox">Format</Label>
                 <ComboBox
                     className="ms-font-m info-settings-textbox"
+                    label="Format"
                     options={options}
                     selectedKey={this.props.sinker.properties.format}
                     onChange={(event, selection) => this.props.onUpdateFormatType(selection.key)}
@@ -121,9 +121,9 @@ export default class BlobSinkerSettings extends React.Component {
 
         return (
             <div style={sectionStyle}>
-                <Label className="ms-font-m info-settings-textbox">Compression</Label>
                 <ComboBox
                     className="ms-font-m info-settings-textbox"
+                    label="Compression"
                     options={options}
                     selectedKey={this.props.sinker.properties.compressionType}
                     onChange={(event, selection) => this.props.onUpdateCompressionType(selection.key)}

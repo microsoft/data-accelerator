@@ -83,6 +83,7 @@ export default class QueryBuilder extends React.Component {
                 <div style={groupConjunctionDropdownStyle}>
                     <ComboBox
                         className="ms-font-m"
+                        title="Group Conjunction"
                         options={this.props.conjunctionOptions}
                         selectedKey={group.conjunction}
                         onChange={(event, selection) => this.onUpdateConjunction(group, selection.key)}
@@ -105,6 +106,7 @@ export default class QueryBuilder extends React.Component {
                 <div style={conditionConjunctionDropdownStyle}>
                     <ComboBox
                         className="ms-font-m"
+                        title="Condition Conjunction"
                         options={this.props.conjunctionOptions}
                         selectedKey={condition.conjunction}
                         onChange={(event, selection) => this.onUpdateConjunction(condition, selection.key)}
@@ -120,6 +122,7 @@ export default class QueryBuilder extends React.Component {
                 <div style={aggregateDropdownStyle}>
                     <ComboBox
                         className="ms-font-m"
+                        title="aggregate"
                         options={this.props.aggregateOptions}
                         selectedKey={condition.aggregate}
                         onChange={(event, selection) => this.onUpdateAggregate(condition, selection.key)}
@@ -136,6 +139,7 @@ export default class QueryBuilder extends React.Component {
             <div style={fieldDropdownStyle}>
                 <ComboBox
                     className="ms-font-m"
+                    title="Field"
                     options={this.props.fieldOptions}
                     placeholder={this.props.fieldPlaceHolder}
                     selectedKey={condition.field}
@@ -155,6 +159,7 @@ export default class QueryBuilder extends React.Component {
             <div style={operatorDropdownStyle}>
                 <ComboBox
                     className="ms-font-m"
+                    title="operator"
                     options={operatorOptions}
                     selectedKey={condition.operator}
                     onChange={(event, selection) => this.onUpdateOperator(condition, selection.key)}
@@ -168,6 +173,7 @@ export default class QueryBuilder extends React.Component {
             <div style={valueControlStyle}>
                 <TextField
                     className="ms-font-m"
+                    title="value"
                     spellCheck={false}
                     placeholder={this.props.valuePlaceHolder}
                     value={condition.value}

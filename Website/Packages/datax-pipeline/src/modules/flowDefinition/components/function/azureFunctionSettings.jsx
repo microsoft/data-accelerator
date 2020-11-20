@@ -81,9 +81,9 @@ export default class AzureFunctionSettings extends React.Component {
                 </div>
 
                 <div style={sectionStyle}>
-                    <Label className="ms-font-m info-settings-textbox">Method Type</Label>
                     <ComboBox
                         className="ms-font-m info-settings-textbox"
+                        label="Method Type"
                         options={options}
                         selectedKey={this.props.functionItem.properties.methodType}
                         onChange={(event, selection) => this.props.onUpdateAzureFunctionMethodType(selection.key)}

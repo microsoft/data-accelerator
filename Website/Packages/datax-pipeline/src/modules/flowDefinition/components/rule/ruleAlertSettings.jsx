@@ -28,6 +28,7 @@ export default class RuleAlertSettings extends React.Component {
                             onText="Yes"
                             offText="No"
                             checked={isAlert}
+                            title="Do you want to be alerted?"
                             onChange={(event, value) => this.props.onUpdateIsAlert(value)}
                         />
                     </div>
@@ -56,9 +57,9 @@ export default class RuleAlertSettings extends React.Component {
 
         return (
             <div style={alertSinkDropdownStyle}>
-                <Label className="ms-font-m">Output Sinks</Label>
                 <ComboBox
                     className="ms-font-m"
+                    label="Output Sinks"
                     multiSelect
                     options={options}
                     dropdownWidth={400}
@@ -80,9 +81,9 @@ export default class RuleAlertSettings extends React.Component {
 
         return (
             <div style={typeDropdownStyle}>
-                <Label className="ms-font-m">Severity</Label>
                 <ComboBox
                     className="ms-font-m"
+                    label="Severity"
                     options={options}
                     selectedKey={this.props.rule.properties.severity}
                     onChange={(event, selection) => this.props.onUpdateSeverity(selection.key)}

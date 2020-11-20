@@ -353,10 +353,11 @@ export default class QuerySettingsContent extends React.Component {
                     </DefaultButton>
                 </div>
                 <div style={toggleStyle}>
-                    <Label className="ms-font-m">Duration in seconds</Label>
+                    <Label className="ms-font-m" htmlFor="DurationInSecondsTextField">Duration in seconds</Label>
                 </div>
                 <div style={toggleStyle}>
                     <TextField
+                        id="DurationInSecondsTextField"
                         className="query-pane-TextField ms-font-m"
                         spellCheck={false}
                         value={this.props.resamplingInputDuration}
@@ -597,7 +598,7 @@ const linkStyle = {
     paddingLeft: 20,
     fontSize: 14,
     lineHeight: '27px',
-    color: Colors.themePrimary
+    color: Colors.themeDarker
 };
 
 const toggleStyle = {

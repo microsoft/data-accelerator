@@ -88,12 +88,32 @@
 }
 
 .jsoneditor {
-    border: 1px solid #c8c8c8 !important;
+    border: 1px solid #b7b7b7 !important;
 }
 
 .jsoneditor-menu {
-    background-color: #c8c8c8 !important;
+    background-color: #b7b7b7 !important;
     border-bottom-color: #b7b7b7 !important;
+}
+
+.jsoneditor-poweredBy {
+    color: #000000 !important;
+}
+
+.jsoneditor-statusbar {
+    color: #464646 !important;
+}
+
+.jsoneditor-separator {
+    color: #000000 !important;
+}
+
+.jsoneditor-selected {
+    background-color: #f7f7f7 !important;
+}
+
+.jsoneditor-text {
+    color: #464646 !important;
 }
 
 /* Splitter styles */
