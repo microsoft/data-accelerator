@@ -1084,16 +1084,12 @@ const contentStyle = {
     paddingRight: 20,
     paddingBottom: 20,
     backgroundColor: Colors.neutralTertiaryAlt,
-    display: 'flex',
-    flexDirection: 'column',
     overflowX: 'hidden',
-    overflowY: 'hidden',
+    overflowY: 'auto',
     flex: 1
 };
 
 const tabContainerStyle = {
-    display: 'flex',
-    flexDirection: 'column',
     overflowX: 'hidden',
     overflowY: 'hidden',
     flex: 1

@@ -185,7 +185,8 @@ const contentStyle = {
     paddingBottom: 30,
     flex: 1,
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    overflowY: 'auto'
 };
 
 const filterContainerStyle = {
@@ -196,7 +197,8 @@ const listContainerStyle = {
     backgroundColor: Colors.white,
     border: `1px solid ${Colors.neutralTertiaryAlt}`,
     flex: 1,
-    overflowY: 'auto'
+    overflowY: 'auto',
+    minHeight: '100px'
 };
 
 export default withRouter(

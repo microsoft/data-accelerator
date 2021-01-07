@@ -131,7 +131,7 @@ export default class QuerySettingsContent extends React.Component {
             editor = (
                 <MonacoEditorControl
                     name="codegenqueryeditor"
-                    height="100%"
+                    height="1000px"
                     fontSize="13px"
                     language="sql"
                     theme={theme}
@@ -146,7 +146,7 @@ export default class QuerySettingsContent extends React.Component {
             editor = (
                 <MonacoEditorControl
                     name="queryeditor"
-                    height="100%"
+                    height="1000px"
                     fontSize="13px"
                     language="sql"
                     theme={theme}

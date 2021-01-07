@@ -38,7 +38,7 @@ const columnDefinition = [
         key: 'colCluster',
         name: 'Cluster',
         fieldName: 'cluster',
-        minWidth: 50,
+        minWidth: 60,
         maxWidth: 100,
         isResizable: true
     },
@@ -46,15 +46,15 @@ const columnDefinition = [
         key: 'colState',
         name: 'State',
         fieldName: 'state',
-        minWidth: 20,
-        maxWidth: 60,
+        minWidth: 60,
+        maxWidth: 100,
         isResizable: true,
         onRender: item => getJobStateIcon(item)
     },
     {
         key: 'colLink',
         name: 'Link',
-        minWidth: 50,
+        minWidth: 70,
         maxWidth: 200,
         isResizable: true,
         onRender: item => <div>{renderLinks(item.links)}</div>
@@ -227,7 +227,7 @@ class SparkJobsList extends React.Component {
             key: functionName,
             fieldName: functionName,
             name: functionName,
-            minWidth: 20,
+            minWidth: 40,
             maxWidth: 50,
             onRender: (item, index) => {
                 if (available && !available(item, index)) {

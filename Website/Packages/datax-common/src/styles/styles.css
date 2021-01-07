@@ -57,7 +57,7 @@
 .vertical-tabs {
     display: flex;
     flex: 1;
-    overflow: hidden;
+    overflow: auto;
 }
 
 .vertical-tabs-items {
