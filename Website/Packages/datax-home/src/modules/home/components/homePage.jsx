@@ -29,10 +29,16 @@ class HomePage extends React.Component {
             <Panel>
                 <div style={pageStyle}>
                     <div style={contentStyle}>
-                        {this.renderWelcomeSection()}
-                        {this.renderTutorialsSection()}
-                        {this.renderSamplesSection()}
-                        {this.renderReferencesSection()}
+                        <div role='banner'>
+                            {this.renderWelcomeSection()}
+                        </div>
+                        <div role='main'>
+                            {this.renderTutorialsSection()}
+                            {this.renderSamplesSection()}
+                        </div>
+                        <div role='contentinfo'>
+                            {this.renderReferencesSection()}
+                        </div>
                     </div>
                 </div>
             </Panel>

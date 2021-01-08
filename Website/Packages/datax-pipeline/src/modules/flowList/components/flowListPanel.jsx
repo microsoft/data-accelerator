@@ -62,10 +62,14 @@ class FlowListPanel extends React.Component {
     render() {
         return (
             <Panel>
-                <PageHeader>Flows</PageHeader>
-                <PanelHeaderButtons>{this.renderNewButton()}</PanelHeaderButtons>
-                {this.renderMessageBar()}
-                {this.renderContent()}
+                <div role='banner'>
+                    <PageHeader>Flows</PageHeader>
+                </div>
+                <div role='main'>
+                    <PanelHeaderButtons>{this.renderNewButton()}</PanelHeaderButtons>
+                    {this.renderMessageBar()}
+                    {this.renderContent()}
+                </div>
             </Panel>
         );
     }
@@ -185,7 +189,8 @@ const contentStyle = {
     paddingBottom: 30,
     flex: 1,
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    overflowY: 'auto'
 };
 
 const filterContainerStyle = {
@@ -196,7 +201,8 @@ const listContainerStyle = {
     backgroundColor: Colors.white,
     border: `1px solid ${Colors.neutralTertiaryAlt}`,
     flex: 1,
-    overflowY: 'auto'
+    overflowY: 'auto',
+    minHeight: '100px'
 };
 
 export default withRouter(

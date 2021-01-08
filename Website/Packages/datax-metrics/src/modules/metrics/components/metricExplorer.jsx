@@ -78,8 +78,10 @@ class MetricExplorer extends React.Component {
 
         return (
             <Panel>
-                <PageHeader>Metrics</PageHeader>
-                <div style={rootStyle}>
+                <div role='banner'>
+                    <PageHeader>Metrics</PageHeader>
+                </div>
+                <div style={rootStyle} role='main'>
                     <NavigationPanel>{navItems}</NavigationPanel>
                     <div className={`${FontClassNames.large} ${ColorClassNames.themePrimary}`} style={contentStyle}>
                         {content}

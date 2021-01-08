@@ -29,9 +29,13 @@ class SparkJobs extends React.Component {
     render() {
         return (
             <Panel>
-                <PageHeader>Jobs</PageHeader>
-                {this.renderMessageBar()}
-                {this.renderContent()}
+                <div role='banner'>
+                    <PageHeader>Jobs</PageHeader>
+                </div>
+                <div role='main'>
+                    {this.renderMessageBar()}
+                    {this.renderContent()}
+                </div>
             </Panel>
         );
     }
