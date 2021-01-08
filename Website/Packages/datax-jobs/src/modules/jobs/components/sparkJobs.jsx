@@ -32,10 +32,8 @@ class SparkJobs extends React.Component {
                 <div role='banner'>
                     <PageHeader>Jobs</PageHeader>
                 </div>
-                <div role='main'>
-                    {this.renderMessageBar()}
-                    {this.renderContent()}
-                </div>
+                {this.renderMessageBar()}
+                {this.renderContent()}
             </Panel>
         );
     }
@@ -63,7 +61,7 @@ class SparkJobs extends React.Component {
 
             return (
                 <div style={rootStyle}>
-                    <div style={contentStyle}>
+                    <div style={contentStyle} role="main">
                         <div style={filterContainerStyle}>
                             <SearchBox
                                 className="filter-box"

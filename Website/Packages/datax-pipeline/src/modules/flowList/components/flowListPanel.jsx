@@ -65,11 +65,9 @@ class FlowListPanel extends React.Component {
                 <div role='banner'>
                     <PageHeader>Flows</PageHeader>
                 </div>
-                <div role='main'>
-                    <PanelHeaderButtons>{this.renderNewButton()}</PanelHeaderButtons>
-                    {this.renderMessageBar()}
-                    {this.renderContent()}
-                </div>
+                <PanelHeaderButtons>{this.renderNewButton()}</PanelHeaderButtons>
+                {this.renderMessageBar()}
+                {this.renderContent()}
             </Panel>
         );
     }
@@ -81,7 +79,7 @@ class FlowListPanel extends React.Component {
                 const items = filter ? this.props.flowslist.filter(i => i.name.toLowerCase().indexOf(filter) > -1) : this.props.flowslist;
 
                 return (
-                    <div style={contentStyle}>
+                    <div style={contentStyle} role="main">
                         <div style={filterContainerStyle}>
                             <SearchBox
                                 className="filter-box"
@@ -131,6 +129,7 @@ class FlowListPanel extends React.Component {
         if (!this.props.errorMessage) {
             return (
                 <DefaultButton
+                    role="navigation"
                     key="new"
                     className="header-button"
                     title="Add new DataX Flow"
