@@ -206,13 +206,11 @@ class FlowDefinitionPanel extends React.Component {
                 <div role='banner'>
                     <PageHeader>Flow Definition</PageHeader>
                 </div>
-                <div role='main'>
-                    <PanelHeaderButtons>{this.renderButtons()}</PanelHeaderButtons>
-                    {this.renderMessageBar()}
-                    {this.renderDialog()}
-                    {this.renderModal()}
-                    {this.renderContent()}
-                </div>
+                <PanelHeaderButtons>{this.renderButtons()}</PanelHeaderButtons>
+                {this.renderMessageBar()}
+                {this.renderDialog()}
+                {this.renderModal()}
+                {this.renderContent()}
             </Panel>
         );
     }
@@ -241,7 +239,7 @@ class FlowDefinitionPanel extends React.Component {
         }
 
         return (
-            <DefaultButton key="back" className="header-button" title={buttonTooltip} onClick={() => this.onCancel()}>
+            <DefaultButton role="navigation" key="back" className="header-button" title={buttonTooltip} onClick={() => this.onCancel()}>
                 {buttonIcon}
                 {buttonText}
             </DefaultButton>
@@ -392,7 +390,7 @@ class FlowDefinitionPanel extends React.Component {
 
     renderFlow() {
         return (
-            <div style={contentStyle}>
+            <div style={contentStyle} role="main">
                 <div style={tabContainerStyle}>
                     <VerticalTabs>
                         <VerticalTabItem linkText="Info" itemCompleted={this.props.infoValidated}>
