@@ -74,6 +74,7 @@ export default class VerticalTabs extends React.Component {
                 key={itemKey}
                 onClick={this.onLinkClick.bind(this, itemKey)}
                 onKeyPress={this.onKeyPress.bind(this, itemKey)}
+                role='tab'
             >
                 {linkContent}
             </div>

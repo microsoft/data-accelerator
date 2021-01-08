@@ -203,14 +203,16 @@ class FlowDefinitionPanel extends React.Component {
     render() {
         return (
             <Panel>
-                <PageHeader>Flow Definition</PageHeader>
-                <PanelHeaderButtons>{this.renderButtons()}</PanelHeaderButtons>
-
-                {this.renderMessageBar()}
-                {this.renderDialog()}
-                {this.renderModal()}
-
-                {this.renderContent()}
+                <div role='banner'>
+                    <PageHeader>Flow Definition</PageHeader>
+                </div>
+                <div role='main'>
+                    <PanelHeaderButtons>{this.renderButtons()}</PanelHeaderButtons>
+                    {this.renderMessageBar()}
+                    {this.renderDialog()}
+                    {this.renderModal()}
+                    {this.renderContent()}
+                </div>
             </Panel>
         );
     }

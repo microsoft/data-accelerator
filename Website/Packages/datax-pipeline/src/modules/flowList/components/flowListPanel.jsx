@@ -62,10 +62,14 @@ class FlowListPanel extends React.Component {
     render() {
         return (
             <Panel>
-                <PageHeader>Flows</PageHeader>
-                <PanelHeaderButtons>{this.renderNewButton()}</PanelHeaderButtons>
-                {this.renderMessageBar()}
-                {this.renderContent()}
+                <div role='banner'>
+                    <PageHeader>Flows</PageHeader>
+                </div>
+                <div role='main'>
+                    <PanelHeaderButtons>{this.renderNewButton()}</PanelHeaderButtons>
+                    {this.renderMessageBar()}
+                    {this.renderContent()}
+                </div>
             </Panel>
         );
     }
