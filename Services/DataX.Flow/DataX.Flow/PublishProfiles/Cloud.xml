@@ -23,11 +23,13 @@ Licensed under the MIT License
        <ClusterConnectionParameters ConnectionEndpoint="mycluster.westus.cloudapp.azure.com:19000"
                                     AzureActiveDirectory="true"
                                     ServerCertThumbprint="0123456789012345678901234567890123456789" />
-  -->
+
   <ClusterConnectionParameters />
+    -->
+  <ClusterConnectionParameters ConnectionEndpoint="dxstaging-sf.eastus.cloudapp.azure.com:19000" X509Credential="true" ServerCertThumbprint="9B7C48A0A5526B255531436756A475EA883D688A" FindType="FindByThumbprint" FindValue="9B7C48A0A5526B255531436756A475EA883D688A" StoreLocation="CurrentUser" StoreName="My" />
   <ApplicationParameterFile Path="..\ApplicationParameters\Cloud.xml" />
   <CopyPackageParameters CompressPackage="true" />
-  <UpgradeDeployment Mode="Monitored" Enabled="true">
+  <UpgradeDeployment Mode="Monitored" Enabled="false">
     <Parameters FailureAction="Rollback" Force="True" />
   </UpgradeDeployment>
 </PublishProfile>

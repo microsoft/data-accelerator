@@ -13,18 +13,18 @@ Licensed under the MIT License
     <Parameter Name="Flow.InteractiveQueryService_InstanceCount" Value="1" />
     <Parameter Name="Flow.Management_ASPNETCORE_ENVIRONMENT" Value="Development" />
     <Parameter Name="Flow.Management_InstanceCount" Value="1" />
-    <Parameter Name="AzureServicesAuthConnectionString" Value="" />
-    <Parameter Name="ServiceKeyvaultName" Value="" />
-    <Parameter Name="cosmosDBConfigConnectionString" Value="" />
-    <Parameter Name="cosmosDBConfigDatabaseName" Value="" />
-    <Parameter Name="cosmosDBConfigCollectionName" Value="" />
-    <Parameter Name="AppInsightsIntrumentationKey" Value="" />
-    <Parameter Name="CACertificateLocation" Value="" />
-    <Parameter Name="SparkType" Value="" />
+    <Parameter Name="AzureServicesAuthConnectionString" Value="RunAs=App;AppId=a5331278-c8f7-452c-93a3-b8897312de9a;TenantId=72f988bf-86f1-41af-91ab-2d7cd011db47;CertificateThumbprint=9B7C48A0A5526B255531436756A475EA883D688A;CertificateStoreLocation=LocalMachine" />
+    <Parameter Name="ServiceKeyvaultName" Value="kvServicessgiaxdgnt" />
+    <Parameter Name="cosmosDBConfigConnectionString" Value="keyvault://kvServicessgiaxdgnt/configgen-configgenconfigs" />
+    <Parameter Name="cosmosDBConfigDatabaseName" Value="keyvault://kvServicessgiaxdgnt/configgen-configgenconfigsdatabasename" />
+    <Parameter Name="cosmosDBConfigCollectionName" Value="configgenConfigs" />
+    <Parameter Name="AppInsightsIntrumentationKey" Value="configgen-aiInstrumentationKey" />
+    <Parameter Name="CACertificateLocation" Value="keyvault://kvServicessgiaxdgnt/configgen-cacertificatelocation" />
+    <Parameter Name="SparkType" Value="hdinsight" />
     <Parameter Name="TestClientId" Value="" />
     <Parameter Name="MefStorageAccountName" Value="" />
     <Parameter Name="MefContainerName" Value="" />
     <Parameter Name="MefBlobDirectory" Value="" />
-    <Parameter Name="EnableOneBox" Value="" />
+    <Parameter Name="EnableOneBox" Value="false" />
   </Parameters>
 </Application>

@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using DataX.ServiceHost.AspNetCore.Authorization.Roles;
 using Microsoft.Extensions.Configuration;
+using System.Diagnostics;
 
 namespace Flow.Management.Controllers
 {
@@ -422,6 +423,51 @@ namespace Flow.Management.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("job/restartallwithretries")]
+        [DataXWriter]
+        public async Task<ApiResult> RestatAllWithRetries([FromBody] RestatAllWithRetriesRequest request)
+        {
+            try
+            {
+                RolesCheck.EnsureWriter(Request, _isLocal);
+
+                var jobNames = request.JobNames;
+                int retryTimes = 0;
+                IEnumerable<SparkJobFrontEnd> notReadyJobs = Enumerable.Empty<SparkJobFrontEnd>();
+                do
+                {
+                    await _jobOperation.RestartAllJobs(jobNames);
+
+                    await _jobOperation.StopJob(jobNames[0]);
+
+                    var startTime = DateTime.Now;
+                    do
+                    {
+                        SparkJobFrontEnd[] jobOpResult = jobNames != null && jobNames.Any() ?
+                                await _jobOperation.SyncJobStateByNames(jobNames)
+                                : await _jobOperation.SyncAllJobState();
+
+                        notReadyJobs = jobOpResult.Where(r => r.JobState == JobState.Starting || r.JobState == JobState.Idle || r.JobState == JobState.Error);
+                        jobNames = notReadyJobs.Select(j => j.Name).ToArray();
+                        if(!notReadyJobs.Any())
+                        {
+                            break;
+                        }
+
+                        System.Threading.Thread.Sleep(request.WaitIntervalInSeconds * 1000);
+                    } while ((DateTime.Now - startTime).TotalSeconds < request.MaxWaitTimeInSeconds);
+
+                } while (retryTimes++ <= request.MaxRetryTimes && notReadyJobs.Any());
+
+                return ApiResult.CreateSuccess(JToken.FromObject(notReadyJobs));
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return ApiResult.CreateError(e.Message);
+            }
+        }
 
         [HttpGet]
         [Route("job/syncall")]
@@ -462,6 +508,5 @@ namespace Flow.Management.Controllers
                 return ApiResult.CreateError(e.Message);
             }
         }
-
     }
 }

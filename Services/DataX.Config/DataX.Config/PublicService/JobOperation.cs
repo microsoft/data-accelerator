@@ -30,7 +30,7 @@ namespace DataX.Config.PublicService
         private SparkJobOperation SparkJobOperation { get; }
         private SparkJobData SparkJobData { get; }
 
-        private static readonly TimeSpan _DefaultRetryTimeout = TimeSpan.FromMinutes(2);
+        private static readonly TimeSpan _DefaultRetryTimeout = TimeSpan.FromMinutes(4);
         private static readonly TimeSpan _DefaultRetryInterval = TimeSpan.FromMilliseconds(300);
 
         public async Task<Result> StartJob(string jobName)
@@ -47,6 +47,25 @@ namespace DataX.Config.PublicService
         {
             var timeout = DateTime.Now.Add(_DefaultRetryTimeout);
             return await this.SparkJobOperation.RestartJobWithRetries(jobName, timeout, _DefaultRetryInterval);
+        }
+
+        public async Task<Result[]> RestartAllJobs(string[] jobNames = null)
+        {
+            string[] actualJobNames = jobNames;
+            if(actualJobNames == null || !actualJobNames.Any())
+            {
+                var jobs = await SparkJobData.GetAll();
+                actualJobNames = jobs.Select(j => j.Name).ToArray();
+            }    
+
+            var results = new List<Result>();
+            foreach (var jobName in actualJobNames)
+            {
+                var result = await RestartJob(jobName);
+                results.Add(result);     
+            }
+
+            return results.ToArray<Result>();
         }
 
         protected static async Task<SparkJobFrontEnd[]> ConvertToFrontEnd(Task<SparkJobConfig[]> tasks)
