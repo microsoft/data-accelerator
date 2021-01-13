@@ -438,8 +438,6 @@ namespace Flow.Management.Controllers
                 {
                     await _jobOperation.RestartAllJobs(jobNames);
 
-                    await _jobOperation.StopJob(jobNames[0]);
-
                     var startTime = DateTime.Now;
                     do
                     {
