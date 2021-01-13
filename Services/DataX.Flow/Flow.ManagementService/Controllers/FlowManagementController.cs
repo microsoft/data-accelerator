@@ -423,16 +423,43 @@ namespace Flow.Management.Controllers
         }
 
         [HttpPost]
-        [Route("job/restartall")]
+        [Route("job/restartallwithretries")]
         [DataXWriter]
-        public async Task<ApiResult> RestartAllJobs([FromBody] string[] jobNames)
+        public async Task<ApiResult> RestatAllWithRetries([FromBody] RestatAllWithRetriesRequest request)
         {
             try
             {
                 RolesCheck.EnsureWriter(Request, _isLocal);
 
-                var jobOpResult = await _jobOperation.RestartAllJobs(jobNames);
-                return ApiResult.CreateSuccess(JToken.FromObject(jobOpResult));
+                var jobNames = request.JobNames;
+                int retryTimes = 0;
+                IEnumerable<SparkJobFrontEnd> notReadyJobs = Enumerable.Empty<SparkJobFrontEnd>();
+                do
+                {
+                    await _jobOperation.RestartAllJobs(jobNames);
+
+                    await _jobOperation.StopJob(jobNames[0]);
+
+                    var startTime = DateTime.Now;
+                    do
+                    {
+                        SparkJobFrontEnd[] jobOpResult = jobNames != null && jobNames.Any() ?
+                                await _jobOperation.SyncJobStateByNames(jobNames)
+                                : await _jobOperation.SyncAllJobState();
+
+                        notReadyJobs = jobOpResult.Where(r => r.JobState == JobState.Starting || r.JobState == JobState.Idle || r.JobState == JobState.Error);
+                        jobNames = notReadyJobs.Select(j => j.Name).ToArray();
+                        if(!notReadyJobs.Any())
+                        {
+                            break;
+                        }
+
+                        System.Threading.Thread.Sleep(request.WaitIntervalInSeconds * 1000);
+                    } while ((DateTime.Now - startTime).TotalSeconds < request.MaxWaitTimeInSeconds);
+
+                } while (retryTimes++ < request.MaxRetryTimes && notReadyJobs.Any());
+
+                return ApiResult.CreateSuccess(JToken.FromObject(notReadyJobs));
             }
             catch (Exception e)
             {
@@ -472,44 +499,6 @@ namespace Flow.Management.Controllers
 
                 // Sync jobs for the names given
                 var jobOpResult = await _jobOperation.SyncJobStateByNames(jobNames);
-                return ApiResult.CreateSuccess(JToken.FromObject(jobOpResult));
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, e.Message);
-                return ApiResult.CreateError(e.Message);
-            }
-        }
-
-        [HttpPost]
-        [Route("job/waittilljobsrunning")]
-        public async Task<ApiResult> WaitTillJobsRunning([FromBody] WaitTillJobsRunningRequest waitRequest)
-        {
-            try
-            {
-                RolesCheck.EnsureWriter(Request, _isLocal);
-
-                var maxRetryTimes = waitRequest.MaxRetryTimes;
-                var jobNames = waitRequest.JobNames;
-                var intervalsBetweenRetriesInSeconds = waitRequest.IntervalsBetweenRetriesInSeconds;
-
-                int retryTimes = 0;
-                SparkJobFrontEnd[] jobOpResult = null;
-                while (retryTimes++ < maxRetryTimes)
-                {
-                    jobOpResult = jobNames != null && jobNames.Any() ?
-                                await _jobOperation.SyncJobStateByNames(jobNames)
-                                : await _jobOperation.SyncAllJobState();
-
-                    var startingJobs = jobOpResult.Where(r => r.JobState == JobState.Starting);
-                    if (!startingJobs.Any())
-                    {
-                        break;
-                    }
-
-                    System.Threading.Thread.Sleep(intervalsBetweenRetriesInSeconds * 1000);
-                }
-
                 return ApiResult.CreateSuccess(JToken.FromObject(jobOpResult));
             }
             catch (Exception e)
