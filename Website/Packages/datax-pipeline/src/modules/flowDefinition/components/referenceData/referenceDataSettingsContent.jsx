@@ -70,13 +70,14 @@ export default class ReferenceDataSettingsContent extends React.Component {
         });
 
         return (
-            <div style={leftPaneStyle}>
+            <div style={leftPaneStyle} role="contentinfo" aria-label="Reference Data">
                 <PanelHeader style={Styles.panelHeaderStyle}>Reference Data</PanelHeader>
                 <PanelHeaderButtons style={panelHeaderButtonStyle}>{this.renderButtons()}</PanelHeaderButtons>
 
                 <div style={leftPaneContentStyle}>
                     <div style={listContainerStyle}>
                         <DetailsList
+                            ariaLabelForGrid="Reference Data"
                             items={referenceDatas}
                             columns={referenceDataColumns}
                             onActiveItemChanged={(item, index) => this.onSelectReferenceDataItem(item, index)}
@@ -96,7 +97,7 @@ export default class ReferenceDataSettingsContent extends React.Component {
 
     renderRightPane() {
         return (
-            <div style={rightPaneStyle}>
+            <div style={rightPaneStyle} role="contentinfo" aria-label="Settings">
                 <PanelHeader style={Styles.panelHeaderStyle}>Settings</PanelHeader>
                 <ScrollableContentPane backgroundColor={Colors.neutralLighterAlt}>
                     {this.renderReferenceDataSettings()}
