@@ -51,7 +51,7 @@ export default class VerticalTabs extends React.Component {
 
     render() {
         return (
-            <div className="vertical-tabs">
+            <div className="vertical-tabs" role='tablist'>
                 {this.renderLinks()}
                 {this.renderItem()}
             </div>

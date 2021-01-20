@@ -85,13 +85,14 @@ export default class RulesSettingsContent extends React.Component {
         });
 
         return (
-            <div style={leftPaneStyle}>
+            <div style={leftPaneStyle} role="contentinfo" aria-label="Rules">
                 <PanelHeader style={Styles.panelHeaderStyle}>Rules</PanelHeader>
                 <PanelHeaderButtons style={panelHeaderButtonStyle}>{this.renderButtons()}</PanelHeaderButtons>
 
                 <div style={leftPaneContentStyle}>
                     <div style={listContainerStyle}>
                         <DetailsList
+                            ariaLabelForGrid="Rules"
                             items={rules}
                             columns={ruleColumns}
                             onActiveItemChanged={(item, index) => this.onSelectRuleItem(item, index)}
@@ -111,7 +112,7 @@ export default class RulesSettingsContent extends React.Component {
 
     renderRightPane() {
         return (
-            <div style={rightPaneStyle}>
+            <div style={rightPaneStyle} role="contentinfo" aria-label="Settings">
                 <PanelHeader style={Styles.panelHeaderStyle}>Settings</PanelHeader>
                 {this.renderWarningBar()}
                 <ScrollableContentPane backgroundColor={Colors.neutralLighterAlt}>{this.renderRuleSettings()}</ScrollableContentPane>

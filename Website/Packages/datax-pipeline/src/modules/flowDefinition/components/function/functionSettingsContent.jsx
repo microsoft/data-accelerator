@@ -73,13 +73,14 @@ export default class FunctionSettingsContent extends React.Component {
         });
 
         return (
-            <div style={leftPaneStyle}>
+            <div style={leftPaneStyle} role="contentinfo" aria-label="Functions">
                 <PanelHeader style={Styles.panelHeaderStyle}>Functions</PanelHeader>
                 <PanelHeaderButtons style={panelHeaderButtonStyle}>{this.renderButtons()}</PanelHeaderButtons>
 
                 <div style={leftPaneContentStyle}>
                     <div style={listContainerStyle}>
                         <DetailsList
+                            ariaLabelForGrid="Functions"
                             items={functions}
                             columns={functionColumns}
                             onActiveItemChanged={(item, index) => this.onSelectFunctionItem(item, index)}
@@ -99,7 +100,7 @@ export default class FunctionSettingsContent extends React.Component {
 
     renderRightPane() {
         return (
-            <div style={rightPaneStyle}>
+            <div style={rightPaneStyle} role="contentinfo" aria-label="Settings">
                 <PanelHeader style={Styles.panelHeaderStyle}>Settings</PanelHeader>
                 <ScrollableContentPane backgroundColor={Colors.neutralLighterAlt}>{this.renderFunctionSettings()}</ScrollableContentPane>
             </div>
