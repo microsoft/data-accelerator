@@ -425,13 +425,17 @@ namespace Flow.Management.Controllers
         [HttpPost]
         [Route("job/restartallwithretries")]
         [DataXWriter]
-        public async Task<ApiResult> RestatAllWithRetries([FromBody] RestatAllWithRetriesRequest request)
+        public async Task<ApiResult> RestatAllWithRetries([FromBody] JObject request)
         {
             try
             {
                 RolesCheck.EnsureWriter(Request, _isLocal);
+                Ensure.NotNull(request, "request");
 
-                var jobNames = request.JobNames;
+                var jobNames = request.Value<JArray>("JobNames")?.Value<string[]>() ?? Array.Empty<string>();
+                var maxRetryTimes = request.GetValue("MaxRetryTimes", StringComparison.OrdinalIgnoreCase)?.Value<int>() ?? 2;
+                var waitIntervalInSeconds = request.GetValue("WaitIntervalInSeconds", StringComparison.OrdinalIgnoreCase)?.Value<int>() ?? 2;
+                var maxWaitTimeInSeconds = request.GetValue("MaxWaitTimeInSeconds", StringComparison.OrdinalIgnoreCase)?.Value<int>() ?? 60;
                 int retryTimes = 0;
                 IEnumerable<SparkJobFrontEnd> notReadyJobs = Enumerable.Empty<SparkJobFrontEnd>();
                 do
@@ -452,10 +456,10 @@ namespace Flow.Management.Controllers
                             break;
                         }
 
-                        System.Threading.Thread.Sleep(request.WaitIntervalInSeconds * 1000);
-                    } while ((DateTime.Now - startTime).TotalSeconds < request.MaxWaitTimeInSeconds);
+                        System.Threading.Thread.Sleep(waitIntervalInSeconds * 1000);
+                    } while ((DateTime.Now - startTime).TotalSeconds < maxWaitTimeInSeconds);
 
-                } while (retryTimes++ < request.MaxRetryTimes && notReadyJobs.Any());
+                } while (retryTimes++ < maxRetryTimes && notReadyJobs.Any());
 
                 return ApiResult.CreateSuccess(JToken.FromObject(notReadyJobs));
             }
