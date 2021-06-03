@@ -186,6 +186,7 @@ namespace DataX.Config.LivyClient
                 case "running":return JobState.Running;
                 case "dead":return JobState.Idle;
                 case "success":return JobState.Success;
+                case "killed":return JobState.Idle;
                 default: throw new GeneralException($"Unexpected livy batch state:'{state}'");
             }
         }
