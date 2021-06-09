@@ -165,7 +165,7 @@ SOFTWARE
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>5.2.2.RELEASE</version>
+            <version>5.3.7.RELEASE</version>
         </dependency>
     </dependencies>
 
