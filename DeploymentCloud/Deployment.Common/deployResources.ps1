@@ -78,7 +78,11 @@
 
     [ValidateSet("y", "n")]
     [string]
-    $setupKVAccess
+    $setupKVAccess,
+	
+	[ValidateSet("y", "n")]
+    [string]
+    $useCertFromKV
 )
 
 $user = [Security.Principal.WindowsIdentity]::GetCurrent();
@@ -105,14 +109,14 @@ if ($deployResources -ne 'y') {
     Exit 0
 }
 
-if ($generateNewSelfSignedCerts -eq 'n' -and !$certPassword) {
+if ($generateNewSelfSignedCerts -eq 'n' -and !$certPassword -and $useCertFromKV -eq 'n') {
     Write-Host "Please provide certPassword to import the existing certs"
     Exit 40
 }
 
 Remove-Item -path ".\cachedVariables" -Force -ErrorAction SilentlyContinue
 $rootFolderPath = $PSScriptRoot
-Import-Module "..\Deployment.Common\Helpers\UtilityModule" -ArgumentList $rootFolderPath, $resourceGroupName, $productName, $sparkClusterName, $randomizeProductName, $serviceFabricClusterName, $serviceAppName, $clientAppName, $sparkPassword, $sparkSshPassword, $sfPassword, $certPassword, $redisCacheSize -WarningAction SilentlyContinue
+Import-Module "..\Deployment.Common\Helpers\UtilityModule" -ArgumentList $rootFolderPath, $resourceGroupName, $productName, $sparkClusterName, $randomizeProductName, $serviceFabricClusterName, $serviceAppName, $clientAppName, $sparkPassword, $sparkSshPassword, $sfPassword, $certPassword, $redisCacheSize, $useCertFromKV, $certKVName -WarningAction SilentlyContinue
 Set-Content -Path ".\cachedVariables" -NoNewline -Value $name
 
 function Install-Modules {
@@ -130,7 +134,7 @@ function Install-Modules {
     # Since, Mdbc PS module doesn't support New-MdbcQuery cmdlet from v6.0.0, we have to make sure correct Mdbc module is installed.
     # https://github.com/nightroman/Mdbc/blob/master/Release-Notes.md#v600
     $modules.Keys | foreach {
-            if (!(Get-installedModule -name $_ -RequiredVersion $modules.Item($_) -ErrorAction SilentlyContinue )) {    
+            if (!(Get-installedModule -name $_ -RequiredVersion $modules.Item($_) -ErrorAction SilentlyContinue )) {  
                 Write-Host "Install Module: " $_
                 $moduleInstalled = $true
                 Install-Module -Name $_ -Force -AllowClobber -Scope CurrentUser -Repository PSGallery
@@ -173,7 +177,7 @@ function Get-Tokens {
     $tokens.Add('tenantId', $tenantId )
     $tokens.Add('userId', $userId )
 	
-    $sparkType = 'hdinsight'
+	$sparkType = 'hdinsight'
     $keyvaultPrefix = 'keyvault'
 	$dataxJobTemplate = 'DataXDirect'
 	$dataxKafkaJobTemplate = 'kafkaDataXDirect'
@@ -203,7 +207,7 @@ function Get-Tokens {
 	$tokens.Add('dataxJobTemplate', $dataxJobTemplate)
 	$tokens.Add('dataxKafkaJobTemplate', $dataxKafkaJobTemplate)
 	$tokens.Add('dataxBatchJobTemplate', $dataxBatchJobTemplate)
-	
+    
     # CosmosDB
     $tokens.Add('blobopsconnectionString', $blobopsconnectionString )
     $tokens.Add('configgenClientId', $azureADApplicationConfiggenApplicationId )
@@ -218,6 +222,7 @@ function Get-Tokens {
     $tokens.Add('resourceLocationForServiceFabric', $resourceLocationForServiceFabric )
     $tokens.Add('vmNodeTypeSize', $vmNodeTypeSize )
     $tokens.Add('vmNodeinstanceCount', $vmNodeinstanceCount )
+	$tokens.Add('sfVmImageSKU', $sfVmImageSKU )
     
     # Spark Template
     $tokens.Add('vmSizeSparkHeadnode', $vmSizeSparkHeadnode )
@@ -410,17 +415,22 @@ function Generate-SelfSignedCert([string] $certFileName, [string] $outputPath) {
 
 # Import Certs to keyVault
 function Import-CertsToKeyVault([string]$certPath) {
-    $certPath = $certPath.Replace("""", "")
-    $certBaseName = ((Get-Item $certPath).Name).Replace(".", "")
-    $password = ConvertTo-SecureString $certPwd -AsPlainText -Force
+    if ($useCertFromKV -eq 'n') {
+		$certPath = $certPath.Replace("""", "")
+		$certBaseName = ((Get-Item $certPath).Name).Replace(".", "")
+		$password = ConvertTo-SecureString $certPwd -AsPlainText -Force
 
-    # Upload to Key Vault
-    if ($serviceFabricCreation -eq 'y') {
-        $cert = Import-AzureKeyVaultCertificate -VaultName $sfKVName -Name $certBaseName -FilePath $certPath -Password $password
-    }
-    else {
-        $cert = Get-AzureKeyVaultCertificate -VaultName $sfKVName -Name $certBaseName
-    }
+		# Upload to Key Vault
+		if ($serviceFabricCreation -eq 'y') {
+			$cert = Import-AzureKeyVaultCertificate -VaultName $sfKVName -Name $certBaseName -FilePath $certPath -Password $password
+		}
+		else {
+			$cert = Get-AzureKeyVaultCertificate -VaultName $sfKVName -Name $certBaseName
+		}
+	}
+	else {
+		$cert = Get-AzureKeyVaultCertificate -VaultName $sfKVName -Name $certPath
+	}
     $cert
 }
 
@@ -693,30 +703,34 @@ function Setup-KVAccess {
 
 # Import SSL Cert To Service Fabric
 function Import-SSLCertToSF([string]$certPath) {
-    $certPath = $certPath.Replace("""", "")
-    $certBaseName = (Get-Item $certPath).BaseName
-    $clustername = "$serviceFabricName" 
-    $bytes = [System.IO.File]::ReadAllBytes($certPath)
-    $base64 = [System.Convert]::ToBase64String($bytes)
+	if ($useCertFromKV -eq 'n') {
+		$certPath = $certPath.Replace("""", "")
+		$certBaseName = (Get-Item $certPath).BaseName
+		$bytes = [System.IO.File]::ReadAllBytes($certPath)
+		$base64 = [System.Convert]::ToBase64String($bytes)
 
-    $jsonBlob = @{
-       data = $base64
-       dataType = 'pfx'
-       password = $certPwd
-       } | ConvertTo-Json
+		$jsonBlob = @{
+		   data = $base64
+		   dataType = 'pfx'
+		   password = $certPwd
+		   } | ConvertTo-Json
 
-    $contentbytes = [System.Text.Encoding]::UTF8.GetBytes($jsonBlob)
-    $content = [System.Convert]::ToBase64String($contentbytes)
+		$contentbytes = [System.Text.Encoding]::UTF8.GetBytes($jsonBlob)
+		$content = [System.Convert]::ToBase64String($contentbytes)
 
-    $secretValue = ConvertTo-SecureString -String $content -AsPlainText -Force
+		$secretValue = ConvertTo-SecureString -String $content -AsPlainText -Force
 
-    # Upload the certificate to the key vault as a secret
-    Write-Host "Writing secret to $certBaseName in vault $sfKVName"
+		# Upload the certificate to the key vault as a secret
+		Write-Host "Writing secret to $certBaseName in vault $sfKVName"
 
-    $secret = Set-AzureKeyVaultSecret -VaultName $sfKVName -Name $certBaseName -SecretValue $secretValue
-
-    # Add a certificate to all the VMs in the cluster.
-    Add-AzureRmServiceFabricApplicationCertificate -resourceGroupName $resourceGroupName -Name $clustername -SecretIdentifier $secret.Id | Out-Null
+		$secret = Set-AzureKeyVaultSecret -VaultName $sfKVName -Name $certBaseName -SecretValue $secretValue
+	}
+	else {
+		$secret = Get-AzureKeyVaultSecret -VaultName $sfKVName -Name $certPath
+	}
+	# Add a certificate to all the VMs in the cluster.
+	$clustername = "$serviceFabricName" 
+	Add-AzureRmServiceFabricApplicationCertificate -resourceGroupName $resourceGroupName -Name $clustername -SecretIdentifier $secret.Id | Out-Null
 }
 
 # Open 443 port

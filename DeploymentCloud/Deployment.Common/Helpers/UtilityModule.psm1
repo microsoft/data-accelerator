@@ -49,7 +49,15 @@ param(
 
     [Parameter(Mandatory=$True)]
     [string]
-    $redisCacheSize
+    $redisCacheSize,
+	
+	[Parameter(Mandatory=$True)]
+    [string]
+	$useCertFromKV,
+	
+	[Parameter(Mandatory=$False)]
+    [string]
+	$certKVName
 )
 
 # Generate the random characters to randomize ProductName
@@ -189,7 +197,12 @@ $servicesKVName = "kvServices" + $kvBaseName
 $sparkKVName = "kvSpark" + $kvBaseName
 $sparkRDPKVName = "kvSparkRDP" + $kvBaseName
 $fabricRDPKVName = "kvFabricRDP" + $kvBaseName
-$sfKVName = "kvSF" + $kvBaseName
+if ($useCertFromKV -eq 'n') {
+	$sfKVName = "kvSF" + $kvBaseName
+}
+else {
+	$sfKVName = $certKVName
+}
 
 $docDBName = "$name"
 $appInsightsName = "$name"
