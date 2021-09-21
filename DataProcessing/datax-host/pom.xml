@@ -123,8 +123,18 @@ SOFTWARE
         <dependency>
             <groupId>com.microsoft.datax</groupId>
             <artifactId>datax-utility_2.4_2.11</artifactId>
+<<<<<<< HEAD
             <version>1.2.3-SNAPSHOT</version>
         </dependency>		
+=======
+            <version>1.2.2-SNAPSHOT</version>
+        </dependency>
+		<dependency>
+		  <groupId>com.microsoft.azure</groupId>
+		  <artifactId>azure-keyvault-cryptography</artifactId>
+		  <version>1.1</version>
+		</dependency>
+>>>>>>> add abfss protocol for adls gen2 experiment
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-eventhubs-spark_2.11</artifactId>
