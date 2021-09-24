@@ -71,6 +71,12 @@ class SparkJobs extends React.Component {
                             <div style={buttonStyle}>
                                 <PrimaryButton text="Refresh Jobs Status" onClick={() => this.syncSparkItems()} />
                             </div>
+                            <div style={buttonStyle}>
+                                <PrimaryButton text="Stop All Jobs" onClick={() => this.stopSparkItems()} />
+                            </div>
+                            <div style={buttonStyle}>
+                                <PrimaryButton text="Start All Jobs" onClick={() => this.startSparkItems()} />
+                            </div>
                         </div>
 
                         <div style={detailsContainerStyle}>{details}</div>
@@ -114,6 +120,30 @@ class SparkJobs extends React.Component {
 
     syncSparkItems() {
         Api.syncSparkJobs()
+            .then(jobs => this.setJobs(jobs))
+            .catch(error => {
+                const message = getApiErrorMessage(error);
+                this.setState({
+                    errorMessage: message,
+                    showMessageBar: true
+                });
+            });
+    }
+
+    stopSparkItems() {
+        Api.stopAllSparkJobs()
+            .then(jobs => this.setJobs(jobs))
+            .catch(error => {
+                const message = getApiErrorMessage(error);
+                this.setState({
+                    errorMessage: message,
+                    showMessageBar: true
+                });
+            });
+    }
+
+    startSparkItems() {
+        Api.startAllSparkJobs()
             .then(jobs => this.setJobs(jobs))
             .catch(error => {
                 const message = getApiErrorMessage(error);

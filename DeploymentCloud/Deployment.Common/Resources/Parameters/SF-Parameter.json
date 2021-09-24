@@ -127,7 +127,7 @@
             "value": "Standard_LRS"
         },
         "nt0InstanceCount": {
-            "value": $vmNodeinstanceCount,
+            "value": $vmNodeinstanceCount
         },
         "vmNodeType0Name": {
             "value": "$vmNodeTypeName"

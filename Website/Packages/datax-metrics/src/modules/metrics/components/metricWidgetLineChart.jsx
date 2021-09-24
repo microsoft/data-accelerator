@@ -82,7 +82,7 @@ class MetricWidgetLineChart extends React.Component {
                     ref={div => {
                         this.graphDiv = div;
                     }}
-                    style={{ width: 'auto', height: 300, paddingTop: 25, backgroundColor: Colors.white, border: `1px solid ${Colors.customGray}` }}
+                    style={{ width: 'auto', height: 300, paddingTop: 25, backgroundColor: Colors.white, border: `1px solid ${Colors.customNeutralDarkGray}` }}
                 />
             </div>
         );

@@ -11,6 +11,12 @@ export const listSparkJobs = () =>
 export const syncSparkJobs = () =>
     serviceGetApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.flow, 'job/syncall');
 
+export const stopAllSparkJobs = () =>
+    serviceGetApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.flow, 'job/stopall');
+
+export const startAllSparkJobs = () =>
+    serviceGetApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.flow, 'job/startall');
+
 export const startSparkJob = name =>
     servicePostApi(Constants.serviceRouteApi, Constants.serviceApplication, Constants.services.flow, 'job/start', name);
 

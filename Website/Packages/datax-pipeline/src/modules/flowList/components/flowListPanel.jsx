@@ -198,7 +198,7 @@ const filterContainerStyle = {
 
 const listContainerStyle = {
     backgroundColor: Colors.white,
-    border: `1px solid ${Colors.neutralTertiaryAlt}`,
+    border: `1px solid ${Colors.neutralPrimaryAlt}`,
     flex: 1,
     overflowY: 'auto',
     minHeight: '100px'

@@ -1,6 +1,6 @@
 {
   "name": "datax-metrics",
-  "version": "1.4.0-SNAPSHOT-7",
+  "version": "1.4.0-SNAPSHOT-8",
   "description": "Metric features",
   "author": "Microsoft",
   "license": "MIT",
@@ -22,7 +22,7 @@
     "devpatch": "rimraf dist && webpack --mode development --config webpack.config.js --bail --progress --display-modules --display-error-details --colors --display-chunks --display-reasons && localdevpatch.bat"
   },
   "dependencies": {
-    "moment": "2.22.2"
+    "moment": "2.29.1"
   },
   "devDependencies": {
     "@babel/core": "7.1.6",
@@ -33,7 +33,7 @@
     "d3": "4.10.2",
     "file-loader": "2.0.0",
     "mini-css-extract-plugin": "0.4.4",
-    "datax-common": "1.4.0-SNAPSHOT-7",
+    "datax-common": "1.4.0-SNAPSHOT-8",
     "office-ui-fabric-react": "6.111.2",
     "q": "1.5.1",
     "plotly.js": "1.44.4",
