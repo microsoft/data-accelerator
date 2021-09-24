@@ -23,7 +23,7 @@ class MetricWidgetPercentageBox extends React.Component {
                     width: 300,
                     height: 120,
                     padding: 10,
-                    borderColor: Colors.customGray,
+                    borderColor: Colors.customNeutralDarkGray,
                     borderWidth: 1,
                     borderStyle: 'solid',
                     backgroundColor: Colors.white,

@@ -99,6 +99,16 @@ namespace DataX.Config.PublicService
             return ConvertToFrontEnd(SparkJobOperation.SyncAllJobState());
         }
 
+        public Task<SparkJobFrontEnd[]> StopAllJobs()
+        {
+            return ConvertToFrontEnd(SparkJobOperation.StopAllJobs());
+        }
+
+        public Task<SparkJobFrontEnd[]> StartAllJobs()
+        {
+            return ConvertToFrontEnd(SparkJobOperation.StartAllJobs());
+        }
+
         public async Task<Result> DeleteJob(string jobName)
         {
             return await this.SparkJobData.DeleteByName(jobName);

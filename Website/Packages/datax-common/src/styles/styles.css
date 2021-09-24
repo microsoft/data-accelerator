@@ -74,8 +74,8 @@
     border-left: 10px solid orange;
     color: #40474b;
     background-color: #dadada;
-    border-top: 1px solid #dadada;
-    border-bottom: 1px solid #dadada;
+    border-top: 1px solid #474747;
+    border-bottom: 1px solid #474747;
 }
 
 .vertical-tabs-item.selected {

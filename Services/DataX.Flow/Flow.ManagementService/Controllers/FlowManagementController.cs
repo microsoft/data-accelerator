@@ -490,6 +490,46 @@ namespace Flow.Management.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("job/stopall")]
+        [DataXWriter]
+        public async Task<ApiResult> StopAllJobs()
+        {
+            try
+            {
+                RolesCheck.EnsureWriter(Request, _isLocal);
+
+                // Sync all jobs
+                var jobOpResult = await _jobOperation.StopAllJobs();
+                return ApiResult.CreateSuccess(JToken.FromObject(jobOpResult));
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return ApiResult.CreateError(e.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("job/startall")]
+        [DataXWriter]
+        public async Task<ApiResult> StartAllJobs()
+        {
+            try
+            {
+                RolesCheck.EnsureWriter(Request, _isLocal);
+
+                // Sync all jobs
+                var jobOpResult = await _jobOperation.StartAllJobs();
+                return ApiResult.CreateSuccess(JToken.FromObject(jobOpResult));
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return ApiResult.CreateError(e.Message);
+            }
+        }
+
         [HttpPost]
         [Route("job/syncbynames")]
         public async Task<ApiResult> SyncJobsByNames([FromBody] string[] jobNames)

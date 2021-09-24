@@ -51,7 +51,7 @@ SOFTWARE
 
     <groupId>com.microsoft.datax</groupId>
     <artifactId>datax-host_2.4_2.11</artifactId>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.2.3-SNAPSHOT</version>
 
     <properties>
         <spark.version>2.4.5</spark.version>
@@ -118,12 +118,12 @@ SOFTWARE
         <dependency>
             <groupId>com.microsoft.datax</groupId>
             <artifactId>datax-core_2.4_2.11</artifactId>
-            <version>1.2.2-SNAPSHOT</version>
+            <version>1.2.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.datax</groupId>
             <artifactId>datax-utility_2.4_2.11</artifactId>
-            <version>1.2.2-SNAPSHOT</version>
+            <version>1.2.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
@@ -133,12 +133,12 @@ SOFTWARE
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>5.2.2.RELEASE</version>
+            <version>6.1.5.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-storage</artifactId>
-            <version>3.1.0</version>
+            <version>8.6.6</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
@@ -148,7 +148,7 @@ SOFTWARE
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-azure</artifactId>
-            <version>3.2.1</version>
+            <version>3.3.1</version>
         </dependency>
         <dependency>
             <groupId>org.mortbay.jetty</groupId>
