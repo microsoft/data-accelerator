@@ -50,7 +50,7 @@ object RouterSetting {
       jobName = name,
       coalescingRatio = dict.getDouble(s"${NamespaceFilterPrefix}coalescingRatio"),
       numPartitions = dict.getOrNull(s"${NamespaceFilterPrefix}numPartitions"),
-      output = buildFilterOutput(dict.getSubDictionary(NamespaceFilterPrefix))
+      output = buildFilterOutput(dict.getSubDictionary(s"${NamespaceFilterPrefix}output."))
     )
   }
 
