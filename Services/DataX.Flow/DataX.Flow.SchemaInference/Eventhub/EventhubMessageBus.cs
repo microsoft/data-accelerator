@@ -64,7 +64,7 @@ namespace DataX.Flow.SchemaInference.Eventhub
                 MaxBatchSize = 500,
                 PrefetchCount = 500,
                 ReceiveTimeout = TimeSpan.FromSeconds(20),
-                InitialOffsetProvider = (partitionId) => DateTime.UtcNow.AddSeconds(-60)  // start from 60 second back since it is possible that the data may not be flowing for the last 40 seconds or so.
+                InitialOffsetProvider = (partitionId) => Microsoft.Azure.EventHubs.EventPosition.FromEnqueuedTime(DateTime.UtcNow.AddSeconds(-60))  // start from 60 second back since it is possible that the data may not be flowing for the last 40 seconds or so.
             };
             return options;
         }

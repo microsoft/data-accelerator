@@ -18,6 +18,7 @@ namespace DataX.Metrics.Ingestor
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.ApplicationInsights;
     using System;
+    using Microsoft.Extensions.Hosting;
 
     public class Startup
     {
@@ -39,11 +40,11 @@ namespace DataX.Metrics.Ingestor
             });
             StartUpUtil.ConfigureServices(services, Configuration);            
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc(options => options.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public static void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {

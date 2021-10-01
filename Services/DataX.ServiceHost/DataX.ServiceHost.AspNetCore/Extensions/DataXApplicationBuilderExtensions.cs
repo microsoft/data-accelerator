@@ -7,6 +7,7 @@ namespace DataX.ServiceHost.AspNetCore.Extensions
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
 
     /// <summary>
     /// Extensions for IApplicationBuilder
@@ -20,13 +21,14 @@ namespace DataX.ServiceHost.AspNetCore.Extensions
         /// <returns>The configured ApplicationBuilder</returns>
         public static IApplicationBuilder UseDataXApplicationDefaults(this IApplicationBuilder app)
         {
-            var env = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+            var env = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseRouting();
             app.UseMvc();
 
             return app;
