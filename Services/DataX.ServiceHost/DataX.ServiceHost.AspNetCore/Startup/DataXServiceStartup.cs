@@ -59,26 +59,27 @@ namespace DataX.ServiceHost.AspNetCore.Startup
 
             services
                 .AddDataXAuthorization(DataXDefaultGatewayPolicy.ConfigurePolicy)
-                .AddMvc();
+                .AddMvc(options => options.EnableEndpointRouting = false).AddNewtonsoftJson();
         }
 
         /// <inheritdoc />
         public void Configure(IApplicationBuilder app)
         {
-            var hostingEnvironment = app.ApplicationServices.GetService<IHostingEnvironment>();
+            var hostingEnvironment = app.ApplicationServices.GetService<IWebHostEnvironment>();
             var loggerFactory = app.ApplicationServices.GetService<ILoggerFactory>();
 
             Configure(app, hostingEnvironment, loggerFactory);
         }
 
         /// <inheritdoc cref="DataXServiceStartup.Configure(IApplicationBuilder)" />
-        protected virtual void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        protected virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             app.Use(async (context, next) =>
             {
                 context.Response.Headers.Add("X-Content-Type-Options", new string[] { "nosniff" });
                 await next();
             });
+            app.UseRouting();
             app.UseAuthentication();
             app.UseMvc();
         }
