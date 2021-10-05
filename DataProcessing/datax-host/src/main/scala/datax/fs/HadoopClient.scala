@@ -68,9 +68,9 @@ object HadoopClient {
   /***
     * get the name of storage account from a wasb-format or abfss-format path
     * @param path a hdfs path
-    * @return the storage account name if there is storage account name in the wasbs/wasb path, else null
+    * @return the storage account name if there is storage account name in the wasbs/wasb or abfs/abfss path, else null
     */
-  private def getWasbStorageAccount(path: String): String = {
+  private def getStorageAccount(path: String): String = {
     val uri = new URI(path.replace(" ", "%20"))
     val scheme = uri.getScheme
     if(scheme == "wasb" || scheme == "wasbs")
@@ -92,8 +92,8 @@ object HadoopClient {
     * @param paths a list of hdfs paths which might contains wasb/wasbs or abfs/abfss paths
     * @return a distinct set of names of storage accounts
     */
-  private def getWasbStorageAccounts(paths: Seq[String]): Set[String] = {
-    paths.map(getWasbStorageAccount _).filter(_!=null).toSet
+  private def getStorageAccounts(paths: Seq[String]): Set[String] = {
+    paths.map(getStorageAccount _).filter(_!=null).toSet
   }
 
   /***
@@ -222,7 +222,7 @@ object HadoopClient {
     * @param blobStorageKey broadcasted storage account key
     */
   private def resolveStorageAccountKeyForPath(path: String, blobStorageKey: broadcast.Broadcast[String] = null) = {
-    val sa = getWasbStorageAccount(path)
+    val sa = getStorageAccount(path)
     val uri = new URI(path.replace(" ", "%20"))
     val scheme = uri.getScheme
 
@@ -239,7 +239,7 @@ object HadoopClient {
     * @param paths a list of hdfs paths, do nothing if there isn't any valid wasb/wasbs paths
     */
   private def resolveStorageAccountKeysForPaths(paths: Seq[String]) = {
-    val storageAccounts = getWasbStorageAccounts(paths)
+    val storageAccounts = getStorageAccounts(paths)
       .filter(p=>p!=null & !p.isEmpty)
       .filterNot(storageAccountKeys.contains(_)) //TODO: make storageAccountKeys thread-safe
 
@@ -255,7 +255,7 @@ object HadoopClient {
     */
   private def exportWasbKeys(paths: Seq[String]): Map[String, String] = {
     //TODO: make storageAccountKeys thread-safe
-    getWasbStorageAccounts(paths).map(sa => sa->storageAccountKeys.getOrElse(sa, null))
+    getStorageAccounts(paths).map(sa => sa->storageAccountKeys.getOrElse(sa, null))
       .filter(_._2!=null)
       .toMap
   }
