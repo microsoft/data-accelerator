@@ -7,6 +7,7 @@ package datax.sink
 
 import datax.client.sql.SqlConf
 import datax.config.SettingDictionary
+import datax.exception.EngineException
 import datax.utility.SinkerUtil
 import org.apache.spark.sql.{DataFrame, Row}
 
@@ -39,6 +40,7 @@ object SqlSinker extends SinkOperatorFactory  {
     val cfgMap = getConfigMap(sqlConf)
     //Todo: Add support for com.microsoft.azure:spark-mssql-connector
 	//dataToSend.write.mode(sqlConf.writeMode).sqlDB(Config(cfgMap))
+	throw new EngineException(s"Data not written to SQL. Pending migration to spark-mssql-connector")
     dataToSend.count().toInt
   }
 
@@ -48,6 +50,7 @@ object SqlSinker extends SinkOperatorFactory  {
     val bulkCopyConfig = getConfigMap(sqlConf)
     //Todo: Add support for com.microsoft.azure:spark-mssql-connector
 	//dataToSend.bulkCopyToSqlDB(Config(bulkCopyConfig))
+	throw new EngineException(s"Data not written to SQL. Pending migration to spark-mssql-connector")
     dataToSend.count().toInt
   }
 
