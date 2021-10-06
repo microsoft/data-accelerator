@@ -76,14 +76,9 @@ SOFTWARE
       <version>1.6.7</version>
     </dependency>
     <dependency>
-      <groupId>com.microsoft.azure</groupId>
-      <artifactId>azure-keyvault</artifactId>
-      <version>1.1</version>
-    </dependency>
-	  <dependency>
-      <groupId>com.microsoft.azure</groupId>
-      <artifactId>azure-keyvault-cryptography</artifactId>
-      <version>1.1</version>
+      <groupId>com.azure</groupId>
+      <artifactId>azure-security-keyvault-secrets</artifactId>
+      <version>4.3.3</version>
     </dependency>
     <!-- For Config Parser-->
     <dependency>

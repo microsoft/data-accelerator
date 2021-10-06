@@ -134,16 +134,6 @@ SOFTWARE
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-keyvault-cryptography</artifactId>
-            <version>1.1</version>
-        </dependency>		
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-keyvault-webkey</artifactId>
-            <version>1.2.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-eventhubs-spark_2.11</artifactId>
             <version>2.3.6</version>
         </dependency>
