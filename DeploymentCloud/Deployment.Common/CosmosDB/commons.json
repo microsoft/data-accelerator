@@ -143,12 +143,10 @@
 				"wasbs:///datax/bin/azure-documentdb-2.4.7.jar",
 				"wasbs:///datax/bin/azure-eventhubs-1.2.1.jar",
 				"wasbs:///datax/bin/azure-eventhubs-spark_2.11-2.3.6.jar",
-				"wasbs:///datax/bin/azure-keyvault-webkey-1.2.4.jar",
 				"wasbs:///datax/bin/datax-keyvault_2.4_2.11-1.2.0-with-dependencies.jar",
 				"wasbs:///datax/bin/java-uuid-generator-3.1.5.jar",
 				"wasbs:///datax/bin/proton-j-0.31.0.jar",
-				"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar",
-				"wasbs:///datax/bin/azure-sqldb-spark-1.0.2.jar"
+				"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar"
 			],
 			"driverMemory": "1024m",
 			"executorCores": 2,
@@ -230,9 +228,6 @@
 						"jar" : "dbfs:/datax/azure-eventhubs-spark_2.11-2.3.6.jar"
 					}, 
 					{
-						"jar" : "dbfs:/datax/azure-keyvault-webkey-1.2.4.jar"
-					}, 
-					{
 						"jar" : "dbfs:/datax/datax-core_2.4_2.11-1.2.0.jar"
 					}, 
 					{
@@ -255,10 +250,7 @@
 					}, 
 					{
 						"jar" : "dbfs:/datax/scala-java8-compat_2.11-0.9.0.jar"
-					}, 
-					{
-						"jar" : "dbfs:/datax/azure-sqldb-spark-1.0.2.jar"
-					}, 
+					},  
 					{
 						"jar" : "dbfs:/datax/hadoop-azure-3.2.1.jar"
 					}, 
@@ -667,14 +659,12 @@
 							"wasbs:///datax/bin/azure-documentdb-2.4.7.jar",
 							"wasbs:///datax/bin/azure-eventhubs-1.2.1.jar",
 							"wasbs:///datax/bin/azure-eventhubs-spark_2.11-2.3.6.jar",
-							"wasbs:///datax/bin/azure-keyvault-webkey-1.2.4.jar",
 							"wasbs:///datax/bin/datax-keyvault_2.4_2.11-1.2.0-with-dependencies.jar",
 							"wasbs:///datax/bin/java-uuid-generator-3.1.5.jar",
 							"wasbs:///datax/bin/proton-j-0.31.0.jar",
 							"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar",
 							"wasbs:///datax/bin/spark-streaming-kafka-0-10_2.11-2.4.5.jar",
-							"wasbs:///datax/bin/kafka-clients-2.4.1.jar",
-							"wasbs:///datax/bin/azure-sqldb-spark-1.0.2.jar"
+							"wasbs:///datax/bin/kafka-clients-2.4.1.jar"
 				],
 				"driverMemory" : "1024m",
 				"executorCores" : 2,
@@ -754,10 +744,7 @@
 					}, 
 					{
 						"jar" : "dbfs:/datax/azure-eventhubs-spark_2.11-2.3.6.jar"
-					}, 
-					{
-						"jar" : "dbfs:/datax/azure-keyvault-webkey-1.2.4.jar"
-					}, 
+					},  
 					{
 						"jar" : "dbfs:/datax/datax-core_2.4_2.11-1.2.0.jar"
 					}, 
@@ -787,9 +774,6 @@
 					}, 
 					{
 						"jar" : "dbfs:/datax/kafka-clients-2.4.1.jar"
-					}, 
-					{
-						"jar" : "dbfs:/datax/azure-sqldb-spark-1.0.2.jar"
 					}, 
 					{
 						"jar" : "dbfs:/datax/hadoop-azure-3.2.1.jar"
@@ -1073,12 +1057,10 @@
 					"wasbs:///datax/bin/azure-documentdb-2.4.7.jar", 
 					"wasbs:///datax/bin/azure-eventhubs-1.2.1.jar", 
 					"wasbs:///datax/bin/azure-eventhubs-spark_2.11-2.3.6.jar", 
-					"wasbs:///datax/bin/azure-keyvault-webkey-1.2.4.jar", 
 				"wasbs:///datax/bin/datax-keyvault_2.4_2.11-1.2.0-with-dependencies.jar",
 					"wasbs:///datax/bin/java-uuid-generator-3.1.5.jar", 
 					"wasbs:///datax/bin/proton-j-0.31.0.jar",
-					"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar",
-					"wasbs:///datax/bin/azure-sqldb-spark-1.0.2.jar"
+					"wasbs:///datax/bin/scala-java8-compat_2.11-0.9.0.jar"
 				],
 				"driverMemory" : "1024m",
 				"executorCores" : 2,
@@ -1158,10 +1140,7 @@
 					}, 
 					{
 						"jar" : "dbfs:/datax/azure-eventhubs-spark_2.11-2.3.6.jar"
-					}, 
-					{
-						"jar" : "dbfs:/datax/azure-keyvault-webkey-1.2.4.jar"
-					}, 
+					},  
 					{
 						"jar" : "dbfs:/datax/datax-core_2.4_2.11-1.2.0.jar"
 					}, 
@@ -1185,10 +1164,7 @@
 					}, 
 					{
 						"jar" : "dbfs:/datax/scala-java8-compat_2.11-0.9.0.jar"
-					}, 
-					{
-						"jar" : "dbfs:/datax/azure-sqldb-spark-1.0.2.jar"
-					}, 
+					},  
 					{
 						"jar" : "dbfs:/datax/hadoop-azure-3.2.1.jar"
 					}, 
