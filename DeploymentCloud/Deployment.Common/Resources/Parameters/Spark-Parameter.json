@@ -24,6 +24,14 @@
 				"secretName": "sparkclusterloginpassword"
 			}
 		},
+		"sqlServerLoginPassword": {
+			"reference": {
+				"keyVault": {
+				"id": "/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.KeyVault/vaults/$sparkRDPKVName"
+				},
+				"secretName": "sqlServerLoginPassword"
+			}
+		},
 		"sparkClusterVersion": {
 			"value": "$HDInsightVersion"
 		},
