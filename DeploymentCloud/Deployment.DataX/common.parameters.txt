@@ -110,6 +110,11 @@ writerRole=DataXWriter
 # If password is empty, a new password will be generated
 sparkPassword=
 
+# SQL server password used for spark HDI ambari
+# Password cannot have semicolon or equal spacial characters
+# If password is empty, a new password will be generated
+sqlPassword=
+
 # Admin password for Spark
 kafkaPassword=
 

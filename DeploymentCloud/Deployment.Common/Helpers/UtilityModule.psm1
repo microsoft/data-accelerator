@@ -34,6 +34,10 @@ param(
     [Parameter(Mandatory=$True)]
     [string]
     $sparkPassword,
+	
+    [Parameter(Mandatory=$True)]
+    [string]
+    $sqlPassword,
 
     [Parameter(Mandatory=$True)]
     [string]
@@ -139,6 +143,13 @@ if (!$sparkPassword) {
 }
 else {
     $sparkPwd = $sparkPassword
+}
+
+if (!$sqlPassword) {
+    $sqlPwd = Get-Password
+}
+else {
+    $sqlPwd = $sqlPassword
 }
 
 if (!$kafkaPassword) {
@@ -652,6 +663,7 @@ function Get-DefaultTokens {
     $tokens.Add('resourceGroup', $resourceGroupName )
 
     $tokens.Add('sparkPwd', $sparkPwd )
+    $tokens.Add('sqlPwd', $sqlPwd )
     $tokens.Add('sparkSshPwd', $sparkSshPwd )
     $tokens.Add('sfPwd', $sfPwd )
     $tokens.Add('name', $name )
@@ -690,6 +702,7 @@ Export-ModuleMember -Variable "iotHubName"
 Export-ModuleMember -Variable "kafkaEventHubNamespaceName"
 Export-ModuleMember -Variable "kafkaName"
 Export-ModuleMember -Variable "sparkPwd"
+Export-ModuleMember -Variable "sqlPwd"
 Export-ModuleMember -Variable "sparkSshPwd"
 Export-ModuleMember -Variable "kafkaPwd"
 Export-ModuleMember -Variable "kafkaSshPwd"

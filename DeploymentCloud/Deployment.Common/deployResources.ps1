@@ -10,6 +10,9 @@
 
     [string]
     $sparkPassword,
+	
+    [string]
+    $sqlPassword,
 
     [string]
     $sparkSshPassword,
@@ -116,7 +119,7 @@ if ($generateNewSelfSignedCerts -eq 'n' -and !$certPassword -and $useCertFromKV 
 
 Remove-Item -path ".\cachedVariables" -Force -ErrorAction SilentlyContinue
 $rootFolderPath = $PSScriptRoot
-Import-Module "..\Deployment.Common\Helpers\UtilityModule" -ArgumentList $rootFolderPath, $resourceGroupName, $productName, $sparkClusterName, $randomizeProductName, $serviceFabricClusterName, $serviceAppName, $clientAppName, $sparkPassword, $sparkSshPassword, $sfPassword, $certPassword, $redisCacheSize, $useCertFromKV, $certKVName -WarningAction SilentlyContinue
+Import-Module "..\Deployment.Common\Helpers\UtilityModule" -ArgumentList $rootFolderPath, $resourceGroupName, $productName, $sparkClusterName, $randomizeProductName, $serviceFabricClusterName, $serviceAppName, $clientAppName, $sparkPassword, $sqlPassword, $sparkSshPassword, $sfPassword, $certPassword, $redisCacheSize, $useCertFromKV, $certKVName -WarningAction SilentlyContinue
 Set-Content -Path ".\cachedVariables" -NoNewline -Value $name
 
 function Install-Modules {
@@ -531,6 +534,9 @@ function Setup-SecretsForSpark {
 
     $secretName = "sparkclusterloginpassword"
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sparkPwd
+	
+    $secretName = "sqlServerLoginPassword"
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sqlPwd
 
     $secretName = "sparksshuser" 
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sparksshuser
