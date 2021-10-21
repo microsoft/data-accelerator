@@ -76,15 +76,9 @@ SOFTWARE
       <version>1.6.7</version>
     </dependency>
     <dependency>
-<<<<<<< HEAD
       <groupId>com.azure</groupId>
       <artifactId>azure-security-keyvault-secrets</artifactId>
       <version>4.3.3</version>
-=======
-      <groupId>com.microsoft.azure</groupId>
-      <artifactId>azure-keyvault</artifactId>
-      <version>1.1</version>
->>>>>>> add abfss protocol for adls gen2 experiment
     </dependency>
     <!-- For Config Parser-->
     <dependency>
