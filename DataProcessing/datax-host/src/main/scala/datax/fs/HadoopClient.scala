@@ -73,14 +73,10 @@ object HadoopClient {
   private def getStorageAccount(path: String): String = {
     val uri = new URI(path.replace(" ", "%20"))
     val scheme = uri.getScheme
-    if(scheme == "wasb" || scheme == "wasbs")
+
+    if(scheme == "wasb" || scheme == "wasbs" || scheme == "abfs" || scheme == "abfss")
       Option(uri.getHost) match {
-        case Some(host) => host.toLowerCase().replace(s"${BlobProperties.BlobHostPath}", "")
-        case None => null
-      }
-    else if(scheme == "abfs" || scheme == "abfss")
-      Option(uri.getHost) match {
-        case Some(host) => host.toLowerCase().replace(s"${BlobProperties.DfsHostPath}", "")
+        case Some(host) => host.toLowerCase().replaceAll(s"(${BlobProperties.BlobHostPath}|${BlobProperties.DfsHostPath})", "")
         case None => null
       }
     else
@@ -105,8 +101,9 @@ object HadoopClient {
     * set key for storage account for azure-hadoop adapter to access that later
     * @param sa name of the storage account
     * @param key key to the storage account
+    * @param isDfs true if dfs path, false for blob
     */
-  private def setStorageAccountKey(sa: String, key: String): Unit ={
+  private def setStorageAccountKey(sa: String, key: String, isDfs: Boolean = false): Unit ={
     storageAccountKeys.synchronized{
     storageAccountKeys += sa->key
     }
@@ -114,70 +111,12 @@ object HadoopClient {
     // get the default storage account
     val defaultFS = getConf().get("fs.defaultFS","")
     // set the key only if its a non-default storage account
-    if(!defaultFS.toLowerCase().contains(s"$sa${BlobProperties.BlobHostPath}"))    {
+    if((isDfs && !defaultFS.toLowerCase().contains(s"$sa${BlobProperties.DfsHostPath}")) || (!isDfs && !defaultFS.toLowerCase().contains(s"$sa${BlobProperties.BlobHostPath}"))) {
       logger.warn(s"Setting the key in hdfs conf for storage account $sa")
-      setStorageAccountKeyOnHadoopConf(sa, key)
+      setStorageAccountKeyOnHadoopConf(sa, key, isDfs)
     }
     else {
       logger.warn(s"Default storage account $sa found, skipping setting the key")
-    }
-  }
-
-  /***
-    * set key for storage account for azure-hadoop adapter to access that later
-    * @param sa name of the storage account
-    * @param key key to the storage account
-    */
-  private def setDfsStorageAccountKey(sa: String, key: String): Unit ={
-    storageAccountKeys.synchronized{
-    storageAccountKeys += sa->key
-    }
-
-    // get the default storage account
-    val defaultFS = getConf().get("fs.defaultFS","")
-    // set the key only if its a non-default storage account
-    if(!defaultFS.toLowerCase().contains(s"$sa${BlobProperties.DfsHostPath}"))    {
-      logger.warn(s"Setting the key in hdfs conf for storage account $sa")
-      setDfsStorageAccountKeyOnHadoopConf(sa, key)
-    }
-    else {
-      logger.warn(s"Default storage account $sa found, skipping setting the key")
-    }
-  }
-
-
-  /***
-    * resolve key for storage account with a keyvault name
-    * warn if key is not found but we let it continue so static key settings outside of the job can still work
-    * @param vaultName key vault name to get the key of storage account
-    * @param sa name of the storage account
-    * @param blobStorageKey broadcasted storage account key
-    */
-  def resolveStorageAccount(vaultName: String, sa: String, blobStorageKey: broadcast.Broadcast[String] = null) : Option[String] = {
-    if(blobStorageKey != null) {
-      setStorageAccountKey(sa, blobStorageKey.value)
-      Some(blobStorageKey.value)
-    }
-    else {
-      // Fetch secret from keyvault using KeyVaultMsiAuthenticatorClient and if that does not return secret then fetch it using secret scope
-      val secretId = s"keyvault://$vaultName/${ProductConstant.ProductRoot}-sa-$sa"
-      KeyVaultClient.getSecret(secretId) match {
-        case Some(value)=>
-          logger.warn(s"Retrieved key for storage account '$sa' with secretid:'$secretId'")
-          setStorageAccountKey(sa, value)
-          Some(value)
-        case None =>
-          val databricksSecretId = s"secretscope://$vaultName/${ProductConstant.ProductRoot}-sa-$sa"
-          KeyVaultClient.getSecret(databricksSecretId) match {
-            case Some(value)=>
-              logger.warn(s"Retrieved key for storage account '$sa' with secretid:'$databricksSecretId'")
-              setStorageAccountKey(sa, value)
-              Some(value)
-            case None =>
-              logger.warn(s"Failed to find key for storage account '$sa' with secretid:'$secretId' and '$databricksSecretId'")
-              None
-          }
-      }
     }
   }
 
@@ -187,10 +126,11 @@ object HadoopClient {
     * @param vaultName key vault name to get the key of storage account
     * @param sa name of the storage account
     * @param blobStorageKey broadcasted storage account key
+    * @param isDfs true if dfs path, false for blob
     */
-  def resolveDfsStorageAccount(vaultName: String, sa: String, blobStorageKey: broadcast.Broadcast[String] = null) : Option[String] = {
+  def resolveStorageAccount(vaultName: String, sa: String, blobStorageKey: broadcast.Broadcast[String] = null, isDfs: Boolean = false) : Option[String] = {
     if(blobStorageKey != null) {
-      setDfsStorageAccountKey(sa, blobStorageKey.value)
+      setStorageAccountKey(sa, blobStorageKey.value, isDfs)
       Some(blobStorageKey.value)
     }
     else {
@@ -199,14 +139,14 @@ object HadoopClient {
       KeyVaultClient.getSecret(secretId) match {
         case Some(value)=>
           logger.warn(s"Retrieved key for storage account '$sa' with secretid:'$secretId'")
-          setDfsStorageAccountKey(sa, value)
+          setStorageAccountKey(sa, value, isDfs)
           Some(value)
         case None =>
           val databricksSecretId = s"secretscope://$vaultName/${ProductConstant.ProductRoot}-sa-$sa"
           KeyVaultClient.getSecret(databricksSecretId) match {
             case Some(value)=>
               logger.warn(s"Retrieved key for storage account '$sa' with secretid:'$databricksSecretId'")
-              setDfsStorageAccountKey(sa, value)
+              setStorageAccountKey(sa, value, isDfs)
               Some(value)
             case None =>
               logger.warn(s"Failed to find key for storage account '$sa' with secretid:'$secretId' and '$databricksSecretId'")
@@ -228,9 +168,9 @@ object HadoopClient {
 
     if(sa != null && !sa.isEmpty){
       if(scheme == "wasb" || scheme == "wasbs")
-        KeyVaultClient.withKeyVault {vaultName => resolveStorageAccount(vaultName, sa, blobStorageKey)}
+        KeyVaultClient.withKeyVault {vaultName => resolveStorageAccount(vaultName, sa, blobStorageKey, false)}
       else if(scheme == "abfs" || scheme == "abfss")
-        KeyVaultClient.withKeyVault {vaultName => resolveDfsStorageAccount(vaultName, sa, blobStorageKey)}
+        KeyVaultClient.withKeyVault {vaultName => resolveStorageAccount(vaultName, sa, blobStorageKey, true)}
     }
   }
 
@@ -427,13 +367,15 @@ object HadoopClient {
     * set storage account key on hadoop conf
     * @param sa storage account name
     * @param value storage account key
+    * @param isDfs true if dfs path, false for blob
     */
-  private def setStorageAccountKeyOnHadoopConf(sa: String, value: String): Unit = {
-    getConf().set(s"fs.azure.account.key.$sa${BlobProperties.BlobHostPath}", value)
-  }
-
-  private def setDfsStorageAccountKeyOnHadoopConf(sa: String, value: String): Unit = {
-    getConf().set(s"fs.azure.account.key.$sa${BlobProperties.DfsHostPath}", value)
+  private def setStorageAccountKeyOnHadoopConf(sa: String, value: String, isDfs: Boolean = false): Unit = {
+    if(isDfs){
+      getConf().set(s"fs.azure.account.key.$sa${BlobProperties.DfsHostPath}", value)
+    }
+    else{
+      getConf().set(s"fs.azure.account.key.$sa${BlobProperties.BlobHostPath}", value)
+    }
   }
 
   /**

@@ -118,7 +118,7 @@ SOFTWARE
         <dependency>
             <groupId>com.microsoft.datax</groupId>
             <artifactId>datax-core_2.4_2.11</artifactId>
-            <version>1.2.3-SNAPSHOT</version>
+            <version>1.2.4-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.datax</groupId>
