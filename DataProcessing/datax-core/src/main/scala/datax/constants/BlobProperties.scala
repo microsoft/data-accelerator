@@ -7,4 +7,5 @@ package datax.constants
 object BlobProperties {
   // Define constants for blobs
   val BlobHostPath = ".blob.core.windows.net"
+  val DfsHostPath = ".dfs.core.windows.net"
 }

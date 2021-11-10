@@ -66,16 +66,17 @@ object HadoopClient {
   }
 
   /***
-    * get the name of storage account from a wasb-format path
+    * get the name of storage account from a wasb-format or abfss-format path
     * @param path a hdfs path
-    * @return the storage account name if there is storage account name in the wasbs/wasb path, else null
+    * @return the storage account name if there is storage account name in the wasbs/wasb or abfs/abfss path, else null
     */
-  private def getWasbStorageAccount(path: String): String = {
+  private def getStorageAccount(path: String): String = {
     val uri = new URI(path.replace(" ", "%20"))
     val scheme = uri.getScheme
-    if(scheme == "wasb" || scheme == "wasbs")
+
+    if(scheme == "wasb" || scheme == "wasbs" || scheme == "abfs" || scheme == "abfss")
       Option(uri.getHost) match {
-        case Some(host) => host.toLowerCase().replace(s"${BlobProperties.BlobHostPath}", "")
+        case Some(host) => host.toLowerCase().replaceAll(s"(${BlobProperties.BlobHostPath}|${BlobProperties.DfsHostPath})", "")
         case None => null
       }
     else
@@ -84,11 +85,11 @@ object HadoopClient {
 
   /***
     * get a distinct set of storage accounts from a list of file paths
-    * @param paths a list of hdfs paths which might contains wasb/wasbs paths
+    * @param paths a list of hdfs paths which might contains wasb/wasbs or abfs/abfss paths
     * @return a distinct set of names of storage accounts
     */
-  private def getWasbStorageAccounts(paths: Seq[String]): Set[String] = {
-    paths.map(getWasbStorageAccount _).filter(_!=null).toSet
+  private def getStorageAccounts(paths: Seq[String]): Set[String] = {
+    paths.map(getStorageAccount _).filter(_!=null).toSet
   }
 
   /***
@@ -100,8 +101,9 @@ object HadoopClient {
     * set key for storage account for azure-hadoop adapter to access that later
     * @param sa name of the storage account
     * @param key key to the storage account
+    * @param isDfs true if dfs path, false for blob
     */
-  private def setStorageAccountKey(sa: String, key: String): Unit ={
+  private def setStorageAccountKey(sa: String, key: String, isDfs: Boolean = false): Unit ={
     storageAccountKeys.synchronized{
     storageAccountKeys += sa->key
     }
@@ -109,15 +111,14 @@ object HadoopClient {
     // get the default storage account
     val defaultFS = getConf().get("fs.defaultFS","")
     // set the key only if its a non-default storage account
-    if(!defaultFS.toLowerCase().contains(s"$sa${BlobProperties.BlobHostPath}"))    {
+    if((isDfs && !defaultFS.toLowerCase().contains(s"$sa${BlobProperties.DfsHostPath}")) || (!isDfs && !defaultFS.toLowerCase().contains(s"$sa${BlobProperties.BlobHostPath}"))) {
       logger.warn(s"Setting the key in hdfs conf for storage account $sa")
-      setStorageAccountKeyOnHadoopConf(sa, key)
+      setStorageAccountKeyOnHadoopConf(sa, key, isDfs)
     }
     else {
       logger.warn(s"Default storage account $sa found, skipping setting the key")
     }
   }
-
 
   /***
     * resolve key for storage account with a keyvault name
@@ -125,10 +126,11 @@ object HadoopClient {
     * @param vaultName key vault name to get the key of storage account
     * @param sa name of the storage account
     * @param blobStorageKey broadcasted storage account key
+    * @param isDfs true if dfs path, false for blob
     */
-  def resolveStorageAccount(vaultName: String, sa: String, blobStorageKey: broadcast.Broadcast[String] = null) : Option[String] = {
+  def resolveStorageAccount(vaultName: String, sa: String, blobStorageKey: broadcast.Broadcast[String] = null, isDfs: Boolean = false) : Option[String] = {
     if(blobStorageKey != null) {
-      setStorageAccountKey(sa, blobStorageKey.value)
+      setStorageAccountKey(sa, blobStorageKey.value, isDfs)
       Some(blobStorageKey.value)
     }
     else {
@@ -137,14 +139,14 @@ object HadoopClient {
       KeyVaultClient.getSecret(secretId) match {
         case Some(value)=>
           logger.warn(s"Retrieved key for storage account '$sa' with secretid:'$secretId'")
-          setStorageAccountKey(sa, value)
+          setStorageAccountKey(sa, value, isDfs)
           Some(value)
         case None =>
           val databricksSecretId = s"secretscope://$vaultName/${ProductConstant.ProductRoot}-sa-$sa"
           KeyVaultClient.getSecret(databricksSecretId) match {
             case Some(value)=>
               logger.warn(s"Retrieved key for storage account '$sa' with secretid:'$databricksSecretId'")
-              setStorageAccountKey(sa, value)
+              setStorageAccountKey(sa, value, isDfs)
               Some(value)
             case None =>
               logger.warn(s"Failed to find key for storage account '$sa' with secretid:'$secretId' and '$databricksSecretId'")
@@ -160,10 +162,15 @@ object HadoopClient {
     * @param blobStorageKey broadcasted storage account key
     */
   private def resolveStorageAccountKeyForPath(path: String, blobStorageKey: broadcast.Broadcast[String] = null) = {
-    val sa = getWasbStorageAccount(path)
+    val sa = getStorageAccount(path)
+    val uri = new URI(path.replace(" ", "%20"))
+    val scheme = uri.getScheme
 
     if(sa != null && !sa.isEmpty){
-      KeyVaultClient.withKeyVault {vaultName => resolveStorageAccount(vaultName, sa, blobStorageKey)}
+      if(scheme == "wasb" || scheme == "wasbs")
+        KeyVaultClient.withKeyVault {vaultName => resolveStorageAccount(vaultName, sa, blobStorageKey, false)}
+      else if(scheme == "abfs" || scheme == "abfss")
+        KeyVaultClient.withKeyVault {vaultName => resolveStorageAccount(vaultName, sa, blobStorageKey, true)}
     }
   }
 
@@ -172,7 +179,7 @@ object HadoopClient {
     * @param paths a list of hdfs paths, do nothing if there isn't any valid wasb/wasbs paths
     */
   private def resolveStorageAccountKeysForPaths(paths: Seq[String]) = {
-    val storageAccounts = getWasbStorageAccounts(paths)
+    val storageAccounts = getStorageAccounts(paths)
       .filter(p=>p!=null & !p.isEmpty)
       .filterNot(storageAccountKeys.contains(_)) //TODO: make storageAccountKeys thread-safe
 
@@ -188,7 +195,7 @@ object HadoopClient {
     */
   private def exportWasbKeys(paths: Seq[String]): Map[String, String] = {
     //TODO: make storageAccountKeys thread-safe
-    getWasbStorageAccounts(paths).map(sa => sa->storageAccountKeys.getOrElse(sa, null))
+    getStorageAccounts(paths).map(sa => sa->storageAccountKeys.getOrElse(sa, null))
       .filter(_._2!=null)
       .toMap
   }
@@ -360,9 +367,15 @@ object HadoopClient {
     * set storage account key on hadoop conf
     * @param sa storage account name
     * @param value storage account key
+    * @param isDfs true if dfs path, false for blob
     */
-  private def setStorageAccountKeyOnHadoopConf(sa: String, value: String): Unit = {
-    getConf().set(s"fs.azure.account.key.$sa${BlobProperties.BlobHostPath}", value)
+  private def setStorageAccountKeyOnHadoopConf(sa: String, value: String, isDfs: Boolean = false): Unit = {
+    if(isDfs){
+      getConf().set(s"fs.azure.account.key.$sa${BlobProperties.DfsHostPath}", value)
+    }
+    else{
+      getConf().set(s"fs.azure.account.key.$sa${BlobProperties.BlobHostPath}", value)
+    }
   }
 
   /**
