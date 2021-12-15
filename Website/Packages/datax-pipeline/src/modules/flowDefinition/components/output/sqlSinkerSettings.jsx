@@ -6,7 +6,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import * as Helpers from '../../flowHelpers';
 import * as Models from '../../flowModels';
-import { TextField, Label, Dropdown, Toggle } from 'office-ui-fabric-react';
+import { TextField, Label, ComboBox, Toggle } from 'office-ui-fabric-react';
 import { Colors } from 'datax-common';
 
 export default class SqlSinkerSettings extends React.Component {
@@ -79,9 +79,9 @@ export default class SqlSinkerSettings extends React.Component {
 
         return (
             <div style={sectionStyle}>
-                <Label className="ms-font-m info-settings-textbox">Write Mode</Label>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m info-settings-textbox"
+                    label="Write Mode"
                     options={options}
                     selectedKey={this.props.sinker.properties.writeMode}
                     onChange={(event, selection) => this.props.onUpdateSqlWriteMode(selection.key)}
@@ -100,6 +100,7 @@ export default class SqlSinkerSettings extends React.Component {
                         label="Use SQL Bulk Insert?"
                         onText="Yes"
                         offText="No"
+                        title="Use SQL Bulk Insert?"
                         checked={isbulkInsert}
                         onChange={(event, value) => this.props.onUpdateSqlUseBulkInsert(value)}
                     />

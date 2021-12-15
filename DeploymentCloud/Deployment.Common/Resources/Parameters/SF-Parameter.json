@@ -88,7 +88,7 @@
             "value": "WindowsServer"
         },
         "vmImageSku": {
-            "value": "2016-Datacenter-with-Containers"
+            "value": "$sfVmImageSKU"
         },
         "vmImageVersion": {
             "value": "latest"
@@ -127,7 +127,7 @@
             "value": "Standard_LRS"
         },
         "nt0InstanceCount": {
-            "value": $vmNodeinstanceCount,
+            "value": $vmNodeinstanceCount
         },
         "vmNodeType0Name": {
             "value": "$vmNodeTypeName"

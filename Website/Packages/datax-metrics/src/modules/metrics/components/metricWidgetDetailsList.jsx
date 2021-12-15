@@ -57,9 +57,10 @@ export default class MetricWidgetDetailsList extends React.Component {
 
         return (
             <div>
-                <h3 style={{ fontWeight: 'normal' }}>{this.props.displayName}</h3>
-                <div style={{ width: 'auto', border: `1px solid ${Colors.customGray}` }}>
+                <h3 style={{ fontWeight: 'normal', color: `${Colors.themeDarker}` }} tabindex="0">{this.props.displayName}</h3>
+                <div style={{ width: 'auto', border: `1px solid ${Colors.customNeutralDarkGray}` }}>
                     <DetailsList
+                        ariaLabelForGrid={this.props.displayName}
                         items={items}
                         columns={columns}
                         setKey="set"

@@ -10,6 +10,9 @@
 
     [string]
     $sparkPassword,
+	
+    [string]
+    $sqlPassword,
 
     [string]
     $sparkSshPassword,
@@ -78,7 +81,11 @@
 
     [ValidateSet("y", "n")]
     [string]
-    $setupKVAccess
+    $setupKVAccess,
+	
+	[ValidateSet("y", "n")]
+    [string]
+    $useCertFromKV
 )
 
 $user = [Security.Principal.WindowsIdentity]::GetCurrent();
@@ -105,14 +112,14 @@ if ($deployResources -ne 'y') {
     Exit 0
 }
 
-if ($generateNewSelfSignedCerts -eq 'n' -and !$certPassword) {
+if ($generateNewSelfSignedCerts -eq 'n' -and !$certPassword -and $useCertFromKV -eq 'n') {
     Write-Host "Please provide certPassword to import the existing certs"
     Exit 40
 }
 
 Remove-Item -path ".\cachedVariables" -Force -ErrorAction SilentlyContinue
 $rootFolderPath = $PSScriptRoot
-Import-Module "..\Deployment.Common\Helpers\UtilityModule" -ArgumentList $rootFolderPath, $resourceGroupName, $productName, $sparkClusterName, $randomizeProductName, $serviceFabricClusterName, $serviceAppName, $clientAppName, $sparkPassword, $sparkSshPassword, $sfPassword, $certPassword, $redisCacheSize -WarningAction SilentlyContinue
+Import-Module "..\Deployment.Common\Helpers\UtilityModule" -ArgumentList $rootFolderPath, $resourceGroupName, $productName, $sparkClusterName, $randomizeProductName, $serviceFabricClusterName, $serviceAppName, $clientAppName, $sparkPassword, $sqlPassword, $sparkSshPassword, $sfPassword, $certPassword, $redisCacheSize, $useCertFromKV, $certKVName -WarningAction SilentlyContinue
 Set-Content -Path ".\cachedVariables" -NoNewline -Value $name
 
 function Install-Modules {
@@ -126,9 +133,11 @@ function Install-Modules {
     $modules.Add("mdbc", " 5.1.4")
         
     $moduleInstalled = $false
+    # Make sure to install correct required version of PS modules.
+    # Since, Mdbc PS module doesn't support New-MdbcQuery cmdlet from v6.0.0, we have to make sure correct Mdbc module is installed.
+    # https://github.com/nightroman/Mdbc/blob/master/Release-Notes.md#v600
     $modules.Keys | foreach {
-            if (!(Get-installedModule -name $_ -MinimumVersion $modules.Item($_) -ErrorAction SilentlyContinue )) {
-    
+            if (!(Get-installedModule -name $_ -RequiredVersion $modules.Item($_) -ErrorAction SilentlyContinue )) {  
                 Write-Host "Install Module: " $_
                 $moduleInstalled = $true
                 Install-Module -Name $_ -Force -AllowClobber -Scope CurrentUser -Repository PSGallery
@@ -138,6 +147,13 @@ function Install-Modules {
     if ($moduleInstalled) {
         Write-Host -ForegroundColor Yellow "The script execution completed after one or more packages have been installed. In order to use the latest packages, please close this prompt, open a new command prompt as admin and run deploy.bat again"
         Exit 10
+    } else{
+        # Import correct version of PS modules.
+        $modules.Keys | ForEach-Object {
+            Write-Host "Importing Module: "$_" Version: "$modules.Item($_)
+            Import-Module -Name $_ -RequiredVersion $modules.Item($_) -Force
+            Write-Host "Imported Module: "$_" Version: "$modules.Item($_)
+        }
     }
 }
 
@@ -179,7 +195,16 @@ function Get-Tokens {
 		$tokens.Add('databricksClusterNodeType', $databricksClusterNodeType)
 		$tokens.Add('databricksSku', $databricksSku)
 		$tokens.Add('dbResourceGroupName', $resourceGroupName)
+    } else {
+        $tokens.Add('HDInsightVersion', $HDInsightVersion)
+        $tokens.Add('sparkComponentVersion', $sparkComponentVersion)
+        $tokens.Add('enableHDInsightAutoScaling', $enableHDInsightAutoScaling)
+        if($enableHDInsightAutoScaling -eq 'y') {
+            $tokens.Add('minNodesForHDInsightAutoScaling', $minNodesForHDInsightAutoScaling)
+            $tokens.Add('maxNodesForHDInsightAutoScaling', $maxNodesForHDInsightAutoScaling)
+        }
     }
+
 	$tokens.Add('sparkType', $sparkType)
 	$tokens.Add('keyvaultPrefix', $keyvaultPrefix)
 	$tokens.Add('dataxJobTemplate', $dataxJobTemplate)
@@ -200,6 +225,7 @@ function Get-Tokens {
     $tokens.Add('resourceLocationForServiceFabric', $resourceLocationForServiceFabric )
     $tokens.Add('vmNodeTypeSize', $vmNodeTypeSize )
     $tokens.Add('vmNodeinstanceCount', $vmNodeinstanceCount )
+	$tokens.Add('sfVmImageSKU', $sfVmImageSKU )
     
     # Spark Template
     $tokens.Add('vmSizeSparkHeadnode', $vmSizeSparkHeadnode )
@@ -392,17 +418,22 @@ function Generate-SelfSignedCert([string] $certFileName, [string] $outputPath) {
 
 # Import Certs to keyVault
 function Import-CertsToKeyVault([string]$certPath) {
-    $certPath = $certPath.Replace("""", "")
-    $certBaseName = ((Get-Item $certPath).Name).Replace(".", "")
-    $password = ConvertTo-SecureString $certPwd -AsPlainText -Force
+    if ($useCertFromKV -eq 'n') {
+		$certPath = $certPath.Replace("""", "")
+		$certBaseName = ((Get-Item $certPath).Name).Replace(".", "")
+		$password = ConvertTo-SecureString $certPwd -AsPlainText -Force
 
-    # Upload to Key Vault
-    if ($serviceFabricCreation -eq 'y') {
-        $cert = Import-AzureKeyVaultCertificate -VaultName $sfKVName -Name $certBaseName -FilePath $certPath -Password $password
-    }
-    else {
-        $cert = Get-AzureKeyVaultCertificate -VaultName $sfKVName -Name $certBaseName
-    }
+		# Upload to Key Vault
+		if ($serviceFabricCreation -eq 'y') {
+			$cert = Import-AzureKeyVaultCertificate -VaultName $sfKVName -Name $certBaseName -FilePath $certPath -Password $password
+		}
+		else {
+			$cert = Get-AzureKeyVaultCertificate -VaultName $sfKVName -Name $certBaseName
+		}
+	}
+	else {
+		$cert = Get-AzureKeyVaultCertificate -VaultName $sfKVName -Name $certPath
+	}
     $cert
 }
 
@@ -503,6 +534,9 @@ function Setup-SecretsForSpark {
 
     $secretName = "sparkclusterloginpassword"
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sparkPwd
+	
+    $secretName = "sqlServerLoginPassword"
+    Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sqlPwd
 
     $secretName = "sparksshuser" 
     Setup-Secret -VaultName $vaultName -SecretName $secretName -Value $sparksshuser
@@ -675,30 +709,34 @@ function Setup-KVAccess {
 
 # Import SSL Cert To Service Fabric
 function Import-SSLCertToSF([string]$certPath) {
-    $certPath = $certPath.Replace("""", "")
-    $certBaseName = (Get-Item $certPath).BaseName
-    $clustername = "$serviceFabricName" 
-    $bytes = [System.IO.File]::ReadAllBytes($certPath)
-    $base64 = [System.Convert]::ToBase64String($bytes)
+	if ($useCertFromKV -eq 'n') {
+		$certPath = $certPath.Replace("""", "")
+		$certBaseName = (Get-Item $certPath).BaseName
+		$bytes = [System.IO.File]::ReadAllBytes($certPath)
+		$base64 = [System.Convert]::ToBase64String($bytes)
 
-    $jsonBlob = @{
-       data = $base64
-       dataType = 'pfx'
-       password = $certPwd
-       } | ConvertTo-Json
+		$jsonBlob = @{
+		   data = $base64
+		   dataType = 'pfx'
+		   password = $certPwd
+		   } | ConvertTo-Json
 
-    $contentbytes = [System.Text.Encoding]::UTF8.GetBytes($jsonBlob)
-    $content = [System.Convert]::ToBase64String($contentbytes)
+		$contentbytes = [System.Text.Encoding]::UTF8.GetBytes($jsonBlob)
+		$content = [System.Convert]::ToBase64String($contentbytes)
 
-    $secretValue = ConvertTo-SecureString -String $content -AsPlainText -Force
+		$secretValue = ConvertTo-SecureString -String $content -AsPlainText -Force
 
-    # Upload the certificate to the key vault as a secret
-    Write-Host "Writing secret to $certBaseName in vault $sfKVName"
+		# Upload the certificate to the key vault as a secret
+		Write-Host "Writing secret to $certBaseName in vault $sfKVName"
 
-    $secret = Set-AzureKeyVaultSecret -VaultName $sfKVName -Name $certBaseName -SecretValue $secretValue
-
-    # Add a certificate to all the VMs in the cluster.
-    Add-AzureRmServiceFabricApplicationCertificate -resourceGroupName $resourceGroupName -Name $clustername -SecretIdentifier $secret.Id | Out-Null
+		$secret = Set-AzureKeyVaultSecret -VaultName $sfKVName -Name $certBaseName -SecretValue $secretValue
+	}
+	else {
+		$secret = Get-AzureKeyVaultSecret -VaultName $sfKVName -Name $certPath
+	}
+	# Add a certificate to all the VMs in the cluster.
+	$clustername = "$serviceFabricName" 
+	Add-AzureRmServiceFabricApplicationCertificate -resourceGroupName $resourceGroupName -Name $clustername -SecretIdentifier $secret.Id | Out-Null
 }
 
 # Open 443 port
@@ -845,8 +883,20 @@ if($sparkCreation -eq 'y') {
 
     $tokens = Get-Tokens
 	if ($useDatabricks -eq 'n') {
+
+        $sparkTemplate = "Spark-Template.json"
+        $sparkParameter = "Spark-parameter.json"
+
+        $version = ($HDInsightVersion -split '\.')[0]
+        $version = [int]$version
+        if ($version -ge 4 -and $enableHDInsightAutoScaling -eq 'y') {
+            $sparkTemplate = "Spark-AutoScale-Template.json"
+            $sparkParameter = "Spark-AutoScale-parameter.json"
+        }      
+        Write-Host "sparkTemplate: '$sparkTemplate' ; sparkParameter: '$sparkParameter'"
+
 		Write-Host -ForegroundColor Green "Estimated time to complete: 20 mins"
-		Deploy-Resources -templateName "Spark-Template.json" -paramName "Spark-parameter.json" -templatePath $templatePath -tokens $tokens
+		Deploy-Resources -templateName  $sparkTemplate -paramName $sparkParameter -templatePath $templatePath -tokens $tokens
 	}
 	else {
 		Write-Host -ForegroundColor Green "Estimated time to complete: 5 mins"

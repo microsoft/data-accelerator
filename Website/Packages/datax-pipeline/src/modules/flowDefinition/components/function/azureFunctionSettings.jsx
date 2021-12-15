@@ -6,7 +6,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import * as Helpers from '../../flowHelpers';
 import * as Models from '../../flowModels';
-import { TextField, Label, DefaultButton, Dropdown } from 'office-ui-fabric-react';
+import { TextField, Label, DefaultButton, ComboBox } from 'office-ui-fabric-react';
 import { Colors, IconButtonStyles } from 'datax-common';
 
 export default class AzureFunctionSettings extends React.Component {
@@ -81,9 +81,9 @@ export default class AzureFunctionSettings extends React.Component {
                 </div>
 
                 <div style={sectionStyle}>
-                    <Label className="ms-font-m info-settings-textbox">Method Type</Label>
-                    <Dropdown
+                    <ComboBox
                         className="ms-font-m info-settings-textbox"
+                        label="Method Type"
                         options={options}
                         selectedKey={this.props.functionItem.properties.methodType}
                         onChange={(event, selection) => this.props.onUpdateAzureFunctionMethodType(selection.key)}

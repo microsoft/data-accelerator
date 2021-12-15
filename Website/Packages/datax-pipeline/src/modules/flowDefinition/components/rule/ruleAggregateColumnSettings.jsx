@@ -5,7 +5,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import * as Models from '../../flowModels';
-import { Label, TextField, DefaultButton, Dropdown } from 'office-ui-fabric-react';
+import { Label, TextField, DefaultButton, ComboBox } from 'office-ui-fabric-react';
 import { Colors, IconButtonStyles } from 'datax-common';
 
 const useDropdownControl = true;
@@ -65,7 +65,7 @@ export default class RuleAggregateColumnSettings extends React.Component {
 
         return (
             <div style={aggregateDropdownStyle}>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m"
                     options={options}
                     selectedKey={item.aggregate}
@@ -93,7 +93,7 @@ export default class RuleAggregateColumnSettings extends React.Component {
 
             return (
                 <div style={aggregateColumnSectionStyle}>
-                    <Dropdown
+                    <ComboBox
                         className="ms-font-m"
                         options={options}
                         placeholder="column name"

@@ -6,10 +6,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import * as Helpers from '../../flowHelpers';
 import * as Models from '../../flowModels';
-import { Label, TextField, Toggle, Dropdown, DefaultButton } from 'office-ui-fabric-react';
+import { Label, TextField, Toggle, DefaultButton, ComboBox } from 'office-ui-fabric-react';
 import ace from 'brace';
 import 'brace/mode/json';
-import 'brace/theme/textmate';
+import 'brace/theme/dawn';
 import 'datax-query/dist/css/index.css';
 import 'brace/mode/sql';
 import 'brace/theme/xcode';
@@ -157,9 +157,9 @@ export default class InputSettingsContent extends React.Component {
 
         return (
             <div style={typeDropdownStyle}>
-                <Label className="ms-font-m">Mode</Label>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m"
+                    label="Mode"
                     options={options}
                     selectedKey={this.props.input.mode}
                     onChange={(event, selection) => this.props.onUpdateMode(selection.key)}
@@ -200,9 +200,9 @@ export default class InputSettingsContent extends React.Component {
 
         return (
             <div style={typeDropdownStyle}>
-                <Label className="ms-font-m">Type</Label>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m"
+                    label="Type"
                     options={options}
                     selectedKey={this.props.input.type}
                     onChange={(event, selection) => this.props.onUpdateType(selection.key)}
@@ -336,9 +336,9 @@ export default class InputSettingsContent extends React.Component {
 
             return (
                 <div style={sectionStyle}>
-                    <Label className="ms-font-m">Format</Label>
-                    <Dropdown
+                    <ComboBox
                         className="ms-font-m"
+                        label="Format"
                         options={options}
                         selectedKey={value}
                         onChange={(event, selection) => this.props.onUpdateBatchInputFormatType(selection.key)}
@@ -364,9 +364,9 @@ export default class InputSettingsContent extends React.Component {
 
             return (
                 <div style={sectionStyle}>
-                    <Label className="ms-font-m">Compression</Label>
-                    <Dropdown
+                    <ComboBox
                         className="ms-font-m"
+                        label="Compression"
                         options={options}
                         selectedKey={value}
                         onChange={(event, selection) => this.props.onUpdateBatchInputCompressionType(selection.key)}
@@ -446,6 +446,7 @@ export default class InputSettingsContent extends React.Component {
                     <div style={watermarkValueStyle}>
                         <TextField
                             className="ms-font-m"
+                            title="Wait Time for Late Arriving Data Measure"
                             value={this.props.input.properties.watermarkValue}
                             onChange={(event, value) => this.props.onUpdateWatermarkValue(value)}
                             onGetErrorMessage={value => this.validateWatermarkValue(value)}
@@ -470,8 +471,9 @@ export default class InputSettingsContent extends React.Component {
 
         return (
             <div style={watermarkUnitDropdownStyle}>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m"
+                    title="Wait Time for Late Arriving Data Unit"
                     options={options}
                     selectedKey={this.props.input.properties.watermarkUnit}
                     onChange={(event, selection) => this.props.onUpdateWatermarkUnit(selection.key)}
@@ -485,8 +487,10 @@ export default class InputSettingsContent extends React.Component {
         return (
             <div style={toggleSectionStyle}>
                 <Toggle
-                    onText="Show Normalization"
-                    offText="Show Normalization"
+                    onText="Yes"
+                    offText="No"
+                    label="Show Normalization"
+                    title="Show Normalization"
                     checked={this.state.showNormalizationSnippet}
                     onChange={(event, value) => this.setState({ showNormalizationSnippet: value })}
                 />
@@ -499,10 +503,11 @@ export default class InputSettingsContent extends React.Component {
             return (
                 <div style={rightSideSettingsStyle}>
                     <div style={toggleStyle}>
-                        <Label className="ms-font-m">Duration in seconds</Label>
+                        <Label className="ms-font-m" htmlFor="DurationInSecondsTextField">Duration in seconds</Label>
                     </div>
                     <div style={toggleStyle}>
                         <TextField
+                            id="DurationInSecondsTextField"
                             className="query-pane-TextField ms-font-m"
                             spellCheck={false}
                             value={this.props.samplingInputDuration}
@@ -578,7 +583,7 @@ export default class InputSettingsContent extends React.Component {
                     <JsonEditor
                         ace={ace}
                         mode={this.props.inputSchemaEditorEnabled ? 'code' : 'view'}
-                        theme="ace/theme/textmate"
+                        theme="ace/theme/dawn"
                         allowedModes={this.props.inputSchemaEditorEnabled ? ['code', 'tree'] : ['view']}
                         value={this.getSchemaAsJsonObject(value)}
                         onChange={value => this.onJsonSchemaChange(value)}
@@ -812,7 +817,7 @@ const linkStyle = {
     fontSize: 14,
     float: 'right',
     lineHeight: '29px',
-    color: Colors.themePrimary
+    color: Colors.themeDarker
 };
 
 const watermarkContainerStyle = {

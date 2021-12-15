@@ -49,6 +49,25 @@ namespace DataX.Config.PublicService
             return await this.SparkJobOperation.RestartJobWithRetries(jobName, timeout, _DefaultRetryInterval);
         }
 
+        public async Task<Result[]> RestartAllJobs(string[] jobNames = null)
+        {
+            string[] actualJobNames = jobNames;
+            if(actualJobNames == null || !actualJobNames.Any())
+            {
+                var jobs = await SparkJobData.GetAll();
+                actualJobNames = jobs.Select(j => j.Name).ToArray();
+            }    
+
+            var results = new List<Result>();
+            foreach (var jobName in actualJobNames)
+            {
+                var result = await RestartJob(jobName);
+                results.Add(result);     
+            }
+
+            return results.ToArray<Result>();
+        }
+
         protected static async Task<SparkJobFrontEnd[]> ConvertToFrontEnd(Task<SparkJobConfig[]> tasks)
         {
             var jobs = await tasks;
@@ -78,6 +97,16 @@ namespace DataX.Config.PublicService
         public Task<SparkJobFrontEnd[]> SyncAllJobState()
         {
             return ConvertToFrontEnd(SparkJobOperation.SyncAllJobState());
+        }
+
+        public Task<SparkJobFrontEnd[]> StopAllJobs()
+        {
+            return ConvertToFrontEnd(SparkJobOperation.StopAllJobs());
+        }
+
+        public Task<SparkJobFrontEnd[]> StartAllJobs()
+        {
+            return ConvertToFrontEnd(SparkJobOperation.StartAllJobs());
         }
 
         public async Task<Result> DeleteJob(string jobName)

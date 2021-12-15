@@ -26,8 +26,8 @@ import RulesSettingsContent from './rule/rulesSettingsContent';
 import { functionEnabled } from '../../../common/api';
 import {
     Colors,
+    PageHeader,
     Panel,
-    PanelHeader,
     PanelHeaderButtons,
     LoadingPanel,
     IconButtonStyles,
@@ -203,13 +203,13 @@ class FlowDefinitionPanel extends React.Component {
     render() {
         return (
             <Panel>
-                <PanelHeader>Flow Definition</PanelHeader>
+                <div role='banner'>
+                    <PageHeader>Flow Definition</PageHeader>
+                </div>
                 <PanelHeaderButtons>{this.renderButtons()}</PanelHeaderButtons>
-
                 {this.renderMessageBar()}
                 {this.renderDialog()}
                 {this.renderModal()}
-
                 {this.renderContent()}
             </Panel>
         );
@@ -239,7 +239,7 @@ class FlowDefinitionPanel extends React.Component {
         }
 
         return (
-            <DefaultButton key="back" className="header-button" title={buttonTooltip} onClick={() => this.onCancel()}>
+            <DefaultButton role="navigation" key="back" className="header-button" title={buttonTooltip} onClick={() => this.onCancel()}>
                 {buttonIcon}
                 {buttonText}
             </DefaultButton>
@@ -390,7 +390,7 @@ class FlowDefinitionPanel extends React.Component {
 
     renderFlow() {
         return (
-            <div style={contentStyle}>
+            <div style={contentStyle} role="main">
                 <div style={tabContainerStyle}>
                     <VerticalTabs>
                         <VerticalTabItem linkText="Info" itemCompleted={this.props.infoValidated}>
@@ -1084,16 +1084,12 @@ const contentStyle = {
     paddingRight: 20,
     paddingBottom: 20,
     backgroundColor: Colors.neutralTertiaryAlt,
-    display: 'flex',
-    flexDirection: 'column',
     overflowX: 'hidden',
-    overflowY: 'hidden',
+    overflowY: 'auto',
     flex: 1
 };
 
 const tabContainerStyle = {
-    display: 'flex',
-    flexDirection: 'column',
     overflowX: 'hidden',
     overflowY: 'hidden',
     flex: 1

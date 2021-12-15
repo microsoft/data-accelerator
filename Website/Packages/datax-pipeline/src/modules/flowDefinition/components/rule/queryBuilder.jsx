@@ -5,7 +5,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import * as Models from '../../flowModels';
-import { TextField, DefaultButton, Dropdown } from 'office-ui-fabric-react';
+import { TextField, DefaultButton, ComboBox } from 'office-ui-fabric-react';
 import { Colors, IconButtonStyles } from 'datax-common';
 
 const maxGroupCycleDepth = 4;
@@ -81,8 +81,9 @@ export default class QueryBuilder extends React.Component {
         } else {
             return (
                 <div style={groupConjunctionDropdownStyle}>
-                    <Dropdown
+                    <ComboBox
                         className="ms-font-m"
+                        title="Group Conjunction"
                         options={this.props.conjunctionOptions}
                         selectedKey={group.conjunction}
                         onChange={(event, selection) => this.onUpdateConjunction(group, selection.key)}
@@ -103,8 +104,9 @@ export default class QueryBuilder extends React.Component {
         } else {
             return (
                 <div style={conditionConjunctionDropdownStyle}>
-                    <Dropdown
+                    <ComboBox
                         className="ms-font-m"
+                        title="Condition Conjunction"
                         options={this.props.conjunctionOptions}
                         selectedKey={condition.conjunction}
                         onChange={(event, selection) => this.onUpdateConjunction(condition, selection.key)}
@@ -118,8 +120,9 @@ export default class QueryBuilder extends React.Component {
         if (this.props.supportAggregate) {
             return (
                 <div style={aggregateDropdownStyle}>
-                    <Dropdown
+                    <ComboBox
                         className="ms-font-m"
+                        title="aggregate"
                         options={this.props.aggregateOptions}
                         selectedKey={condition.aggregate}
                         onChange={(event, selection) => this.onUpdateAggregate(condition, selection.key)}
@@ -134,8 +137,9 @@ export default class QueryBuilder extends React.Component {
     renderFieldDropdown(condition) {
         return (
             <div style={fieldDropdownStyle}>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m"
+                    title="Field"
                     options={this.props.fieldOptions}
                     placeholder={this.props.fieldPlaceHolder}
                     selectedKey={condition.field}
@@ -153,8 +157,9 @@ export default class QueryBuilder extends React.Component {
 
         return (
             <div style={operatorDropdownStyle}>
-                <Dropdown
+                <ComboBox
                     className="ms-font-m"
+                    title="operator"
                     options={operatorOptions}
                     selectedKey={condition.operator}
                     onChange={(event, selection) => this.onUpdateOperator(condition, selection.key)}
@@ -168,6 +173,7 @@ export default class QueryBuilder extends React.Component {
             <div style={valueControlStyle}>
                 <TextField
                     className="ms-font-m"
+                    title="value"
                     spellCheck={false}
                     placeholder={this.props.valuePlaceHolder}
                     value={condition.value}

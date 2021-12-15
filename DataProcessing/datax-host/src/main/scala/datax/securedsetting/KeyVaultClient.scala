@@ -17,10 +17,8 @@ import scala.collection.mutable
   */
 object KeyVaultClient {
   private val logger = LogManager.getLogger(this.getClass)
-  private val kvc = KeyVaultMsiAuthenticatorClient.getKeyVaultClient()
   private val cache = new mutable.HashMap[String, String]
-
-  val secretRegex = "^(keyvault|secretscope):\\/\\/([a-zA-Z0-9-_]+)\\/([a-zA-Z0-9-_]+)$".r
+  private val secretRegex = "^(keyvault|secretscope):\\/\\/([a-zA-Z0-9-_]+)\\/([a-zA-Z0-9-_]+)$".r
 
   /**
     * get value of a matched secretId from keyvault
@@ -46,10 +44,11 @@ object KeyVaultClient {
 					dbutils.secrets.get(scope = vaultName, key = secretName)
 				}
 			  }
-			  else{
+			  else{	
+			    val kvc = KeyVaultMsiAuthenticatorClient.getKeyVaultClient(vaultName)
 				value = kvc.synchronized{
-				  kvc.getSecret(s"https://$vaultName.vault.azure.net",secretName)
-				}.value()
+				  kvc.getSecret(secretName)
+				}.getValue()
 			  }
 
               logger.warn(s"resolved secret:'$secretId'")

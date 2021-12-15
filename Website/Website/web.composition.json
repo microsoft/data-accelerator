@@ -121,6 +121,8 @@
       "^DataX.Flow\/Flow.ManagementService\/flow\/stopjobs$",
       "^DataX.Flow\/Flow.ManagementService\/flow\/restartjobs$",
       "^DataX.Flow\/Flow.ManagementService\/job\/syncall$",
+      "^DataX.Flow\/Flow.ManagementService\/job\/stopall$",
+      "^DataX.Flow\/Flow.ManagementService\/job\/startall$",
       "^DataX.Flow\/Flow.ManagementService\/job\/syncbynames$",
       "^DataX.Flow\/Flow.ManagementService\/job\/start$",
       "^DataX.Flow\/Flow.ManagementService\/job\/stop$",

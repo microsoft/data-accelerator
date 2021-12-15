@@ -43,5 +43,9 @@ namespace JobRunner
         public string NormalizationSnippet { get; set; }
         public string DatabricksToken { get; set; }
         public string SparkType { get; set; }
+        /// <summary>
+        /// HttpClient calls to external services will skip server certification validations on http calls if true, use it for development purposes
+        /// </summary>
+        public bool SkipServerCertificateValidation { get; set; } = false;
     }
 }

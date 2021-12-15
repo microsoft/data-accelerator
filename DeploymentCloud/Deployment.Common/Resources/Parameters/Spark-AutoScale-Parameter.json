@@ -1,0 +1,92 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"default_resource_location": {
+			"value": "$resourceLocation"
+		},
+		"sparkClusterName": {
+			"value": "$sparkName"
+		},
+		"sparkClusterLoginUserName": {
+			"reference": {
+				"keyVault": {
+				"id": "/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.KeyVault/vaults/$sparkRDPKVName"
+				},
+				"secretName": "sparkLogin"
+			}
+		},
+		"sparkClusterLoginPassword": {
+			"reference": {
+				"keyVault": {
+				"id": "/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.KeyVault/vaults/$sparkRDPKVName"
+				},
+				"secretName": "sparkclusterloginpassword"
+			}
+		},
+		"sparkClusterVersion": {
+			"value": "$HDInsightVersion"
+		},
+		"sparkComponentVersion": {
+			"value": "$sparkComponentVersion"
+		},
+		"sparkClusterWorkerNodeCount": {
+			"value": 3
+		},
+		"sparkClusterKind": {
+			"value": "SPARK"
+		},
+		"sparkSshUserName": {
+			"reference": {
+				"keyVault": {
+				"id": "/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.KeyVault/vaults/$sparkRDPKVName"
+				},
+				"secretName": "sparksshuser"
+			}
+		},
+		"sparkSshPassword": {
+			"reference": {
+				"keyVault": {
+				"id": "/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.KeyVault/vaults/$sparkRDPKVName"
+				},
+				"secretName": "sparksshpassword"
+			}
+		},
+		"storageAccounts_spark_name": {
+			"value": "$sparkBlobAccountName"
+		},
+		"sparkManagedIdentity": {	
+			"value": "$sparkManagedIdentityName"	
+		},
+		"minNodesForHDInsightAutoScaling": {
+			"value": $minNodesForHDInsightAutoScaling
+		},
+		"maxNodesForHDInsightAutoScaling": {
+			"value": $maxNodesForHDInsightAutoScaling
+		},
+		"minInstanceCountSparkHeadnode": {
+			"value": $minInstanceCountSparkHeadnode
+		},
+		"targetInstanceCountSparkHeadnode": {
+			"value": $targetInstanceCountSparkHeadnode
+		},
+		"targetInstanceCountSparkWorkernode": {
+			"value": $targetInstanceCountSparkWorkernode
+		},
+		"vmSizeSparkHeadnode": {
+			"value": "$vmSizeSparkHeadnode"
+		},
+		"vmSizeSparkWorkernode": {
+			"value": "$vmSizeSparkWorkernode"
+		},
+		"userAssignedIdentitiesName": {
+			"value": "$sparkManagedIdentityName"
+		},
+		"virtualNetworkName": {
+			"value": "VNet-$serviceFabricName"
+		},
+		"subnet0Name": {
+			"value": "Subnet-0"
+		}
+	}
+}

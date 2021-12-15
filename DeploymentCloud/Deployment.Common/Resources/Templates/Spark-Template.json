@@ -1,5 +1,5 @@
 {
-	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 	"contentVersion": "1.0.0.0",
 	"parameters": {
 		"default_resource_location": {
@@ -20,12 +20,25 @@
 		"sparkClusterLoginPassword": {
 			"type": "securestring",
 			"metadata": {
-				"description": "The password must be at least 10 characters in length and must contain at least one digit, one non-alphanumeric character, and one upper or lower case letter."			}
+				"description": "The password must be at least 10 characters in length and must contain at least one digit, one non-alphanumeric character, and one upper or lower case letter."			
+			}
+		},
+		"sqlServerLoginPassword": {
+			"type": "securestring",
+			"metadata": {
+				"description": "SQL server password. Password cannot contain semicolon or equals special characters."			
+			}
 		},
 		"sparkClusterVersion": {
 			"type": "string",
 			"metadata": {
 				"description": "HDInsight cluster version."
+			}
+		},
+		"sparkComponentVersion": {
+			"type": "string",
+			"metadata": {
+				"description": "HDInsight cluster spark component version."
 			}
 		},
 		"sparkClusterWorkerNodeCount": {
@@ -88,7 +101,9 @@
 		"storageAccountsResourceID": "[resourceId('Microsoft.Storage/storageAccounts',parameters('storageAccounts_spark_name'))]",
 		"userAssignedIdentitiesResourceID": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',parameters('userAssignedIdentitiesName'))]",
 		"vnetID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
-		"subnet0Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet0Name'))]"
+		"subnet0Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet0Name'))]",
+		"sqlservername": "[concat(parameters('sparkClusterName'), 'dataxsql')]",
+		"sqldbname": "[concat('metastoredb')]"
 	},
 	"resources": [	
 		{	
@@ -99,12 +114,57 @@
 			"properties": {}	
 		},
 		{
-			"apiVersion": "2015-03-01-preview",
+			"type": "Microsoft.Sql/servers",
+			"apiVersion": "2020-02-02-preview",
+			"name": "[variables('sqlservername')]",
+			"location": "[parameters('default_resource_location')]",
+			"properties": {
+				"administratorLogin": "[parameters('sparkClusterLoginUserName')]",
+				"administratorLoginPassword": "[parameters('sqlServerLoginPassword')]"
+			},
+			"resources": [
+				{
+					"name": "AllowAllWindowsAzureIps",
+					"type": "firewallrules",
+					"location": "[parameters('default_resource_location')]",
+					"apiVersion": "2020-08-01-preview",
+					"dependsOn": [
+						"[resourceId('Microsoft.Sql/servers', variables('sqlservername'))]"
+					],
+					"properties": {
+						"startIpAddress": "0.0.0.0",
+						"endIpAddress": "0.0.0.0"
+					}
+				},
+				{
+					"type": "databases",
+					"apiVersion": "2020-08-01-preview",
+					"name": "[variables('sqldbname')]",
+					"location": "[parameters('default_resource_location')]",
+					"properties": {
+						"collation": "SQL_Latin1_General_CP1_CI_AS",
+						"zoneRedundant": false,
+						"readScale": "Disabled",
+						"readReplicaCount": 0
+					},
+					"sku": {
+						"name": "S2",
+						"tier": "Standard"
+					},
+					"dependsOn": [
+						"[resourceId('Microsoft.Sql/servers', variables('sqlservername'))]"
+					]
+				}
+			]
+		},
+		{
+			"apiVersion": "2018-06-01-preview",
 			"name": "[parameters('sparkClusterName')]",
 			"type": "Microsoft.HDInsight/clusters",
 			"location": "[parameters('default_resource_location')]",
 			"dependsOn": [
-				"[variables('userAssignedIdentitiesResourceID')]"
+				"[variables('userAssignedIdentitiesResourceID')]",
+				"[variables('sqldbname')]"
 			],
 			"properties": {
 				"clusterVersion": "[parameters('sparkClusterVersion')]",
@@ -113,13 +173,19 @@
 				"clusterDefinition": {
 					"kind": "[parameters('sparkClusterKind')]",
 					"componentVersion": {
-						"Spark": "2.3"
+						"Spark": "[parameters('sparkComponentVersion')]"
 					},
 					"configurations": {
 						"gateway": {
 							"restAuthCredential.isEnabled": true,
 							"restAuthCredential.username": "[parameters('sparkClusterLoginUserName')]",
 							"restAuthCredential.password": "[parameters('sparkClusterLoginPassword')]"
+						},
+						"ambari-conf": {
+							"database-server": "[reference(resourceId('Microsoft.Sql/servers',concat(parameters('sparkClusterName'), 'dataxsql')), '2020-02-02-preview').fullyQualifiedDomainName]",
+							"database-name": "metastoredb",
+							"database-user-name": "[parameters('sparkClusterLoginUserName')]",
+							"database-user-password": "[parameters('sqlServerLoginPassword')]"
 						}
 					}
 				},
@@ -133,6 +199,7 @@
 						}
 					]
 				},
+				"minSupportedTlsVersion": "1.2",
 				"computeProfile": {
 					"roles": [
 						{
@@ -173,7 +240,24 @@
                                 "subnet": "[variables('subnet0Ref')]"
                             },
 							"scriptActions": []
-						}
+						},
+            {
+              "name": "zookeepernode",
+              "targetInstanceCount": 3,
+              "hardwareProfile": {
+                  "vmSize": "Standard_A8_V2"
+              },
+              "osProfile": {
+                  "linuxOperatingSystemProfile": {
+									"username": "[parameters('sparkSshUserName')]",
+									"password": "[parameters('sparkSshPassword')]"
+                }
+              },
+              "virtualNetworkProfile": {
+                                "id": "[variables('vnetID')]",
+                                "subnet": "[variables('subnet0Ref')]"
+              }
+             }
 					]
 				}
 			},

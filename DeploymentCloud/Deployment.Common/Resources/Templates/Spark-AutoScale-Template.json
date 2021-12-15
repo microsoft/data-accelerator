@@ -1,0 +1,206 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+    "contentVersion": "0.9.0.0",
+    "parameters": {
+        "default_resource_location": {
+            "type": "string"
+        },
+        "sparkClusterName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the HDInsight cluster to create."
+            }
+        },
+        "sparkClusterLoginUserName": {
+            "type": "string",
+            "metadata": {
+                "description": "These credentials can be used to submit jobs to the cluster and to log into cluster dashboards."
+            }
+        },
+        "sparkClusterLoginPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The password must be at least 10 characters in length and must contain at least one digit, one non-alphanumeric character, and one upper or lower case letter."
+            }
+        },
+        "sparkClusterVersion": {
+            "type": "string",
+            "metadata": {
+                "description": "HDInsight cluster version."
+            }
+        },
+        "sparkComponentVersion": {
+			"type": "string",
+			"metadata": {
+				"description": "HDInsight cluster spark component version."
+			}
+		},
+        "sparkClusterWorkerNodeCount": {
+            "type": "int",
+            "metadata": {
+                "description": "The number of nodes in the HDInsight cluster."
+            }
+        },
+        "sparkClusterKind": {
+            "type": "string",
+            "metadata": {
+                "description": "The type of the HDInsight cluster to create."
+            }
+        },
+        "sparkSshUserName": {
+            "type": "string",
+            "metadata": {
+                "description": "These credentials can be used to remotely access the cluster."
+            }
+        },
+        "sparkSshPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The password must be at least 10 characters in length and must contain at least one digit, one non-alphanumeric character, and one upper or lower case letter."
+            }
+        },
+        "storageAccounts_spark_name": {
+            "type": "String"
+        },
+        "sparkManagedIdentity": {
+            "type": "string"
+        },
+        "minNodesForHDInsightAutoScaling": {
+            "type": "int"
+        },
+        "maxNodesForHDInsightAutoScaling": {
+            "type": "int"
+        },
+        "minInstanceCountSparkHeadnode": {
+            "type": "int"
+        },
+        "targetInstanceCountSparkHeadnode": {
+            "type": "int"
+        },
+        "targetInstanceCountSparkWorkernode": {
+            "type": "int"
+        },
+        "vmSizeSparkHeadnode": {
+            "type": "string"
+        },
+        "vmSizeSparkWorkernode": {
+            "type": "string"
+        },
+        "userAssignedIdentitiesName": {
+            "type": "string"
+        },
+        "virtualNetworkName": {
+            "type": "string"
+        },
+        "subnet0Name": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "storageAccountsURI": "[concat(parameters('storageAccounts_spark_name'),'.blob.core.windows.net')]",
+        "storageAccountsResourceID": "[resourceId('Microsoft.Storage/storageAccounts',parameters('storageAccounts_spark_name'))]",
+        "userAssignedIdentitiesResourceID": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',parameters('userAssignedIdentitiesName'))]",
+        "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
+        "subnet0Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet0Name'))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-08-31-preview",
+            "name": "[parameters('sparkManagedIdentity')]",
+            "location": "[parameters('default_resource_location')]",
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+            "properties": {}
+        },
+        {
+            "apiVersion": "2015-03-01-preview",
+            "name": "[parameters('sparkClusterName')]",
+            "type": "Microsoft.HDInsight/clusters",
+            "location": "[parameters('default_resource_location')]",
+            "dependsOn": [
+                "[variables('userAssignedIdentitiesResourceID')]"
+            ],
+            "properties": {
+                "clusterVersion": "[parameters('sparkClusterVersion')]",
+                "osType": "Linux",
+                "tier": "standard",
+                "clusterDefinition": {
+                    "kind": "[parameters('sparkClusterKind')]",
+                    "componentVersion": {
+                        "Spark": "[parameters('sparkComponentVersion')]"
+                    },
+                    "configurations": {
+                        "gateway": {
+                            "restAuthCredential.isEnabled": true,
+                            "restAuthCredential.username": "[parameters('sparkClusterLoginUserName')]",
+                            "restAuthCredential.password": "[parameters('sparkClusterLoginPassword')]"
+                        }
+                    }
+                },
+                "storageProfile": {
+                    "storageaccounts": [
+                        {
+                            "name": "[variables('storageAccountsURI')]",
+                            "isDefault": true,
+                            "container": "defaultdx",
+                            "key": "[listKeys(variables('storageAccountsResourceID'), '2015-05-01-preview').key1]"
+                        }
+                    ]
+                },
+                "computeProfile": {
+                    "roles": [
+                        {
+                            "autoscale": null,
+                            "name": "headnode",
+                            "minInstanceCount": "[parameters('minInstanceCountSparkHeadnode')]",
+                            "targetInstanceCount": "[parameters('targetInstanceCountSparkHeadnode')]",
+                            "hardwareProfile": {
+                                "vmSize": "[parameters('vmSizeSparkHeadnode')]"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "[parameters('sparkSshUserName')]",
+                                    "password": "[parameters('sparkSshPassword')]"
+                                }
+                            },
+                            "virtualNetworkProfile": {
+                                "id": "[variables('vnetID')]",
+                                "subnet": "[variables('subnet0Ref')]"
+                            },
+                            "scriptActions": []
+                        },
+                        {
+                            "autoscale": {
+                                "capacity": {
+                                    "minInstanceCount": "[parameters('minNodesForHDInsightAutoScaling')]",
+                                    "maxInstanceCount": "[parameters('maxNodesForHDInsightAutoScaling')]"
+                                }
+                            },
+                            "name": "workernode",
+                            "targetInstanceCount": "[parameters('targetInstanceCountSparkWorkernode')]",
+                            "hardwareProfile": {
+                                "vmSize": "[parameters('vmSizeSparkWorkernode')]"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "[parameters('sparkSshUserName')]",
+                                    "password": "[parameters('sparkSshPassword')]"
+                                }
+                            },
+                            "virtualNetworkProfile": {
+                                "id": "[variables('vnetID')]",
+                                "subnet": "[variables('subnet0Ref')]"
+                            },
+                            "scriptActions": []
+                        }
+                    ]
+                }
+            },
+            "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "[variables('userAssignedIdentitiesResourceID')]": {}
+                }
+            }
+        }
+    ]
+}

@@ -144,12 +144,12 @@ class MetricWidgetMultiLineChart extends React.Component {
     render() {
         return (
             <div>
-                <h3 style={{ fontWeight: 'normal' }}>{this.props.displayName}</h3>
+                <h3 style={{ fontWeight: 'normal', color: `${Colors.themeDarker}` }} tabindex="0">{this.props.displayName}</h3>
                 <div
                     ref={div => {
                         this.graphDiv = div;
                     }}
-                    style={{ width: 'auto', height: 300, paddingTop: 25, backgroundColor: Colors.white, border: `1px solid ${Colors.customGray}` }}
+                    style={{ width: 'auto', height: 300, paddingTop: 25, backgroundColor: Colors.white, border: `1px solid ${Colors.customNeutralDarkGray}` }}
                 />
             </div>
         );

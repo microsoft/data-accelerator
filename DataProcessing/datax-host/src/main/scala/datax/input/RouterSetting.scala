@@ -30,7 +30,7 @@ object RouterSetting {
   def buildMappingOperations(s: Option[String]) = {
     s match {
       case Some(str) => str.split(";").map(p=>{
-        val parts = p.split("=", 1)
+        val parts = p.split("=", 2)
         if(parts.length==2)
           parts(0).trim()->parts(1).trim()
         else
@@ -43,14 +43,14 @@ object RouterSetting {
 
   def buildFilterJob(dict: SettingDictionary, name: String) = {
     SPFilter(
-      sourceIdRegex = dict.getOrNull("sourceidregex"),
-      mappingOperations = buildMappingOperations(dict.get("mappingoperations")),
-      filterCondition = dict.getOrNull("filterCondition"),
-      filterType = dict.getOrNull("filterType"),
+      sourceIdRegex = dict.getOrNull(s"${NamespaceFilterPrefix}sourceidregex"),
+      mappingOperations = buildMappingOperations(dict.get(s"${NamespaceFilterPrefix}mappingoperations")),
+      filterCondition = dict.getOrNull(s"${NamespaceFilterPrefix}filterCondition"),
+      filterType = dict.getOrNull(s"${NamespaceFilterPrefix}filterType"),
       jobName = name,
-      coalescingRatio = dict.getDouble("coalescingRatio"),
-      numPartitions = dict.getOrNull("numPartitions"),
-      output = buildFilterOutput(dict.getSubDictionary(NamespaceFilterPrefix))
+      coalescingRatio = dict.getDouble(s"${NamespaceFilterPrefix}coalescingRatio"),
+      numPartitions = dict.getOrNull(s"${NamespaceFilterPrefix}numPartitions"),
+      output = buildFilterOutput(dict.getSubDictionary(s"${NamespaceFilterPrefix}output."))
     )
   }
 

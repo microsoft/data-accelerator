@@ -8,7 +8,7 @@ import { withRouter } from 'react-router';
 import { PrimaryButton, SearchBox, Spinner, SpinnerSize, MessageBar, MessageBarType } from 'office-ui-fabric-react';
 import SparkJobsList from './sparkJobsList';
 import * as Api from '../api';
-import { Colors, Panel, PanelHeader, getApiErrorMessage } from 'datax-common';
+import { Colors, PageHeader, Panel, getApiErrorMessage } from 'datax-common';
 
 class SparkJobs extends React.Component {
     constructor() {
@@ -29,7 +29,9 @@ class SparkJobs extends React.Component {
     render() {
         return (
             <Panel>
-                <PanelHeader>Jobs</PanelHeader>
+                <div role='banner'>
+                    <PageHeader>Jobs</PageHeader>
+                </div>
                 {this.renderMessageBar()}
                 {this.renderContent()}
             </Panel>
@@ -59,7 +61,7 @@ class SparkJobs extends React.Component {
 
             return (
                 <div style={rootStyle}>
-                    <div style={contentStyle}>
+                    <div style={contentStyle} role="main">
                         <div style={filterContainerStyle}>
                             <SearchBox
                                 className="filter-box"
@@ -68,6 +70,12 @@ class SparkJobs extends React.Component {
                             />
                             <div style={buttonStyle}>
                                 <PrimaryButton text="Refresh Jobs Status" onClick={() => this.syncSparkItems()} />
+                            </div>
+                            <div style={buttonStyle}>
+                                <PrimaryButton text="Stop All Jobs" onClick={() => this.stopSparkItems()} />
+                            </div>
+                            <div style={buttonStyle}>
+                                <PrimaryButton text="Start All Jobs" onClick={() => this.startSparkItems()} />
                             </div>
                         </div>
 
@@ -112,6 +120,30 @@ class SparkJobs extends React.Component {
 
     syncSparkItems() {
         Api.syncSparkJobs()
+            .then(jobs => this.setJobs(jobs))
+            .catch(error => {
+                const message = getApiErrorMessage(error);
+                this.setState({
+                    errorMessage: message,
+                    showMessageBar: true
+                });
+            });
+    }
+
+    stopSparkItems() {
+        Api.stopAllSparkJobs()
+            .then(jobs => this.setJobs(jobs))
+            .catch(error => {
+                const message = getApiErrorMessage(error);
+                this.setState({
+                    errorMessage: message,
+                    showMessageBar: true
+                });
+            });
+    }
+
+    startSparkItems() {
+        Api.startAllSparkJobs()
             .then(jobs => this.setJobs(jobs))
             .catch(error => {
                 const message = getApiErrorMessage(error);

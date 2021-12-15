@@ -32,7 +32,7 @@ export default class VerticalTabs extends React.Component {
     componentWillReceiveProps(nextProps) {
         const links = this.getPivotLinks(nextProps);
 
-        this.setState(function(prevState, props) {
+        this.setState(function (prevState, props) {
             let selectedKey;
             if (this.isKeyValid(nextProps.selectedKey)) {
                 selectedKey = nextProps.selectedKey;
@@ -51,7 +51,7 @@ export default class VerticalTabs extends React.Component {
 
     render() {
         return (
-            <div className="vertical-tabs">
+            <div className="vertical-tabs" role='tablist'>
                 {this.renderLinks()}
                 {this.renderItem()}
             </div>
@@ -67,12 +67,14 @@ export default class VerticalTabs extends React.Component {
         const linkContent = this.renderLinkContent(link);
         return (
             <div
+                tabIndex="0"
                 className={`vertical-tabs-item clickable-noselect${link.itemCompleted ? ' complete' : ''}${
                     itemKey == this.state.selectedKey ? ' selected' : ''
                 }`}
                 key={itemKey}
                 onClick={this.onLinkClick.bind(this, itemKey)}
                 onKeyPress={this.onKeyPress.bind(this, itemKey)}
+                role='tab'
             >
                 {linkContent}
             </div>

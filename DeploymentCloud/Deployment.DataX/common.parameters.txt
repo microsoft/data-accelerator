@@ -20,6 +20,9 @@ subscriptionId=
 # ResourceGroupName to generate resources 
 resourceGroupName=DataX
 
+# y if you want to setup Cosmos Db output sinks for samples
+setupAdditionalResourcesForSample=n
+
 # y if you want to run spark jobs on Databricks, n for running jobs on HDinsight 
 useDatabricks=n
 
@@ -31,6 +34,21 @@ databricksClusterNodeType=Standard_DS3_v2
 
 #Databricks SKU
 databricksSku=premium
+
+# HDInsight cluster version. 
+HDInsightVersion=4.0
+
+# The spark version of the HDInsight. For HDInsight4.0, it can be 2.4 or 2.3. For HDInsight3.6, it should be 2.3
+sparkComponentVersion=2.4
+
+# y if you want to enable the auto-scaling feature of the HDInsight cluster. For now, it is only available for version 4.0.
+enableHDInsightAutoScaling=n
+
+# HDInsight minimal nodes. It is only meaning when HDInsightVersion=4.0 and enableHDInsightAutoScaling=y.
+minNodesForHDInsightAutoScaling=3
+
+# HDInsight maximal nodes. It is only meaning when HDInsightVersion=4.0 and enableHDInsightAutoScaling=y.
+maxNodesForHDInsightAutoScaling=5
 
 # y if you want to deploy Kafka sample, n otherwise
 # This will deploy the Kafka specific samples and resources such as HDinsight Kafka and EventHub Kafka  
@@ -66,13 +84,19 @@ certPassword=
 # y if you use the selfsigned certs, n otherwise
 useSelfSignedCerts=y
 
-# Path to the main (primary) cert. Only a pfx is supported 
+# y if you want to use an existing cert from a Keyvault, n otherwise
+useCertFromKV=n
+
+# if useCertFromKV set to y then enter the certKVName
+# certKVName=
+
+# Path to the main (primary) cert. Only a pfx is supported. Enter cert name if useCertFromKV=y
 # mainCert=
 
-# Path to the reverse proxy cert. Only a pfx is supported
+# Path to the reverse proxy cert. Only a pfx is supported. Enter cert name if useCertFromKV=y
 # reverseProxyCert=
 
-# Path to the SSL cert. Only a pfx is supported
+# Path to the SSL cert. Only a pfx is supported. Enter cert name if useCertFromKV=y
 # sslCert=
 
 # Role Names
@@ -85,6 +109,11 @@ writerRole=DataXWriter
 # This password must be 6-72 characters long and must contain at least one digit, one upper case letter and one lower case letter
 # If password is empty, a new password will be generated
 sparkPassword=
+
+# SQL server password used for spark HDI ambari
+# Password cannot have semicolon or equal spacial characters
+# If password is empty, a new password will be generated
+sqlPassword=
 
 # Admin password for Spark
 kafkaPassword=
@@ -103,12 +132,16 @@ sfPassword=
 
 # VM size for Service Fabric resource
 # For details, please refer to https://azure.microsoft.com/en-us/pricing/details/service-fabric/
-# Default value is Standard_D2_v2
-vmNodeTypeSize=Standard_D2_v2
+# Default value is Standard_D2a_v4
+vmNodeTypeSize=Standard_D2a_v4
 
 # VM node count for Service Fabric resource
 # Default value is 5
 vmNodeinstanceCount=5
+
+# VM image SKU for Service Fabric resource
+# Default value is 2016-Datacenter-with-Containers
+sfVmImageSKU=2016-Datacenter-with-Containers
 
 # VM size for Spark HeadNode
 # Default value is Standard_D3_V2

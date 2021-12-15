@@ -51,10 +51,10 @@ SOFTWARE
 
     <groupId>com.microsoft.datax</groupId>
     <artifactId>datax-utility_2.4_2.11</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.5-SNAPSHOT</version>
 
     <properties>
-        <spark.version>2.4.0</spark.version>
+        <spark.version>2.4.5</spark.version>
         <scala.version.major>2.11</scala.version.major>
         <scala.version.minor>8</scala.version.minor>
         <scala.version>${scala.version.major}.${scala.version.minor}</scala.version>
@@ -100,9 +100,9 @@ SOFTWARE
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.16.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -120,7 +120,7 @@ SOFTWARE
         <dependency>
             <groupId>com.microsoft.datax</groupId>
             <artifactId>datax-core_2.4_2.11</artifactId>
-            <version>1.2.0-SNAPSHOT</version>
+            <version>1.2.5-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
@@ -130,12 +130,7 @@ SOFTWARE
         <dependency>
             <groupId>com.microsoft.datax</groupId>
             <artifactId>datax-keyvault_2.4_2.11</artifactId>
-            <version>1.2.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-keyvault-webkey</artifactId>
-            <version>1.1</version>
+            <version>1.2.5-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
@@ -165,7 +160,7 @@ SOFTWARE
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>5.0.4.RELEASE</version>
+            <version>6.1.5.RELEASE</version>
         </dependency>
     </dependencies>
 

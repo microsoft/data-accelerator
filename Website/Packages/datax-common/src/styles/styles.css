@@ -57,7 +57,7 @@
 .vertical-tabs {
     display: flex;
     flex: 1;
-    overflow: hidden;
+    overflow: auto;
 }
 
 .vertical-tabs-items {
@@ -72,12 +72,14 @@
     font-weight: 600;
     font-size: 12px;
     border-left: 10px solid orange;
-    color: #58666e;
+    color: #40474b;
     background-color: #dadada;
+    border-top: 1px solid #474747;
+    border-bottom: 1px solid #474747;
 }
 
 .vertical-tabs-item.selected {
-    color: #0078d4;
+    color: #1365fd;
     background-color: #f8f8f8;
 }
 

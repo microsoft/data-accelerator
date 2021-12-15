@@ -44,5 +44,6 @@ TopNav.propTypes = {
 const style = {
     backgroundColor: Colors.black,
     height: 40,
-    display: 'flex'
+    display: 'flex',
+    overflow: 'hidden'
 };

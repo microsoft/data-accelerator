@@ -125,10 +125,10 @@
             }
         },
         "reverseProxyCertificateThumbprint": {
-            "type": "string",
+            "type": "string"
         },
         "reverseProxyCertificateUrlValue": {
-            "type": "string",
+            "type": "string"
         },
         "storageAccountType": {
             "type": "string",
@@ -377,22 +377,22 @@
                                         "StorageAccountKey2": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('supportLogStorageAccountName')),'2015-05-01-preview').key2]"
                                     },
                                     "publisher": "Microsoft.Azure.ServiceFabric",
-                                    "settings": {
-                                        "clusterEndpoint": "[reference(parameters('clusterName')).clusterEndpoint]",
-                                        "nodeTypeRef": "[parameters('vmNodeType0Name')]",
-                                        "dataPath": "D:\\\\SvcFab",
-                                        "durabilityLevel": "Bronze",
-                                        "enableParallelJobs": true,
-                                        "nicPrefixOverride": "[parameters('subnet0Prefix')]",
-                                        "reverseProxyCertificate": {
-                                            "thumbprint": "[parameters('reverseProxyCertificateThumbprint')]",
-                                            "x509StoreName": "[parameters('reverseProxyCertificateStoreValue')]"
-                                        },
-                                        "certificate": {
-                                            "thumbprint": "[parameters('certificateThumbprint')]",
-                                            "x509StoreName": "[parameters('certificateStoreValue')]"
-                                        }
+                                  "settings": {
+                                    "clusterEndpoint": "[reference(parameters('clusterName')).clusterEndpoint]",
+                                    "nodeTypeRef": "[parameters('vmNodeType0Name')]",
+                                    "dataPath": "D:\\\\SvcFab",
+                                    "durabilityLevel": "Silver",
+                                    "enableParallelJobs": true,
+                                    "nicPrefixOverride": "[parameters('subnet0Prefix')]",
+                                    "reverseProxyCertificate": {
+                                      "thumbprint": "[parameters('reverseProxyCertificateThumbprint')]",
+                                      "x509StoreName": "[parameters('reverseProxyCertificateStoreValue')]"
                                     },
+                                    "certificate": {
+                                      "thumbprint": "[parameters('certificateThumbprint')]",
+                                      "x509StoreName": "[parameters('certificateStoreValue')]"
+                                    }
+                                  },
                                     "typeHandlerVersion": "1.0"
                                 }
                             },
@@ -568,23 +568,23 @@
                 ],
                 "managementEndpoint": "[concat('https://',reference(concat(parameters('lbIPName'),'-','0')).dnsSettings.fqdn,':',parameters('nt0fabricHttpGatewayPort'))]",
                 "nodeTypes": [
-                    {
-                        "name": "[parameters('vmNodeType0Name')]",
-                        "applicationPorts": {
-                            "endPort": "[parameters('nt0applicationEndPort')]",
-                            "startPort": "[parameters('nt0applicationStartPort')]"
-                        },
-                        "clientConnectionEndpointPort": "[parameters('nt0fabricTcpGatewayPort')]",
-                        "durabilityLevel": "Bronze",
-                        "ephemeralPorts": {
-                            "endPort": "[parameters('nt0ephemeralEndPort')]",
-                            "startPort": "[parameters('nt0ephemeralStartPort')]"
-                        },
-                        "httpGatewayEndpointPort": "[parameters('nt0fabricHttpGatewayPort')]",
-                        "isPrimary": true,
-                        "reverseProxyEndpointPort": "[parameters('nt0reverseProxyEndpointPort')]",
-                        "vmInstanceCount": "[parameters('nt0InstanceCount')]"
-                    }
+                  {
+                    "name": "[parameters('vmNodeType0Name')]",
+                    "applicationPorts": {
+                      "endPort": "[parameters('nt0applicationEndPort')]",
+                      "startPort": "[parameters('nt0applicationStartPort')]"
+                    },
+                    "clientConnectionEndpointPort": "[parameters('nt0fabricTcpGatewayPort')]",
+                    "durabilityLevel": "Silver",
+                    "ephemeralPorts": {
+                      "endPort": "[parameters('nt0ephemeralEndPort')]",
+                      "startPort": "[parameters('nt0ephemeralStartPort')]"
+                    },
+                    "httpGatewayEndpointPort": "[parameters('nt0fabricHttpGatewayPort')]",
+                    "isPrimary": true,
+                    "reverseProxyEndpointPort": "[parameters('nt0reverseProxyEndpointPort')]",
+                    "vmInstanceCount": "[parameters('nt0InstanceCount')]"
+                  }
                 ],
                 "provisioningState": "Default",
                 "reliabilityLevel": "Silver",

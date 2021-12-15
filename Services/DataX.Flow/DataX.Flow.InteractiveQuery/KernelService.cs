@@ -7,6 +7,7 @@ using DataX.Flow.Common;
 using DataX.Flow.Common.Models;
 using DataX.Utilities.Blob;
 using DataX.Utilities.KeyVault;
+using DataX.Utility.KeyVault;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -14,8 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
@@ -698,7 +697,7 @@ namespace DataX.Flow.InteractiveQuery
         /// <param name="maxCount">Maximum number of rows to return to the UI</param>
         /// <param name="result">The Result as returned by the kernel</param>
         /// <returns>ApiResult which contains the error message or the json formatted data as returned by kernel</returns>
-        private ApiResult ConvertToJson(int maxCount, string result)
+        public static ApiResult ConvertToJson(int maxCount, string result)
         {
             var error = CheckErrors(result);
             if (!string.IsNullOrEmpty(error))
@@ -732,7 +731,7 @@ namespace DataX.Flow.InteractiveQuery
         /// </summary>
         /// <param name="result">result is the string that is returned from the kernel on executing scala code</param>
         /// <returns>Returns the result only in case there is error otherwise returns null</returns>
-        private string CheckErrors(string result)
+        private static string CheckErrors(string result)
         {
             Regex r = new Regex(@"or[^;]+line (\d+).*pos (\d+)", RegexOptions.IgnoreCase);
             Match m = r.Match(ReplaceNewLineFeed(result));
@@ -744,7 +743,7 @@ namespace DataX.Flow.InteractiveQuery
             return null;
         }
 
-        private string ReplaceNewLineFeed(string input)
+        private static string ReplaceNewLineFeed(string input)
         {
             return input.Replace("\r", " ").Replace("\n", " ");
         }
@@ -758,20 +757,8 @@ namespace DataX.Flow.InteractiveQuery
         {
             if (path != null && Config.Utility.KeyVaultUri.IsSecretUri(path))
             {
-                Regex r = new Regex(@"^((keyvault|secretscope:?):\/\/)?([^:\/\s]+)(\/)(.*)?", RegexOptions.IgnoreCase);
-                var keyvault = string.Empty;
-
-                var secret = string.Empty;
-                MatchCollection match = r.Matches(path);
-                if (match != null && match.Count > 0)
-                {
-                    foreach (Match m in match)
-                    {
-                        keyvault = m.Groups[3].Value.Trim();
-                        secret = m.Groups[5].Value.Trim();
-                    }
-                }
-                var secretUri = KeyVault.GetSecretFromKeyvault(keyvault, secret);
+                SecretUriParser.ParseSecretUri(path, out string keyvalut, out string secret);
+                var secretUri = KeyVault.GetSecretFromKeyvault(keyvalut, secret);
 
                 return secretUri;
             }

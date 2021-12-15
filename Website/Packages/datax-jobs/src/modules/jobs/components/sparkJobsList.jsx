@@ -38,7 +38,7 @@ const columnDefinition = [
         key: 'colCluster',
         name: 'Cluster',
         fieldName: 'cluster',
-        minWidth: 50,
+        minWidth: 60,
         maxWidth: 100,
         isResizable: true
     },
@@ -46,15 +46,15 @@ const columnDefinition = [
         key: 'colState',
         name: 'State',
         fieldName: 'state',
-        minWidth: 20,
-        maxWidth: 60,
+        minWidth: 60,
+        maxWidth: 100,
         isResizable: true,
         onRender: item => getJobStateIcon(item)
     },
     {
         key: 'colLink',
         name: 'Link',
-        minWidth: 50,
+        minWidth: 70,
         maxWidth: 200,
         isResizable: true,
         onRender: item => <div>{renderLinks(item.links)}</div>
@@ -226,8 +226,8 @@ class SparkJobsList extends React.Component {
         return {
             key: functionName,
             fieldName: functionName,
-            name: '',
-            minWidth: 20,
+            name: functionName,
+            minWidth: 40,
             maxWidth: 50,
             onRender: (item, index) => {
                 if (available && !available(item, index)) {
@@ -235,12 +235,13 @@ class SparkJobsList extends React.Component {
                 } else {
                     return (
                         <div>
-                            <i
+                            <button
                                 className={`clickable-noselect ms-Icon ms-Icon--${iconName}`}
                                 aria-hidden="true"
+                                aria-label={`${functionName} Job`}
                                 onClick={handler.bind(this, item, index)}
                             />
-                        </div>
+                        </div>    
                     );
                 }
             }
@@ -253,7 +254,10 @@ class SparkJobsList extends React.Component {
             columns.push(
                 this.getFunctionColumn(
                     'Start',
-                    this.getFunctionHandler(item => Api.startSparkJob(item.name), item => `Do you want to start job '${item.name}'?`),
+                    this.getFunctionHandler(
+                        item => Api.startSparkJob(item.name),
+                        item => `Do you want to start job '${item.name}'?`
+                    ),
                     item => item.state == JobState.Idle,
                     'TriangleSolidRight12'
                 )
@@ -261,7 +265,10 @@ class SparkJobsList extends React.Component {
             columns.push(
                 this.getFunctionColumn(
                     'Stop',
-                    this.getFunctionHandler(item => Api.stopSparkJob(item.name), item => `Do you want to stop job '${item.name}'?`),
+                    this.getFunctionHandler(
+                        item => Api.stopSparkJob(item.name),
+                        item => `Do you want to stop job '${item.name}'?`
+                    ),
                     item => item.state == JobState.Running,
                     'StopSolid'
                 )
@@ -269,7 +276,10 @@ class SparkJobsList extends React.Component {
             columns.push(
                 this.getFunctionColumn(
                     'Restart',
-                    this.getFunctionHandler(item => Api.restartSparkJob(item.name), item => `Do you want to restart job '${item.name}'?`),
+                    this.getFunctionHandler(
+                        item => Api.restartSparkJob(item.name),
+                        item => `Do you want to restart job '${item.name}'?`
+                    ),
                     item => item.state == JobState.Running,
                     'Refresh'
                 )

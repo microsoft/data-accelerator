@@ -18,7 +18,7 @@ import {
     MessageBar,
     MessageBarType
 } from 'office-ui-fabric-react';
-import { Colors, Panel, PanelHeader, PanelHeaderButtons, LoadingPanel, IconButtonStyles } from 'datax-common';
+import { Colors, PageHeader, Panel, PanelHeaderButtons, LoadingPanel, IconButtonStyles } from 'datax-common';
 import { functionEnabled } from '../../../common/api';
 
 const columns = [
@@ -62,7 +62,9 @@ class FlowListPanel extends React.Component {
     render() {
         return (
             <Panel>
-                <PanelHeader>Flows</PanelHeader>
+                <div role='banner'>
+                    <PageHeader>Flows</PageHeader>
+                </div>
                 <PanelHeaderButtons>{this.renderNewButton()}</PanelHeaderButtons>
                 {this.renderMessageBar()}
                 {this.renderContent()}
@@ -77,7 +79,7 @@ class FlowListPanel extends React.Component {
                 const items = filter ? this.props.flowslist.filter(i => i.name.toLowerCase().indexOf(filter) > -1) : this.props.flowslist;
 
                 return (
-                    <div style={contentStyle}>
+                    <div style={contentStyle} role="main">
                         <div style={filterContainerStyle}>
                             <SearchBox
                                 className="filter-box"
@@ -90,7 +92,7 @@ class FlowListPanel extends React.Component {
                             <DetailsList
                                 items={items}
                                 columns={columns}
-                                onActiveItemChanged={item => this.onEditItem(item)}
+                                onItemInvoked={item => this.onEditItem(item)}
                                 setKey="flowslist"
                                 layoutMode={DetailsListLayoutMode.justified}
                                 selectionMode={SelectionMode.single}
@@ -127,6 +129,7 @@ class FlowListPanel extends React.Component {
         if (!this.props.errorMessage) {
             return (
                 <DefaultButton
+                    role="navigation"
                     key="new"
                     className="header-button"
                     title="Add new DataX Flow"
@@ -185,7 +188,8 @@ const contentStyle = {
     paddingBottom: 30,
     flex: 1,
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    overflowY: 'auto'
 };
 
 const filterContainerStyle = {
@@ -194,9 +198,10 @@ const filterContainerStyle = {
 
 const listContainerStyle = {
     backgroundColor: Colors.white,
-    border: `1px solid ${Colors.neutralTertiaryAlt}`,
+    border: `1px solid ${Colors.neutralPrimaryAlt}`,
     flex: 1,
-    overflowY: 'auto'
+    overflowY: 'auto',
+    minHeight: '100px'
 };
 
 export default withRouter(

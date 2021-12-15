@@ -220,6 +220,34 @@ namespace DataX.Config
         }
 
         /// <summary>
+        /// Stop all jobs
+        /// </summary>
+        /// <returns></returns>
+        public async Task<SparkJobConfig[]> StopAllJobs()
+        {
+            var jobs = await JobData.GetAll();
+            string[] jobNames = jobs.Select(job => job.Name).ToArray();
+            await Task.WhenAll(jobNames.Select(name => StopJob(name)));
+
+            Logger.LogInformation($"sync'ing job states for all jobs'");
+            return await SyncJobStateByNames(jobs.Select(job => job.Name).ToArray());
+        }
+
+        /// <summary>
+        /// Start all jobs
+        /// </summary>
+        /// <returns></returns>
+        public async Task<SparkJobConfig[]> StartAllJobs()
+        {
+            var jobs = await JobData.GetAll();
+            string[] jobNames = jobs.Select(job => job.Name).ToArray();
+            await Task.WhenAll(jobNames.Select(name => StartJob(name)));
+
+            Logger.LogInformation($"sync'ing job states for all jobs'");
+            return await SyncJobStateByNames(jobs.Select(job => job.Name).ToArray());
+        }
+
+        /// <summary>
         /// Make sure a job is in the specified state within 
         /// </summary>
         /// <param name="jobName">job name</param>

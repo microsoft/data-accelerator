@@ -34,6 +34,10 @@ param(
     [Parameter(Mandatory=$True)]
     [string]
     $sparkPassword,
+	
+    [Parameter(Mandatory=$True)]
+    [string]
+    $sqlPassword,
 
     [Parameter(Mandatory=$True)]
     [string]
@@ -49,7 +53,15 @@ param(
 
     [Parameter(Mandatory=$True)]
     [string]
-    $redisCacheSize
+    $redisCacheSize,
+	
+	[Parameter(Mandatory=$True)]
+    [string]
+	$useCertFromKV,
+	
+	[Parameter(Mandatory=$False)]
+    [string]
+	$certKVName
 )
 
 # Generate the random characters to randomize ProductName
@@ -133,6 +145,13 @@ else {
     $sparkPwd = $sparkPassword
 }
 
+if (!$sqlPassword) {
+    $sqlPwd = Get-Password
+}
+else {
+    $sqlPwd = $sqlPassword
+}
+
 if (!$kafkaPassword) {
     $kafkaPwd = Get-Password
 }
@@ -189,7 +208,12 @@ $servicesKVName = "kvServices" + $kvBaseName
 $sparkKVName = "kvSpark" + $kvBaseName
 $sparkRDPKVName = "kvSparkRDP" + $kvBaseName
 $fabricRDPKVName = "kvFabricRDP" + $kvBaseName
-$sfKVName = "kvSF" + $kvBaseName
+if ($useCertFromKV -eq 'n') {
+	$sfKVName = "kvSF" + $kvBaseName
+}
+else {
+	$sfKVName = $certKVName
+}
 
 $docDBName = "$name"
 $appInsightsName = "$name"
@@ -483,7 +507,7 @@ function Get-CosmosDBConnectionString([string]$Name) {
     -ResourceType "Microsoft.DocumentDb/databaseAccounts" `
     -ApiVersion "2015-04-08" `
     -resourceGroupName $resourceGroupName `
-    -Name $docDBName `
+    -Name $Name `
     -force
 
     $connectionString = $dbConRaw.connectionStrings[0].connectionString
@@ -639,6 +663,7 @@ function Get-DefaultTokens {
     $tokens.Add('resourceGroup', $resourceGroupName )
 
     $tokens.Add('sparkPwd', $sparkPwd )
+    $tokens.Add('sqlPwd', $sqlPwd )
     $tokens.Add('sparkSshPwd', $sparkSshPwd )
     $tokens.Add('sfPwd', $sfPwd )
     $tokens.Add('name', $name )
@@ -677,6 +702,7 @@ Export-ModuleMember -Variable "iotHubName"
 Export-ModuleMember -Variable "kafkaEventHubNamespaceName"
 Export-ModuleMember -Variable "kafkaName"
 Export-ModuleMember -Variable "sparkPwd"
+Export-ModuleMember -Variable "sqlPwd"
 Export-ModuleMember -Variable "sparkSshPwd"
 Export-ModuleMember -Variable "kafkaPwd"
 Export-ModuleMember -Variable "kafkaSshPwd"

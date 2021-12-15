@@ -422,6 +422,53 @@ namespace Flow.Management.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("job/restartallwithretries")]
+        [DataXWriter]
+        public async Task<ApiResult> RestatAllWithRetries([FromBody] JObject request)
+        {
+            try
+            {
+                RolesCheck.EnsureWriter(Request, _isLocal);
+                Ensure.NotNull(request, "request");
+
+                var jobNames = request.Value<JArray>("JobNames")?.Value<string[]>() ?? Array.Empty<string>();
+                var maxRetryTimes = request.GetValue("MaxRetryTimes", StringComparison.OrdinalIgnoreCase)?.Value<int>() ?? 2;
+                var waitIntervalInSeconds = request.GetValue("WaitIntervalInSeconds", StringComparison.OrdinalIgnoreCase)?.Value<int>() ?? 2;
+                var maxWaitTimeInSeconds = request.GetValue("MaxWaitTimeInSeconds", StringComparison.OrdinalIgnoreCase)?.Value<int>() ?? 60;
+                int retryTimes = 0;
+                IEnumerable<SparkJobFrontEnd> notReadyJobs = Enumerable.Empty<SparkJobFrontEnd>();
+                do
+                {
+                    await _jobOperation.RestartAllJobs(jobNames);
+
+                    var startTime = DateTime.Now;
+                    do
+                    {
+                        SparkJobFrontEnd[] jobOpResult = jobNames != null && jobNames.Any() ?
+                                await _jobOperation.SyncJobStateByNames(jobNames)
+                                : await _jobOperation.SyncAllJobState();
+
+                        notReadyJobs = jobOpResult.Where(r => r.JobState == JobState.Starting || r.JobState == JobState.Idle || r.JobState == JobState.Error);
+                        jobNames = notReadyJobs.Select(j => j.Name).ToArray();
+                        if(!notReadyJobs.Any())
+                        {
+                            break;
+                        }
+
+                        System.Threading.Thread.Sleep(waitIntervalInSeconds * 1000);
+                    } while ((DateTime.Now - startTime).TotalSeconds < maxWaitTimeInSeconds);
+
+                } while (retryTimes++ < maxRetryTimes && notReadyJobs.Any());
+
+                return ApiResult.CreateSuccess(JToken.FromObject(notReadyJobs));
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return ApiResult.CreateError(e.Message);
+            }
+        }
 
         [HttpGet]
         [Route("job/syncall")]
@@ -434,6 +481,46 @@ namespace Flow.Management.Controllers
 
                 // Sync all jobs
                 var jobOpResult = await _jobOperation.SyncAllJobState();
+                return ApiResult.CreateSuccess(JToken.FromObject(jobOpResult));
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return ApiResult.CreateError(e.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("job/stopall")]
+        [DataXWriter]
+        public async Task<ApiResult> StopAllJobs()
+        {
+            try
+            {
+                RolesCheck.EnsureWriter(Request, _isLocal);
+
+                // Sync all jobs
+                var jobOpResult = await _jobOperation.StopAllJobs();
+                return ApiResult.CreateSuccess(JToken.FromObject(jobOpResult));
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                return ApiResult.CreateError(e.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("job/startall")]
+        [DataXWriter]
+        public async Task<ApiResult> StartAllJobs()
+        {
+            try
+            {
+                RolesCheck.EnsureWriter(Request, _isLocal);
+
+                // Sync all jobs
+                var jobOpResult = await _jobOperation.StartAllJobs();
                 return ApiResult.CreateSuccess(JToken.FromObject(jobOpResult));
             }
             catch (Exception e)
@@ -462,6 +549,5 @@ namespace Flow.Management.Controllers
                 return ApiResult.CreateError(e.Message);
             }
         }
-
     }
 }

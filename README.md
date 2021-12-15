@@ -6,6 +6,8 @@
 
 [Data Accelerator](https://github.com/Microsoft/data-accelerator) for Apache Spark democratizes streaming big data using Spark by offering several key features such as a no-code experience to set up a data pipeline as well as fast dev-test loop for creating complex logic.  Our team has been using the project for two years within Microsoft for processing streamed data across many internal deployments handling data volumes at Microsoft scale. It offers an easy to use platform to learn and evaluate streaming needs and requirements.  We are thrilled to share this project with the wider community as open source!
 
+**Azure Friday:** We are now featured on Azure Fridays!  See the video [here](https://azure.microsoft.com/en-us/resources/videos/azure-friday-how-to-stream-big-data-with-data-accelerator-for-apache-spark/).
+
 <p align="center"><img style="float: center;" width="90%" src="https://github.com/Microsoft/data-accelerator/wiki/tutorials/images/readme3.PNG"></p>
 
 [Data Accelerator](https://github.com/Microsoft/data-accelerator) offers three level of experiences:
@@ -29,9 +31,10 @@ We have also enabled a "hello world" experience that you try out locally by runn
 To run Data Accelerator locally, [deploy locally](https://github.com/Microsoft/data-accelerator/wiki/Local-mode-with-Docker) and then check out the [local mode tutorials](https://github.com/Microsoft/data-accelerator/wiki/Tutorials#local-mode).<br/>
 
 Data Accelerator for Spark runs on the following:
- - HDInsights with Spark 2.3
+ - Azure HDInsight with Spark 2.4 (2.3 also supported)
+ - Azure Databricks with Spark 2.4
  - Service Fabric (v6.4.637.9590) with
-   - .NET Core 2.1
+   - .NET Core 2.2
    - ASP.NET
  - App Service with Node 10.6
 
