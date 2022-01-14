@@ -4,9 +4,8 @@
   <artifactId>datax-udf-samples_2.4_2.11</artifactId>
   <versioning>
     <versions>
-      <version>1.2.4-SNAPSHOT</version>
-      <version>1.2.5-SNAPSHOT</version>
+      <version>1.2.6-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20211213033357</lastUpdated>
+    <lastUpdated>20220114050856</lastUpdated>
   </versioning>
 </metadata>
