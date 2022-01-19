@@ -39,9 +39,9 @@ object BlobPointerInput {
     (new StructType).add("BlobPath", StringType)
   }
 
-  private lazy val saRegex = s"""wasbs?://[\\w-]+@([\\w\\d]+)${BlobProperties.BlobHostPath}/.*""".r  
+  private lazy val saRegex = s"""(?:wasbs?|abfss?)://[\\w-]+@([\\w\\d]+)(${BlobProperties.BlobHostPath}|${BlobProperties.DfsHostPath})/.*""".r
   private def extractSourceId(blobPath: String, regex: String): String = {
-    val r = if(regex == null) saRegex else regex.r
+    val r = if(regex == null || regex == "") saRegex else regex.r
     r.findFirstMatchIn(blobPath) match {
       case Some(partition) => partition.group(1)
       case None => null
