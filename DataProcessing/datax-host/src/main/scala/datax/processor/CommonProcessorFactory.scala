@@ -608,7 +608,12 @@ object CommonProcessorFactory {
               processPartition(pathsFilteredGroups(0))
           }
           else {
-            batchLog.warn(s"No valid paths is found to process for this batch")
+            batchLog.warn(s"No valid paths were found to process for this batch")
+            val bShouldForceNonEmptyBatch = ConfigManager.getActiveDictionary().getOrElse(JobArgument.ConfName_ForceNonEmptyBatch, "false").toBoolean
+            if(bShouldForceNonEmptyBatch)
+            {
+                  throw new Exception("No valid paths found to process for this batch and empty batches are not allowed")
+            }
             Map[String, Double]()
           }
         val batchProcessingTime = (System.nanoTime - t1) / 1E9

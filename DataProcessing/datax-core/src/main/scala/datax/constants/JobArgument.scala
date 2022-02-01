@@ -18,4 +18,5 @@ object JobArgument {
   def ConfName_DefaultStorageAccount: String = s"${ConfNamePrefix}DEFAULTSTORAGEACCOUNT"
   def ConfName_DefaultContainer: String = s"${ConfNamePrefix}DEFAULTCONTAINER"
   def ConfName_AzureStorageJarPath: String = s"${ConfNamePrefix}AZURESTORAGEJARPATH"
+  def ConfName_ForceNonEmptyBatch: String = s"${ConfNamePrefix}FORCENONEMPTYBATCHES"
 }
