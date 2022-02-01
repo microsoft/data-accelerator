@@ -20,7 +20,7 @@
     <ProjectReference Include="..\..\DataX.Flow\DataX.Flow.Scheduler\DataX.Flow.Scheduler.csproj" />
     <ProjectReference Include="..\..\DataX.Utilities\DataX.Utilities.Telemetry\DataX.Utilities.Telemetry.csproj" />
     <ProjectReference Include="..\..\DataX.Utilities\DataX.Utilities.Web\DataX.Utilities.Web.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.18" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.5" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.3">
       <PrivateAssets>all</PrivateAssets>
