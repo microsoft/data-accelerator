@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>com.microsoft.datax</groupId>
+  <artifactId>datax-udf-samples_2.4_2.11</artifactId>
+  <version>1.2.8-SNAPSHOT</version>
+  <versioning>
+    <snapshot>
+      <timestamp>20220214.190115</timestamp>
+      <buildNumber>1</buildNumber>
+    </snapshot>
+    <lastUpdated>20220214190115</lastUpdated>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>jar</extension>
+        <value>1.2.8-20220214.190115-1</value>
+        <updated>20220214190115</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>1.2.8-20220214.190115-1</value>
+        <updated>20220214190115</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+</metadata>
