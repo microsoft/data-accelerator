@@ -10,7 +10,7 @@ import com.microsoft.azure.eventhubs.EventHubClient
 import org.apache.spark.eventhubs.ConnectionStringBuilder
 
 object EventHubBase {
-  val executorService = Executors.newSingleThreadExecutor
+  val executorService = Executors.newSingleThreadScheduledExecutor()
 
   def buildConnectionString(namespace: String, name: String, policy: String, key: String) = {
     ConnectionStringBuilder()
@@ -22,6 +22,6 @@ object EventHubBase {
   }
 
   def getOutputClient(connString: String) = {
-    EventHubClient.createSync(connString,executorService)
+    EventHubClient.createFromConnectionStringSync(connString,executorService)
   }
 }
