@@ -7,8 +7,6 @@ package datax.input
 import datax.config.{SettingDictionary, SettingNamespace}
 import datax.securedsetting.KeyVaultClient
 import org.apache.log4j.LogManager
-import java.sql.Timestamp
-import java.time.Instant
 
 case class InputBlobsConf(path:String,
                          startTime: String,

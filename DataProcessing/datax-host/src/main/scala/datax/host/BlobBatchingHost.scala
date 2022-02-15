@@ -6,7 +6,7 @@ package datax.host
 
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
-import java.time.{Instant, LocalDateTime}
+import java.time.Instant
 import java.time.temporal.ChronoUnit
 import datax.config.UnifiedConfig
 import datax.constants.ProductConstant
@@ -17,10 +17,6 @@ import datax.processor.{BatchBlobProcessor, CommonProcessorFactory}
 import datax.telemetry.AppInsightLogger
 import datax.utility.ArgumentsParser
 import org.apache.log4j.LogManager
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
-
-import java.time.format.DateTimeFormatter
 import scala.language.postfixOps
 import scala.collection.mutable.{HashSet, ListBuffer}
 import scala.concurrent.duration._
