@@ -92,45 +92,6 @@ object BlobBatchingHost {
     val sc = spark.sparkContext
     val processor = processorGenerator(config)
 
-    val filesToProcess = prefixes.flatMap(prefix=>HadoopClient.listFiles(prefix._1).toSeq)
-    val minTimestamp = prefixes.minBy(_._2.getTime)._2
-    appLog.warn(s"Start processing for $minTimestamp")
-    val pathsRDD = sc.makeRDD(filesToProcess)
-    val batchResult = processor.process(pathsRDD, minTimestamp, 1 hour)
-    appLog.warn(s"End processing for $minTimestamp")
-
-    appLog.warn(s"Batch Mode Work Ended, processed metrics: $batchResult")
-    AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/batch/end", null, batchResult)
-  }
-
-  def runBatchDynamicApp(inputArguments: Array[String],processorGenerator: UnifiedConfig=>BatchBlobProcessor ) = {
-    val (appHost, config) = CommonAppHost.initApp(inputArguments)
-
-    appLog.warn(s"Batch Mode Work Started")
-
-    val blobsConf = BatchBlobInputSetting.getInputBlobsArrayConfDynamic(config.dict)
-    AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/batch/app/begin")
-
-    val prefixes = blobsConf.flatMap(blobs=>{
-      val inputBlobPath= blobs.path
-      val inputBlobStartTime = Instant.parse(blobs.startTime)
-      val inputBlobEndTime = Instant.parse(blobs.endTime)
-
-      val inputBlobProcessingWindowInSec= inputBlobStartTime.until(inputBlobEndTime, ChronoUnit.SECONDS)
-      val inputBlobPartitionIncrementInSec = blobs.partitionIncrementInMin*60
-
-      getInputBlobPathPrefixes(
-        path = inputBlobPath,
-        startTime = inputBlobStartTime,
-        inputBlobProcessingWindowInSec,
-        inputBlobPartitionIncrementInSec
-      )
-    })
-
-    val spark = appHost.getSpark(config.sparkConf)
-    val sc = spark.sparkContext
-    val processor = processorGenerator(config)
-
 //    val filesToProcess = prefixes.flatMap(prefix=>HadoopClient.listFiles(prefix._1).toSeq)
     val filesToProcess = prefixes.flatMap(prefix=>HadoopClient.listFiles(prefix._1).take(10).toSeq)  // load small data just for test (will be changed back)
     val minTimestamp = prefixes.minBy(_._2.getTime)._2
@@ -143,36 +104,33 @@ object BlobBatchingHost {
     AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/batch/end", null, batchResult)
 
     //write tracker file
-    val (trackerFolder, dateTimes) = getTrackerConfigs(inputArguments)
-    writeTracker(trackerFolder, dateTimes)
-  }
-
-  def getTrackerConfigs(inputArguments: Array[String]) : (String, Seq[Timestamp]) = {
-    val namedArgs = ArgumentsParser.getNamedArgs(inputArguments)
-    val inputRoot = namedArgs.getOrElse("trackerFolder", null)
-    val timeStart = sys.env.getOrElse("process_start_datetime", "")
-    val timeEnd = sys.env.getOrElse("process_end_datetime", "")
-
-    var ts = Instant.parse(timeStart)
-    var res = List.empty[Timestamp]
-    while (ts.isBefore(Instant.parse(timeEnd))) {
-      res = res :+ Timestamp.from(ts)
-      ts = ts.plusSeconds(3600)
+    val (ok, trackerFolder, dateTime) = getTrackerConfigs(inputArguments)
+    if (ok) {
+      writeTracker(trackerFolder, dateTime)
     }
-
-    (inputRoot, res)
   }
 
-  def writeTracker(trackerFolder: String, dateTimes: Seq[Timestamp]) = {
+  def getTrackerConfigs(inputArguments: Array[String]) : (Boolean, String, Timestamp) = {
+    val namedArgs = ArgumentsParser.getNamedArgs(inputArguments)
+    val inputRoot = namedArgs.getOrElse("trackerFolder", "")
+
+    if (inputRoot == "") {
+      (false, "", null)
+    } else {
+      val timeStart = sys.env.getOrElse("process_start_datetime", "")
+      (true, inputRoot, Timestamp.from(Instant.parse(timeStart)))
+    }
+  }
+
+  def writeTracker(trackerFolder: String, dt: Timestamp) = {
     // first create folder if not exists
     HadoopClient.createFolder(trackerFolder)
     val dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH")
 
-    for (dt <- dateTimes) {
-      val out = "_SUCCESS_" + dateFormat.format(dt)
-      val outFilename = trackerFolder + out
-      HadoopClient.writeHdfsFile(outFilename, "success", true)
-      appLog.warn(s"tracker file has been written: $outFilename")
-    }
+    val out = "_SUCCESS_" + dateFormat.format(dt)
+    val outFilename = trackerFolder + out
+    HadoopClient.writeHdfsFile(outFilename, "success", true)
+    appLog.warn(s"tracker file has been written: $outFilename")
+
   }
 }

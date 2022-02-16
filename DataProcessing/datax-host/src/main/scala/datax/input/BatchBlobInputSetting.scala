@@ -33,8 +33,8 @@ object BatchBlobInputSetting {
 
     InputBlobsConf(
       path = KeyVaultClient.resolveSecretIfAny(dict.getOrNull(SettingPath)),
-      startTime = dict.getOrNull(SettingProcessStartTime),
-      endTime = dict.getOrNull(SettingProcessEndTime),
+      startTime = dict.getOrElse(SettingProcessStartTime, sys.env.getOrElse("process_start_datetime", "")),
+      endTime = dict.getOrElse(SettingProcessEndTime, sys.env.getOrElse("process_end_datetime", "")),
       format = dict.getOrNull(SettingFormat),
       compression = dict.getOrNull(SettingCompression),
       partitionIncrementInMin = dict.getLong(SettingPartitionIncrement)
@@ -44,28 +44,5 @@ object BatchBlobInputSetting {
   def getInputBlobsArrayConf(dict: SettingDictionary): Seq[InputBlobsConf] = {
     logger.warn("Blob namespace="+NamespacePrefix)
     dict.buildConfigIterable(buildInputBlobsConf, NamespacePrefix).toSeq
-  }
-
-  def buildInputBlobsConfDynamic(dict: SettingDictionary, name: String): InputBlobsConf = {
-    logger.warn("Load Dictionary from buildInputBlobsConfDynamic as following:\n"+dict.dict.map(kv=>s"${kv._1}->${kv._2}").mkString("\n"))
-
-    val startTimeStr = sys.env.getOrElse("process_start_datetime", "")
-//    val endTimeStr = Timestamp.from(Instant.parse(startTimeStr).plusSeconds(3600)).toInstant.toString
-    val endTimeStr = sys.env.getOrElse("process_end_datetime", "")
-    logger.warn(s"startTime: $startTimeStr, endTime: $endTimeStr")
-
-    InputBlobsConf(
-      path = KeyVaultClient.resolveSecretIfAny(dict.getOrNull(SettingPath)),
-      startTime = startTimeStr,
-      endTime = endTimeStr,
-      format = dict.getOrNull(SettingFormat),
-      compression = dict.getOrNull(SettingCompression),
-      partitionIncrementInMin = dict.getLong(SettingPartitionIncrement)
-    )
-  }
-
-  def getInputBlobsArrayConfDynamic(dict: SettingDictionary): Seq[InputBlobsConf] = {
-    logger.warn("Blob namespace="+NamespacePrefix)
-    dict.buildConfigIterable(buildInputBlobsConfDynamic, NamespacePrefix).toSeq
   }
 }
