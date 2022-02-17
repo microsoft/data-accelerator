@@ -104,12 +104,14 @@ object BlobBatchingHost {
     AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/batch/end", null, batchResult)
 
     //write tracker file
-    val (ok, trackerFolder, dateTime) = getTrackerConfigs(inputArguments)
-    if (ok) {
+    val (needWriteTracker, trackerFolder, dateTime) = getTrackerConfigs(inputArguments)
+    if (needWriteTracker) {
       writeTracker(trackerFolder, dateTime)
     }
   }
 
+  // get tracker configs from input arguments and sys env
+  // if the trackerFolder is configured, a tracker file should be written in the folder
   def getTrackerConfigs(inputArguments: Array[String]) : (Boolean, String, Timestamp) = {
     val namedArgs = ArgumentsParser.getNamedArgs(inputArguments)
     val inputRoot = namedArgs.getOrElse("trackerFolder", "")
@@ -122,7 +124,8 @@ object BlobBatchingHost {
     }
   }
 
-  def writeTracker(trackerFolder: String, dt: Timestamp) = {
+  // write a tracker file in specific folder with format _SUCCESS_yyyy_MM_dd_HH
+  def writeTracker(trackerFolder: String, dt: Timestamp): Unit = {
     // first create folder if not exists
     HadoopClient.createFolder(trackerFolder)
     val dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH")
