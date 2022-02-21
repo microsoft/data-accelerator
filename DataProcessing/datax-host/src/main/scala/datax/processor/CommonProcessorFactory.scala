@@ -6,7 +6,6 @@ package datax.processor
 
 import java.sql.Timestamp
 import java.util.concurrent.Executors
-
 import com.microsoft.azure.eventhubs.EventData
 import datax.executor.ExecutorHelper
 import datax.config._
@@ -15,12 +14,11 @@ import datax.data.FileInternal
 import datax.exception.EngineException
 import datax.fs.HadoopClient
 import datax.host.{AppHost, CommonAppHost, SparkSessionSingleton, UdfInitializer}
-import datax.input.{BlobPointerInput, InputManager, SchemaFile, StreamingInputSetting}
+import datax.input.{BatchBlobInput, BlobPointerInput, InputManager, SchemaFile, StreamingInputSetting}
 import datax.sink.{BlobSinker, OutputManager, OutputOperator}
 import datax.telemetry.{AppInsightLogger, MetricLoggerFactory}
 import datax.utility._
 import datax.handler._
-import datax.input.BlobPointerInput.{inputPathToInternalProps, pathHintsFromBlobPath}
 import datax.sql.TransformSQLParser
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.log4j.LogManager
@@ -483,15 +481,7 @@ object CommonProcessorFactory {
        val t1 = System.nanoTime
 
         // Wrap files to FileInternal object
-       val internalFiles =  pathsRDD.map(file => {
-                            FileInternal(inputPath = file,
-                              outputFolders = null,
-                              outputFileName = null,
-                              fileTime = null,
-                              ruleIndexPrefix = "",
-                              target = null
-                            )
-                          })
+       val internalFiles =  pathsRDD.map(file => BatchBlobInput.filePathToInternalFileInfo(file, dict))  // get Partition and InputTime in NovaProperties if fileTimeRegex is configured
 
         val paths = internalFiles.map(_.inputPath).collect()
         postMetrics(Map(s"InputBlobs" -> paths.size.toDouble))
