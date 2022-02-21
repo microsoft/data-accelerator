@@ -372,9 +372,11 @@ object HadoopClient {
   private def setStorageAccountKeyOnHadoopConf(sa: String, value: String, isDfs: Boolean = false): Unit = {
     if(isDfs){
       getConf().set(s"fs.azure.account.key.$sa${BlobProperties.DfsHostPath}", value)
+      getConf().set(s"fs.azure.account.keyprovider.$sa${BlobProperties.DfsHostPath}", "org.apache.hadoop.fs.azure.SimpleKeyProvider") // not decrypting access key
     }
     else{
       getConf().set(s"fs.azure.account.key.$sa${BlobProperties.BlobHostPath}", value)
+      getConf().set(s"fs.azure.account.keyprovider.$sa${BlobProperties.BlobHostPath}", "org.apache.hadoop.fs.azure.SimpleKeyProvider") // not decrypting access key
     }
   }
 
