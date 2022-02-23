@@ -481,7 +481,7 @@ object CommonProcessorFactory {
        val t1 = System.nanoTime
 
         // Wrap files to FileInternal object
-       val internalFiles =  pathsRDD.map(file => BatchBlobInput.filePathToInternalFileInfo(file, dict))  // get Partition and InputTime in NovaProperties if fileTimeRegex is configured
+       val internalFiles =  pathsRDD.map(file => BatchBlobInput.filePathToInternalFileInfo(file, dict))  // get Partition and InputTime in properties if fileTimeRegex is configured
 
         val paths = internalFiles.map(_.inputPath).collect()
         postMetrics(Map(s"InputBlobs" -> paths.size.toDouble))

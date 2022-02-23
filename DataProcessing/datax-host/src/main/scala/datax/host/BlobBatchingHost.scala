@@ -92,8 +92,7 @@ object BlobBatchingHost {
     val sc = spark.sparkContext
     val processor = processorGenerator(config)
 
-//    val filesToProcess = prefixes.flatMap(prefix=>HadoopClient.listFiles(prefix._1).toSeq)
-    val filesToProcess = prefixes.flatMap(prefix=>HadoopClient.listFiles(prefix._1).take(10).toSeq)  // load small data just for test (will be changed back)
+    val filesToProcess = prefixes.flatMap(prefix=>HadoopClient.listFiles(prefix._1).toSeq)
     val minTimestamp = prefixes.minBy(_._2.getTime)._2
     appLog.warn(s"Start processing for $minTimestamp")
     val pathsRDD = sc.makeRDD(filesToProcess)

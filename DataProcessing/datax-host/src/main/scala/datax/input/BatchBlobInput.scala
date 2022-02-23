@@ -10,8 +10,8 @@ object BatchBlobInput {
     if (inputConf.fileTimeRegex != null) {
       FileInternal(inputPath = path,
         outputFolders = null,
-        outputFileName = pathHintsFromBlobPath(path, inputConf.blobPathRegex.r),  // get Partition in NovaProperties
-        fileTime = extractTimeFromBlobPath(path, inputConf.fileTimeRegex.r, inputConf.fileTimeFormat),  // get InputTime in NovaProperties
+        outputFileName = pathHintsFromBlobPath(path, inputConf.blobPathRegex.r),  // get Partition in properties
+        fileTime = extractTimeFromBlobPath(path, inputConf.fileTimeRegex.r, inputConf.fileTimeFormat),  // get InputTime in properties
         ruleIndexPrefix = "",
         target = null
       )
