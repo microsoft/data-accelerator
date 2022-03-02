@@ -477,31 +477,120 @@ object CommonProcessorFactory {
           batchLog.warn(s"Metric ${metrics.map(m => m._1 + "=" + m._2).mkString(",")}")
         }
 
+        def processBlobs(files: Array[FileInternal],
+                         outputPartitionTime: Timestamp,
+                         partition: String,
+                         targetPar: String): Map[String, Double] = {
+          val filesCount = files.length
+          val t1 = System.nanoTime()
+
+          // Get the earliest blob to calculate latency
+          val paths = files.map(_.inputPath)
+          val blobTimes = files.map(_.fileTime).filterNot(_ == null).toList
+
+          postMetrics(Map(s"InputBlobs" -> filesCount.toDouble))
+
+          val (minBlobTime, maxBlobTime) =
+            if(blobTimes.length>0) {
+              val minBlobTime = blobTimes.minBy(_.getTime)
+              val maxBlobTime = blobTimes.maxBy(_.getTime)
+              batchLog.warn(s"partition '$partition': started, size: $filesCount, blob time range[${DateTimeUtil.formatSimple(minBlobTime)}, ${DateTimeUtil.formatSimple(maxBlobTime)}]")
+              (minBlobTime, maxBlobTime)
+            }
+            else{
+              batchLog.warn(s"Cannot figure out timestamp from file name, please check if there is misconfiguration in the fileTimeRegex setting")
+              (null, null)
+            }
+
+          val pathsList = paths.mkString(",")
+          batchLog.debug(s"Batch loading files:$pathsList")
+          val inputDf = spark.sparkContext.parallelize(files, filesCount)
+            .flatMap(file => HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
+              .filter(l=>l!=null && !l.isEmpty).map((file, outputPartitionTime, _)))
+            .toDF(ColumnName.InternalColumnFileInfo, ColumnName.MetadataColumnOutputPartitionTime, ColumnName.RawObjectColumn)
+
+          val targets = files.map(_.target).toSet
+          val processedMetrics = processDataset(inputDf, batchTime, batchInterval, outputPartitionTime, targets, partition)
+          if(minBlobTime!=null){
+            val latencyInSeconds = (DateTimeUtil.getCurrentTime().getTime - minBlobTime.getTime)/1000D
+            val latencyMetrics = Map(s"Latency-Blobs" -> latencyInSeconds)
+            postMetrics(latencyMetrics)
+            latencyMetrics++processedMetrics
+          }
+          else{
+            processedMetrics
+          }
+        }
+
+        def processPartition(v: (String, HashSet[FileInternal])) = {
+          val par = v._1
+          val paths = v._2.toArray
+          processBlobs(paths, outputPartitionTime, par+namespace, par)
+        }
+
        batchLog.warn(s"Start batch ${batchTime}, output partition time:${outputPartitionTime}, namespace:${namespace}")
        val t1 = System.nanoTime
 
-        // Wrap files to FileInternal object
-       val internalFiles =  pathsRDD.map(file => BatchBlobInput.filePathToInternalFileInfo(file, dict))  // get Partition and InputTime in properties if fileTimeRegex is configured
+//        // Wrap files to FileInternal object
+//       val internalFiles =  pathsRDD.map(file => BatchBlobInput.filePathToInternalFileInfo(file, dict))  // get Partition and InputTime in properties if fileTimeRegex is configured
 
-        val paths = internalFiles.map(_.inputPath).collect()
-        postMetrics(Map(s"InputBlobs" -> paths.size.toDouble))
-        batchLog.warn(s"InputBlob count=${paths.size}");
+//        val paths = internalFiles.map(_.inputPath).collect()
+//        postMetrics(Map(s"InputBlobs" -> paths.size.toDouble))
+//        batchLog.warn(s"InputBlob count=${paths.size}");
 
-        val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(paths.head, spark)
-
-        val inputDf = internalFiles
-                      .flatMap(file => HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"), blobStorageKey)
-                      .filter(l=>l!=null && !l.isEmpty).map((file, outputPartitionTime, _)))
-                      .toDF(ColumnName.InternalColumnFileInfo, ColumnName.MetadataColumnOutputPartitionTime, ColumnName.RawObjectColumn)
-
-        val processedMetrics = processDataset(inputDf, batchTime, batchInterval, outputPartitionTime, null, "")
-
+        val pathsGroups = BlobPointerInput.pathsToGroups(rdd = pathsRDD,
+          jobName = dict.getAppName(),
+          dict = dict,
+          outputTimestamp = outputPartitionTime)
+        val pathsFilteredGroups = BlobPointerInput.filterPathGroups(pathsGroups)
+        val pathsCount = pathsFilteredGroups.aggregate(0)(_ + _._2.size, _ + _)
+        //try {
+        val result =
+          if (pathsCount > 0) {
+            batchLog.warn(s"Loading filtered blob files count=$pathsCount, First File=${pathsFilteredGroups.head._2.head}")
+            if (pathsFilteredGroups.length > 1)
+              Await.result(FutureUtil.failFast(pathsFilteredGroups
+                .map(kv => Future {
+                  processPartition(kv)
+                })), 5 minutes).reduce(DataMerger.mergeMapOfDoubles)
+            else
+              processPartition(pathsFilteredGroups(0))
+          }
+          else {
+            batchLog.warn(s"No valid paths were found to process for this batch")
+            val bShouldForceNonEmptyBatch = ConfigManager.getActiveDictionary().getOrElse(JobArgument.ConfName_ForceNonEmptyBatch, "false").toBoolean
+            if(bShouldForceNonEmptyBatch)
+            {
+              throw new Exception("No valid paths found to process for this batch and empty batches are not allowed")
+            }
+            Map[String, Double]()
+          }
         val batchProcessingTime = (System.nanoTime - t1) / 1E9
 
         val metrics = Map[String, Double](
           "BatchProcessedET" -> batchProcessingTime
         )
-        processedMetrics ++ metrics
+
+        postMetrics(metrics)
+        batchLog.warn(s"End batch ${batchTime}, output partition time:${outputPartitionTime}, namespace:${namespace}")
+
+        metrics ++ result
+
+//        val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(paths.head, spark)
+//
+//        val inputDf = internalFiles
+//                      .flatMap(file => HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"), blobStorageKey)
+//                      .filter(l=>l!=null && !l.isEmpty).map((file, outputPartitionTime, _)))
+//                      .toDF(ColumnName.InternalColumnFileInfo, ColumnName.MetadataColumnOutputPartitionTime, ColumnName.RawObjectColumn)
+//
+//        val processedMetrics = processDataset(inputDf, batchTime, batchInterval, outputPartitionTime, null, "")
+//
+//        val batchProcessingTime = (System.nanoTime - t1) / 1E9
+//
+//        val metrics = Map[String, Double](
+//          "BatchProcessedET" -> batchProcessingTime
+//        )
+//        processedMetrics ++ metrics
       },
 
       // process blob path pointer data frame
