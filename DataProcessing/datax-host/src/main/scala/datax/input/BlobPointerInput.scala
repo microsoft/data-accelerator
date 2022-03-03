@@ -48,7 +48,7 @@ object BlobPointerInput {
     }
   }
 
-  def extractTimeFromBlobPath(blobPath: String, fileTimeRegex: Regex, fileTimeFormat: String): Timestamp = {
+  private def extractTimeFromBlobPath(blobPath: String, fileTimeRegex: Regex, fileTimeFormat: String): Timestamp = {
     fileTimeRegex.findFirstMatchIn(blobPath) match {
       case Some(timeStr) => try{
         if(fileTimeFormat==null){
@@ -80,7 +80,7 @@ object BlobPointerInput {
     }
   }
 
-  def pathHintsFromBlobPath(blobPath: String, blobPathRegex: Regex): String = {
+  private def pathHintsFromBlobPath(blobPath: String, blobPathRegex: Regex): String = {
     blobPathRegex.findFirstMatchIn(blobPath) match {
       case Some(m) => try{
         m.subgroups.mkString("-")

@@ -103,24 +103,18 @@ object BlobBatchingHost {
     AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/batch/end", null, batchResult)
 
     //write tracker file
-    val (needWriteTracker, trackerFolder, dateTime) = getTrackerConfigs(inputArguments)
-    if (needWriteTracker) {
+    val (trackerFolder, dateTime) = getTrackerConfigs(config)
+    if (trackerFolder != "") {
       writeTracker(trackerFolder, dateTime)
     }
   }
 
   // get tracker configs from input arguments and sys env
   // if the trackerFolder is configured, a tracker file should be written in the folder
-  def getTrackerConfigs(inputArguments: Array[String]) : (Boolean, String, Timestamp) = {
-    val namedArgs = ArgumentsParser.getNamedArgs(inputArguments)
-    val inputRoot = namedArgs.getOrElse("trackerFolder", "")
-
-    if (inputRoot == "") {
-      (false, "", null)
-    } else {
-      val timeStart = sys.env.getOrElse("process_start_datetime", "")
-      (true, inputRoot, Timestamp.from(Instant.parse(timeStart)))
-    }
+  def getTrackerConfigs(config: UnifiedConfig) : (String, Timestamp) = {
+    val inputRoot = config.dict.getOrElse("trackerFolder", "")
+    val timeStart = sys.env.getOrElse("process_start_datetime", "")
+    (inputRoot, Timestamp.from(Instant.parse(timeStart)))
   }
 
   // write a tracker file in specific folder with format _SUCCESS_yyyy_MM_dd_HH
