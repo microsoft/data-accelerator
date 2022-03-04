@@ -89,9 +89,11 @@ class SparkJobs extends React.Component {
     renderMessageBar() {
         if (this.state.errorMessage && this.state.showMessageBar) {
             return (
-                <MessageBar messageBarType={MessageBarType.error} onDismiss={() => this.onDismissMessageBar()}>
-                    Error - {`${this.state.errorMessage}`}
-                </MessageBar>
+                <div>
+                    <MessageBar messageBarType={MessageBarType.error} onDismiss={() => this.onDismissMessageBar()} dismissButtonAriaLabel="Close">
+                        Error - {`${this.state.errorMessage}`}
+                    </MessageBar>
+                </div>
             );
         }
     }

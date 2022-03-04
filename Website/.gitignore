@@ -2,5 +2,4 @@ project-lock.json
 /node_modules
 /logs
 /.vs
-/package-lock.json
 /env.bat

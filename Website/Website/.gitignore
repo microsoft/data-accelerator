@@ -64,5 +64,4 @@ dist/prod
 uploads/
 /.vs/
 /env.bat
-package-lock.json
 deploy/deployment.zip
