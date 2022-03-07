@@ -15,7 +15,6 @@ import datax.fs.HadoopClient
 import datax.input.BatchBlobInputSetting
 import datax.processor.{BatchBlobProcessor, CommonProcessorFactory}
 import datax.telemetry.AppInsightLogger
-import datax.utility.ArgumentsParser
 import org.apache.log4j.LogManager
 import scala.language.postfixOps
 import scala.collection.mutable.{HashSet, ListBuffer}
