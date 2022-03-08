@@ -80,7 +80,7 @@ object BlobSinker extends SinkOperatorFactory {
         hdfsPath = outputPath,
         content = content,
         timeout = Duration.create(ConfigManager.getActiveDictionary().getOrElse(JobArgument.ConfName_BlobWriterTimeout, "10 seconds")),
-        retries = 0,
+        retries = 10,
         blobStorageKey
       )
       timeNow = System.nanoTime()

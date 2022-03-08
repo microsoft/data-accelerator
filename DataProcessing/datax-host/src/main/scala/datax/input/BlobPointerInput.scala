@@ -80,7 +80,7 @@ object BlobPointerInput {
     }
   }
 
-  private  def pathHintsFromBlobPath(blobPath: String, blobPathRegex: Regex): String = {
+  private def pathHintsFromBlobPath(blobPath: String, blobPathRegex: Regex): String = {
     blobPathRegex.findFirstMatchIn(blobPath) match {
       case Some(m) => try{
         m.subgroups.mkString("-")

@@ -72,7 +72,9 @@ object ConfigManager extends ConfigService {
       JobArgument.ConfName_AppConf -> namedArgs.getOrElse("conf", null),
       JobArgument.ConfName_DriverLogLevel -> namedArgs.getOrElse("driverLogLevel", null),
       JobArgument.ConfName_LogLevel -> namedArgs.getOrElse("executorLogLevel", null),
-      JobArgument.ConfName_CheckpointEnabled -> namedArgs.getOrElse("checkpointEnabled", null)
+      JobArgument.ConfName_CheckpointEnabled -> namedArgs.getOrElse("checkpointEnabled", null),
+      "partition" -> namedArgs.getOrElse("partition", null),
+      "trackerFolder" -> namedArgs.getOrElse("trackerFolder", null)
     ).filter(_._2!=null)
 
     logger.warn("local env:"+envs.mkString(","))

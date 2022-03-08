@@ -33,8 +33,8 @@ object BatchBlobInputSetting {
 
     InputBlobsConf(
       path = KeyVaultClient.resolveSecretIfAny(dict.getOrNull(SettingPath)),
-      startTime = dict.getOrNull(SettingProcessStartTime),
-      endTime = dict.getOrNull(SettingProcessEndTime),
+      startTime = dict.getOrElse(SettingProcessStartTime, sys.env.getOrElse("process_start_datetime", "")),
+      endTime = dict.getOrElse(SettingProcessEndTime, sys.env.getOrElse("process_end_datetime", "")),
       format = dict.getOrNull(SettingFormat),
       compression = dict.getOrNull(SettingCompression),
       partitionIncrementInMin = dict.getLong(SettingPartitionIncrement)

@@ -8,7 +8,6 @@ import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-
 import datax.config.UnifiedConfig
 import datax.constants.ProductConstant
 import datax.data.FileInternal
@@ -17,7 +16,6 @@ import datax.input.BatchBlobInputSetting
 import datax.processor.{BatchBlobProcessor, CommonProcessorFactory}
 import datax.telemetry.AppInsightLogger
 import org.apache.log4j.LogManager
-
 import scala.language.postfixOps
 import scala.collection.mutable.{HashSet, ListBuffer}
 import scala.concurrent.duration._
@@ -102,5 +100,32 @@ object BlobBatchingHost {
 
     appLog.warn(s"Batch Mode Work Ended, processed metrics: $batchResult")
     AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/batch/end", null, batchResult)
+
+    //write tracker file
+    val (trackerFolder, dateTime) = getTrackerConfigs(config)
+    if (trackerFolder != "") {
+      writeTracker(trackerFolder, dateTime)
+    }
+  }
+
+  // get tracker configs from input arguments and sys env
+  // if the trackerFolder is configured, a tracker file should be written in the folder
+  def getTrackerConfigs(config: UnifiedConfig) : (String, Timestamp) = {
+    val inputRoot = config.dict.getOrElse("trackerFolder", "")
+    val timeStart = sys.env.getOrElse("process_start_datetime", "")
+    (inputRoot, Timestamp.from(Instant.parse(timeStart)))
+  }
+
+  // write a tracker file in specific folder with format _SUCCESS_yyyy_MM_dd_HH
+  def writeTracker(trackerFolder: String, dt: Timestamp): Unit = {
+    // first create folder if not exists
+    HadoopClient.createFolder(trackerFolder)
+    val dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH")
+
+    val out = "_SUCCESS_" + dateFormat.format(dt)
+    val outFilename = trackerFolder + out
+    HadoopClient.writeHdfsFile(outFilename, "success", true)
+    appLog.warn(s"tracker file has been written: $outFilename")
+
   }
 }
