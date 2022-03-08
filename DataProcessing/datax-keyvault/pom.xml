@@ -60,6 +60,7 @@ SOFTWARE
     <scala.version>${scala.version.major}.${scala.version.minor}</scala.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <github.global.server>github</github.global.server>
+    <jackson.version>2.13.1</jackson.version>
   </properties>
 
   <dependencies>
@@ -67,7 +68,7 @@ SOFTWARE
     <dependency>
       <groupId>org.json4s</groupId>
       <artifactId>json4s-jackson_2.11</artifactId>
-      <version>3.5.3</version>
+      <version>4.0.4</version>
     </dependency>
     <!--Azure dependencies-->
     <dependency>
@@ -95,12 +96,12 @@ SOFTWARE
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
-      <version>2.12.5</version>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>      
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.12.5</version>
+      <version>${jackson.version}</version>
     </dependency>
     <!--Testing-->
     <dependency>
