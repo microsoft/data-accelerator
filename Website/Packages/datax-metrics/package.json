@@ -22,7 +22,7 @@
     "devpatch": "rimraf dist && webpack --mode development --config webpack.config.js --bail --progress --display-modules --display-error-details --colors --display-chunks --display-reasons && localdevpatch.bat"
   },
   "dependencies": {
-    "moment": "2.29.1"
+    "moment": "2.29.2"
   },
   "devDependencies": {
     "@babel/core": "7.1.6",
