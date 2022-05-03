@@ -170,7 +170,8 @@ object HadoopClient {
       if(scheme == "wasb" || scheme == "wasbs")
         KeyVaultClient.withKeyVault {vaultName => resolveStorageAccount(vaultName, sa, blobStorageKey, false)}
       else if(scheme == "abfs" || scheme == "abfss")
-        KeyVaultClient.withKeyVault {vaultName => resolveStorageAccount(vaultName, sa, blobStorageKey, true)}
+        // abfs protocol use Managed Identity for authentication
+        None
     }
   }
 
@@ -821,6 +822,10 @@ object HadoopClient {
         val path = new Path(uri)
         val fs = path.getFileSystem(conf)
         fetchHdfsFile(path, targetDir, fs, conf, fileOverwrite, filename = Some(filename))
+      case "abfs" | "abfss" =>
+        val path = new Path(uri)
+        val fs = path.getFileSystem(conf)
+        fetchHdfsFile(path, targetDir, fs, getConf(), fileOverwrite, filename = Some(filename))
       case other =>
         throw new EngineException(s"unsupported file paths with '$other' scheme")
     }
