@@ -4,8 +4,8 @@
   <artifactId>datax-core_2.4_2.11</artifactId>
   <versioning>
     <versions>
-      <version>1.2.9-SNAPSHOT</version>
+      <version>1.2.10-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20220307035722</lastUpdated>
+    <lastUpdated>20220503190937</lastUpdated>
   </versioning>
 </metadata>
