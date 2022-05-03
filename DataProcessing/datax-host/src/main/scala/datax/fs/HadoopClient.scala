@@ -828,13 +828,13 @@ object HadoopClient {
         // Note the difference between uri vs url.
         val sourceFile = if (uri.isAbsolute) new File(uri) else new File(url)
         copyFile(url, sourceFile, targetFile, fileOverwrite)
-      case "abfs" | "abfss" => fetchHdfsFileByUri(uri, fileOverwrite, filename)
+      case "abfs" | "abfss" => fetchHdfsFileByUri(uri, targetFile, fileOverwrite, filename)
       case "wasb" | "wasbs" =>
         if(resolveStorageKey) {
           resolveStorageAccountKeyForPath(url)
         }
 
-        fetchHdfsFileByUri(uri, fileOverwrite, filename)
+        fetchHdfsFileByUri(uri, targetFile, fileOverwrite, filename)
       case other =>
         throw new EngineException(s"unsupported file paths with '$other' scheme")
     }
