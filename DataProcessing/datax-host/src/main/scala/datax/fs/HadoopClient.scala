@@ -791,7 +791,10 @@ object HadoopClient {
   /*
   * Fetch file from HDFS using file URI and default Hadoop conf
   */
-  def fetchHdfsFileByUri(uri: URI, fileOverwrite: Boolean, filename: String): Unit = {
+  def fetchHdfsFileByUri(uri: URI, 
+                         targetDir: java.io.File,
+                         fileOverwrite: Boolean,
+                         filename: String): Unit = {
     val conf = getConf()
     val path = new Path(uri)
     val fs = path.getFileSystem(conf)
@@ -813,8 +816,9 @@ object HadoopClient {
     * the requested file.
     */
   def fetchFile(url: String,
-                   targetDir: java.io.File,
-                   filename: String, resolveStorageKey:Boolean=true): java.io.File = {
+                targetDir: java.io.File,
+                filename: String,
+                resolveStorageKey:Boolean=true): java.io.File = {
     val targetFile = new File(targetDir, filename)
     val uri = new URI(url)
     val fileOverwrite = false
