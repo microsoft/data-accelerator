@@ -170,7 +170,8 @@ object HadoopClient {
       if(scheme == "wasb" || scheme == "wasbs")
         KeyVaultClient.withKeyVault {vaultName => resolveStorageAccount(vaultName, sa, blobStorageKey, false)}
       else if(scheme == "abfs" || scheme == "abfss")
-        KeyVaultClient.withKeyVault {vaultName => resolveStorageAccount(vaultName, sa, blobStorageKey, true)}
+        // abfs protocol use Managed Identity for authentication
+        None
     }
   }
 
@@ -787,6 +788,19 @@ object HadoopClient {
     }
   }
 
+  /*
+  * Fetch file from HDFS using file URI and default Hadoop conf
+  */
+  def fetchHdfsFileByUri(uri: URI, 
+                         targetDir: java.io.File,
+                         fileOverwrite: Boolean,
+                         filename: String): Unit = {
+    val conf = getConf()
+    val path = new Path(uri)
+    val fs = path.getFileSystem(conf)
+    fetchHdfsFile(path, targetDir, fs, conf, fileOverwrite, filename = Some(filename))
+  }
+
 
   /*
  * This function is a modified version of Apache Spark source code located at https://github.com/apache/spark/blob/master/core/src/main/scala/org/apache/spark/util/Utils.scala
@@ -802,8 +816,9 @@ object HadoopClient {
     * the requested file.
     */
   def fetchFile(url: String,
-                   targetDir: java.io.File,
-                   filename: String, resolveStorageKey:Boolean=true): java.io.File = {
+                targetDir: java.io.File,
+                filename: String,
+                resolveStorageKey:Boolean=true): java.io.File = {
     val targetFile = new File(targetDir, filename)
     val uri = new URI(url)
     val fileOverwrite = false
@@ -813,14 +828,13 @@ object HadoopClient {
         // Note the difference between uri vs url.
         val sourceFile = if (uri.isAbsolute) new File(uri) else new File(url)
         copyFile(url, sourceFile, targetFile, fileOverwrite)
+      case "abfs" | "abfss" => fetchHdfsFileByUri(uri, targetFile, fileOverwrite, filename)
       case "wasb" | "wasbs" =>
         if(resolveStorageKey) {
           resolveStorageAccountKeyForPath(url)
         }
-        val conf = getConf()
-        val path = new Path(uri)
-        val fs = path.getFileSystem(conf)
-        fetchHdfsFile(path, targetDir, fs, conf, fileOverwrite, filename = Some(filename))
+
+        fetchHdfsFileByUri(uri, targetFile, fileOverwrite, filename)
       case other =>
         throw new EngineException(s"unsupported file paths with '$other' scheme")
     }
