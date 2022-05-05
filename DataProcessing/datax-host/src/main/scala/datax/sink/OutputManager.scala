@@ -85,7 +85,7 @@ object OutputManager {
           val spark = df.sparkSession
           spark.synchronized{
             if(shouldGeneratorProcessedSchema){
-              HadoopClient.writeHdfsFile(processedSchemaPath, new StructType(outputColumns).prettyJson, true)
+              HadoopClient.writeHdfsFile(processedSchemaPath, new StructType(outputColumns).prettyJson, true, false)
               outputLogger.warn(s"Saved processed schema to $processedSchemaPath")
               shouldGeneratorProcessedSchema = false
             }

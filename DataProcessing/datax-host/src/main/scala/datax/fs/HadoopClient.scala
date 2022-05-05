@@ -309,8 +309,8 @@ object HadoopClient {
     * @throws IOException if any occurs in the write operation
     */
   @throws[IOException]
-  def writeHdfsFile(hdfsPath: String, content: String, overwriteIfExists:Boolean) {
-    writeHdfsFile(hdfsPath, content.getBytes("UTF-8"), getConf(), overwriteIfExists)
+  def writeHdfsFile(hdfsPath: String, content: String, overwriteIfExists:Boolean, skipRename:Boolean) {
+    writeHdfsFile(hdfsPath, content.getBytes("UTF-8"), getConf(), overwriteIfExists, skipRename)
   }
 
   /**
@@ -346,7 +346,7 @@ object HadoopClient {
                                 ) = {
     val logger = LogManager.getLogger(s"FileWriter${SparkEnvVariables.getLoggerSuffix()}")
     def f = Future{
-      writeHdfsFile(hdfsPath, content, getConf(), false, blobStorageKey)
+      writeHdfsFile(hdfsPath, content, getConf(), false, false, blobStorageKey)
     }
     var remainingAttempts = retries+1
     while(remainingAttempts>0) {
@@ -404,7 +404,7 @@ object HadoopClient {
     * @throws IOException if any from lower file system operation
     */
   @throws[IOException]
-  private def writeHdfsFile(hdfsPath: String, content: Array[Byte], conf: Configuration, overwriteIfExists:Boolean, blobStorageKey: broadcast.Broadcast[String] = null) {
+  private def writeHdfsFile(hdfsPath: String, content: Array[Byte], conf: Configuration, overwriteIfExists:Boolean, skipRename:Boolean, blobStorageKey: broadcast.Broadcast[String] = null) {
     resolveStorageAccountKeyForPath(hdfsPath, blobStorageKey)
 
     val logger = LogManager.getLogger("writeHdfsFile")
@@ -425,9 +425,6 @@ object HadoopClient {
     // TODO: create unique name for each temp file.
     val tempPath = new Path(tempHdfsPath)
     val fs = path.getFileSystem(conf)
-    val bs = new BufferedOutputStream(fs.create(tempPath, true))
-    bs.write(content)
-    bs.close()
 
     // If output file already exists and overwrite flag is set, delete old file and then rewrite new file
     if(fs.exists(path) && overwriteIfExists){
@@ -435,19 +432,30 @@ object HadoopClient {
       fs.delete(path, true)
     }
 
-    if(!fs.rename(tempPath, path)) {
-      // Rename failed, check if it was due to destination path already exists.
-      // If yes, fail only if overwrite is set. If destination does not exist, then fail as-well.
-      val fileExists = fs.exists(path)
+    // If skipRename is true, write the file directly to the target path without renaming from a temp file
+    if (skipRename) {
+      val bs = new BufferedOutputStream(fs.create(path, true))
+      bs.write(content)
+      bs.close()
+    } else {
+      val bs = new BufferedOutputStream(fs.create(tempPath, true))
+      bs.write(content)
+      bs.close()
 
-      if (!fileExists || (fileExists && overwriteIfExists)) {
-        val parent = path.getParent
-        val msg = if(fs.exists(parent)) s"Move ${tempPath} to ${path} did not succeed"
-        else s"Move ${tempPath} to ${path} did not succeed since parent folder does not exist!"
-        throw new IOException(msg)
-      }
-      else {
-        logger.warn(s"Blob rename from ${tempPath} to ${path} failed, but moving on since target already exists and overwrite is set to false.")
+      if(!fs.rename(tempPath, path)) {
+        // Rename failed, check if it was due to destination path already exists.
+        // If yes, fail only if overwrite is set. If destination does not exist, then fail as-well.
+        val fileExists = fs.exists(path)
+
+        if (!fileExists || (fileExists && overwriteIfExists)) {
+          val parent = path.getParent
+          val msg = if(fs.exists(parent)) s"Move ${tempPath} to ${path} did not succeed"
+          else s"Move ${tempPath} to ${path} did not succeed since parent folder does not exist!"
+          throw new IOException(msg)
+        }
+        else {
+          logger.warn(s"Blob rename from ${tempPath} to ${path} failed, but moving on since target already exists and overwrite is set to false.")
+        }
       }
     }
   }
