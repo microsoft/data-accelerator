@@ -13,6 +13,8 @@ import org.apache.log4j.LogManager
 import org.apache.spark.broadcast
 import org.apache.spark.sql.SparkSession
 
+import java.net.URI
+
 object ExecutorHelper {
   private val logger = LogManager.getLogger(this.getClass)
 
@@ -26,7 +28,18 @@ object ExecutorHelper {
     val sc = spark.sparkContext
     val sa = getStorageAccountName(path)
     var key = ""
-    KeyVaultClient.withKeyVault {vaultName => key = HadoopClient.resolveStorageAccount(vaultName, sa).get}
+
+    val uri = new URI(path.replace(" ", "%20").replaceAll("[%\\$\\{\\}]", ""))
+    val scheme = uri.getScheme
+
+    if(sa != null && !sa.isEmpty){
+      if(scheme == "wasb" || scheme == "wasbs")
+        KeyVaultClient.withKeyVault {vaultName => key = HadoopClient.resolveStorageAccount(vaultName, sa).get}
+      else if(scheme == "abfs" || scheme == "abfss")
+      // abfs protocol use Managed Identity for authentication
+        None
+    }
+
     val blobStorageKey = sc.broadcast(key)
     blobStorageKey
   }
