@@ -306,6 +306,7 @@ object HadoopClient {
     * @param hdfsPath path to the specified hdfs file
     * @param content string content to write into the file
     * @param overwriteIfExists flag to specify if the file needs to be overwritten if it already exists in hdfs
+    * @param skipRename flag to specify if the file needs to be created without renaming from a temp file
     * @throws IOException if any occurs in the write operation
     */
   @throws[IOException]
@@ -400,6 +401,7 @@ object HadoopClient {
     * @param content content to write into the file
     * @param conf hadoop configuration
     * @param overwriteIfExists flag to specify if the file needs to be overwritten if it already exists in hdfs
+    * @param skipRename flag to specify if the file needs to be created without renaming from a temp file
     * @param blobStorageKey storage account key broadcast variable
     * @throws IOException if any from lower file system operation
     */
