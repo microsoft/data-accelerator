@@ -306,12 +306,12 @@ object HadoopClient {
     * @param hdfsPath path to the specified hdfs file
     * @param content string content to write into the file
     * @param overwriteIfExists flag to specify if the file needs to be overwritten if it already exists in hdfs
-    * @param skipRename flag to specify if the file needs to be created without renaming from a temp file
+    * @param directWrite flag to specify if the file needs to be created directly without renaming from a temp file
     * @throws IOException if any occurs in the write operation
     */
   @throws[IOException]
-  def writeHdfsFile(hdfsPath: String, content: String, overwriteIfExists:Boolean, skipRename:Boolean) {
-    writeHdfsFile(hdfsPath, content.getBytes("UTF-8"), getConf(), overwriteIfExists, skipRename)
+  def writeHdfsFile(hdfsPath: String, content: String, overwriteIfExists:Boolean, directWrite:Boolean) {
+    writeHdfsFile(hdfsPath, content.getBytes("UTF-8"), getConf(), overwriteIfExists, directWrite)
   }
 
   /**
@@ -401,12 +401,12 @@ object HadoopClient {
     * @param content content to write into the file
     * @param conf hadoop configuration
     * @param overwriteIfExists flag to specify if the file needs to be overwritten if it already exists in hdfs
-    * @param skipRename flag to specify if the file needs to be created without renaming from a temp file
+    * @param directWrite flag to specify if the file needs to be created directly without renaming from a temp file
     * @param blobStorageKey storage account key broadcast variable
     * @throws IOException if any from lower file system operation
     */
   @throws[IOException]
-  private def writeHdfsFile(hdfsPath: String, content: Array[Byte], conf: Configuration, overwriteIfExists:Boolean, skipRename:Boolean, blobStorageKey: broadcast.Broadcast[String] = null) {
+  private def writeHdfsFile(hdfsPath: String, content: Array[Byte], conf: Configuration, overwriteIfExists:Boolean, directWrite:Boolean, blobStorageKey: broadcast.Broadcast[String] = null) {
     resolveStorageAccountKeyForPath(hdfsPath, blobStorageKey)
 
     val logger = LogManager.getLogger("writeHdfsFile")
@@ -421,11 +421,6 @@ object HadoopClient {
       return
     }
 
-    val tempHdfsPath = new URI(uri.getScheme, uri.getAuthority, "/_$tmpHdfsFolder$/"+tempFilePrefix(hdfsPath) + "-" + path.getName, null, null)
-    //val pos = hdfsPath.lastIndexOf('/')
-    //val tempHdfsPath = hdfsPath.patch(pos, "/_temporary", 0)
-    // TODO: create unique name for each temp file.
-    val tempPath = new Path(tempHdfsPath)
     val fs = path.getFileSystem(conf)
 
     // If output file already exists and overwrite flag is set, delete old file and then rewrite new file
@@ -434,8 +429,8 @@ object HadoopClient {
       fs.delete(path, true)
     }
 
-    // If skipRename is true, write the file directly to the target path without renaming from a temp file
-    if (skipRename) {
+    // If directWrite is true, write the file directly to the target path without renaming from a temp file
+    if (directWrite) {
       val outStream = fs.create(path, true)
       if (content.length > 0) {
         val bs = new BufferedOutputStream(outStream)
@@ -443,6 +438,12 @@ object HadoopClient {
         bs.close()
       }
     } else {
+      val tempHdfsPath = new URI(uri.getScheme, uri.getAuthority, "/_$tmpHdfsFolder$/"+tempFilePrefix(hdfsPath) + "-" + path.getName, null, null)
+      //val pos = hdfsPath.lastIndexOf('/')
+      //val tempHdfsPath = hdfsPath.patch(pos, "/_temporary", 0)
+      // TODO: create unique name for each temp file.
+      val tempPath = new Path(tempHdfsPath)
+
       val bs = new BufferedOutputStream(fs.create(tempPath, true))
       bs.write(content)
       bs.close()
