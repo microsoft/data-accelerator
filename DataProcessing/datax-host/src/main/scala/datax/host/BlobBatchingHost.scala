@@ -124,7 +124,7 @@ object BlobBatchingHost {
 
     val out = "_SUCCESS_" + dateFormat.format(dt)
     val outFilename = trackerFolder + out
-    HadoopClient.writeHdfsFile(outFilename, "success", true, true)
+    HadoopClient.writeHdfsFile(outFilename, "", true, true)
     appLog.warn(s"tracker file has been written: $outFilename")
 
   }

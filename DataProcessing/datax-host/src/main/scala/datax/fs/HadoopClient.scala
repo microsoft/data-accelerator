@@ -434,9 +434,12 @@ object HadoopClient {
 
     // If skipRename is true, write the file directly to the target path without renaming from a temp file
     if (skipRename) {
-      val bs = new BufferedOutputStream(fs.create(path, true))
-      bs.write(content)
-      bs.close()
+      val outStream = fs.create(path, true)
+      if (content.length > 0) {
+        val bs = new BufferedOutputStream(outStream)
+        bs.write(content)
+        bs.close()
+      }
     } else {
       val bs = new BufferedOutputStream(fs.create(tempPath, true))
       bs.write(content)
