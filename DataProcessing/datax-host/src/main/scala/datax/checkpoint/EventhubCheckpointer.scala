@@ -57,7 +57,7 @@ object EventhubCheckpointer {
     }
 
     HadoopClient.writeHdfsFile(checkpointFile,
-      offsets.map(v=>v._1+OffsetTokenSeparator+v._2+OffsetTokenSeparator+v._3+OffsetTokenSeparator+v._4+OffsetTokenSeparator+v._5).mkString("\n"), true, false)
+      offsets.map(v=>v._1+OffsetTokenSeparator+v._2+OffsetTokenSeparator+v._3+OffsetTokenSeparator+v._4+OffsetTokenSeparator+v._5).mkString("\n"), overwriteIfExists=true, directWrite=false)
   }
 
   def applyCheckpointsIfExists(ehConf: EventHubsConf, checkpointDir: String) = {

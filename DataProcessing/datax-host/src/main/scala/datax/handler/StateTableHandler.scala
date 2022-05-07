@@ -48,7 +48,7 @@ object StateTableHandler {
   }
 
   private def writeTableMetadata(metadataFile: String, parameters: HashMap[String, String]): Unit ={
-    HadoopClient.writeHdfsFile(metadataFile, parameters.map(i=>i._1+"="+i._2).mkString("\n"), true, false)
+    HadoopClient.writeHdfsFile(metadataFile, parameters.map(i=>i._1+"="+i._2).mkString("\n"), overwriteIfExists=true, directWrite=false)
   }
 
   private def getTableNameVersioned(name: String, suffix: String) = name+"_"+suffix
