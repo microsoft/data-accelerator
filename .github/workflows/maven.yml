@@ -38,9 +38,9 @@ jobs:
         name: artifacts
         path: |
           DataProcessing/datax-core/target/datax-core_2.4_2.11-*-SNAPSHOT*.jar
-          DataProcessing/datax-core/target/datax-keyvault.4_2.11-*-SNAPSHOT*.jar
-          DataProcessing/datax-core/target/datax-utility.4_2.11-*-SNAPSHOT*.jar
-          DataProcessing/datax-core/target/datax-host.4_2.11-*-SNAPSHOT*.jar
-          DataProcessing/datax-core/target/datax-udf-samples.4_2.11-*-SNAPSHOT*.jar
+          DataProcessing/datax-keyvault/target/datax-keyvault.4_2.11-*-SNAPSHOT*.jar
+          DataProcessing/datax-utility/target/datax-utility.4_2.11-*-SNAPSHOT*.jar
+          DataProcessing/datax-host/target/datax-host.4_2.11-*-SNAPSHOT*.jar
+          DataProcessing/datax-udf-samples/target/datax-udf-samples.4_2.11-*-SNAPSHOT*.jar
         if-no-files-found: error 
     
