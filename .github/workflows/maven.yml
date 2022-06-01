@@ -24,23 +24,39 @@ jobs:
         cache: maven
     - name: Build datax-core
       run: mvn -B package install --file DataProcessing/datax-core/pom.xml
-    - name: Build datax-keyvault
-      run: mvn -B package install --file DataProcessing/datax-keyvault/pom.xml
-    - name: Build datax-utility
-      run: mvn -B package install --file DataProcessing/datax-utility/pom.xml
-    - name: Build datax-host
-      run: mvn -B package install --file DataProcessing/datax-host/pom.xml
-    - name: Build datax-udf-samples
-      run: mvn -B package install --file DataProcessing/datax-udf-samples/pom.xml
-    - name: Upload artifacts
+    - name: Upload datax-core artifact
       uses: actions/upload-artifact@v3
       with:
-        name: artifacts
-        path: |
-          DataProcessing/datax-core/target/datax-core_2.4_2.11-*-SNAPSHOT*.jar
-          DataProcessing/datax-keyvault/target/datax-keyvault.4_2.11-*-SNAPSHOT*.jar
-          DataProcessing/datax-utility/target/datax-utility.4_2.11-*-SNAPSHOT*.jar
-          DataProcessing/datax-host/target/datax-host.4_2.11-*-SNAPSHOT*.jar
-          DataProcessing/datax-udf-samples/target/datax-udf-samples.4_2.11-*-SNAPSHOT*.jar
+        name: datax-core
+        path: DataProcessing/datax-core/target/datax-core_2.4_2.11-*-SNAPSHOT*.jar
+        if-no-files-found: error 
+    - name: Build datax-keyvault
+      run: mvn -B package install --file DataProcessing/datax-keyvault/pom.xml
+    - name: Upload datax-keyvault artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: datax-keyvault
+        path: DataProcessing/datax-keyvault/target/datax-keyvault_2.4_2.11-*-SNAPSHOT*.jar
+    - name: Build datax-utility
+      run: mvn -B package install --file DataProcessing/datax-utility/pom.xml
+    - name: Upload datax-utility artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: datax-utility
+        path: DataProcessing/datax-utility/target/datax-utility_2.4_2.11-*-SNAPSHOT*.jar
+    - name: Build datax-host
+      run: mvn -B package install --file DataProcessing/datax-host/pom.xml
+    - name: Upload datax-host artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: datax-host
+        path: DataProcessing/datax-host/target/datax-host_2.4_2.11-*-SNAPSHOT*.jar
+    - name: Build datax-udf-samples
+      run: mvn -B package install --file DataProcessing/datax-udf-samples/pom.xml
+    - name: Upload datax-udf-samples
+      uses: actions/upload-artifact@v3
+      with:
+        name: datax-udf-samples
+        path: DataProcessing/datax-udf-samples/target/datax-udf-samples.4_2.11-*-SNAPSHOT*.jar
         if-no-files-found: error 
     
