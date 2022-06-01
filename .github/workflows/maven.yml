@@ -37,6 +37,7 @@ jobs:
       with:
         name: datax-keyvault
         path: DataProcessing/datax-keyvault/target/datax-keyvault_2.4_2.11-*-SNAPSHOT*.jar
+        if-no-files-found: error 
     - name: Build datax-utility
       run: mvn -B package install --file DataProcessing/datax-utility/pom.xml
     - name: Upload datax-utility artifact
@@ -44,6 +45,7 @@ jobs:
       with:
         name: datax-utility
         path: DataProcessing/datax-utility/target/datax-utility_2.4_2.11-*-SNAPSHOT*.jar
+        if-no-files-found: error 
     - name: Build datax-host
       run: mvn -B package install --file DataProcessing/datax-host/pom.xml
     - name: Upload datax-host artifact
@@ -51,6 +53,7 @@ jobs:
       with:
         name: datax-host
         path: DataProcessing/datax-host/target/datax-host_2.4_2.11-*-SNAPSHOT*.jar
+        if-no-files-found: error 
     - name: Build datax-udf-samples
       run: mvn -B package install --file DataProcessing/datax-udf-samples/pom.xml
     - name: Upload datax-udf-samples
