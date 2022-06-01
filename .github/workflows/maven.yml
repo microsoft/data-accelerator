@@ -24,8 +24,8 @@ jobs:
         cache: maven
     - name: Build datax-core
       run: mvn -B package install --file DataProcessing/datax-core/pom.xml
-    - uses: actions/upload-artifact@v3
     - name: Upload datax-core artifact
+      uses: actions/upload-artifact@v3
       with:
         name: my-artifact
         path: DataProcessing/datax-core/datax-core_2.4_2.11-*-SNAPSHOT.jar
