@@ -24,6 +24,11 @@ jobs:
         cache: maven
     - name: Build datax-core
       run: mvn -B package install --file DataProcessing/datax-core/pom.xml
+    - uses: actions/upload-artifact@v3
+    - name: Upload datax-core artifact
+      with:
+        name: my-artifact
+        path: DataProcessing/datax-core/datax-core_2.4_2.11-*-SNAPSHOT.jar
     - name: Build datax-keyvault
       run: mvn -B package install --file DataProcessing/datax-keyvault/pom.xml
     - name: Build datax-utility
@@ -32,3 +37,4 @@ jobs:
       run: mvn -B package install --file DataProcessing/datax-host/pom.xml
     - name: Build datax-udf-samples
       run: mvn -B package install --file DataProcessing/datax-udf-samples/pom.xml
+    
