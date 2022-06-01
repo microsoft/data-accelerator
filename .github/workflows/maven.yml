@@ -24,12 +24,6 @@ jobs:
         cache: maven
     - name: Build datax-core
       run: mvn -B package install --file DataProcessing/datax-core/pom.xml
-    - name: Upload datax-core artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: my-artifact
-        path: DataProcessing/datax-core/target/datax-core_2.4_2.11-*-SNAPSHOT.jar
-        if-no-files-found: error 
     - name: Build datax-keyvault
       run: mvn -B package install --file DataProcessing/datax-keyvault/pom.xml
     - name: Build datax-utility
@@ -38,4 +32,15 @@ jobs:
       run: mvn -B package install --file DataProcessing/datax-host/pom.xml
     - name: Build datax-udf-samples
       run: mvn -B package install --file DataProcessing/datax-udf-samples/pom.xml
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: artifacts
+        path: |
+          DataProcessing/datax-core/target/datax-core_2.4_2.11-*-SNAPSHOT*.jar
+          DataProcessing/datax-core/target/datax-keyvault.4_2.11-*-SNAPSHOT*.jar
+          DataProcessing/datax-core/target/datax-utility.4_2.11-*-SNAPSHOT*.jar
+          DataProcessing/datax-core/target/datax-host.4_2.11-*-SNAPSHOT*.jar
+          DataProcessing/datax-core/target/datax-udf-samples.4_2.11-*-SNAPSHOT*.jar
+        if-no-files-found: error 
     
