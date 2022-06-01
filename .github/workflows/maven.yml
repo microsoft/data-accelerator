@@ -28,7 +28,8 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: my-artifact
-        path: DataProcessing/datax-core/datax-core_2.4_2.11-*-SNAPSHOT.jar
+        path: DataProcessing/datax-core/target/datax-core_2.4_2.11-*-SNAPSHOT.jar
+        if-no-files-found: error 
     - name: Build datax-keyvault
       run: mvn -B package install --file DataProcessing/datax-keyvault/pom.xml
     - name: Build datax-utility
