@@ -27,7 +27,7 @@ jobs:
     - name: Upload datax-core artifact
       uses: actions/upload-artifact@v3
       with:
-        name: datax-core
+        name: datax
         path: DataProcessing/datax-core/target/datax-core_2.4_2.11-*-SNAPSHOT*.jar
         if-no-files-found: error 
     - name: Build datax-keyvault
@@ -35,7 +35,7 @@ jobs:
     - name: Upload datax-keyvault artifact
       uses: actions/upload-artifact@v3
       with:
-        name: datax-keyvault
+        name: datax
         path: DataProcessing/datax-keyvault/target/datax-keyvault_2.4_2.11-*-SNAPSHOT*.jar
         if-no-files-found: error 
     - name: Build datax-utility
@@ -43,7 +43,7 @@ jobs:
     - name: Upload datax-utility artifact
       uses: actions/upload-artifact@v3
       with:
-        name: datax-utility
+        name: datax
         path: DataProcessing/datax-utility/target/datax-utility_2.4_2.11-*-SNAPSHOT*.jar
         if-no-files-found: error 
     - name: Build datax-host
@@ -51,7 +51,7 @@ jobs:
     - name: Upload datax-host artifact
       uses: actions/upload-artifact@v3
       with:
-        name: datax-host
+        name: datax
         path: DataProcessing/datax-host/target/datax-host_2.4_2.11-*-SNAPSHOT*.jar
         if-no-files-found: error 
     - name: Build datax-udf-samples
@@ -59,7 +59,7 @@ jobs:
     - name: Upload datax-udf-samples
       uses: actions/upload-artifact@v3
       with:
-        name: datax-udf-samples
+        name: datax
         path: DataProcessing/datax-udf-samples/target/datax-udf-samples_2.4_2.11-*-SNAPSHOT*.jar
         if-no-files-found: error 
     
