@@ -28,3 +28,7 @@ jobs:
       run: mvn -B package install --file DataProcessing/datax-keyvault/pom.xml
     - name: Build datax-utility
       run: mvn -B package install --file DataProcessing/datax-utility/pom.xml
+    - name: Build datax-host
+      run: mvn -B package install --file DataProcessing/datax-host/pom.xml
+    - name: Build datax-udf-samples
+      run: mvn -B package install --file DataProcessing/datax-udf-samples/pom.xml
