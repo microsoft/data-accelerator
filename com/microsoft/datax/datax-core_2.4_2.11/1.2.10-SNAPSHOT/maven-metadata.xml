@@ -2,24 +2,24 @@
 <metadata modelVersion="1.1.0">
   <groupId>com.microsoft.datax</groupId>
   <artifactId>datax-core_2.4_2.11</artifactId>
+  <version>1.2.10-SNAPSHOT</version>
   <versioning>
-    <lastUpdated>20220503190937</lastUpdated>
     <snapshot>
-      <timestamp>20220503.190937</timestamp>
-      <buildNumber>6</buildNumber>
+      <timestamp>20220602.033928</timestamp>
+      <buildNumber>1</buildNumber>
     </snapshot>
+    <lastUpdated>20220602033928</lastUpdated>
     <snapshotVersions>
       <snapshotVersion>
         <extension>jar</extension>
-        <value>1.2.10-20220503.190937-6</value>
-        <updated>20220503190937</updated>
+        <value>1.2.10-20220602.033928-1</value>
+        <updated>20220602033928</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>pom</extension>
-        <value>1.2.10-20220503.190937-6</value>
-        <updated>20220503190937</updated>
+        <value>1.2.10-20220602.033928-1</value>
+        <updated>20220602033928</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>
-  <version>1.2.10-SNAPSHOT</version>
 </metadata>
