@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.2-aspnetcore-runtime
+FROM mcr.microsoft.com/dotnet/aspnet:3.1
 WORKDIR /app/aspnetcore
 EXPOSE 5000
 ARG servicetarname
