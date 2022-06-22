@@ -8,6 +8,7 @@ import datax.config.SparkEnvVariables
 import datax.handler.MetricSinkConf
 import datax.client.eventhub.{EventHubBase, EventHubSender}
 import datax.client.redis.{RedisBase, RedisConnection}
+import datax.constants.ProductConstant
 import datax.sink.HttpPoster
 import org.apache.log4j.LogManager
 
@@ -68,7 +69,7 @@ class MetricLogger(name: String, redis: RedisConnection, eventhub: EventHubSende
         HttpPoster.postEvents((fullJson).toSeq, httpEndpoint, Some(header),"metricLogger")
       }
 
-      AppInsightLogger.trackEvent("BatchMetrics", Map("timestamp" -> timestamp.toString), metrics.toMap)
+      AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/BatchMetrics", Map("timestamp" -> timestamp.toString), metrics.toMap)
 
       val elapsedTime = (System.nanoTime()-t1)/1E9
       logger.warn(s"done sending batch metrics(${metrics.size}) in $elapsedTime seconds, redis:$sendRedis, eventhub:$sendEventhub")
