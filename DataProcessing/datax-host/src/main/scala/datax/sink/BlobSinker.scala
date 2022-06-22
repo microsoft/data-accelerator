@@ -87,7 +87,7 @@ object BlobSinker extends SinkOperatorFactory {
       AppInsightLogger.trackEvent(
         ProductConstant.ProductRoot + "/WriteEventsToBlob",
         Map("Timestamp" -> timeNow.toString, "OutputPath" -> outputPath),
-        Map("WriteTime" -> (timeLast - t1) / 1E9)
+        Map("WriteTimeInSeconds" -> (timeNow - timeLast) / 1E9)
       )
       logger.info(s"$timeNow:Step 3: done writing to $outputPath, spent time=${(timeNow - timeLast) / 1E9} seconds")
       timeLast = timeNow
