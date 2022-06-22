@@ -7,7 +7,6 @@ package datax.sink
 
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
-
 import datax.executor.ExecutorHelper
 import datax.config._
 import datax.constants.{JobArgument, MetricName}
@@ -16,9 +15,10 @@ import datax.fs.HadoopClient
 import datax.securedsetting.KeyVaultClient
 import datax.sink.BlobOutputSetting.BlobOutputConf
 import datax.utility.{GZipHelper, SinkerUtil}
-import datax.constants.{ProductConstant, BlobProperties}
+import datax.constants.{BlobProperties, ProductConstant}
 import datax.config.ConfigManager
 import datax.host.SparkSessionSingleton
+import datax.telemetry.AppInsightLogger
 import org.apache.spark.broadcast
 import org.apache.log4j.LogManager
 import org.apache.spark.TaskContext
@@ -87,7 +87,7 @@ object BlobSinker extends SinkOperatorFactory {
       logger.info(s"$timeNow:Step 3: done writing to $outputPath, spent time=${(timeNow - timeLast) / 1E9} seconds")
       timeLast = timeNow
     }
-
+    AppInsightLogger.trackEvent("WriteEventsToBlob", Map("timestamp" -> timeNow.toString), Map("WriteTime" -> (timeLast - t1) / 1E9 ))
     logger.info(s"$timeNow:Done writing events ${countEvents} events, spent time=${(timeLast - t1) / 1E9} seconds")
   }
 
