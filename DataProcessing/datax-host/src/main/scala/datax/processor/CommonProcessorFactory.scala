@@ -618,8 +618,18 @@ object CommonProcessorFactory {
           val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(paths.head, spark)
 
           val inputDf = internalFiles
-            .flatMap(file => HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"), blobStorageKey)
-              .filter(l => l != null && !l.isEmpty).map((file, outputPartitionTime, _)))
+            .flatMap(file => {
+              val timeLast = System.nanoTime()
+              val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"), blobStorageKey)
+                .filter(l => l != null && !l.isEmpty).map((file, outputPartitionTime, _))
+              val timeNow = System.nanoTime()
+              AppInsightLogger.trackEvent(
+                ProductConstant.ProductRoot + "/ReadBlob",
+                Map("Timestamp" -> timeNow.toString, "InputPath" -> file.inputPath),
+                Map("ReadTime" -> (timeNow - timeLast) / 1E9)
+              )
+              retVal
+            })
             .toDF(ColumnName.InternalColumnFileInfo, ColumnName.MetadataColumnOutputPartitionTime, ColumnName.RawObjectColumn)
 
           val processedMetrics = processDataset(inputDf, batchTime, batchInterval, outputPartitionTime, null, "")
