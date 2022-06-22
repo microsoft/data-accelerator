@@ -65,7 +65,7 @@ object BlobSinker extends SinkOperatorFactory {
       timeNow = System.nanoTime()
       logger.info(s"$timeNow:Step 1: collected ${countEvents} records, spent time=${(timeNow - timeLast) / 1E9} seconds")
       timeLast = timeNow
-      val content = if(compression){
+      val content = if (compression) {
         val result = GZipHelper.deflateToBytes(data)
         timeNow = System.nanoTime()
         logger.info(s"$timeNow:Step 2: compressed to ${result.length} bytes, spent time=${(timeNow - timeLast) / 1E9} seconds")
@@ -84,10 +84,10 @@ object BlobSinker extends SinkOperatorFactory {
         blobStorageKey
       )
       timeNow = System.nanoTime()
+      AppInsightLogger.trackEvent("WriteEventsToBlob", Map("timestamp" -> timeNow.toString), Map("WriteTime" -> (timeLast - t1) / 1E9))
       logger.info(s"$timeNow:Step 3: done writing to $outputPath, spent time=${(timeNow - timeLast) / 1E9} seconds")
       timeLast = timeNow
     }
-    AppInsightLogger.trackEvent("WriteEventsToBlob", Map("timestamp" -> timeNow.toString), Map("WriteTime" -> (timeLast - t1) / 1E9 ))
     logger.info(s"$timeNow:Done writing events ${countEvents} events, spent time=${(timeLast - t1) / 1E9} seconds")
   }
 
