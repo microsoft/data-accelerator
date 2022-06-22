@@ -624,7 +624,7 @@ object CommonProcessorFactory {
                 .filter(l => l != null && !l.isEmpty).map((file, outputPartitionTime, _))
               val timeNow = System.nanoTime()
               AppInsightLogger.trackEvent(
-                ProductConstant.ProductRoot + "/ReadBlob",
+                ProductConstant.ProductRoot + "/ReadEventsFromFile",
                 Map("Timestamp" -> timeNow.toString, "InputPath" -> file.inputPath),
                 Map("ReadTime" -> (timeNow - timeLast) / 1E9)
               )
