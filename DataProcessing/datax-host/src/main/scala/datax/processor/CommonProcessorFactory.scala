@@ -439,8 +439,18 @@ object CommonProcessorFactory {
         val pathsList = paths.mkString(",")
         batchLog.debug(s"Batch loading files:$pathsList")
         val inputDf = spark.sparkContext.parallelize(files, filesCount)
-          .flatMap(file => HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
-            .filter(l => l != null && !l.isEmpty).map((file, outputPartitionTime, _)))
+          .flatMap(file => {
+            val timeLast = System.nanoTime()
+            val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
+              .filter(l => l != null && !l.isEmpty).map((file, outputPartitionTime, _))
+            val timeNow = System.nanoTime()
+            AppInsightLogger.trackEvent(
+              ProductConstant.ProductRoot + "/ReadBlob",
+              Map("timestamp" -> timeNow.toString, "InputPath" -> file.inputPath),
+              Map("ReadTime" -> (timeNow - timeLast) / 1E9)
+            )
+            retVal
+          })
           .toDF(ColumnName.InternalColumnFileInfo, ColumnName.MetadataColumnOutputPartitionTime, ColumnName.RawObjectColumn)
 
         val targets = files.map(_.target).toSet
