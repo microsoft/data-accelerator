@@ -51,7 +51,7 @@ object BlobSinker extends SinkOperatorFactory {
   }
 
   // write events to blob location
-  def writeEventsToBlob(data: Seq[String], outputPath: String, compression: Boolean, blobStorageKey: broadcast.Broadcast[String] = null) {
+  def writeEventsToBlob(data: Seq[String], outputPath: String, compression: Boolean, blobStorageKey: broadcast.Broadcast[String] = null, inputPath: String = null) {
     val logger = LogManager.getLogger(s"EventsToBlob-Writer${SparkEnvVariables.getLoggerSuffix()}")
     val countEvents = data.length
 
@@ -86,7 +86,7 @@ object BlobSinker extends SinkOperatorFactory {
       timeNow = System.nanoTime()
       AppInsightLogger.trackEvent(
         ProductConstant.ProductRoot + "/WriteEventsToBlob",
-        Map("Timestamp" -> timeNow.toString, "OutputPath" -> outputPath),
+        Map("Timestamp" -> timeNow.toString, "OutputPath" -> outputPath, "InputPath" -> Option(inputPath).getOrElse("")),
         Map("WriteTimeInSeconds" -> (timeNow - timeLast) / 1E9)
       )
       logger.info(s"$timeNow:Step 3: done writing to $outputPath, spent time=${(timeNow - timeLast) / 1E9} seconds")
@@ -144,6 +144,7 @@ object BlobSinker extends SinkOperatorFactory {
     val eventCounts = dataGroups.flatMap {
       case (group, data) =>
         val fileName = FileInternal.getInfoOutputFileName(rowInfo)
+        val InputPath = FileInternal.getInfoInputPath(rowInfo)
         outputFolders.get(group) match {
           case None =>
             Seq(s"${MetricPrefixEvents}$group" -> 0, s"${MetricPrefixBlobs}$group" -> 0)
@@ -151,7 +152,7 @@ object BlobSinker extends SinkOperatorFactory {
             val path = folder +
               (if (fileName == null) s"part-$partitionId" else fileName) + (if(compression) ".json.gz" else ".json")
             val jsonList = data.toSeq
-            BlobSinker.writeEventsToBlob(jsonList, path, compression, blobStorageKey )
+            BlobSinker.writeEventsToBlob(jsonList, path, compression, blobStorageKey, InputPath)
 
             Seq(s"${MetricPrefixEvents}$group" -> jsonList.length, s"${MetricPrefixBlobs}$group" -> 1)
         }
