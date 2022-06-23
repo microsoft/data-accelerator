@@ -85,12 +85,19 @@ object BlobSinker extends SinkOperatorFactory {
       )
       timeNow = System.nanoTime()
       AppInsightLogger.trackEvent(
-        ProductConstant.ProductRoot + "/WriteEventsToBlob",
+        ProductConstant.ProductRoot + "/WriteEventsToOutputBlob",
         Map("Timestamp" -> timeNow.toString, "OutputPath" -> outputPath, "InputPath" -> Option(inputPath).getOrElse("")),
         Map("WriteTimeInSeconds" -> (timeNow - timeLast) / 1E9)
       )
       logger.info(s"$timeNow:Step 3: done writing to $outputPath, spent time=${(timeNow - timeLast) / 1E9} seconds")
       timeLast = timeNow
+    }
+    else {
+      AppInsightLogger.trackEvent(
+        ProductConstant.ProductRoot + "/NoEventsInOutputBlob",
+        Map("Timestamp" -> timeNow.toString, "OutputPath" -> outputPath, "InputPath" -> Option(inputPath).getOrElse("")),
+        null
+      )
     }
     logger.info(s"$timeNow:Done writing events ${countEvents} events, spent time=${(timeLast - t1) / 1E9} seconds")
   }
@@ -145,6 +152,11 @@ object BlobSinker extends SinkOperatorFactory {
       case (group, data) =>
         val fileName = FileInternal.getInfoOutputFileName(rowInfo)
         val InputPath = FileInternal.getInfoInputPath(rowInfo)
+        AppInsightLogger.trackEvent(
+          ProductConstant.ProductRoot + "/SinkDataGroup",
+          Map("InputPath" -> InputPath, "OutputPath" -> fileName, "Group" -> group),
+          null
+        )
         outputFolders.get(group) match {
           case None =>
             Seq(s"${MetricPrefixEvents}$group" -> 0, s"${MetricPrefixBlobs}$group" -> 0)
