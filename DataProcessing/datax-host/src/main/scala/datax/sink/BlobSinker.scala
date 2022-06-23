@@ -51,7 +51,7 @@ object BlobSinker extends SinkOperatorFactory {
   }
 
   // write events to blob location
-  def writeEventsToBlob(data: Seq[String], outputPath: String, compression: Boolean, blobStorageKey: broadcast.Broadcast[String] = null, inputPath: String = null) {
+  def writeEventsToBlob(data: Seq[String], outputPath: String, compression: Boolean, blobStorageKey: broadcast.Broadcast[String] = null) {
     val logger = LogManager.getLogger(s"EventsToBlob-Writer${SparkEnvVariables.getLoggerSuffix()}")
     val countEvents = data.length
 
@@ -86,17 +86,17 @@ object BlobSinker extends SinkOperatorFactory {
       timeNow = System.nanoTime()
       AppInsightLogger.trackEvent(
         ProductConstant.ProductRoot + "/WriteEventsToOutputBlob",
-        Map("Timestamp" -> timeNow.toString, "OutputPath" -> outputPath, "InputPath" -> Option(inputPath).getOrElse("")),
-        Map("WriteTimeInSeconds" -> (timeNow - timeLast) / 1E9)
+        Map("OutputPath" -> outputPath),
+        Map("WriteTimeInSeconds" -> (timeNow - timeLast) / 1E9, "CountEvents" -> countEvents)
       )
       logger.info(s"$timeNow:Step 3: done writing to $outputPath, spent time=${(timeNow - timeLast) / 1E9} seconds")
       timeLast = timeNow
     }
     else {
       AppInsightLogger.trackEvent(
-        ProductConstant.ProductRoot + "/NoEventsInOutputBlob",
-        Map("Timestamp" -> timeNow.toString, "OutputPath" -> outputPath, "InputPath" -> Option(inputPath).getOrElse("")),
-        null
+        ProductConstant.ProductRoot + "/WriteEventsToOutputBlob/DroppedBlob",
+        Map("OutputPath" -> outputPath),
+        Map("CountEvents" -> countEvents)
       )
     }
     logger.info(s"$timeNow:Done writing events ${countEvents} events, spent time=${(timeLast - t1) / 1E9} seconds")
@@ -152,20 +152,26 @@ object BlobSinker extends SinkOperatorFactory {
       case (group, data) =>
         val fileName = FileInternal.getInfoOutputFileName(rowInfo)
         val InputPath = FileInternal.getInfoInputPath(rowInfo)
-        AppInsightLogger.trackEvent(
-          ProductConstant.ProductRoot + "/SinkDataGroup",
-          Map("InputPath" -> InputPath, "OutputPath" -> fileName, "Group" -> group),
-          null
-        )
+        val FileTime = FileInternal.getInfoFileTimeString(rowInfo)
+        val tag = FileInternal.getInfoTargetTag(rowInfo)
         outputFolders.get(group) match {
           case None =>
+            AppInsightLogger.trackEvent(
+              ProductConstant.ProductRoot + "/SinkDataGroup/NoMatchingGroup",
+              Map("InputPath" -> InputPath, "OutputPath" -> fileName, "Group" -> group, "Tag" -> tag, "FileTime" -> FileTime),
+              null
+            )
             Seq(s"${MetricPrefixEvents}$group" -> 0, s"${MetricPrefixBlobs}$group" -> 0)
           case Some(folder) =>
             val path = folder +
               (if (fileName == null) s"part-$partitionId" else fileName) + (if(compression) ".json.gz" else ".json")
             val jsonList = data.toSeq
-            BlobSinker.writeEventsToBlob(jsonList, path, compression, blobStorageKey, InputPath)
-
+            BlobSinker.writeEventsToBlob(jsonList, path, compression, blobStorageKey)
+            AppInsightLogger.trackEvent(
+              ProductConstant.ProductRoot + "/SinkDataGroup",
+              Map("InputPath" -> InputPath, "OutputPath" -> path, "Group" -> group, "Tag" -> tag, "FileTime" -> FileTime),
+              null
+            )
             Seq(s"${MetricPrefixEvents}$group" -> jsonList.length, s"${MetricPrefixBlobs}$group" -> 1)
         }
     }
