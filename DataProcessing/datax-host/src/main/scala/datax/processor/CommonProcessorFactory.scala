@@ -28,6 +28,7 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.streaming.{OutputMode, Trigger}
 import org.apache.spark.storage.StorageLevel
 
+import java.io.ByteArrayOutputStream
 import scala.language.{postfixOps, reflectiveCalls}
 import scala.collection.mutable.{HashMap, HashSet, ListBuffer}
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -90,10 +91,28 @@ object CommonProcessorFactory {
        based on the columns from projection files
      */
     def project(inputDf: DataFrame, batchTime: Timestamp): DataFrame = {
+      val transformLogger = LogManager.getLogger("Project")
+      val outCapture = new ByteArrayOutputStream
+      Console.withOut(outCapture) {
+        inputDf.show()
+      }
+      transformLogger.info(new String(outCapture.toByteArray))
+      if(inputDf == null)
+      {
+        transformLogger.info("InputDF is null!")
+      }
       // Initial schema and data set
       var df = inputDf
         .withColumn(ColumnName.RawObjectColumn, from_json(inputNormalizerUdf(col(ColumnName.RawObjectColumn)), rawBlockSchema))
-
+      val outCapture2 = new ByteArrayOutputStream
+      Console.withOut(outCapture2) {
+       df.show()
+      }
+      transformLogger.info(new String(outCapture2.toByteArray))
+      if(df == null)
+      {
+        transformLogger.info("df is null!")
+      }
       df = if (preProjection == null) df else preProjection(df)
       val preservedColumns = df.schema.fieldNames.filter(_.startsWith(ColumnName.InternalColumnPrefix))
       df = df.withColumn(ColumnName.PropertiesColumn, buildPropertiesUdf(col(ColumnName.InternalColumnFileInfo), lit(batchTime)))

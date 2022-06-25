@@ -119,8 +119,11 @@ object BlobPointerInput {
     val sourceId = extractSourceId(inputFilePath, inputConf.sourceIdRegex)
     inputConf.sources.get(sourceId) match {
       case Some(source) =>
+        logger.info(s"InputFilePath: $inputFilePath - Regex: ${inputConf.fileTimeRegex.r} - FileTimeFormat: ${inputConf.fileTimeFormat}")
         val fileTime = extractTimeFromBlobPath(inputFilePath, inputConf.fileTimeRegex.r, inputConf.fileTimeFormat)
+        logger.info(s"FileTime: $fileTime")
         val outputPartitionTime = if(outputTimestamp==null) fileTime else outputTimestamp
+        logger.info(s"Output partition time: $fileTime")
         FileInternal(inputPath = inputFilePath,
           outputFolders = outputConf.groups.map{case (k,v)=>
             k-> BlobSinker.generateOutputFolderPath(v.folder, outputPartitionTime, Some(source.target))
