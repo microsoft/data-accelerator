@@ -16,9 +16,9 @@ import datax.securedsetting.KeyVaultClient
 
 object EventHubBase {
   // get AAD configs
-  val tenantId = KeyVaultClient.resolveSecretIfAny(sys.env.getOrElse("AAD_TENANTID", ""))  // ""
-  val clientId = KeyVaultClient.resolveSecretIfAny(sys.env.getOrElse("AAD_CLIENTID", "")) // ""
-  val clientSecret = KeyVaultClient.resolveSecretIfAny(sys.env.getOrElse("AAD_CLIENTSECRET", "")) // ""
+  val tenantId = KeyVaultClient.resolveSecretIfAny(sys.env.getOrElse("AAD_TENANTID", ""))
+  val clientId = KeyVaultClient.resolveSecretIfAny(sys.env.getOrElse("AAD_CLIENTID", ""))
+  val clientSecret = KeyVaultClient.resolveSecretIfAny(sys.env.getOrElse("AAD_CLIENTSECRET", ""))
 
   val executorService = Executors.newSingleThreadScheduledExecutor()
 
