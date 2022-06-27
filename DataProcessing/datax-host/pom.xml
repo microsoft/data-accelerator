@@ -51,7 +51,7 @@ SOFTWARE
 
     <groupId>com.microsoft.datax</groupId>
     <artifactId>datax-host_2.4_2.11</artifactId>
-    <version>1.2.10-SNAPSHOT</version>
+    <version>1.2.11-SNAPSHOT</version>
 
     <properties>
         <spark.version>2.4.5</spark.version>
@@ -169,6 +169,11 @@ SOFTWARE
             <groupId>com.databricks</groupId>
             <artifactId>dbutils-api_2.11</artifactId>
             <version>0.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>msal4j</artifactId>
+            <version>1.12.0</version>
         </dependency>
     </dependencies>
   <profiles>
