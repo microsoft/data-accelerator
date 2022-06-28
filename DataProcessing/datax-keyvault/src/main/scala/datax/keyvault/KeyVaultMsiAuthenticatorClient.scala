@@ -13,9 +13,6 @@ import reactor.core.publisher.Mono
 
 class SecretClientTokenCredential extends TokenCredential {
 
-  // This is the local endpoint on which the HDInsight Cluster nodes will listen to for MSI access requests
-  private def localMsiEndpoint="http://localhost:40381/managed/identity/oauth2/token"
-
   def getToken(request:TokenRequestContext): Mono[AccessToken] = {
 		Mono.just(new AccessToken(getAccessToken("https://vault.azure.net"), OffsetDateTime.now().plusMinutes(5)))	
   }
