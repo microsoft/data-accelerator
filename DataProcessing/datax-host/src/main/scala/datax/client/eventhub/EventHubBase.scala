@@ -5,21 +5,14 @@
 package datax.client.eventhub
 
 import java.net.URI
-import java.util.Collections
+import java.time.Duration
 import java.util.concurrent.{CompletableFuture, Executors}
-import java.util.function
-import com.microsoft.azure.eventhubs.EventHubClient
+import com.microsoft.azure.eventhubs.{EventHubClient, ITokenProvider, JsonSecurityToken, SecurityToken}
 import org.apache.spark.eventhubs.ConnectionStringBuilder
-import org.apache.spark.eventhubs.utils.AadAuthenticationCallback
-import com.microsoft.aad.msal4j.{IAuthenticationResult, _}
-import datax.securedsetting.KeyVaultClient
+import scala.compat.java8.FunctionConverters._
+import datax.authentication.ManagedIdentity
 
 object EventHubBase {
-  // get AAD configs
-  val tenantId = KeyVaultClient.resolveSecretIfAny(sys.env.getOrElse("AAD_TENANTID", ""))
-  val clientId = KeyVaultClient.resolveSecretIfAny(sys.env.getOrElse("AAD_CLIENTID", ""))
-  val clientSecret = KeyVaultClient.resolveSecretIfAny(sys.env.getOrElse("AAD_CLIENTSECRET", ""))
-
   val executorService = Executors.newSingleThreadScheduledExecutor()
 
   def buildConnectionString(namespace: String, name: String, policy: String, key: String) = {
@@ -55,36 +48,19 @@ object EventHubBase {
     } else {
       val endpoint = new URI(extracted.getOrElse("Endpoint", ""))
       val eventHubName = extracted.getOrElse("EntityPath", "")
-
-      val authority = s"https://login.microsoftonline.com/$tenantId"
-      val callback = new AuthBySecretCallBack(authority, clientId, clientSecret)
-
-      EventHubClient.createWithAzureActiveDirectory(endpoint, eventHubName, callback, authority, executorService, null).get()
+      EventHubClient.createWithTokenProvider(endpoint, eventHubName, new ManagedIdentityTokenProvider(), executorService, null).get()
     }
   }
 
-  private class AuthBySecretCallBack(auth: String, clientId: String, clientSecret: String) extends AadAuthenticationCallback {
+  private class ManagedIdentityTokenProvider extends ITokenProvider {
+    override def getToken(resource: String, timeout: Duration): CompletableFuture[SecurityToken] = {
+      val resourceId = "https://eventhubs.azure.net/"
+      val tokenStr = ManagedIdentity.getAccessToken(resourceId)
+      val supplier = () => {
+        new JsonSecurityToken(tokenStr, resourceId).asInstanceOf[SecurityToken]
+      }
 
-    implicit def toJavaFunction[A, B](f: Function1[A, B]): function.Function[A, B] = new java.util.function.Function[A, B] {
-      override def apply(a: A): B = f(a)
-    }
-
-    override def authority: String = auth
-
-    override def acquireToken(audience: String, authority: String, state: Any): CompletableFuture[String] = try {
-      val app = ConfidentialClientApplication
-        .builder(clientId, ClientCredentialFactory.createFromSecret(clientSecret))
-        .authority(authority)
-        .build
-
-      val parameters = ClientCredentialParameters.builder(Collections.singleton(audience + ".default")).build
-
-      app.acquireToken(parameters).thenApply((result: IAuthenticationResult) => result.accessToken())
-    } catch {
-      case e: Exception =>
-        val failed = new CompletableFuture[String]
-        failed.completeExceptionally(e)
-        failed
+      CompletableFuture.supplyAsync(supplier.asJava)
     }
   }
 }
