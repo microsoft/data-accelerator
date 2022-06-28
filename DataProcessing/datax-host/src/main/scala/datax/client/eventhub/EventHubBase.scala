@@ -54,7 +54,7 @@ object EventHubBase {
 
   private class ManagedIdentityTokenProvider extends ITokenProvider {
     override def getToken(resource: String, timeout: Duration): CompletableFuture[SecurityToken] = {
-      val resourceId = "https://eventhubs.azure.net/"
+      val resourceId = "https://eventhubs.azure.net"
       val tokenStr = ManagedIdentity.getAccessToken(resourceId)
       val supplier = () => {
         new JsonSecurityToken(tokenStr, resourceId).asInstanceOf[SecurityToken]
