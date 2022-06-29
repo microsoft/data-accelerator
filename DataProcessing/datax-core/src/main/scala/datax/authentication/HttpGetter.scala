@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License
 // *********************************************************************
-package datax.keyvault
+package datax.authentication
 
 import org.apache.http.client.config.RequestConfig
 import org.apache.http.client.methods.HttpGet
@@ -17,7 +17,7 @@ object HttpGetter {
     HttpClients.custom().setDefaultRequestConfig(requestConfig).build()
   }
 
-// This is used to call local msi endpoint
+  // This is used to call local msi endpoint
   def httpGet(httpEndpoint: String, headers: Option[Map[String,String]]): String = {
 
     val clientItr = getHttpClient
@@ -41,3 +41,4 @@ object HttpGetter {
     result
   }
 }
+
