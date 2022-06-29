@@ -6,11 +6,31 @@
 version: 2
 updates:
   - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/Website" # Location of package manifests
+    directory: "/Website/Website" # Location of package.json
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/Website/Packages/datax-common" # Location of package.json
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/Website/Packages/datax-home" # Location of package.json
     schedule:
       interval: "weekly"
   - package-ecosystem: "maven" # See documentation for possible values
-    directory: "/DataProcessing" # Location of package manifests
+    directory: "/DataProcessing/datax-core" # Location of pom.xml
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "maven" # See documentation for possible values
+    directory: "/DataProcessing/datax-host" # Location of pom.xml
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "maven" # See documentation for possible values
+    directory: "/DataProcessing/datax-keyvault" # Location of pom.xml
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "maven" # See documentation for possible values
+    directory: "/DataProcessing/datax-utility" # Location of pom.xml
     schedule:
       interval: "weekly"
   - package-ecosystem: "nuget" # See documentation for possible values
