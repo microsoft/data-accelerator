@@ -4,8 +4,8 @@
   <artifactId>datax-host_2.4_2.11</artifactId>
   <versioning>
     <versions>
-      <version>1.2.10-SNAPSHOT</version>
+      <version>1.2.11-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20220602034101</lastUpdated>
+    <lastUpdated>20220629010650</lastUpdated>
   </versioning>
 </metadata>
