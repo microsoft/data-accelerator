@@ -67,7 +67,7 @@
     "datax-metrics": "1.4.0-SNAPSHOT-9",
     "datax-pipeline": "1.4.0-SNAPSHOT-9",
     "office-ui-fabric-react": "6.111.2",
-    "promise-polyfill": "8.1.0",
+    "promise-polyfill": "8.2.3",
     "prop-types": "15.6.2",
     "radium": "0.25.0",
     "react-redux": "5.1.1",
