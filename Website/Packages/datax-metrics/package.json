@@ -30,7 +30,7 @@
     "@babel/preset-react": "7.0.0",
     "babel-loader": "8.0.4",
     "css-loader": "1.0.1",
-    "d3": "4.10.2",
+    "d3": "7.5.0",
     "file-loader": "2.0.0",
     "mini-css-extract-plugin": "0.4.4",
     "datax-common": "1.4.0-SNAPSHOT-9",
