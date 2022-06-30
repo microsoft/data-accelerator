@@ -58,7 +58,7 @@ SOFTWARE
   <packaging>jar</packaging>
 
   <properties>
-    <spark.version>2.4.5</spark.version>
+    <spark.version>2.4.8</spark.version>
     <scala.version.major>2.11</scala.version.major>
     <scala.version.minor>8</scala.version.minor>
     <scala.version>${scala.version.major}.${scala.version.minor}</scala.version>
