@@ -181,7 +181,7 @@ SOFTWARE
       <!-- enable scalatest -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.4.1</version>
+        <version>3.3.0</version>
         <configuration>
           <descriptors>
             <descriptor>with-dependencies.xml</descriptor>
