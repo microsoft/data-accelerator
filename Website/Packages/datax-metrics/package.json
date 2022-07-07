@@ -38,7 +38,7 @@
     "q": "1.5.1",
     "plotly.js": "1.44.4",
     "prop-types": "15.6.2",
-    "radium": "0.25.0",
+    "radium": "0.25.2",
     "react": "16.6.3",
     "react-dom": "16.6.3",
     "react-redux": "5.1.1",
