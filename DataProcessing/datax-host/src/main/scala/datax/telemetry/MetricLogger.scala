@@ -51,7 +51,7 @@ class MetricLogger(name: String, redis: RedisConnection, eventhub: EventHubSende
     }
   }
 
-  def sendBatchMetrics(metrics: Iterable[(String, Double)], timestamp: Long): Unit = {
+  def sendBatchMetrics(metrics: Iterable[(String, Double)], timestamp: Long, timestampPropertyName: String): Unit = {
     if(sendRedis || sendEventhub || sendHttp){
       val t1=System.nanoTime()
       val ts = new java.util.Date().getTime
@@ -69,7 +69,7 @@ class MetricLogger(name: String, redis: RedisConnection, eventhub: EventHubSende
         HttpPoster.postEvents((fullJson).toSeq, httpEndpoint, Some(header),"metricLogger")
       }
 
-      AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/BatchMetrics", Map("Timestamp" -> timestamp.toString), metrics.toMap)
+      AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/BatchMetrics", Map(timestampPropertyName -> timestamp.toString), metrics.toMap)
 
       val elapsedTime = (System.nanoTime()-t1)/1E9
       logger.warn(s"done sending batch metrics(${metrics.size}) in $elapsedTime seconds, redis:$sendRedis, eventhub:$sendEventhub")

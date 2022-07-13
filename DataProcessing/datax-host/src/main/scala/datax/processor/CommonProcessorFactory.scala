@@ -345,7 +345,7 @@ object CommonProcessorFactory {
 
       def postMetrics(metrics: Iterable[(String, Double)]): Unit = {
         batchLogger.warn(s"Sending metrics:\n${metrics.map(m => m._1 + " -> " + m._2).mkString("\n")}")
-        metricLogger.sendBatchMetrics(metrics, batchTime.getTime)
+        metricLogger.sendBatchMetrics(metrics, batchTime.getTime, "BatchTime")
       }
 
       try {
@@ -405,7 +405,7 @@ object CommonProcessorFactory {
     * */
     def groupPartitionProcessMetrics(pathsRDD: RDD[String], batchTime: Timestamp, batchInterval: Duration, outputPartitionTime: Timestamp, namespace: String, batchLog: Logger, metricLogger: MetricLogger): Map[String, Double] = {
       def postMetrics(metrics: Iterable[(String, Double)]): Unit = {
-        metricLogger.sendBatchMetrics(metrics, batchTime.getTime)
+        metricLogger.sendBatchMetrics(metrics, batchTime.getTime, "BatchTime")
         batchLog.warn(s"Metric ${metrics.map(m => m._1 + "=" + m._2).mkString(",")}")
       }
 
@@ -593,7 +593,7 @@ object CommonProcessorFactory {
           groupPartitionProcessMetrics(pathsRDD, batchTime, batchInterval, outputPartitionTime, namespace, batchLog, metricLogger)
         } else {
           def postMetrics(metrics: Iterable[(String, Double)]): Unit = {
-            metricLogger.sendBatchMetrics(metrics, batchTime.getTime)
+            metricLogger.sendBatchMetrics(metrics, batchTime.getTime, "BatchTime")
             batchLog.warn(s"Metric ${metrics.map(m => m._1 + "=" + m._2).mkString(",")}")
           }
 
