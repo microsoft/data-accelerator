@@ -6,12 +6,11 @@ package datax.input
 
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
-
 import com.fasterxml.jackson.annotation.{JsonCreator, JsonProperty}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.microsoft.azure.eventhubs.EventData
 import datax.config._
-import datax.constants.BlobProperties
+import datax.constants.{BlobProperties, ProductConstant}
 import datax.data.FileInternal
 import datax.exception.EngineException
 import datax.input.BlobPointerInputSetting.BlobPointerInputConf
@@ -153,6 +152,11 @@ object BlobPointerInput {
   def filterPathGroups(groups: Array[(String, mutable.HashSet[FileInternal])]) = {
     groups.find(_._1==null) match {
       case Some(invalidPaths) =>
+        AppInsightLogger.trackEvent(
+          ProductConstant.ProductRoot + "/OutOfScopePaths",
+          Map("FirstFile" -> invalidPaths._2.head.inputPath),
+          Map("PathsCount" -> invalidPaths._2.size)
+        )
         logger.warn("Found out-of-scope paths count=" + invalidPaths._2.size + ", First File=" + invalidPaths._2.head.inputPath)
         groups.filter(_._1 != null)
       case None =>
