@@ -11,6 +11,7 @@ import datax.securedsetting.KeyVaultClient
 import datax.service.TelemetryService
 import org.apache.log4j.LogManager
 import org.apache.spark.SparkEnv
+import org.apache.spark.streaming.Time
 
 import scala.collection.JavaConverters._
 
@@ -80,6 +81,9 @@ object AppInsightLogger extends TelemetryService {
     client.trackException(e, mergeProps(properties), mergeMeasures(measurements))
   }
 
+  def setBatchTime(batchTime: Time): Unit = {
+    addContextProps(Map("batchtime" -> Time.toString))
+  }
 
   def initForApp(appName: String) = {
     val sparkEnv = SparkEnv.get
