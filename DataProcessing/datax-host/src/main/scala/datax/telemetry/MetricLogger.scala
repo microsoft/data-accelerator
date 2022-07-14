@@ -12,6 +12,8 @@ import datax.constants.ProductConstant
 import datax.sink.HttpPoster
 import org.apache.log4j.LogManager
 
+import java.sql.Timestamp
+
 class MetricLogger(name: String, redis: RedisConnection, eventhub: EventHubSender, httpEndpoint:String) {
   private val logger = LogManager.getLogger("MetricLogger-"+name)
   private val sendEventhub = eventhub!=null
@@ -51,25 +53,25 @@ class MetricLogger(name: String, redis: RedisConnection, eventhub: EventHubSende
     }
   }
 
-  def sendBatchMetrics(metrics: Iterable[(String, Double)], timestamp: Long, timestampPropertyName: String): Unit = {
+  def sendBatchMetrics(metrics: Iterable[(String, Double)], batchTime: Timestamp): Unit = {
     if(sendRedis || sendEventhub || sendHttp){
       val t1=System.nanoTime()
       val ts = new java.util.Date().getTime
 
-      if(sendRedis)metrics.foreach{m=>putMetricOnRedis(name+":"+m._1, ts, s"""{"uts":$timestamp, "val":${m._2}}""")}
+      if(sendRedis)metrics.foreach{m=>putMetricOnRedis(name+":"+m._1, ts, s"""{"uts":${batchTime.getTime}, "val":${m._2}}""")}
 
       if(sendEventhub) {
-        val fullJson = metrics.map { case (k, v) => s"""{"app":"$name", "met":"$k","uts":$timestamp, "val":$v}""" }.mkString("\n")
+        val fullJson = metrics.map { case (k, v) => s"""{"app":"$name", "met":"$k","uts":${batchTime.getTime}, "val":$v}""" }.mkString("\n")
         eventhub.sendString(fullJson, null)
       }
 
       if(sendHttp) {
-        val fullJson = metrics.map { case (k, v) => s"""{"app":"$name", "met":"$k","uts":$timestamp, "val":$v}""" }
+        val fullJson = metrics.map { case (k, v) => s"""{"app":"$name", "met":"$k","uts":${batchTime.getTime}, "val":$v}""" }
         val header = Map("Content-Type" -> "application/json")
         HttpPoster.postEvents((fullJson).toSeq, httpEndpoint, Some(header),"metricLogger")
       }
 
-      AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/BatchMetrics", Map(timestampPropertyName -> timestamp.toString), metrics.toMap)
+      AppInsightLogger.trackBatchEvent(ProductConstant.ProductRoot + "/BatchMetrics", null, metrics.toMap, batchTime)
 
       val elapsedTime = (System.nanoTime()-t1)/1E9
       logger.warn(s"done sending batch metrics(${metrics.size}) in $elapsedTime seconds, redis:$sendRedis, eventhub:$sendEventhub")
