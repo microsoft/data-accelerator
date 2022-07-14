@@ -9,10 +9,12 @@ import datax.config.ConfigManager
 import datax.constants.JobArgument
 import datax.securedsetting.KeyVaultClient
 import datax.service.TelemetryService
+import datax.utility.DateTimeUtil
 import org.apache.log4j.LogManager
 import org.apache.spark.SparkEnv
 import org.apache.spark.streaming.Time
 
+import java.sql.Timestamp
 import scala.collection.JavaConverters._
 
 
@@ -76,13 +78,18 @@ object AppInsightLogger extends TelemetryService {
     client.trackEvent(event, mergeProps(properties), mergeMeasures(measurements))
   }
 
+  def trackBatchEvent(event: String, properties: Map[String, String], measurements: Map[String, Double], batchTime: Timestamp): Unit = {
+    val batchTimeStr = DateTimeUtil.formatSimple(batchTime)
+    trackEvent(event, properties ++ Map("context.batchtime" -> batchTimeStr), measurements)
+  }
+
+  def trackBatchEvent(event: String, properties: Map[String, String], measurements: Map[String, Double], batchTime: Time): Unit = {
+    trackBatchEvent(event, properties, measurements, new Timestamp(batchTime.milliseconds))
+  }
+
   def trackException(e: Exception, properties: Map[String, String], measurements: Map[String, Double]) = {
     logger.warn(s"sending exception: ${e.getMessage}")
     client.trackException(e, mergeProps(properties), mergeMeasures(measurements))
-  }
-
-  def setBatchTime(batchTime: Time): Unit = {
-    addContextProps(Map("batchtime" -> Time.toString))
   }
 
   def initForApp(appName: String) = {

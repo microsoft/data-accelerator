@@ -444,10 +444,11 @@ object CommonProcessorFactory {
             val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
               .filter(l => l != null && !l.isEmpty).map((file, outputPartitionTime, _))
             val timeNow = System.nanoTime()
-            AppInsightLogger.trackEvent(
+            AppInsightLogger.trackBatchEvent(
               ProductConstant.ProductRoot + "/ReadEventsFromFile",
-              Map("Timestamp" -> timeNow.toString, "InputPath" -> file.inputPath),
-              Map("ReadTimeInSeconds" -> (timeNow - timeLast) / 1E9)
+              Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
+              Map("ReadTimeInSeconds" -> (timeNow - timeLast) / 1E9),
+              batchTime
             )
             retVal
           })
@@ -623,10 +624,11 @@ object CommonProcessorFactory {
               val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"), blobStorageKey)
                 .filter(l => l != null && !l.isEmpty).map((file, outputPartitionTime, _))
               val timeNow = System.nanoTime()
-              AppInsightLogger.trackEvent(
+              AppInsightLogger.trackBatchEvent(
                 ProductConstant.ProductRoot + "/ReadEventsFromFile",
-                Map("Timestamp" -> timeNow.toString, "InputPath" -> file.inputPath),
-                Map("ReadTime" -> (timeNow - timeLast) / 1E9)
+                Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
+                Map("ReadTime" -> (timeNow - timeLast) / 1E9),
+                batchTime
               )
               retVal
             })
