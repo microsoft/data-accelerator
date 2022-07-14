@@ -85,6 +85,9 @@ object EventHubStreamingFactory extends  StreamingFactory[EventData]{
     val checkpointIntervalInMilliseconds = eventhubInput.checkpointInterval.toLong*1000
     EventHubsUtils.createDirectStream(streamingContext, ehConf)
       .foreachRDD((rdd, time)=>{
+      // Batch time should be available for further logging calls through the app insight logger
+      AppInsightLogger.setBatchTime(time)
+      //
       AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/streaming/batch/begin", Map("batchTime"->time.toString), null)
       val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
       val batchTime = new Timestamp(time.milliseconds)
