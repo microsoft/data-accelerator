@@ -153,6 +153,12 @@ object CommonProcessorFactory {
       // log metric of how many events are incoming on this iteration
       val inputRawEventsCount = projectedDf.count()
       transformLogger.warn(s"Received $inputRawEventsCount raw input events")
+      AppInsightLogger.trackBatchEvent(
+        ProductConstant.ProductRoot + "/RawInputEvents",
+        null,
+        Map("RawInputEventsCount" -> inputRawEventsCount.toDouble),
+        batchTime
+      )
       outputMetrics += s"Input_Normalized_Events_Count" -> inputRawEventsCount
 
       if (timewindows.isEnabled) {
@@ -485,6 +491,12 @@ object CommonProcessorFactory {
       val result =
         if (pathsCount > 0) {
           batchLog.warn(s"Loading filtered blob files count=$pathsCount, First File=${pathsFilteredGroups.head._2.head}")
+          AppInsightLogger.trackBatchEvent(
+            ProductConstant.ProductRoot + "/FilteredBlobPaths",
+            Map("FirstFile" -> pathsFilteredGroups.head._2.head.inputPath),
+            Map("PathsCount" -> pathsCount.toDouble),
+            batchTime
+          )
           if (pathsFilteredGroups.length > 1)
             Await.result(FutureUtil.failFast(pathsFilteredGroups
               .map(kv => Future {
