@@ -24,7 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "adal-node": "0.2.3",
-    "applicationinsights": "1.0.6",
+    "applicationinsights": "2.3.3",
     "archiver": "3.0.0",
     "azure-keyvault": "3.0.4",
     "body-parser": "1.18.3",
@@ -34,7 +34,7 @@
     "generate-schema": "2.6.0",
     "helmet": "5.1.0",
     "moment": "2.29.4",
-    "mongodb": "3.2.7",
+    "mongodb": "4.8.0",
     "ms-rest-azure": "2.6.0",
     "mssql": "4.2.3",
     "passport": "0.4.0",
