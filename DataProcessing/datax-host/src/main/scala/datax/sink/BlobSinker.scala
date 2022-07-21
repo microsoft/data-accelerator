@@ -51,7 +51,7 @@ object BlobSinker extends SinkOperatorFactory {
   }
 
   // write events to blob location
-  def writeEventsToBlob(data: Seq[String], outputPath: String, compression: Boolean, blobStorageKey: broadcast.Broadcast[String] = null, InputPath: String = null, Group: String = null, outputPartitionTime: Timestamp = null) {
+  def writeEventsToBlob(data: Seq[String], outputPath: String, compression: Boolean, blobStorageKey: broadcast.Broadcast[String] = null, InputPath: String = null, Group: String = null, outputPartitionTime: Timestamp = null, batchTime: Timestamp = null) {
     val logger = LogManager.getLogger(s"EventsToBlob-Writer${SparkEnvVariables.getLoggerSuffix()}")
     val countEvents = data.length
 
@@ -84,25 +84,27 @@ object BlobSinker extends SinkOperatorFactory {
         blobStorageKey
       )
       timeNow = System.nanoTime()
-      AppInsightLogger.trackEvent(
+      AppInsightLogger.trackBatchEvent(
         ProductConstant.ProductRoot + "/WriteEventsToOutputBlob",
         Map("OutputPartitionTime" -> Option(outputPartitionTime).map(x => x.toString).getOrElse(""), "InputPath" -> InputPath, "OutputPath" -> outputPath, "Group" -> Option(Group).getOrElse("")),
-        Map("WriteTimeInSeconds" -> (timeNow - timeLast) / 1E9, "CountEvents" -> countEvents)
+        Map("WriteTimeInSeconds" -> (timeNow - timeLast) / 1E9, "CountEvents" -> countEvents.toDouble),
+        batchTime
       )
       logger.info(s"$timeNow:Step 3: done writing to $outputPath, spent time=${(timeNow - timeLast) / 1E9} seconds")
       timeLast = timeNow
     }
     else {
-      AppInsightLogger.trackEvent(
+      AppInsightLogger.trackBatchEvent(
         ProductConstant.ProductRoot + "/WriteEventsToOutputBlob/DroppedBlob",
         Map("OutputPartitionTime" -> Option(outputPartitionTime).map(x => x.toString).getOrElse(""), "InputPath" -> InputPath, "OutputPath" -> outputPath, "Group" -> Option(Group).getOrElse("")),
-        Map("CountEvents" -> countEvents)
+        Map("CountEvents" -> countEvents.toDouble),
+        batchTime
       )
     }
     logger.info(s"$timeNow:Done writing events ${countEvents} events, spent time=${(timeLast - t1) / 1E9} seconds")
   }
 
-  def writeDatasetToBlobs(rdd: RDD[String], outputFolder: String, fileSuffix: String, compression: Boolean, InputPath: String = null, Group: String = null, outputPartitionTime: Timestamp = null):RDD[ProcessResult] = {
+  def writeDatasetToBlobs(rdd: RDD[String], outputFolder: String, fileSuffix: String, compression: Boolean, InputPath: String = null, Group: String = null, outputPartitionTime: Timestamp = null, batchTime: Timestamp = null):RDD[ProcessResult] = {
     val outputPathPrefix = outputFolder.stripSuffix("/")
     rdd.mapPartitions(it=>{
       val tc = TaskContext.get()
@@ -122,7 +124,7 @@ object BlobSinker extends SinkOperatorFactory {
 
       val path = outputPathPrefix + "/part-%05d".format(tc.partitionId()) + fileSuffix
       if(dataSize>0) {
-        writeEventsToBlob(dataAll, path, compression, null, InputPath, Group, outputPartitionTime)
+        writeEventsToBlob(dataAll, path, compression, null, InputPath, Group, outputPartitionTime, batchTime)
         timeNow = System.nanoTime()
         logger.info(s"$timeNow:Done writting ${dataAll.length} events, spent time=${(timeNow - timeLast) / 1E9} seconds")
         timeLast = timeNow
@@ -145,7 +147,8 @@ object BlobSinker extends SinkOperatorFactory {
                      compression: Boolean,
                      loggerSuffix: String,
                      blobStorageKey: broadcast.Broadcast[String],
-                     outputPartitionTime: Timestamp): Map[String, Int] = {
+                     outputPartitionTime: Timestamp,
+                     batchTime: Timestamp): Map[String, Int] = {
     val logger = LogManager.getLogger(s"Sinker-BlobSinker$loggerSuffix")
     val dataGroups = dataGenerator()
     val timeStart = System.nanoTime ()
@@ -157,21 +160,23 @@ object BlobSinker extends SinkOperatorFactory {
         val tag = FileInternal.getInfoTargetTag(rowInfo)
         outputFolders.get(group) match {
           case None =>
-            AppInsightLogger.trackEvent(
+            AppInsightLogger.trackBatchEvent(
               ProductConstant.ProductRoot + "/SinkDataGroup/NoMatchingGroup",
               Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> InputPath, "OutputPath" -> fileName, "Group" -> group, "Tag" -> tag, "FileTime" -> FileTime),
-              null
+              null,
+              batchTime
             )
             Seq(s"${MetricPrefixEvents}$group" -> 0, s"${MetricPrefixBlobs}$group" -> 0)
           case Some(folder) =>
             val path = folder +
               (if (fileName == null) s"part-$partitionId" else fileName) + (if(compression) ".json.gz" else ".json")
             val jsonList = data.toSeq
-            BlobSinker.writeEventsToBlob(jsonList, path, compression, blobStorageKey, InputPath, group, outputPartitionTime)
-            AppInsightLogger.trackEvent(
+            BlobSinker.writeEventsToBlob(jsonList, path, compression, blobStorageKey, InputPath, group, outputPartitionTime, batchTime)
+            AppInsightLogger.trackBatchEvent(
               ProductConstant.ProductRoot + "/SinkDataGroup",
               Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> InputPath, "OutputPath" -> path, "Group" -> group, "Tag" -> tag, "FileTime" -> FileTime),
-              null
+              null,
+              batchTime
             )
             Seq(s"${MetricPrefixEvents}$group" -> jsonList.length, s"${MetricPrefixBlobs}$group" -> 1)
         }
@@ -191,7 +196,7 @@ object BlobSinker extends SinkOperatorFactory {
 
     val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(outputFolders.head._2, SparkSessionSingleton.getInstance(ConfigManager.initSparkConf))
 
-    val jsonSinkDelegate = (rowInfo: Row, rows: Seq[Row], outputPartitionTime: Timestamp, partitionId: Int, loggerSuffix: String) => {
+    val jsonSinkDelegate = (rowInfo: Row, rows: Seq[Row], outputPartitionTime: Timestamp, batchTime: Timestamp, partitionId: Int, loggerSuffix: String) => {
       val target = FileInternal.getInfoTargetTag(rowInfo)
       if(compressionTypeConf.isDefined && !(compressionTypeConf.get.equalsIgnoreCase("gzip")|| compressionTypeConf.get.equalsIgnoreCase("none")|| compressionTypeConf.get.equals("")))
         throw new Error(s"Output compressionType: ${compressionTypeConf.get} as specified in the config is not supported")
@@ -210,12 +215,13 @@ object BlobSinker extends SinkOperatorFactory {
         compression = compression,
         loggerSuffix = loggerSuffix,
         blobStorageKey = blobStorageKey,
-        outputPartitionTime
+        outputPartitionTime,
+        batchTime
       )
     }
 
-    (data: DataFrame, time: Timestamp, loggerSuffix: String) => {
-      SinkerUtil.sinkJson(data, time, jsonSinkDelegate)
+    (data: DataFrame, time: Timestamp, batchTime: Timestamp, loggerSuffix: String) => {
+      SinkerUtil.sinkJson(data, time, batchTime, jsonSinkDelegate)
     }
   }
 
