@@ -80,7 +80,7 @@ object AppInsightLogger extends TelemetryService {
 
   def trackBatchEvent(event: String, properties: Map[String, String], measurements: Map[String, Double], batchTime: Timestamp): Unit = {
     //val batchTimeStr = DateTimeUtil.formatSimple(batchTime)
-    val batchTimeStr = batchTime.toString
+    val batchTimeStr = Option(batchTime).map(_.toString).getOrElse("")
     trackEvent(event, Option(properties).map(x => x ++ Map("context.batchtime" -> batchTimeStr)).getOrElse(Map("context.batchtime" -> batchTimeStr)), measurements)
   }
 

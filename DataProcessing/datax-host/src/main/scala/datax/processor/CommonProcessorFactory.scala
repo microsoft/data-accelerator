@@ -302,14 +302,14 @@ object CommonProcessorFactory {
       }
 
       // start outputting data
-      def outputHandler(operator: OutputOperator) = {
+      def outputHandler(operator: OutputOperator, batchTime: Timestamp) = {
         val tableName = operator.name
         val outputTableName = tableName + tableNamespace
         dataframes.get(outputTableName) match {
           case None => throw new EngineException(s"could not find data set name '$outputTableName' for output '${operator.name}'")
           case Some(df) =>
             if (operator.onBatch != null) operator.onBatch(df.sparkSession, outputPartitionTime, targets)
-            operator.output(df, outputPartitionTime).map { case (k, v) => (s"Output_${operator.name}_" + k) -> v.toDouble }
+            operator.output(df, outputPartitionTime, batchTime).map { case (k, v) => (s"Output_${operator.name}_" + k) -> v.toDouble }
         }
       }
 
@@ -317,9 +317,9 @@ object CommonProcessorFactory {
       if (outputCount > 0) {
         // if there are multiple outputs, we kick off them in parallel
         result = if (outputCount > 1)
-          outputs.par.map(outputHandler).reduce(_ ++ _)
+          outputs.par.map(o => outputHandler(o, batchTime)).reduce(_ ++ _)
         else
-          outputHandler(outputs(0))
+          outputHandler(outputs(0), batchTime)
       }
 
       // persisting state-store tables

@@ -78,7 +78,7 @@ object OutputManager {
       onBatch = if(onBatchHandlers.size>0) (spark:SparkSession, time: Timestamp, targets: Set[String]) => {
         onBatchHandlers.foreach(_(spark, time, targets))
       } else null,
-      output = (df: DataFrame, partitionTime: Timestamp) => {
+      output = (df: DataFrame, partitionTime: Timestamp, batchTime: Timestamp) => {
         val outputLogger = LogManager.getLogger(s"Output-${name}")
         val outputColumns = df.schema.filterNot(_.name.startsWith(ColumnName.InternalColumnPrefix)).toArray
         if(shouldGeneratorProcessedSchema){
@@ -95,7 +95,7 @@ object OutputManager {
         val outputColumnNames = outputColumns.map(c=>DataNormalization.sanitizeColumnName(c.name))
         outputLogger.warn(s"Output fields: ${outputColumnNames.mkString(",")}")
 
-        sink(name, df, outputColumnNames, partitionTime, flagColumns, sinkers)
+        sink(name, df, outputColumnNames, partitionTime, batchTime, flagColumns, sinkers)
       }
     )
   }
@@ -104,6 +104,7 @@ object OutputManager {
            df: DataFrame,
            outputFieldNames: Seq[String],
            partitionTime: Timestamp,
+           batchTime: Timestamp,
            flagColumns: Seq[(String, String)],
            outputOperators: Seq[(String, SinkDelegate, Boolean)]) = {
 
@@ -135,7 +136,7 @@ object OutputManager {
           if (jsonOutputOperators.size > 0) {
             jsonOutputOperators
               .par
-              .map(_._2(jsonDf, partitionTime, sinkerName))
+              .map(_._2(jsonDf, partitionTime, batchTime, sinkerName))
               .reduce(DataMerger.mergeMapOfCounts)
           }
           else {
@@ -146,7 +147,7 @@ object OutputManager {
           if (nonJsonOutputOperators.size > 0) {
             nonJsonOutputOperators
               .par
-              .map(_._2(df, partitionTime, sinkerName))
+              .map(_._2(df, partitionTime, batchTime, sinkerName))
               .reduce(DataMerger.mergeMapOfCounts)
           }
           else {
