@@ -427,8 +427,8 @@ object CommonProcessorFactory {
         // Get the earliest blob to calculate latency
         val paths = files.map(_.inputPath)
         val blobTimes = files.map(_.fileTime).filterNot(_ == null).toList
-
-        postMetrics(Map(s"InputBlobs" -> filesCount.toDouble))
+        val InputBlobsMetric = Map(s"InputBlobs" -> filesCount.toDouble)
+        postMetrics(InputBlobsMetric)
 
         val (minBlobTime, maxBlobTime) =
           if (blobTimes.length > 0) {
@@ -475,10 +475,10 @@ object CommonProcessorFactory {
           val latencyInSeconds = (DateTimeUtil.getCurrentTime().getTime - minBlobTime.getTime) / 1000D
           val latencyMetrics = Map(s"Latency-Blobs" -> latencyInSeconds)
           postMetrics(latencyMetrics)
-          latencyMetrics ++ processedMetrics
+          (latencyMetrics ++ processedMetrics)++ InputBlobsMetric
         }
         else {
-          processedMetrics
+          processedMetrics ++ InputBlobsMetric
         }
       }
 
@@ -634,7 +634,8 @@ object CommonProcessorFactory {
           })
 
           val paths = internalFiles.map(_.inputPath).collect()
-          postMetrics(Map(s"InputBlobs" -> paths.size.toDouble))
+          val InputBlobsMetric = Map(s"InputBlobs" -> paths.size.toDouble)
+          postMetrics(InputBlobsMetric)
           batchLog.warn(s"InputBlob count=${paths.size}");
 
           val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(paths.head, spark)
@@ -670,7 +671,7 @@ object CommonProcessorFactory {
 
           val metrics = Map[String, Double](
             "BatchProcessedET" -> batchProcessingTime
-          )
+          ) ++ InputBlobsMetric
           processedMetrics ++ metrics
         }
       },
