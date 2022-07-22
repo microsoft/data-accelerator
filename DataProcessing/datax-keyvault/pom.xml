@@ -51,7 +51,7 @@ SOFTWARE
 
   <groupId>com.microsoft.datax</groupId>
   <artifactId>datax-keyvault_2.4_2.11</artifactId>
-  <version>1.2.11-SNAPSHOT</version>
+  <version>1.2.12-SNAPSHOT</version>
 
   <properties>
     <spark.version>2.4.5</spark.version>
@@ -105,7 +105,7 @@ SOFTWARE
     <dependency>
       <groupId>com.microsoft.datax</groupId>
       <artifactId>datax-core_2.4_2.11</artifactId>
-      <version>1.2.11-SNAPSHOT</version>
+      <version>${version}</version>
     </dependency>
     <!--Testing-->
     <dependency>
