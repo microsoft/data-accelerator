@@ -40,8 +40,8 @@ object AppInsightLogger extends TelemetryService {
   private val client = new TelemetryClient(config)
   private var defaultProps = new scala.collection.mutable.HashMap[String, String]
 
-  private def addContextProps(properties: Map[String, String]) = {
-    defaultProps ++= properties.map(k=>("context."+k._1)->k._2)
+  private def addContextProps(properties: Map[String, String], prefix: String = "context.") = {
+    defaultProps ++= properties.map(k=>(prefix+k._1)->k._2)
     logger.info(s"add context properties:$properties")
     logger.info(s"Current context properties:$defaultProps")
   }
@@ -81,7 +81,8 @@ object AppInsightLogger extends TelemetryService {
   def trackBatchEvent(event: String, properties: Map[String, String], measurements: Map[String, Double], batchTime: Timestamp): Unit = {
     //val batchTimeStr = DateTimeUtil.formatSimple(batchTime)
     val batchTimeStr = Option(batchTime).map(_.toString).getOrElse("")
-    trackEvent(event, Option(properties).map(x => x ++ Map("context.batchtime" -> batchTimeStr)).getOrElse(Map("context.batchtime" -> batchTimeStr)), measurements)
+    val batchTimeMetricProp = Map("context.batchtime" -> batchTimeStr) ++ Map("Batch date" -> batchTimeStr)
+    trackEvent(event, Option(properties).map(x => x ++ batchTimeMetricProp).getOrElse(batchTimeMetricProp), measurements)
   }
 
   def trackBatchEvent(event: String, properties: Map[String, String], measurements: Map[String, Double], batchTime: Time): Unit = {
@@ -93,7 +94,7 @@ object AppInsightLogger extends TelemetryService {
     client.trackException(e, mergeProps(properties), mergeMeasures(measurements))
   }
 
-  def initForApp(appName: String) = {
+  def initForApp(appName: String, mode: String = "") = {
     val sparkEnv = SparkEnv.get
 
     val props =
@@ -114,6 +115,11 @@ object AppInsightLogger extends TelemetryService {
 
     logger.warn(s"Initialize AppInsightLogger context props:"+props.toString())
     addContextProps(props)
+    addContextProps(Map(
+      "name" -> appName,
+      "mode" -> mode,
+      "component" -> "HDInsight"
+    ), "Pipeline ")
   }
 
   initForApp(setDict.getAppName())
