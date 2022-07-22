@@ -39,9 +39,10 @@ object AppInsightLogger extends TelemetryService {
 
   private val client = new TelemetryClient(config)
   private var defaultProps = new scala.collection.mutable.HashMap[String, String]
+  private var batchMetricProps = new scala.collection.mutable.HashMap[String, String]
 
-  private def addContextProps(properties: Map[String, String], prefix: String = "context.") = {
-    defaultProps ++= properties.map(k=>(prefix+k._1)->k._2)
+  private def addContextProps(properties: Map[String, String]) = {
+    defaultProps ++= properties.map(k=>("context."+k._1)->k._2)
     logger.info(s"add context properties:$properties")
     logger.info(s"Current context properties:$defaultProps")
   }
@@ -78,8 +79,18 @@ object AppInsightLogger extends TelemetryService {
     client.trackEvent(event, mergeProps(properties), mergeMeasures(measurements))
   }
 
+  def trackMetric(event: String, properties: Map[String, String]) = {
+    logger.warn(s"sending metric: $event")
+    client.trackMetric(event, 0, 1, 0, 0, 0, (batchMetricProps ++ properties).asJava)
+  }
+
+  def trackBatchMetric(event: String, properties: Map[String, String], batchTime: Timestamp) = {
+    val batchTimeStr = Option(batchTime).map(_.toString).getOrElse("")
+    val batchTimeMetricProp = Map("Batch date" -> batchTimeStr)
+    trackMetric(event, Option(properties).map(x => x ++ batchTimeMetricProp).getOrElse(batchTimeMetricProp))
+  }
+
   def trackBatchEvent(event: String, properties: Map[String, String], measurements: Map[String, Double], batchTime: Timestamp): Unit = {
-    //val batchTimeStr = DateTimeUtil.formatSimple(batchTime)
     val batchTimeStr = Option(batchTime).map(_.toString).getOrElse("")
     val batchTimeMetricProp = Map("context.batchtime" -> batchTimeStr) ++ Map("Batch date" -> batchTimeStr)
     trackEvent(event, Option(properties).map(x => x ++ batchTimeMetricProp).getOrElse(batchTimeMetricProp), measurements)
@@ -115,11 +126,11 @@ object AppInsightLogger extends TelemetryService {
 
     logger.warn(s"Initialize AppInsightLogger context props:"+props.toString())
     addContextProps(props)
-    addContextProps(Map(
-      "name" -> appName,
-      "mode" -> mode,
-      "component" -> "HDInsight"
-    ), "Pipeline ")
+    batchMetricProps ++= Map(
+      "Pipeline name" -> appName,
+      "Pipeline mode" -> mode,
+      "Pipeline component" -> "HDInsight"
+    )
   }
 
   initForApp(setDict.getAppName())
