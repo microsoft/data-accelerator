@@ -43,7 +43,7 @@ class MetricLogger(name: String, redis: RedisConnection, eventhub: EventHubSende
         HttpPoster.postEvents(Seq(fullJson), httpEndpoint, Some(header),"metricLogger")
       }
 
-      AppInsightLogger.trackEvent("BatchMetric", Map("Timestamp" -> timestamp.toString), Map(metricName -> value))
+      AppInsightLogger.trackMetric("Metric", Map(metricName -> value.toString))
 
       val elapsedTime = (System.nanoTime() - t1) / 1E9
       logger.warn(s"done sending metric for $metricName in $elapsedTime seconds, redis:$sendRedis, eventhub:$sendEventhub")
