@@ -379,13 +379,17 @@ object CommonProcessorFactory {
         // calculate performance metrics
         val partitionProcessedTime = System.nanoTime
         val latencyInSeconds = (DateTimeUtil.getCurrentTime().getTime - batchTime.getTime) / 1000D
-        val metrics = Map[String, Double](
+        val LatencyMetrics = Map[String, Double](
           "Latency-Process" -> (partitionProcessedTime - t1) / 1E9,
           "Latency-Batch" -> latencyInSeconds
-        ) ++ counts
-
-        postMetrics(metrics)
-        metrics
+        )
+        AppInsightLogger.trackBatchEvent(
+          ProductConstant.ProductRoot + "/LatencyBatchAndProcess",
+          null,
+          LatencyMetrics,
+          batchTime
+        )
+        LatencyMetrics ++ counts
       }
       catch {
         case e: Exception =>
@@ -428,7 +432,12 @@ object CommonProcessorFactory {
         val paths = files.map(_.inputPath)
         val blobTimes = files.map(_.fileTime).filterNot(_ == null).toList
         val InputBlobsMetric = Map(s"InputBlobs" -> filesCount.toDouble)
-        postMetrics(InputBlobsMetric)
+        AppInsightLogger.trackBatchEvent(
+          ProductConstant.ProductRoot + "/InputBlobs",
+          null,
+          InputBlobsMetric,
+          batchTime
+        )
 
         val (minBlobTime, maxBlobTime) =
           if (blobTimes.length > 0) {
@@ -474,7 +483,12 @@ object CommonProcessorFactory {
         if (minBlobTime != null) {
           val latencyInSeconds = (DateTimeUtil.getCurrentTime().getTime - minBlobTime.getTime) / 1000D
           val latencyMetrics = Map(s"Latency-Blobs" -> latencyInSeconds)
-          postMetrics(latencyMetrics)
+          AppInsightLogger.trackBatchEvent(
+            ProductConstant.ProductRoot + "/LatencyBlobs",
+            null,
+            latencyMetrics,
+            batchTime
+          )
           (latencyMetrics ++ processedMetrics)++ InputBlobsMetric
         }
         else {
@@ -527,11 +541,11 @@ object CommonProcessorFactory {
       val metrics = Map[String, Double](
         "BatchProcessedET" -> batchProcessingTime
       )
-
-      postMetrics(metrics)
+      val allMetrics = metrics ++ result
+      postMetrics(allMetrics)
       batchLog.warn(s"End batch ${batchTime}, output partition time:${outputPartitionTime}, namespace:${namespace}")
 
-      metrics ++ result
+      allMetrics
     }
 
     CommonProcessor(
