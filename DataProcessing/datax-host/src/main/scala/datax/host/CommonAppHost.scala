@@ -17,7 +17,7 @@ object CommonAppHost extends AppHost {
   override def getConfigService(): ConfigService = ConfigManager
   override def getTelemetryService(): TelemetryService = AppInsightLogger
 
-  def initApp(inputArguments: Array[String], mode: String): (AppHost, UnifiedConfig) = {
+  def initApp(inputArguments: Array[String], mode: String=""): (AppHost, UnifiedConfig) = {
     val appLog = LogManager.getLogger(this.getClass)
     appLog.warn("===App log turned ON===")
 
