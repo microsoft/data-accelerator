@@ -49,7 +49,7 @@
     "request-promise": "4.2.2",
     "tree-kill": "1.2.2",
     "uuid": "3.3.2",
-    "winston": "2.3.1",
+    "winston": "2.4.6",
     "winston-daily-rotate-file": "1.4.6"
   },
   "devDependencies": {
