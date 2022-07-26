@@ -9,9 +9,12 @@ import datax.config.ConfigManager
 import datax.constants.JobArgument
 import datax.securedsetting.KeyVaultClient
 import datax.service.TelemetryService
+import datax.utility.DateTimeUtil
 import org.apache.log4j.LogManager
 import org.apache.spark.SparkEnv
+import org.apache.spark.streaming.Time
 
+import java.sql.Timestamp
 import scala.collection.JavaConverters._
 
 
@@ -36,6 +39,7 @@ object AppInsightLogger extends TelemetryService {
 
   private val client = new TelemetryClient(config)
   private var defaultProps = new scala.collection.mutable.HashMap[String, String]
+  private var batchMetricProps = new scala.collection.mutable.HashMap[String, String]
 
   private def addContextProps(properties: Map[String, String]) = {
     defaultProps ++= properties.map(k=>("context."+k._1)->k._2)
@@ -75,13 +79,33 @@ object AppInsightLogger extends TelemetryService {
     client.trackEvent(event, mergeProps(properties), mergeMeasures(measurements))
   }
 
+  def trackMetric(event: String, properties: Map[String, String]) = {
+    logger.warn(s"sending metric: $event")
+    client.trackMetric(event, 0, 1, 0, 0, 0, (batchMetricProps ++ properties).asJava)
+  }
+
+  def trackBatchMetric(event: String, properties: Map[String, String], batchTime: Timestamp) = {
+    val batchTimeStr = Option(batchTime).map(_.toString).getOrElse("")
+    val batchTimeMetricProp = Map("Batch date" -> batchTimeStr)
+    trackMetric(event, Option(properties).map(x => x ++ batchTimeMetricProp).getOrElse(batchTimeMetricProp))
+  }
+
+  def trackBatchEvent(event: String, properties: Map[String, String], measurements: Map[String, Double], batchTime: Timestamp): Unit = {
+    val batchTimeStr = Option(batchTime).map(_.toString).getOrElse("")
+    val batchTimeMetricProp = Map("context.batchtime" -> batchTimeStr) ++ Map("Batch date" -> batchTimeStr)
+    trackEvent(event, Option(properties).map(x => x ++ batchTimeMetricProp).getOrElse(batchTimeMetricProp), measurements)
+  }
+
+  def trackBatchEvent(event: String, properties: Map[String, String], measurements: Map[String, Double], batchTime: Time): Unit = {
+    trackBatchEvent(event, properties, measurements, new Timestamp(batchTime.milliseconds))
+  }
+
   def trackException(e: Exception, properties: Map[String, String], measurements: Map[String, Double]) = {
     logger.warn(s"sending exception: ${e.getMessage}")
     client.trackException(e, mergeProps(properties), mergeMeasures(measurements))
   }
 
-
-  def initForApp(appName: String) = {
+  def initForApp(appName: String, mode: String = "") = {
     val sparkEnv = SparkEnv.get
 
     val props =
@@ -102,6 +126,11 @@ object AppInsightLogger extends TelemetryService {
 
     logger.warn(s"Initialize AppInsightLogger context props:"+props.toString())
     addContextProps(props)
+    batchMetricProps ++= Map(
+      "Pipeline name" -> appName,
+      "Pipeline mode" -> mode,
+      "Pipeline component" -> "HDInsight"
+    )
   }
 
   initForApp(setDict.getAppName())

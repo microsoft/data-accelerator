@@ -64,7 +64,7 @@ object BlobBatchingHost {
   }
 
   def runBatchApp(inputArguments: Array[String],processorGenerator: UnifiedConfig=>BatchBlobProcessor ) = {
-    val (appHost, config) = CommonAppHost.initApp(inputArguments)
+    val (appHost, config) = CommonAppHost.initApp(inputArguments, "Batch")
 
     appLog.warn(s"Batch Mode Work Started")
 

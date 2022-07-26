@@ -85,7 +85,7 @@ object EventHubStreamingFactory extends  StreamingFactory[EventData]{
     val checkpointIntervalInMilliseconds = eventhubInput.checkpointInterval.toLong*1000
     EventHubsUtils.createDirectStream(streamingContext, ehConf)
       .foreachRDD((rdd, time)=>{
-      AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/streaming/batch/begin", Map("batchTime"->time.toString), null)
+      AppInsightLogger.trackBatchEvent(ProductConstant.ProductRoot + "/streaming/batch/begin", Map("batchTime"->time.toString), null, time)
       val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
       val batchTime = new Timestamp(time.milliseconds)
       val batchTimeStr = DateTimeUtil.formatSimple(batchTime)
@@ -112,7 +112,7 @@ object EventHubStreamingFactory extends  StreamingFactory[EventData]{
         streamLogger.warn(s"Done writing eventhub checkpoints to ${checkpointDir}")
       }
 
-      AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/streaming/batch/end", Map("batchTime"->time.toString), null)
+      AppInsightLogger.trackBatchEvent(ProductConstant.ProductRoot + "/streaming/batch/end", Map("batchTime"->time.toString), null, time)
     })
   }
 }

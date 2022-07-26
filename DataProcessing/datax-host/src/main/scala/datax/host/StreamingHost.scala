@@ -44,7 +44,7 @@ import scala.concurrent.duration._
   }
 
   def runStreamingApp(inputArguments: Array[String], inputSetting: InputSetting[InputConf], streamingFactory:StreamingFactory[T], processorGenerator: UnifiedConfig=>StreamingProcessor[T]): Unit = {
-    val (appHost, config) = CommonAppHost.initApp(inputArguments)
+    val (appHost, config) = CommonAppHost.initApp(inputArguments, "Streaming")
     val spark = CommonAppHost.getSpark(config.sparkConf)
 
     val dict = config.dict

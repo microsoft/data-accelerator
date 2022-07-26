@@ -153,6 +153,12 @@ object CommonProcessorFactory {
       // log metric of how many events are incoming on this iteration
       val inputRawEventsCount = projectedDf.count()
       transformLogger.warn(s"Received $inputRawEventsCount raw input events")
+      AppInsightLogger.trackBatchEvent(
+        ProductConstant.ProductRoot + "/RawInputEvents",
+        null,
+        Map("RawInputEventsCount" -> inputRawEventsCount.toDouble),
+        batchTime
+      )
       outputMetrics += s"Input_Normalized_Events_Count" -> inputRawEventsCount
 
       if (timewindows.isEnabled) {
@@ -296,14 +302,14 @@ object CommonProcessorFactory {
       }
 
       // start outputting data
-      def outputHandler(operator: OutputOperator) = {
+      def outputHandler(operator: OutputOperator, batchTime: Timestamp) = {
         val tableName = operator.name
         val outputTableName = tableName + tableNamespace
         dataframes.get(outputTableName) match {
           case None => throw new EngineException(s"could not find data set name '$outputTableName' for output '${operator.name}'")
           case Some(df) =>
             if (operator.onBatch != null) operator.onBatch(df.sparkSession, outputPartitionTime, targets)
-            operator.output(df, outputPartitionTime).map { case (k, v) => (s"Output_${operator.name}_" + k) -> v.toDouble }
+            operator.output(df, outputPartitionTime, batchTime).map { case (k, v) => (s"Output_${operator.name}_" + k) -> v.toDouble }
         }
       }
 
@@ -311,9 +317,9 @@ object CommonProcessorFactory {
       if (outputCount > 0) {
         // if there are multiple outputs, we kick off them in parallel
         result = if (outputCount > 1)
-          outputs.par.map(outputHandler).reduce(_ ++ _)
+          outputs.par.map(o => outputHandler(o, batchTime)).reduce(_ ++ _)
         else
-          outputHandler(outputs(0))
+          outputHandler(outputs(0), batchTime)
       }
 
       // persisting state-store tables
@@ -345,7 +351,7 @@ object CommonProcessorFactory {
 
       def postMetrics(metrics: Iterable[(String, Double)]): Unit = {
         batchLogger.warn(s"Sending metrics:\n${metrics.map(m => m._1 + " -> " + m._2).mkString("\n")}")
-        metricLogger.sendBatchMetrics(metrics, batchTime.getTime)
+        metricLogger.sendBatchMetrics(metrics, batchTime)
       }
 
       try {
@@ -373,13 +379,17 @@ object CommonProcessorFactory {
         // calculate performance metrics
         val partitionProcessedTime = System.nanoTime
         val latencyInSeconds = (DateTimeUtil.getCurrentTime().getTime - batchTime.getTime) / 1000D
-        val metrics = Map[String, Double](
+        val LatencyMetrics = Map[String, Double](
           "Latency-Process" -> (partitionProcessedTime - t1) / 1E9,
           "Latency-Batch" -> latencyInSeconds
-        ) ++ counts
-
-        postMetrics(metrics)
-        metrics
+        )
+        AppInsightLogger.trackBatchEvent(
+          ProductConstant.ProductRoot + "/LatencyBatchAndProcess",
+          null,
+          LatencyMetrics,
+          batchTime
+        )
+        LatencyMetrics ++ counts
       }
       catch {
         case e: Exception =>
@@ -405,7 +415,7 @@ object CommonProcessorFactory {
     * */
     def groupPartitionProcessMetrics(pathsRDD: RDD[String], batchTime: Timestamp, batchInterval: Duration, outputPartitionTime: Timestamp, namespace: String, batchLog: Logger, metricLogger: MetricLogger): Map[String, Double] = {
       def postMetrics(metrics: Iterable[(String, Double)]): Unit = {
-        metricLogger.sendBatchMetrics(metrics, batchTime.getTime)
+        metricLogger.sendBatchMetrics(metrics, batchTime)
         batchLog.warn(s"Metric ${metrics.map(m => m._1 + "=" + m._2).mkString(",")}")
       }
 
@@ -421,8 +431,13 @@ object CommonProcessorFactory {
         // Get the earliest blob to calculate latency
         val paths = files.map(_.inputPath)
         val blobTimes = files.map(_.fileTime).filterNot(_ == null).toList
-
-        postMetrics(Map(s"InputBlobs" -> filesCount.toDouble))
+        val InputBlobsMetric = Map(s"InputBlobs" -> filesCount.toDouble)
+        AppInsightLogger.trackBatchEvent(
+          ProductConstant.ProductRoot + "/InputBlobs",
+          null,
+          InputBlobsMetric,
+          batchTime
+        )
 
         val (minBlobTime, maxBlobTime) =
           if (blobTimes.length > 0) {
@@ -439,8 +454,30 @@ object CommonProcessorFactory {
         val pathsList = paths.mkString(",")
         batchLog.debug(s"Batch loading files:$pathsList")
         val inputDf = spark.sparkContext.parallelize(files, filesCount)
-          .flatMap(file => HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
-            .filter(l => l != null && !l.isEmpty).map((file, outputPartitionTime, _)))
+          .flatMap(file => {
+            val timeLast = System.nanoTime()
+            val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
+              .filter(l => {
+                val bNotEmptyBlob = l != null && !l.isEmpty
+                if(!bNotEmptyBlob) {
+                  AppInsightLogger.trackBatchEvent(
+                    ProductConstant.ProductRoot + "/EmptyBlobPath",
+                    Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
+                    null,
+                    batchTime
+                  )
+                }
+                bNotEmptyBlob
+              }).map((file, outputPartitionTime, _))
+            val timeNow = System.nanoTime()
+            AppInsightLogger.trackBatchEvent(
+              ProductConstant.ProductRoot + "/ReadEventsFromFile",
+              Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
+              Map("ReadTimeInSeconds" -> (timeNow - timeLast) / 1E9),
+              batchTime
+            )
+            retVal
+          })
           .toDF(ColumnName.InternalColumnFileInfo, ColumnName.MetadataColumnOutputPartitionTime, ColumnName.RawObjectColumn)
 
         val targets = files.map(_.target).toSet
@@ -448,11 +485,16 @@ object CommonProcessorFactory {
         if (minBlobTime != null) {
           val latencyInSeconds = (DateTimeUtil.getCurrentTime().getTime - minBlobTime.getTime) / 1000D
           val latencyMetrics = Map(s"Latency-Blobs" -> latencyInSeconds)
-          postMetrics(latencyMetrics)
-          latencyMetrics ++ processedMetrics
+          AppInsightLogger.trackBatchEvent(
+            ProductConstant.ProductRoot + "/LatencyBlobs",
+            null,
+            latencyMetrics,
+            batchTime
+          )
+          (latencyMetrics ++ processedMetrics)++ InputBlobsMetric
         }
         else {
-          processedMetrics
+          processedMetrics ++ InputBlobsMetric
         }
       }
 
@@ -474,6 +516,12 @@ object CommonProcessorFactory {
       val result =
         if (pathsCount > 0) {
           batchLog.warn(s"Loading filtered blob files count=$pathsCount, First File=${pathsFilteredGroups.head._2.head}")
+          AppInsightLogger.trackBatchEvent(
+            ProductConstant.ProductRoot + "/FilteredBlobPaths",
+            Map("FirstFile" -> pathsFilteredGroups.head._2.head.inputPath),
+            Map("PathsCount" -> pathsCount.toDouble),
+            batchTime
+          )
           if (pathsFilteredGroups.length > 1)
             Await.result(FutureUtil.failFast(pathsFilteredGroups
               .map(kv => Future {
@@ -495,11 +543,11 @@ object CommonProcessorFactory {
       val metrics = Map[String, Double](
         "BatchProcessedET" -> batchProcessingTime
       )
-
-      postMetrics(metrics)
+      val allMetrics = metrics ++ result
+      postMetrics(allMetrics)
       batchLog.warn(s"End batch ${batchTime}, output partition time:${outputPartitionTime}, namespace:${namespace}")
 
-      metrics ++ result
+      allMetrics
     }
 
     CommonProcessor(
@@ -583,7 +631,7 @@ object CommonProcessorFactory {
           groupPartitionProcessMetrics(pathsRDD, batchTime, batchInterval, outputPartitionTime, namespace, batchLog, metricLogger)
         } else {
           def postMetrics(metrics: Iterable[(String, Double)]): Unit = {
-            metricLogger.sendBatchMetrics(metrics, batchTime.getTime)
+            metricLogger.sendBatchMetrics(metrics, batchTime)
             batchLog.warn(s"Metric ${metrics.map(m => m._1 + "=" + m._2).mkString(",")}")
           }
 
@@ -602,14 +650,37 @@ object CommonProcessorFactory {
           })
 
           val paths = internalFiles.map(_.inputPath).collect()
-          postMetrics(Map(s"InputBlobs" -> paths.size.toDouble))
+          val InputBlobsMetric = Map(s"InputBlobs" -> paths.size.toDouble)
+          postMetrics(InputBlobsMetric)
           batchLog.warn(s"InputBlob count=${paths.size}");
 
           val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(paths.head, spark)
 
           val inputDf = internalFiles
-            .flatMap(file => HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"), blobStorageKey)
-              .filter(l => l != null && !l.isEmpty).map((file, outputPartitionTime, _)))
+            .flatMap(file => {
+              val timeLast = System.nanoTime()
+              val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"), blobStorageKey)
+                .filter(l => {
+                  val bNotEmptyBlob = l != null && !l.isEmpty
+                  if(!bNotEmptyBlob) {
+                    AppInsightLogger.trackBatchEvent(
+                      ProductConstant.ProductRoot + "/EmptyBlobPath",
+                      Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
+                      null,
+                      batchTime
+                    )
+                  }
+                  bNotEmptyBlob
+                }).map((file, outputPartitionTime, _))
+              val timeNow = System.nanoTime()
+              AppInsightLogger.trackBatchEvent(
+                ProductConstant.ProductRoot + "/ReadEventsFromFile",
+                Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
+                Map("ReadTime" -> (timeNow - timeLast) / 1E9),
+                batchTime
+              )
+              retVal
+            })
             .toDF(ColumnName.InternalColumnFileInfo, ColumnName.MetadataColumnOutputPartitionTime, ColumnName.RawObjectColumn)
 
           val processedMetrics = processDataset(inputDf, batchTime, batchInterval, outputPartitionTime, null, "")
@@ -618,7 +689,7 @@ object CommonProcessorFactory {
 
           val metrics = Map[String, Double](
             "BatchProcessedET" -> batchProcessingTime
-          )
+          ) ++ InputBlobsMetric
           processedMetrics ++ metrics
         }
       },

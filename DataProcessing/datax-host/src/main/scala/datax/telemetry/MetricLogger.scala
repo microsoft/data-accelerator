@@ -8,8 +8,11 @@ import datax.config.SparkEnvVariables
 import datax.handler.MetricSinkConf
 import datax.client.eventhub.{EventHubBase, EventHubSender}
 import datax.client.redis.{RedisBase, RedisConnection}
+import datax.constants.ProductConstant
 import datax.sink.HttpPoster
 import org.apache.log4j.LogManager
+
+import java.sql.Timestamp
 
 class MetricLogger(name: String, redis: RedisConnection, eventhub: EventHubSender, httpEndpoint:String) {
   private val logger = LogManager.getLogger("MetricLogger-"+name)
@@ -40,6 +43,8 @@ class MetricLogger(name: String, redis: RedisConnection, eventhub: EventHubSende
         HttpPoster.postEvents(Seq(fullJson), httpEndpoint, Some(header),"metricLogger")
       }
 
+      AppInsightLogger.trackMetric("Metric", Map(metricName -> value.toString))
+
       val elapsedTime = (System.nanoTime() - t1) / 1E9
       logger.warn(s"done sending metric for $metricName in $elapsedTime seconds, redis:$sendRedis, eventhub:$sendEventhub")
     }
@@ -48,22 +53,26 @@ class MetricLogger(name: String, redis: RedisConnection, eventhub: EventHubSende
     }
   }
 
-  def sendBatchMetrics(metrics: Iterable[(String, Double)], timestamp: Long): Unit = {
+  def sendBatchMetrics(metrics: Iterable[(String, Double)], batchTime: Timestamp): Unit = {
     if(sendRedis || sendEventhub || sendHttp){
       val t1=System.nanoTime()
       val ts = new java.util.Date().getTime
 
-      if(sendRedis)metrics.foreach{m=>putMetricOnRedis(name+":"+m._1, ts, s"""{"uts":$timestamp, "val":${m._2}}""")}
+      if(sendRedis)metrics.foreach{m=>putMetricOnRedis(name+":"+m._1, ts, s"""{"uts":${batchTime.getTime}, "val":${m._2}}""")}
 
       if(sendEventhub) {
-        val fullJson = metrics.map { case (k, v) => s"""{"app":"$name", "met":"$k","uts":$timestamp, "val":$v}""" }.mkString("\n")
+        val fullJson = metrics.map { case (k, v) => s"""{"app":"$name", "met":"$k","uts":${batchTime.getTime}, "val":$v}""" }.mkString("\n")
         eventhub.sendString(fullJson, null)
       }
 
       if(sendHttp) {
-        val fullJson = metrics.map { case (k, v) => s"""{"app":"$name", "met":"$k","uts":$timestamp, "val":$v}""" }
+        val fullJson = metrics.map { case (k, v) => s"""{"app":"$name", "met":"$k","uts":${batchTime.getTime}, "val":$v}""" }
         val header = Map("Content-Type" -> "application/json")
         HttpPoster.postEvents((fullJson).toSeq, httpEndpoint, Some(header),"metricLogger")
+      }
+
+      if(metrics != null) {
+        AppInsightLogger.trackBatchMetric("Batch Metric", metrics.map(x => (x._1, x._2.toString)).toMap, batchTime)
       }
 
       val elapsedTime = (System.nanoTime()-t1)/1E9

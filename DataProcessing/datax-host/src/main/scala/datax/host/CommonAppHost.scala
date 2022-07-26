@@ -17,7 +17,7 @@ object CommonAppHost extends AppHost {
   override def getConfigService(): ConfigService = ConfigManager
   override def getTelemetryService(): TelemetryService = AppInsightLogger
 
-  def initApp(inputArguments: Array[String]): (AppHost, UnifiedConfig) = {
+  def initApp(inputArguments: Array[String], mode: String=""): (AppHost, UnifiedConfig) = {
     val appLog = LogManager.getLogger(this.getClass)
     appLog.warn("===App log turned ON===")
 
@@ -33,7 +33,7 @@ object CommonAppHost extends AppHost {
 
     appLog.warn(s"initializing with conf:"+ conf.toString)
 
-    AppInsightLogger.initForApp(spark.sparkContext.appName)
+    AppInsightLogger.initForApp(spark.sparkContext.appName, mode)
     conf.getDriverLogLevel() match {
       case Some(level) => Logger.setLogLevel(level)
       case None =>

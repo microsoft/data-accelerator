@@ -67,7 +67,7 @@ object SinkerUtil {
   def outputGenerator(writer: (DataFrame, String)=>Int, sinkerName: String) = {
 
     () => {
-      (data: DataFrame, time: Timestamp, loggerSuffix: String) =>
+      (data: DataFrame, time: Timestamp, batchTime: Timestamp, loggerSuffix: String) =>
         outputAllEvents(data, writer, sinkerName, loggerSuffix)
     }
   }
@@ -75,14 +75,14 @@ object SinkerUtil {
   def outputGenerator(writer: (Seq[String], String)=>Int, sinkerName: String) = {
     (flagColumnIndex: Int) => {
       if (flagColumnIndex < 0) {
-        (data: DataFrame, time: Timestamp, loggerSuffix: String) => {
-          sinkJson(data, time, (rowInfo: Row, rows: Seq[Row], partitionTime: Timestamp, partitionId: Int, loggerSuffix: String) =>
+        (data: DataFrame, time: Timestamp, batchTime: Timestamp, loggerSuffix: String) => {
+          sinkJson(data, time, batchTime, (rowInfo: Row, rows: Seq[Row], partitionTime: Timestamp, batchTime: Timestamp, partitionId: Int, loggerSuffix: String) =>
             outputAllEvents(rows, writer, sinkerName, loggerSuffix))
         }
       }
       else {
-        (data: DataFrame, time: Timestamp, loggerSuffix: String) => {
-          sinkJson(data, time, (rowInfo: Row, rows: Seq[Row], partitionTime: Timestamp, partitionId: Int, loggerSuffix: String) =>
+        (data: DataFrame, time: Timestamp, batchTime: Timestamp, loggerSuffix: String) => {
+          sinkJson(data, time, batchTime, (rowInfo: Row, rows: Seq[Row], partitionTime: Timestamp, batchTime: Timestamp, partitionId: Int, loggerSuffix: String) =>
             outputFilteredEvents(rows, flagColumnIndex, writer, sinkerName, loggerSuffix))
         }
       }
@@ -90,7 +90,7 @@ object SinkerUtil {
   }
 
   // Convert dataframe to sequence of rows and sink using the passed in sinker delegate. The rows contain data as json column
-  def sinkJson(df:DataFrame, partitionTime: Timestamp, jsonSinkDelegate:JsonSinkDelegate ): Map[String, Int] = {
+  def sinkJson(df:DataFrame, partitionTime: Timestamp, batchTime: Timestamp, jsonSinkDelegate:JsonSinkDelegate ): Map[String, Int] = {
 
     df
       .rdd
@@ -113,7 +113,7 @@ object SinkerUtil {
         val inputMetric = Map(s"${MetricName.MetricSinkPrefix}InputEvents" -> count)
         Seq(if (count > 0) {
           val rowInfo = dataAll(0).getAs[Row](0)
-          jsonSinkDelegate(rowInfo, dataAll, partitionTime, partitionId, loggerSuffix) ++ inputMetric
+          jsonSinkDelegate(rowInfo, dataAll, partitionTime, batchTime, partitionId, loggerSuffix) ++ inputMetric
         }
         else
           inputMetric
