@@ -459,12 +459,14 @@ object CommonProcessorFactory {
             val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
               .filter(l => {
                 val bEmptyBlob = l != null && !l.isEmpty
-                AppInsightLogger.trackBatchEvent(
-                  ProductConstant.ProductRoot + "/EmptyBlobPath",
-                  Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
-                  null,
-                  batchTime
-                )
+                if(bEmptyBlob) {
+                  AppInsightLogger.trackBatchEvent(
+                    ProductConstant.ProductRoot + "/EmptyBlobPath",
+                    Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
+                    null,
+                    batchTime
+                  )
+                }
                 bEmptyBlob
               }).map((file, outputPartitionTime, _))
             val timeNow = System.nanoTime()
@@ -660,12 +662,14 @@ object CommonProcessorFactory {
               val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"), blobStorageKey)
                 .filter(l => {
                   val bEmptyBlob = l != null && !l.isEmpty
-                  AppInsightLogger.trackBatchEvent(
-                    ProductConstant.ProductRoot + "/EmptyBlobPath",
-                    Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
-                    null,
-                    batchTime
-                  )
+                  if(bEmptyBlob) {
+                    AppInsightLogger.trackBatchEvent(
+                      ProductConstant.ProductRoot + "/EmptyBlobPath",
+                      Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
+                      null,
+                      batchTime
+                    )
+                  }
                   bEmptyBlob
                 }).map((file, outputPartitionTime, _))
               val timeNow = System.nanoTime()
