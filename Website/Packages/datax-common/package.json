@@ -34,7 +34,7 @@
     "office-ui-fabric-react": "6.111.2",
     "q": "1.5.1",
     "prop-types": "15.6.2",
-    "radium": "0.25.0",
+    "radium": "0.25.2",
     "react": "16.6.3",
     "react-dom": "16.6.3",
     "reselect": "4.0.0",
