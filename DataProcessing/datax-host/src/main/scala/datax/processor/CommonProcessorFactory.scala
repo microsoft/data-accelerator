@@ -458,8 +458,8 @@ object CommonProcessorFactory {
             val timeLast = System.nanoTime()
             val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
               .filter(l => {
-                val bEmptyBlob = l != null && !l.isEmpty
-                if(bEmptyBlob) {
+                val bNotEmptyBlob = l != null && !l.isEmpty
+                if(!bNotEmptyBlob) {
                   AppInsightLogger.trackBatchEvent(
                     ProductConstant.ProductRoot + "/EmptyBlobPath",
                     Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
@@ -467,7 +467,7 @@ object CommonProcessorFactory {
                     batchTime
                   )
                 }
-                bEmptyBlob
+                bNotEmptyBlob
               }).map((file, outputPartitionTime, _))
             val timeNow = System.nanoTime()
             AppInsightLogger.trackBatchEvent(
@@ -661,8 +661,8 @@ object CommonProcessorFactory {
               val timeLast = System.nanoTime()
               val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"), blobStorageKey)
                 .filter(l => {
-                  val bEmptyBlob = l != null && !l.isEmpty
-                  if(bEmptyBlob) {
+                  val bNotEmptyBlob = l != null && !l.isEmpty
+                  if(!bNotEmptyBlob) {
                     AppInsightLogger.trackBatchEvent(
                       ProductConstant.ProductRoot + "/EmptyBlobPath",
                       Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
@@ -670,7 +670,7 @@ object CommonProcessorFactory {
                       batchTime
                     )
                   }
-                  bEmptyBlob
+                  bNotEmptyBlob
                 }).map((file, outputPartitionTime, _))
               val timeNow = System.nanoTime()
               AppInsightLogger.trackBatchEvent(
