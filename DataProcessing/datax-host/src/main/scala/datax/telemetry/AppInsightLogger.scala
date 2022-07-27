@@ -41,6 +41,8 @@ object AppInsightLogger extends TelemetryService {
   private var defaultProps = new scala.collection.mutable.HashMap[String, String]
   private var batchMetricProps = new scala.collection.mutable.HashMap[String, String]
 
+  def IsEnabled() = !client.isDisabled
+
   private def addContextProps(properties: Map[String, String]) = {
     defaultProps ++= properties.map(k=>("context."+k._1)->k._2)
     logger.info(s"add context properties:$properties")
