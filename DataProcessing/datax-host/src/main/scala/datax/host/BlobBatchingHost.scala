@@ -19,6 +19,7 @@ import org.apache.log4j.LogManager
 import scala.language.postfixOps
 import scala.collection.mutable.{HashSet, ListBuffer}
 import scala.concurrent.duration._
+import scala.util.Try
 
 object BlobBatchingHost {
   val appLog = LogManager.getLogger("runBatchApp")
@@ -105,6 +106,19 @@ object BlobBatchingHost {
     val (trackerFolder, dateTime) = getTrackerConfigs(config)
     if (trackerFolder != "") {
       writeTracker(trackerFolder, dateTime)
+    }
+    /*
+    This is a temporary workaround for https://github.com/Microsoft/ApplicationInsights-Java/issues/891
+    */
+    // This is a scala duration in string format, ie. 60 seconds (Default is zero)
+    // Default value for this setting is to no wait if not specified
+    val flushMetricDelay = config.dict.get("batchflushmetricsdelayduration")
+      .flatMap(s => Try(Duration.create(s)).toOption)
+      .getOrElse(Duration.Zero)
+    val delayMillis = flushMetricDelay.toMillis
+    if(delayMillis > 0) {
+      appLog.warn(s"Waiting $delayMillis ms to allow metrics to be flushed completely")
+      Thread.sleep(delayMillis) // Wait some time to allow flushing the app insight logger metrics
     }
   }
 
