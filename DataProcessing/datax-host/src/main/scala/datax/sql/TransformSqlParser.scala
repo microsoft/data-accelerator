@@ -97,7 +97,7 @@ object TransformSQLParser {
   def replaceTableNames(statement: String, tableNameMappings: mutable.HashMap[String, String]) = {
     var result = statement
     for(mapping <- tableNameMappings){
-      result = result.replaceAll("\\b"+mapping._1+"\\b", mapping._2)
+      result = result.replaceAll("\\b"+mapping._1+"\\b", s"`${mapping._2}`")
     }
 
     result

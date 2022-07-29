@@ -8,7 +8,6 @@ import datax.config.SparkEnvVariables
 import datax.handler.MetricSinkConf
 import datax.client.eventhub.{EventHubBase, EventHubSender}
 import datax.client.redis.{RedisBase, RedisConnection}
-import datax.constants.ProductConstant
 import datax.sink.HttpPoster
 import org.apache.log4j.LogManager
 
@@ -27,7 +26,7 @@ class MetricLogger(name: String, redis: RedisConnection, eventhub: EventHubSende
   }
 
   def sendMetric(metricName: String, timestamp: Long, value: Double): Unit = {
-    if(sendRedis || sendEventhub || sendHttp) {
+    if(sendRedis || sendEventhub || sendHttp || AppInsightLogger.IsEnabled()) {
       val t1 = System.nanoTime()
 
       val json =
@@ -43,7 +42,9 @@ class MetricLogger(name: String, redis: RedisConnection, eventhub: EventHubSende
         HttpPoster.postEvents(Seq(fullJson), httpEndpoint, Some(header),"metricLogger")
       }
 
-      AppInsightLogger.trackMetric("Metric", Map(metricName -> value.toString))
+      if(AppInsightLogger.IsEnabled()) {
+        AppInsightLogger.trackMetric("Metric", Map(metricName -> value.toString))
+      }
 
       val elapsedTime = (System.nanoTime() - t1) / 1E9
       logger.warn(s"done sending metric for $metricName in $elapsedTime seconds, redis:$sendRedis, eventhub:$sendEventhub")
@@ -54,7 +55,7 @@ class MetricLogger(name: String, redis: RedisConnection, eventhub: EventHubSende
   }
 
   def sendBatchMetrics(metrics: Iterable[(String, Double)], batchTime: Timestamp): Unit = {
-    if(sendRedis || sendEventhub || sendHttp){
+    if(sendRedis || sendEventhub || sendHttp || AppInsightLogger.IsEnabled()){
       val t1=System.nanoTime()
       val ts = new java.util.Date().getTime
 
@@ -71,7 +72,7 @@ class MetricLogger(name: String, redis: RedisConnection, eventhub: EventHubSende
         HttpPoster.postEvents((fullJson).toSeq, httpEndpoint, Some(header),"metricLogger")
       }
 
-      if(metrics != null) {
+      if(AppInsightLogger.IsEnabled() && metrics != null) {
         AppInsightLogger.trackBatchMetric("Batch Metric", metrics.map(x => (x._1, x._2.toString)).toMap, batchTime)
       }
 

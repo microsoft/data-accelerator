@@ -212,7 +212,7 @@ object CommonProcessorFactory {
         val unionTableName = unionTableNameInSql + tableNamespace
         pastDataUnion
           .where(timewindows.timestampColumn >= windowStartTime && timewindows.timestampColumn < windowEndTime)
-          .createOrReplaceTempView(unionTableName)
+          .createOrReplaceTempView(s"`$unionTableName`")
         tableNames(unionTableNameInSql) = unionTableName
         dataframes(unionTableName) = spark.table(unionTableName)
 
@@ -224,7 +224,7 @@ object CommonProcessorFactory {
           transformLogger.warn(s"Create or replace time windowed view '${winTableNameInScope}' within window('$winStartTime' - '$windowEndTime')")
           pastDataUnion
             .where(timewindows.timestampColumn >= winStartTime && timewindows.timestampColumn < windowEndTime)
-            .createOrReplaceTempView(winTableNameInScope)
+            .createOrReplaceTempView(s"`$winTableNameInScope`")
           tableNames(winTableName) = winTableNameInScope
           dataframes(winTableNameInScope) = spark.table(winTableNameInScope)
         }
@@ -232,11 +232,11 @@ object CommonProcessorFactory {
         // replace the starting table
         val adjustedBatchStartTime = Timestamp.from(windowEndTime.toInstant.minusSeconds(batchInterval.toSeconds))
         val cachedProjectedDf = pastDataUnion.where(timewindows.timestampColumn >= adjustedBatchStartTime && timewindows.timestampColumn < windowEndTime)
-        cachedProjectedDf.createOrReplaceTempView(initTableName)
+        cachedProjectedDf.createOrReplaceTempView(s"`$initTableName`")
 
         // register a table to reference to the projected data frame within only the current iteration batch
         val batchedTableName = DatasetName.DataStreamProjectionBatch + tableNamespace
-        projectedDf.createOrReplaceTempView(batchedTableName)
+        projectedDf.createOrReplaceTempView(s"`$batchedTableName`")
         tableNames(DatasetName.DataStreamProjectionBatch) = batchedTableName
         dataframes(batchedTableName) = projectedDf
 
@@ -245,7 +245,7 @@ object CommonProcessorFactory {
       else {
         // if time window is not turned on, we simply register the projected data frame as input starting table for query
         outputMetrics += s"Input_${DatasetName.DataStreamProjection}_Events_Count" -> inputRawEventsCount
-        projectedDf.createOrReplaceTempView(initTableName)
+        projectedDf.createOrReplaceTempView(s"`$initTableName`")
       }
 
       // register state-store tables
@@ -293,7 +293,7 @@ object CommonProcessorFactory {
                     dataFramesToUncache += ds
                   }
 
-                  ds.createOrReplaceTempView(tableName)
+                  ds.createOrReplaceTempView(s"`$tableName`")
               }
             case _ =>
               throw new EngineException(s"unknown commandType : ${expr.commandType}")
