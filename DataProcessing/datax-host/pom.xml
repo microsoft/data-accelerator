@@ -168,7 +168,7 @@ SOFTWARE
 		    <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>dbutils-api_2.11</artifactId>
-            <version>0.0.3</version>
+            <version>0.0.5</version>
         </dependency>
     </dependencies>
   <profiles>
