@@ -361,6 +361,9 @@ object HadoopClient {
         case e: TimeoutException =>
           remainingAttempts = 0
           throw e
+        case e: IOException =>
+          remainingAttempts = 0
+          throw e
       }
     }
   }
