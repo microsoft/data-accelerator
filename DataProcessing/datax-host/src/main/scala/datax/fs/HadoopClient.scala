@@ -360,6 +360,19 @@ object HadoopClient {
       catch {
         case e: TimeoutException =>
           remainingAttempts = 0
+          AppInsightLogger.trackException(e, Map(
+            "errorLocation" -> "writeWithTimeoutAndRetries",
+            "errorMessage" -> "Error in writing file",
+            "failedHdfsPath" -> hdfsPath
+          ), null)
+          throw e
+        case e: IOException =>
+          remainingAttempts = 0
+          AppInsightLogger.trackException(e, Map(
+            "errorLocation" -> "writeWithTimeoutAndRetries",
+            "errorMessage" -> "Error in writing file",
+            "failedHdfsPath" -> hdfsPath
+          ), null)
           throw e
       }
     }
