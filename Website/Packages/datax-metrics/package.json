@@ -29,7 +29,7 @@
     "@babel/preset-env": "7.18.9",
     "@babel/preset-react": "7.0.0",
     "babel-loader": "8.0.4",
-    "css-loader": "3.6.0",
+    "css-loader": "5.2.7",
     "d3": "7.6.1",
     "file-loader": "6.2.0",
     "mini-css-extract-plugin": "1.6.2",
