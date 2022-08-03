@@ -148,7 +148,7 @@ SOFTWARE
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-azure</artifactId>
-            <version>3.3.1</version>
+            <version>3.3.3</version>
         </dependency>
         <dependency>
             <groupId>org.mortbay.jetty</groupId>
@@ -168,7 +168,7 @@ SOFTWARE
 		    <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>dbutils-api_2.11</artifactId>
-            <version>0.0.3</version>
+            <version>0.0.5</version>
         </dependency>
     </dependencies>
   <profiles>
