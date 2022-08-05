@@ -43,7 +43,7 @@
     "react-dom": "16.6.3",
     "react-redux": "5.1.1",
     "jsoneditor": "9.9.0",
-    "jsoneditor-react": "1.0.0",
+    "jsoneditor-react": "3.1.2",
     "monaco-editor-webpack-plugin": "1.6.0",
     "react-monaco-editor": "0.22.0",
     "react-router": "5.3.3",
