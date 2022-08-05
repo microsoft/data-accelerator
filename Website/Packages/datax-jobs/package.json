@@ -33,7 +33,7 @@
     "datax-common": "1.4.0-SNAPSHOT-9",
     "office-ui-fabric-react": "6.111.2",
     "q": "1.5.1",
-    "prop-types": "15.6.2",
+    "prop-types": "15.8.1",
     "radium": "0.25.2",
     "react": "16.6.3",
     "react-dom": "16.6.3",
