@@ -23,7 +23,7 @@
     "devwatch": "webpack --mode development --config webpack.config.js --bail --progress --display-modules --display-error-details --colors --display-chunks --display-reasons --watch"
   },
   "dependencies": {
-    "react-datetime-picker": "2.4.0"
+    "react-datetime-picker": "3.5.0"
   },
   "devDependencies": {
     "@babel/core": "7.18.10",
@@ -45,7 +45,7 @@
     "react-ace": "6.2.0",
     "react-dom": "16.6.3",
     "react-redux": "6.0.1",
-    "react-router": "4.3.1",
+    "react-router": "5.3.3",
     "react-router-dom": "5.3.3",
     "react-splitter-layout": "3.0.1",
     "redux": "4.2.0",
