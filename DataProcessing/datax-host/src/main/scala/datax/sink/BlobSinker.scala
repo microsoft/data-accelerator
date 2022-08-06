@@ -26,6 +26,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 import scala.concurrent.duration.Duration
+import scala.util.Try
 
 object BlobSinker extends SinkOperatorFactory {
   val SinkName = "Blobs"
@@ -76,17 +77,22 @@ object BlobSinker extends SinkOperatorFactory {
         data.mkString("\n").getBytes
       }
 
+      val directWriteEnabled = ConfigManager.getActiveDictionary().dict.get("blobdirectwriteenabled").flatMap(x => Try(x.toBoolean).toOption).getOrElse(false)
+      val overwriteEnabled = ConfigManager.getActiveDictionary().dict.get("bloboverwriteenabled").flatMap(x => Try(x.toBoolean).toOption).getOrElse(false)
+
       HadoopClient.writeWithTimeoutAndRetries(
         hdfsPath = outputPath,
         content = content,
         timeout = Duration.create(ConfigManager.getActiveDictionary().getOrElse(JobArgument.ConfName_BlobWriterTimeout, "10 seconds")),
         retries = 10,
+        directWriteEnabled,
+        overwriteEnabled,
         blobStorageKey
       )
       timeNow = System.nanoTime()
       AppInsightLogger.trackBatchEvent(
         ProductConstant.ProductRoot + "/WriteEventsToOutputBlob",
-        Map("OutputPartitionTime" -> Option(outputPartitionTime).map(x => x.toString).getOrElse(""), "InputPath" -> InputPath, "OutputPath" -> outputPath, "Group" -> Option(Group).getOrElse("")),
+        Map("OutputPartitionTime" -> Option(outputPartitionTime).map(x => x.toString).getOrElse(""), "InputPath" -> InputPath, "OutputPath" -> outputPath, "Group" -> Option(Group).getOrElse(""), "OverwriteEnabled" -> overwriteEnabled.toString, "DirectWriteEnabled" -> directWriteEnabled.toString),
         Map("WriteTimeInSeconds" -> (timeNow - timeLast) / 1E9, "CountEvents" -> countEvents.toDouble),
         batchTime
       )

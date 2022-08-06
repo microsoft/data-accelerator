@@ -343,11 +343,13 @@ object HadoopClient {
                                  content: Array[Byte],
                                  timeout: Duration = Duration(5, TimeUnit.SECONDS),
                                  retries: Int = 0,
+                                 overwriteIfExists:Boolean,
+                                 directWrite:Boolean,
                                  blobStorageKey: broadcast.Broadcast[String]
                                 ) = {
     val logger = LogManager.getLogger(s"FileWriter${SparkEnvVariables.getLoggerSuffix()}")
     def f = Future{
-      writeHdfsFile(hdfsPath, content, getConf(), overwriteIfExists=false, directWrite=false, blobStorageKey)
+      writeHdfsFile(hdfsPath, content, getConf(), overwriteIfExists, directWrite, blobStorageKey)
     }
     var remainingAttempts = retries+1
     while(remainingAttempts>0) {
