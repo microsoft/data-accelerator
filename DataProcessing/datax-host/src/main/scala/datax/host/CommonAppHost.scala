@@ -26,7 +26,7 @@ object CommonAppHost extends AppHost {
     // Get the singleton instance of SparkSession
     val spark = SparkSessionSingleton.getInstance(sparkConf)
 
-    val conf = ConfigManager.getConfigurationFromArguments(inputArguments)
+    val conf = ConfigManager.getConfigurationFromArguments(inputArguments, spark)
 
     // Initialize FileSystemUtil
     HadoopClient.setConf(spark.sparkContext.hadoopConfiguration)

@@ -22,6 +22,7 @@ import datax.telemetry.AppInsightLogger
 import org.apache.spark.broadcast
 import org.apache.log4j.LogManager
 import org.apache.spark.TaskContext
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
@@ -52,7 +53,7 @@ object BlobSinker extends SinkOperatorFactory {
   }
 
   // write events to blob location
-  def writeEventsToBlob(data: Seq[String], outputPath: String, compression: Boolean, blobStorageKey: broadcast.Broadcast[String] = null, InputPath: String = null, Group: String = null, outputPartitionTime: Timestamp = null, batchTime: Timestamp = null) {
+  def writeEventsToBlob(data: Seq[String], outputPath: String, compression: Boolean, blobStorageKey: broadcast.Broadcast[String] = null, InputPath: String = null, Group: String = null, outputPartitionTime: Timestamp = null, batchTime: Timestamp = null, configuration: Option[Broadcast[SettingDictionary]] = None) {
     val logger = LogManager.getLogger(s"EventsToBlob-Writer${SparkEnvVariables.getLoggerSuffix()}")
     val countEvents = data.length
 
@@ -77,8 +78,10 @@ object BlobSinker extends SinkOperatorFactory {
         data.mkString("\n").getBytes
       }
 
-      val directWriteEnabled = ConfigManager.getActiveDictionary().dict.get("blobdirectwriteenabled").flatMap(x => Try(x.toBoolean).toOption).getOrElse(true)
-      val overwriteEnabled = ConfigManager.getActiveDictionary().dict.get("bloboverwriteenabled").flatMap(x => Try(x.toBoolean).toOption).getOrElse(true)
+      val directWriteEnabled = configuration.flatMap(x => x.value.dict.get("blobdirectwriteenabled")).flatMap(x => Try(x.toBoolean).toOption).getOrElse(false)
+      val overwriteEnabled = configuration.flatMap(x => x.value.dict.get("bloboverwriteenabled")).flatMap(x => Try(x.toBoolean).toOption).getOrElse(false)
+
+      logger.info(s"blobdirectwriteenabled = ${directWriteEnabled}, bloboverwriteenabled = ${overwriteEnabled}")
 
       HadoopClient.writeWithTimeoutAndRetries(
         hdfsPath = outputPath,
@@ -154,7 +157,8 @@ object BlobSinker extends SinkOperatorFactory {
                      loggerSuffix: String,
                      blobStorageKey: broadcast.Broadcast[String],
                      outputPartitionTime: Timestamp,
-                     batchTime: Timestamp): Map[String, Int] = {
+                     batchTime: Timestamp,
+                     settings: Option[Broadcast[SettingDictionary]]): Map[String, Int] = {
     val logger = LogManager.getLogger(s"Sinker-BlobSinker$loggerSuffix")
     val dataGroups = dataGenerator()
     val timeStart = System.nanoTime ()
@@ -177,7 +181,7 @@ object BlobSinker extends SinkOperatorFactory {
             val path = folder +
               (if (fileName == null) s"part-$partitionId" else fileName) + (if(compression) ".json.gz" else ".json")
             val jsonList = data.toSeq
-            BlobSinker.writeEventsToBlob(jsonList, path, compression, blobStorageKey, InputPath, group, outputPartitionTime, batchTime)
+            BlobSinker.writeEventsToBlob(jsonList, path, compression, blobStorageKey, InputPath, group, outputPartitionTime, batchTime, settings)
             AppInsightLogger.trackBatchEvent(
               ProductConstant.ProductRoot + "/SinkDataGroup",
               Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> InputPath, "OutputPath" -> path, "Group" -> group, "Tag" -> tag, "FileTime" -> FileTime),
@@ -201,6 +205,7 @@ object BlobSinker extends SinkOperatorFactory {
     val outputFolders = blobOutputConf.groups.map{case(k,v)=>k->KeyVaultClient.resolveSecretIfAny(v.folder)}
 
     val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(outputFolders.head._2, SparkSessionSingleton.getInstance(ConfigManager.initSparkConf))
+    val broadcastedSettings = ConfigManager.getBroadcastedActiveDictionary()
 
     val jsonSinkDelegate = (rowInfo: Row, rows: Seq[Row], outputPartitionTime: Timestamp, batchTime: Timestamp, partitionId: Int, loggerSuffix: String) => {
       val target = FileInternal.getInfoTargetTag(rowInfo)
@@ -222,7 +227,8 @@ object BlobSinker extends SinkOperatorFactory {
         loggerSuffix = loggerSuffix,
         blobStorageKey = blobStorageKey,
         outputPartitionTime,
-        batchTime
+        batchTime,
+        broadcastedSettings
       )
     }
 

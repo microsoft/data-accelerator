@@ -11,6 +11,8 @@ import datax.service.ConfigService
 import datax.utility.ArgumentsParser
 import org.apache.log4j.LogManager
 import org.apache.spark.SparkConf
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.sql.SparkSession
 
 /***
   * Singleton service to set and get a Dictionary object
@@ -40,6 +42,8 @@ object ConfigManager extends ConfigService {
   }
 
   var singletonConfDict: SettingDictionary = null
+  var broadcastedSingletonConfDict:Broadcast[SettingDictionary] = null
+
   def getActiveDictionary(): SettingDictionary = {
     if(singletonConfDict==null){
       ConfigManager.synchronized{
@@ -52,13 +56,28 @@ object ConfigManager extends ConfigService {
     singletonConfDict
   }
 
+  def getBroadcastedActiveDictionary(): Option[Broadcast[SettingDictionary]] = {
+    Option(broadcastedSingletonConfDict)
+  }
+
+  def broadcastActiveDictionary(spark : SparkSession) = {
+    ConfigManager.synchronized{
+      if(spark != null) {
+        if(broadcastedSingletonConfDict != null) {
+          broadcastedSingletonConfDict.unpersist(blocking = false)
+        }
+        broadcastedSingletonConfDict = spark.sparkContext.broadcast(singletonConfDict)
+      }
+    }
+  }
+
   def setActiveDictionary(conf: SettingDictionary) = {
     ConfigManager.synchronized{
       singletonConfDict = conf
     }
   }
 
-  def getConfigurationFromArguments(inputArguments: Array[String]):SettingDictionary = {
+  def getConfigurationFromArguments(inputArguments: Array[String], spark : SparkSession):SettingDictionary = {
     val namedArgs = ArgumentsParser.getNamedArgs(inputArguments)
 
     logger.warn("cmd line args:"+namedArgs)
@@ -81,6 +100,7 @@ object ConfigManager extends ConfigService {
 
     logger.warn("local env:"+envs.mkString(","))
     setActiveDictionary(SettingDictionary(envs ++ namedArgs ++ convertedConf))
+    broadcastActiveDictionary(spark)
     singletonConfDict
   }
 
