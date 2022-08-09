@@ -77,8 +77,8 @@ object BlobSinker extends SinkOperatorFactory {
         data.mkString("\n").getBytes
       }
 
-      val directWriteEnabled = ConfigManager.getActiveDictionary().dict.get("blobdirectwriteenabled").flatMap(x => Try(x.toBoolean).toOption).getOrElse(false)
-      val overwriteEnabled = ConfigManager.getActiveDictionary().dict.get("bloboverwriteenabled").flatMap(x => Try(x.toBoolean).toOption).getOrElse(false)
+      val directWriteEnabled = ConfigManager.getActiveDictionary().dict.get("blobdirectwriteenabled").flatMap(x => Try(x.toBoolean).toOption).getOrElse(true)
+      val overwriteEnabled = ConfigManager.getActiveDictionary().dict.get("bloboverwriteenabled").flatMap(x => Try(x.toBoolean).toOption).getOrElse(true)
 
       HadoopClient.writeWithTimeoutAndRetries(
         hdfsPath = outputPath,
