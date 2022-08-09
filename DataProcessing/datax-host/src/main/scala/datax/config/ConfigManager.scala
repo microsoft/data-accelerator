@@ -74,7 +74,9 @@ object ConfigManager extends ConfigService {
       JobArgument.ConfName_LogLevel -> namedArgs.getOrElse("executorLogLevel", null),
       JobArgument.ConfName_CheckpointEnabled -> namedArgs.getOrElse("checkpointEnabled", null),
       "partition" -> namedArgs.getOrElse("partition", null),
-      "trackerFolder" -> namedArgs.getOrElse("trackerFolder", null)
+      "trackerFolder" -> namedArgs.getOrElse("trackerFolder", null),
+      "blobdirectwriteenabled" -> namedArgs.getOrElse("blobdirectwriteenabled", null),
+      "bloboverwriteenabled" -> namedArgs.getOrElse("bloboverwriteenabled", null)
     ).filter(_._2!=null)
 
     logger.warn("local env:"+envs.mkString(","))
