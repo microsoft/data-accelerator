@@ -6,20 +6,15 @@
 
     <!--
     MIT License
-
     Copyright (c) Microsoft Corporation. All rights reserved.
-
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
     in the Software without restriction, including without limitation the rights
     to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
     copies of the Software, and to permit persons to whom the Software is
     furnished to do so, subject to the following conditions:
-
-
     The above copyright notice and this permission notice shall be included in all
     copies or substantial portions of the Software.
-
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
     IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -67,70 +62,7 @@
     </properties>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <!-- Build uber jar -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.2.1</version>
-                    <executions>
-                        <execution>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>shade</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <artifactSet>
-                            <excludes>
-                                <exclude>spark-core_2.11</exclude>
-                            </excludes>
-                        </artifactSet>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-                <version>4.5.6</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>scaladoc</id>
-                        <goals>
-                            <goal>doc</goal>
-                        </goals>
-                        <phase>prepare-package</phase>
-                        <configuration>
-                            <args>
-                                <arg>-no-link-warnings</arg>
-                            </args>
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                    <scalaVersion>${scala.version}</scalaVersion>
-                </configuration>
-            </plugin>
-        </plugins>
+        <sourceDirectory>${basedir}/src</sourceDirectory>
     </build>
     <dependencies>
         <dependency>
@@ -305,6 +237,26 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <version>3.2.1</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>spark-core_2.11</exclude>
+                                </excludes>
+                            </artifactSet>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -316,9 +268,7 @@
                         <artifactId>maven-deploy-plugin</artifactId>
                         <version>3.0.0</version>
                         <configuration>
-                            <altDeploymentRepository>
-                                internal.repo::default::file://${project.build.directory}/mvn-repo
-                            </altDeploymentRepository>
+                            <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
                         </configuration>
                     </plugin>
                 </plugins>
