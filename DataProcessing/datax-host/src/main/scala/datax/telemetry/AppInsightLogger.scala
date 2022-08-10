@@ -6,7 +6,8 @@ package datax.telemetry
 
 import com.microsoft.applicationinsights.{TelemetryClient, TelemetryConfiguration}
 import datax.config.ConfigManager
-import datax.constants.JobArgument
+import datax.constants.{JobArgument, ProductConstant}
+import datax.processor.CommonProcessorFactory.appHost
 import datax.securedsetting.KeyVaultClient
 import datax.service.TelemetryService
 import datax.utility.DateTimeUtil
@@ -84,6 +85,28 @@ object AppInsightLogger extends TelemetryService {
   def trackMetric(event: String, properties: Map[String, String]) = {
     logger.warn(s"sending metric: $event")
     client.trackMetric(event, 0, 1, 0, 0, 0, (batchMetricProps ++ properties).asJava)
+  }
+
+  def monitoredFunction[T](location: String, batchTime: Timestamp, fn: Unit => T): T = {
+    try {
+      fn.apply()
+    }
+    catch {
+      case e: Exception =>
+        trackEvent(ProductConstant.ProductRoot + "/error", Map(
+          "errorLocation" -> location,
+          "errorMessage" -> e.getMessage,
+          "errorStackTrace" -> e.getStackTrace.take(10).mkString("\n"),
+          "batchTime" -> batchTime.toString
+        ), null)
+        trackException(e, Map(
+          "errorLocation" -> location,
+          "errorMessage" -> e.getMessage,
+          "batchTime" -> batchTime.toString
+        ), null)
+        Thread.sleep(10000)
+        throw e
+    }
   }
 
   def trackBatchMetric(event: String, properties: Map[String, String], batchTime: Timestamp) = {

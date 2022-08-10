@@ -208,28 +208,31 @@ object BlobSinker extends SinkOperatorFactory {
     val broadcastedSettings = ConfigManager.getBroadcastedActiveDictionary()
 
     val jsonSinkDelegate = (rowInfo: Row, rows: Seq[Row], outputPartitionTime: Timestamp, batchTime: Timestamp, partitionId: Int, loggerSuffix: String) => {
-      val target = FileInternal.getInfoTargetTag(rowInfo)
-      if(compressionTypeConf.isDefined && !(compressionTypeConf.get.equalsIgnoreCase("gzip")|| compressionTypeConf.get.equalsIgnoreCase("none")|| compressionTypeConf.get.equals("")))
-        throw new Error(s"Output compressionType: ${compressionTypeConf.get} as specified in the config is not supported")
-      val compression = compressionTypeConf.getOrElse("gzip").equalsIgnoreCase("gzip")
+      AppInsightLogger.monitoredFunction("jsonSinkDelegate", batchTime, (Unit) => {
+        val target = FileInternal.getInfoTargetTag(rowInfo)
+        if (compressionTypeConf.isDefined && !(compressionTypeConf.get.equalsIgnoreCase("gzip") || compressionTypeConf.get.equalsIgnoreCase("none") || compressionTypeConf.get.equals("")))
+          throw new Error(s"Output compressionType: ${compressionTypeConf.get} as specified in the config is not supported")
+        val compression = compressionTypeConf.getOrElse("gzip").equalsIgnoreCase("gzip")
 
-      sinkDataGroups(
-        rowInfo = rowInfo,
-        dataGenerator =
-          if(flagColumnIndex<0)
-            () => Map(DefaultOutputGroup -> rows.iterator.map(_.getString(1)))
-          else
-            () => rows.groupBy(_.getString(flagColumnIndex)).map { case (k, v) => k -> v.iterator.map(_.getString(1)) },
-        outputFolders = outputFolders.map{case (k,v) =>
-          k->generateOutputFolderPath(v, outputPartitionTime, Option(target))},
-        partitionId = partitionId,
-        compression = compression,
-        loggerSuffix = loggerSuffix,
-        blobStorageKey = blobStorageKey,
-        outputPartitionTime,
-        batchTime,
-        broadcastedSettings
-      )
+        sinkDataGroups(
+          rowInfo = rowInfo,
+          dataGenerator =
+            if (flagColumnIndex < 0)
+              () => Map(DefaultOutputGroup -> rows.iterator.map(_.getString(1)))
+            else
+              () => rows.groupBy(_.getString(flagColumnIndex)).map { case (k, v) => k -> v.iterator.map(_.getString(1)) },
+          outputFolders = outputFolders.map { case (k, v) =>
+            k -> generateOutputFolderPath(v, outputPartitionTime, Option(target))
+          },
+          partitionId = partitionId,
+          compression = compression,
+          loggerSuffix = loggerSuffix,
+          blobStorageKey = blobStorageKey,
+          outputPartitionTime,
+          batchTime,
+          broadcastedSettings
+        )
+      })
     }
 
     (data: DataFrame, time: Timestamp, batchTime: Timestamp, loggerSuffix: String) => {

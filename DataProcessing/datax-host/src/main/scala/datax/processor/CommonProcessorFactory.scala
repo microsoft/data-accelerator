@@ -430,30 +430,30 @@ object CommonProcessorFactory {
         val pathsList = paths.mkString(",")
         batchLog.debug(s"Batch loading files:$pathsList")
         val inputDf = spark.sparkContext.parallelize(files, filesCount)
-          .flatMap(file => {
-            val timeLast = System.nanoTime()
-            val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
-              .filter(l => {
-                val bNotEmptyBlob = l != null && !l.isEmpty
-                if(!bNotEmptyBlob) {
-                  AppInsightLogger.trackBatchEvent(
-                    ProductConstant.ProductRoot + "/EmptyBlobPath",
-                    Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
-                    null,
-                    batchTime
-                  )
-                }
-                bNotEmptyBlob
-              }).map((file, outputPartitionTime, _))
-            val timeNow = System.nanoTime()
-            AppInsightLogger.trackBatchEvent(
-              ProductConstant.ProductRoot + "/ReadEventsFromFile",
-              Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
-              Map("ReadTimeInSeconds" -> (timeNow - timeLast) / 1E9),
-              batchTime
-            )
-            retVal
-          })
+          .flatMap(file => AppInsightLogger.monitoredFunction("processBlobs", batchTime, (Unit) => {
+              val timeLast = System.nanoTime()
+              val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
+                .filter(l => {
+                  val bNotEmptyBlob = l != null && !l.isEmpty
+                  if (!bNotEmptyBlob) {
+                    AppInsightLogger.trackBatchEvent(
+                      ProductConstant.ProductRoot + "/EmptyBlobPath",
+                      Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
+                      null,
+                      batchTime
+                    )
+                  }
+                  bNotEmptyBlob
+                }).map((file, outputPartitionTime, _))
+              val timeNow = System.nanoTime()
+              AppInsightLogger.trackBatchEvent(
+                ProductConstant.ProductRoot + "/ReadEventsFromFile",
+                Map("OutputPartitionTime" -> outputPartitionTime.toString, "InputPath" -> file.inputPath),
+                Map("ReadTimeInSeconds" -> (timeNow - timeLast) / 1E9),
+                batchTime
+              )
+              retVal
+          }))
           .toDF(ColumnName.InternalColumnFileInfo, ColumnName.MetadataColumnOutputPartitionTime, ColumnName.RawObjectColumn)
 
         val targets = files.map(_.target).toSet
@@ -479,7 +479,7 @@ object CommonProcessorFactory {
         val paths = v._2.toArray
         processBlobs(paths, outputPartitionTime, par + namespace, par)
       }
-      try {
+      AppInsightLogger.monitoredFunction("groupPartitionProcessMetrics", batchTime, (Unit) => {
         batchLog.warn(s"Start batch ${batchTime}, output partition time:${outputPartitionTime}, namespace:${namespace}")
         val t1 = System.nanoTime
         val pathsGroups = BlobPointerInput.pathsToGroups(rdd = pathsRDD,
@@ -524,24 +524,7 @@ object CommonProcessorFactory {
         batchLog.warn(s"End batch ${batchTime}, output partition time:${outputPartitionTime}, namespace:${namespace}")
 
         allMetrics
-      }
-      catch {
-        case e: Exception =>
-          appHost.getTelemetryService().trackEvent(ProductConstant.ProductRoot + "/error", Map(
-            "errorLocation" -> "groupPartitionProcessMetrics",
-            "errorMessage" -> e.getMessage,
-            "errorStackTrace" -> e.getStackTrace.take(10).mkString("\n"),
-            "batchTime" -> batchTime.toString
-          ), null)
-          appHost.getTelemetryService().trackException(e, Map(
-            "errorLocation" -> "groupPartitionProcessMetrics",
-            "errorMessage" -> e.getMessage,
-            "batchTime" -> batchTime.toString
-          ), null)
-          batchLog.info("Exception caught, waiting for app insight to send log")
-          Thread.sleep(10000)
-          throw e
-      }
+      })
     }
 
     CommonProcessor(
@@ -651,7 +634,7 @@ object CommonProcessorFactory {
           val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(paths.head, spark)
 
           val inputDf = internalFiles
-            .flatMap(file => {
+            .flatMap(file => AppInsightLogger.monitoredFunction("processBatchBlobPaths", batchTime, (Unit) => {
               val timeLast = System.nanoTime()
               val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"), blobStorageKey)
                 .filter(l => {
@@ -674,7 +657,7 @@ object CommonProcessorFactory {
                 batchTime
               )
               retVal
-            })
+            }))
             .toDF(ColumnName.InternalColumnFileInfo, ColumnName.MetadataColumnOutputPartitionTime, ColumnName.RawObjectColumn)
 
           val processedMetrics = processDataset(inputDf, batchTime, batchInterval, outputPartitionTime, null, "")
