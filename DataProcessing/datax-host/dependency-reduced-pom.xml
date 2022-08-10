@@ -178,6 +178,18 @@
                   <artifactSet>
                     <excludes>
                       <exclude>spark-core_2.11</exclude>
+                      <exclude>org.apache.hadoop</exclude>
+                      <exclude>commons-beanutils</exclude>
+                      <exclude>commons-cli:commons-cli</exclude>
+                      <exclude>commons-codec:commons-codec</exclude>
+                      <exclude>commons-collections:commons-collections</exclude>
+                      <exclude>commons-configuration:commons-configuration</exclude>
+                      <exclude>commons-digester:commons-digester</exclude>
+                      <exclude>commons-httpclient:commons-httpclient</exclude>
+                      <exclude>commons-io:commons-io</exclude>
+                      <exclude>commons-lang:commons-lang</exclude>
+                      <exclude>commons-net:commons-net</exclude>
+                      <exclude>xerces:xercesImpl</exclude>
                     </excludes>
                   </artifactSet>
                 </configuration>
@@ -187,6 +199,18 @@
               <artifactSet>
                 <excludes>
                   <exclude>spark-core_2.11</exclude>
+                  <exclude>org.apache.hadoop</exclude>
+                  <exclude>commons-beanutils</exclude>
+                  <exclude>commons-cli:commons-cli</exclude>
+                  <exclude>commons-codec:commons-codec</exclude>
+                  <exclude>commons-collections:commons-collections</exclude>
+                  <exclude>commons-configuration:commons-configuration</exclude>
+                  <exclude>commons-digester:commons-digester</exclude>
+                  <exclude>commons-httpclient:commons-httpclient</exclude>
+                  <exclude>commons-io:commons-io</exclude>
+                  <exclude>commons-lang:commons-lang</exclude>
+                  <exclude>commons-net:commons-net</exclude>
+                  <exclude>xerces:xercesImpl</exclude>
                 </excludes>
               </artifactSet>
             </configuration>
@@ -254,6 +278,12 @@
       <artifactId>scalatest_2.11</artifactId>
       <version>2.2.6</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-azure</artifactId>
+      <version>3.3.1</version>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
   <distributionManagement>
