@@ -158,7 +158,7 @@ SOFTWARE
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20180813</version>
+            <version>20220320</version>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
