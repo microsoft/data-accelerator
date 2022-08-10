@@ -108,7 +108,7 @@ SOFTWARE
         <dependency>
             <groupId>org.jmockit</groupId>
             <artifactId>jmockit</artifactId>
-            <version>1.34</version>
+            <version>1.49</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -150,7 +150,7 @@ SOFTWARE
         <dependency>
           <groupId>org.apache.qpid</groupId>
           <artifactId>proton-j</artifactId>
-          <version>0.31.0</version>
+          <version>0.33.10</version>
         </dependency>
         <dependency>
           <groupId>org.scala-lang.modules</groupId>
@@ -203,7 +203,7 @@ SOFTWARE
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
-            <version>3.0.1</version>
+            <version>3.3.0</version>
             <executions>
               <execution>
                 <id>copy-dependencies</id>
@@ -274,7 +274,7 @@ SOFTWARE
         <plugins>
           <plugin>
             <artifactId>maven-deploy-plugin</artifactId>
-            <version>2.8.2</version>
+            <version>3.0.0</version>
             <configuration>
               <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
             </configuration>
