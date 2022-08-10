@@ -349,65 +349,41 @@ object CommonProcessorFactory {
       val metricLogger = MetricLoggerFactory.getMetricLogger(metricAppName, metricConf)
       val spark = data.sparkSession
 
-      def postMetrics(metrics: Iterable[(String, Double)]): Unit = {
-        batchLogger.warn(s"Sending metrics:\n${metrics.map(m => m._1 + " -> " + m._2).mkString("\n")}")
-        metricLogger.sendBatchMetrics(metrics, batchTime)
+      // call ExtendedUDFs to refresh their data
+      udfs.foreach(udf => {
+        if (udf._2 != null) udf._2(spark, batchTime)
+      })
+
+      // if raw input is specified in the output settings as one of the output, we cache it and register that to allow it to be output
+      val persistRaw = outputs.find(p => p.name == DatasetName.DataStreamRaw).isDefined
+      if (persistRaw) {
+        data.cache()
+        dataframes(DatasetName.DataStreamRaw) = data
       }
 
-      try {
-        // call ExtendedUDFs to refresh their data
-        udfs.foreach(udf => {
-          if (udf._2 != null) udf._2(spark, batchTime)
-        })
+      // main processing steps
+      val baseProjection = project(data, batchTime)
+      val counts = route(baseProjection, batchTime, batchInterval, outputPartitionTime, targets, namespace)
 
-        // if raw input is specified in the output settings as one of the output, we cache it and register that to allow it to be output
-        val persistRaw = outputs.find(p => p.name == DatasetName.DataStreamRaw).isDefined
-        if (persistRaw) {
-          data.cache()
-          dataframes(DatasetName.DataStreamRaw) = data
-        }
-
-        // main processing steps
-        val baseProjection = project(data, batchTime)
-        val counts = route(baseProjection, batchTime, batchInterval, outputPartitionTime, targets, namespace)
-
-        // clear the cache of raw input table if needed.
-        if (persistRaw) {
-          data.unpersist(false)
-        }
-
-        // calculate performance metrics
-        val partitionProcessedTime = System.nanoTime
-        val latencyInSeconds = (DateTimeUtil.getCurrentTime().getTime - batchTime.getTime) / 1000D
-        val LatencyMetrics = Map[String, Double](
-          "Latency-Process" -> (partitionProcessedTime - t1) / 1E9,
-          "Latency-Batch" -> latencyInSeconds
-        )
-        AppInsightLogger.trackBatchEvent(
-          ProductConstant.ProductRoot + "/LatencyBatchAndProcess",
-          null,
-          LatencyMetrics,
-          batchTime
-        )
-        LatencyMetrics ++ counts
+      // clear the cache of raw input table if needed.
+      if (persistRaw) {
+        data.unpersist(false)
       }
-      catch {
-        case e: Exception =>
-          appHost.getTelemetryService().trackEvent(ProductConstant.ProductRoot + "/error", Map(
-            "errorLocation" -> "ProcessDataFrame",
-            "errorMessage" -> e.getMessage,
-            "errorStackTrace" -> e.getStackTrace.take(10).mkString("\n"),
-            "batchTime" -> batchTime.toString
-          ), null)
-          appHost.getTelemetryService().trackException(e, Map(
-            "errorLocation" -> "ProcessDataFrame",
-            "errorMessage" -> e.getMessage,
-            "batchTime" -> batchTime.toString
-          ), null)
 
-          Thread.sleep(1000)
-          throw e
-      }
+      // calculate performance metrics
+      val partitionProcessedTime = System.nanoTime
+      val latencyInSeconds = (DateTimeUtil.getCurrentTime().getTime - batchTime.getTime) / 1000D
+      val LatencyMetrics = Map[String, Double](
+        "Latency-Process" -> (partitionProcessedTime - t1) / 1E9,
+        "Latency-Batch" -> latencyInSeconds
+      )
+      AppInsightLogger.trackBatchEvent(
+        ProductConstant.ProductRoot + "/LatencyBatchAndProcess",
+        null,
+        LatencyMetrics,
+        batchTime
+      )
+      LatencyMetrics ++ counts
     }
 
     /*
@@ -503,51 +479,69 @@ object CommonProcessorFactory {
         val paths = v._2.toArray
         processBlobs(paths, outputPartitionTime, par + namespace, par)
       }
-
-      batchLog.warn(s"Start batch ${batchTime}, output partition time:${outputPartitionTime}, namespace:${namespace}")
-      val t1 = System.nanoTime
-      val pathsGroups = BlobPointerInput.pathsToGroups(rdd = pathsRDD,
-        jobName = dict.getAppName(),
-        dict = dict,
-        outputTimestamp = outputPartitionTime)
-      val pathsFilteredGroups = BlobPointerInput.filterPathGroups(pathsGroups)
-      val pathsCount = pathsFilteredGroups.aggregate(0)(_ + _._2.size, _ + _)
-      //try {
-      val result =
-        if (pathsCount > 0) {
-          batchLog.warn(s"Loading filtered blob files count=$pathsCount, First File=${pathsFilteredGroups.head._2.head}")
-          AppInsightLogger.trackBatchEvent(
-            ProductConstant.ProductRoot + "/FilteredBlobPaths",
-            Map("FirstFile" -> pathsFilteredGroups.head._2.head.inputPath),
-            Map("PathsCount" -> pathsCount.toDouble),
-            batchTime
-          )
-          if (pathsFilteredGroups.length > 1)
-            Await.result(FutureUtil.failFast(pathsFilteredGroups
-              .map(kv => Future {
-                processPartition(kv)
-              })), 5 minutes).reduce(DataMerger.mergeMapOfDoubles)
-          else
-            processPartition(pathsFilteredGroups(0))
-        }
-        else {
-          batchLog.warn(s"No valid paths were found to process for this batch")
-          val bShouldForceNonEmptyBatch = ConfigManager.getActiveDictionary().getOrElse(JobArgument.ConfName_ForceNonEmptyBatch, "false").toBoolean
-          if (bShouldForceNonEmptyBatch) {
-            throw new Exception("No valid paths found to process for this batch and empty batches are not allowed")
+      try {
+        batchLog.warn(s"Start batch ${batchTime}, output partition time:${outputPartitionTime}, namespace:${namespace}")
+        val t1 = System.nanoTime
+        val pathsGroups = BlobPointerInput.pathsToGroups(rdd = pathsRDD,
+          jobName = dict.getAppName(),
+          dict = dict,
+          outputTimestamp = outputPartitionTime)
+        val pathsFilteredGroups = BlobPointerInput.filterPathGroups(pathsGroups)
+        val pathsCount = pathsFilteredGroups.aggregate(0)(_ + _._2.size, _ + _)
+        //try {
+        val result =
+          if (pathsCount > 0) {
+            batchLog.warn(s"Loading filtered blob files count=$pathsCount, First File=${pathsFilteredGroups.head._2.head}")
+            AppInsightLogger.trackBatchEvent(
+              ProductConstant.ProductRoot + "/FilteredBlobPaths",
+              Map("FirstFile" -> pathsFilteredGroups.head._2.head.inputPath),
+              Map("PathsCount" -> pathsCount.toDouble),
+              batchTime
+            )
+            if (pathsFilteredGroups.length > 1)
+              Await.result(FutureUtil.failFast(pathsFilteredGroups
+                .map(kv => Future {
+                  processPartition(kv)
+                })), 5 minutes).reduce(DataMerger.mergeMapOfDoubles)
+            else
+              processPartition(pathsFilteredGroups(0))
           }
-          Map[String, Double]()
-        }
-      val batchProcessingTime = (System.nanoTime - t1) / 1E9
+          else {
+            batchLog.warn(s"No valid paths were found to process for this batch")
+            val bShouldForceNonEmptyBatch = ConfigManager.getActiveDictionary().getOrElse(JobArgument.ConfName_ForceNonEmptyBatch, "false").toBoolean
+            if (bShouldForceNonEmptyBatch) {
+              throw new Exception("No valid paths found to process for this batch and empty batches are not allowed")
+            }
+            Map[String, Double]()
+          }
+        val batchProcessingTime = (System.nanoTime - t1) / 1E9
 
-      val metrics = Map[String, Double](
-        "BatchProcessedET" -> batchProcessingTime
-      )
-      val allMetrics = metrics ++ result
-      postMetrics(allMetrics)
-      batchLog.warn(s"End batch ${batchTime}, output partition time:${outputPartitionTime}, namespace:${namespace}")
+        val metrics = Map[String, Double](
+          "BatchProcessedET" -> batchProcessingTime
+        )
+        val allMetrics = metrics ++ result
+        postMetrics(allMetrics)
+        batchLog.warn(s"End batch ${batchTime}, output partition time:${outputPartitionTime}, namespace:${namespace}")
 
-      allMetrics
+        allMetrics
+      }
+      catch {
+        case e: Exception =>
+          appHost.getTelemetryService().trackEvent(ProductConstant.ProductRoot + "/error", Map(
+            "errorLocation" -> "groupPartitionProcessMetrics",
+            "errorMessage" -> e.getMessage,
+            "errorStackTrace" -> e.getStackTrace.take(10).mkString("\n"),
+            "batchTime" -> batchTime.toString
+          ), null)
+          appHost.getTelemetryService().trackException(e, Map(
+            "errorLocation" -> "groupPartitionProcessMetrics",
+            "errorMessage" -> e.getMessage,
+            "batchTime" -> batchTime.toString
+          ), null)
+          batchLog.info("Exception caught, waiting for app insight to send log")
+          Thread.sleep(10000)
+          throw e
+      }
     }
 
     CommonProcessor(

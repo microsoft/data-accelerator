@@ -310,7 +310,7 @@ object HadoopClient {
     * @throws IOException if any occurs in the write operation
     */
   @throws[IOException]
-  def writeHdfsFile(hdfsPath: String, content: String, overwriteIfExists:Boolean, directWrite:Boolean) {
+  def writeHdfsFile(hdfsPath: String, content: String, overwriteIfExists:Boolean, directWrite:Boolean): Int = {
     writeHdfsFile(hdfsPath, content.getBytes("UTF-8"), getConf(), overwriteIfExists, directWrite)
   }
 
@@ -346,17 +346,18 @@ object HadoopClient {
                                  overwriteIfExists:Boolean,
                                  directWrite:Boolean,
                                  blobStorageKey: broadcast.Broadcast[String]
-                                ) = {
+                                ): Int = {
     val logger = LogManager.getLogger(s"FileWriter${SparkEnvVariables.getLoggerSuffix()}")
     def f = Future{
       writeHdfsFile(hdfsPath, content, getConf(), overwriteIfExists, directWrite, blobStorageKey)
     }
+    var outBytes = 0
     var remainingAttempts = retries+1
     while(remainingAttempts>0) {
       try {
         remainingAttempts -= 1
         logger.info(s"writing to $hdfsPath with remaining attempts: $remainingAttempts")
-        Await.result(f, timeout)
+        outBytes = Await.result(f, timeout)
         remainingAttempts = 0
       }
       catch {
@@ -365,6 +366,7 @@ object HadoopClient {
           throw e
       }
     }
+    outBytes
   }
 
   /**
@@ -408,7 +410,7 @@ object HadoopClient {
     * @throws IOException if any from lower file system operation
     */
   @throws[IOException]
-  private def writeHdfsFile(hdfsPath: String, content: Array[Byte], conf: Configuration, overwriteIfExists:Boolean, directWrite:Boolean, blobStorageKey: broadcast.Broadcast[String] = null) {
+  private def writeHdfsFile(hdfsPath: String, content: Array[Byte], conf: Configuration, overwriteIfExists:Boolean, directWrite:Boolean, blobStorageKey: broadcast.Broadcast[String] = null): Int = {
     resolveStorageAccountKeyForPath(hdfsPath, blobStorageKey)
 
     val logger = LogManager.getLogger("writeHdfsFile")
@@ -416,11 +418,12 @@ object HadoopClient {
     val path = new Path(hdfsPath)
     val uri = path.toUri
     val fsy = path.getFileSystem(conf)
+    var outBytes = 0
 
     // If output file already exists and overwrite flag is not set, bail out
     if(fsy.exists(path) && !overwriteIfExists){
       logger.warn(s"Output file ${path} already exists and overwrite flag ${overwriteIfExists}. Skipping writing again .")
-      return
+      return outBytes
     }
 
     val fs = path.getFileSystem(conf)
@@ -438,6 +441,7 @@ object HadoopClient {
         val bs = new BufferedOutputStream(outStream)
         bs.write(content)
         bs.close()
+        outBytes = content.length
       }
     } else {
       val tempHdfsPath = new URI(uri.getScheme, uri.getAuthority, "/_$tmpHdfsFolder$/"+tempFilePrefix(hdfsPath) + "-" + path.getName, null, null)
@@ -449,7 +453,7 @@ object HadoopClient {
       val bs = new BufferedOutputStream(fs.create(tempPath, true))
       bs.write(content)
       bs.close()
-
+      outBytes = content.length
       if(!fs.rename(tempPath, path)) {
         // Rename failed, check if it was due to destination path already exists.
         // If yes, fail only if overwrite is set. If destination does not exist, then fail as-well.
@@ -466,6 +470,7 @@ object HadoopClient {
         }
       }
     }
+    outBytes
   }
 
   /**

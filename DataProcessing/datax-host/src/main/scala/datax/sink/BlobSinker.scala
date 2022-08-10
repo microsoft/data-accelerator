@@ -83,7 +83,7 @@ object BlobSinker extends SinkOperatorFactory {
 
       logger.info(s"blobdirectwriteenabled = ${directWriteEnabled}, bloboverwriteenabled = ${overwriteEnabled}")
 
-      HadoopClient.writeWithTimeoutAndRetries(
+      val outBytes = HadoopClient.writeWithTimeoutAndRetries(
         hdfsPath = outputPath,
         content = content,
         timeout = Duration.create(ConfigManager.getActiveDictionary().getOrElse(JobArgument.ConfName_BlobWriterTimeout, "10 seconds")),
@@ -96,7 +96,7 @@ object BlobSinker extends SinkOperatorFactory {
       AppInsightLogger.trackBatchEvent(
         ProductConstant.ProductRoot + "/WriteEventsToOutputBlob",
         Map("OutputPartitionTime" -> Option(outputPartitionTime).map(x => x.toString).getOrElse(""), "InputPath" -> InputPath, "OutputPath" -> outputPath, "Group" -> Option(Group).getOrElse(""), "OverwriteEnabled" -> overwriteEnabled.toString, "DirectWriteEnabled" -> directWriteEnabled.toString),
-        Map("WriteTimeInSeconds" -> (timeNow - timeLast) / 1E9, "CountEvents" -> countEvents.toDouble),
+        Map("WriteTimeInSeconds" -> (timeNow - timeLast) / 1E9, "CountEvents" -> countEvents.toDouble, "WrittenBytes" -> outBytes.toDouble),
         batchTime
       )
       logger.info(s"$timeNow:Step 3: done writing to $outputPath, spent time=${(timeNow - timeLast) / 1E9} seconds")
