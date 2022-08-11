@@ -12,6 +12,7 @@ import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.{BasicResponseHandler, HttpClients}
 import org.apache.log4j.LogManager
+import datax.sink.SinkCommon._
 
 object HttpPoster extends SinkOperatorFactory {
   val SinkName = "HttpPost"
@@ -67,7 +68,7 @@ object HttpPoster extends SinkOperatorFactory {
 
   def getRowsSinkerGenerator(httpPostConf: HttpPostConf, flagColumnIndex: Int) : SinkDelegate = {
     val sender = (dataToSend:Seq[String],ls: String) => HttpPoster.postEvents(dataToSend, httpPostConf.endpoint, httpPostConf.appendHeaders, ls)
-    SinkerUtil.outputGenerator(sender,SinkName)(flagColumnIndex)
+    outputGenerator(sender,SinkName)(flagColumnIndex)
   }
 
   def getSinkOperator(dict: SettingDictionary, name: String) : SinkOperator = {

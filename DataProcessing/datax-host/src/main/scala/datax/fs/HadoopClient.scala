@@ -10,13 +10,12 @@ import java.nio.channels.FileChannel
 import java.nio.file.Files
 import java.util.concurrent.{Executors, TimeUnit}
 import java.util.zip.GZIPInputStream
-
 import com.google.common.io.{Files => GFiles}
 import datax.config.SparkEnvVariables
-import datax.constants.{ProductConstant, BlobProperties}
+import datax.constants.{BlobProperties, ProductConstant}
 import datax.exception.EngineException
 import datax.securedsetting.KeyVaultClient
-import datax.telemetry.AppInsightLogger
+import datax.telemetry.{AppInsightLogger, ReportedException}
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path, RemoteIterator}
@@ -290,7 +289,7 @@ object HadoopClient {
           "failedHdfsPath" -> hdfsPath
         ), null)
 
-        throw e
+        throw ReportedException(e)
       }
     }
 
@@ -365,7 +364,7 @@ object HadoopClient {
             "errorMessage" -> "Error in writing file",
             "failedHdfsPath" -> hdfsPath
           ), null)
-          throw e
+          throw ReportedException(e)
         case e: IOException =>
           remainingAttempts = 0
           AppInsightLogger.trackException(e, Map(
@@ -373,7 +372,7 @@ object HadoopClient {
             "errorMessage" -> "Error in writing file",
             "failedHdfsPath" -> hdfsPath
           ), null)
-          throw e
+          throw ReportedException(e)
       }
     }
   }

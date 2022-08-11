@@ -33,6 +33,7 @@ import scala.collection.mutable.{HashMap, HashSet, ListBuffer}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.collection.JavaConverters._
+import datax.telemetry._
 
 /*
   Generate the common processor
@@ -175,7 +176,7 @@ object CommonProcessorFactory {
         rdd.persist(StorageLevel.MEMORY_ONLY_SER)
 
         // log metric of after filtered by the time window, how many events actually are participating in the transformation
-        val inputEventsCount = rdd.mapPartitions(it => {
+        val inputEventsCount = rdd.instrumentedMapPartitions(it => {
           val loggerSuffix = SparkEnvVariables.getLoggerSuffix()
           val instrumentLogger = LogManager.getLogger(s"${ProductConstant.ProductInstrumentLogger}$loggerSuffix")
           val t1 = System.nanoTime()
@@ -406,7 +407,7 @@ object CommonProcessorFactory {
           ), null)
 
           Thread.sleep(1000)
-          throw e
+          throw ReportedException(e)
       }
     }
 
@@ -454,7 +455,7 @@ object CommonProcessorFactory {
         val pathsList = paths.mkString(",")
         batchLog.debug(s"Batch loading files:$pathsList")
         val inputDf = spark.sparkContext.parallelize(files, filesCount)
-          .flatMap(file => {
+          .instrumentedFlatMap(file => {
             val timeLast = System.nanoTime()
             val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
               .filter(l => {
@@ -556,7 +557,7 @@ object CommonProcessorFactory {
        */
       processEventData = (rdd: RDD[EventData], batchTime: Timestamp, batchInterval: Duration, outputPartitionTime: Timestamp) => {
         processDataset(rdd
-          .map(d => {
+          .instrumentedMap(d => {
             val bodyBytes = d.getBytes
             if (bodyBytes == null) throw new EngineException(s"null bytes from event: ${d.getObject}, properties:${d.getProperties}, systemProperties:${d.getSystemProperties}")
             (
@@ -609,7 +610,7 @@ object CommonProcessorFactory {
         process json data frame
        */
       processJson = (jsonRdd: RDD[String], batchTime: Timestamp, batchInterval: Duration, outputPartitionTime: Timestamp) => {
-        processDataset(jsonRdd.map((FileInternal(), _)).toDF(ColumnName.InternalColumnFileInfo, ColumnName.RawObjectColumn),
+        processDataset(jsonRdd.instrumentedMap((FileInternal(), _)).toDF(ColumnName.InternalColumnFileInfo, ColumnName.RawObjectColumn),
           batchTime, batchInterval, outputPartitionTime, null, "")
       },
       // process blob path from batch blob input
@@ -639,7 +640,7 @@ object CommonProcessorFactory {
           val t1 = System.nanoTime
 
           // Wrap files to FileInternal object
-          val internalFiles = pathsRDD.map(file => {
+          val internalFiles = pathsRDD.instrumentedMap(file => {
             FileInternal(inputPath = file,
               outputFolders = null,
               outputFileName = null,
@@ -649,7 +650,7 @@ object CommonProcessorFactory {
             )
           })
 
-          val paths = internalFiles.map(_.inputPath).collect()
+          val paths = internalFiles.instrumentedMap(_.inputPath).collect()
           val InputBlobsMetric = Map(s"InputBlobs" -> paths.size.toDouble)
           postMetrics(InputBlobsMetric)
           batchLog.warn(s"InputBlob count=${paths.size}");
@@ -657,7 +658,7 @@ object CommonProcessorFactory {
           val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(paths.head, spark)
 
           val inputDf = internalFiles
-            .flatMap(file => {
+            .instrumentedFlatMap(file => {
               val timeLast = System.nanoTime()
               val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"), blobStorageKey)
                 .filter(l => {
@@ -713,7 +714,7 @@ object CommonProcessorFactory {
      */
       processConsumerRecord = (rdd: RDD[ConsumerRecord[String, String]], batchTime: Timestamp, batchInterval: Duration, outputPartitionTime: Timestamp) => {
         processDataset(rdd
-          .map(d => {
+          .instrumentedMap(d => {
             val value = d.value()
             if (value == null) throw new EngineException(s"null bytes from ConsumerRecord")
             //Capture key if present. Key can be null.

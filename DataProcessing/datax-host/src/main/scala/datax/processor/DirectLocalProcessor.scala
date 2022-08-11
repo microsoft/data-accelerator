@@ -5,8 +5,8 @@
 package datax.processor
 
 import java.sql.Timestamp
-
 import com.microsoft.azure.eventhubs.EventData
+import datax.telemetry.AppInsightLogger
 import datax.utility.DateTimeUtil
 import org.apache.spark.rdd.RDD
 
@@ -17,6 +17,6 @@ class DirectLocalProcessor(processEventData: (RDD[EventData], Timestamp, Duratio
   extends StreamingProcessor[EventData]{
   override val process = (rdd: RDD[EventData], batchTime: Timestamp, batchInterval: Duration) => {
     val outputPartitionTime =DateTimeUtil.getCurrentTime()
-    processEventData(rdd, batchTime, batchInterval, outputPartitionTime)
+    AppInsightLogger.InstrumentedFunction((Unit) => processEventData(rdd, batchTime, batchInterval, outputPartitionTime), "UncaughtException")
   }
 }

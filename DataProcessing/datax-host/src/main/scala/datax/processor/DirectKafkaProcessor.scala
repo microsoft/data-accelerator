@@ -4,6 +4,8 @@
 // *********************************************************************
 package datax.processor
 
+import datax.telemetry.AppInsightLogger
+
 import java.sql.Timestamp
 import datax.utility.DateTimeUtil
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -16,6 +18,6 @@ class DirectKafkaProcessor (processConsumerRecord: (RDD[ConsumerRecord[String,St
   extends StreamingProcessor[ConsumerRecord[String,String]] {
   override val process = (rdd: RDD[ConsumerRecord[String,String]], batchTime: Timestamp, batchInterval: Duration) => {
     val outputPartitionTime = DateTimeUtil.getCurrentTime()
-    processConsumerRecord(rdd, batchTime, batchInterval, outputPartitionTime)
+    AppInsightLogger.InstrumentedFunction((Unit) => processConsumerRecord(rdd, batchTime, batchInterval, outputPartitionTime), "UncaughtException")
   }
 }

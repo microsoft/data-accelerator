@@ -7,7 +7,7 @@ package datax.input
 import java.sql.Timestamp
 import com.microsoft.azure.eventhubs.EventData
 import datax.constants.ProductConstant
-import datax.telemetry.AppInsightLogger
+import datax.telemetry.{AppInsightLogger, ReportedException}
 import datax.utility.DateTimeUtil
 import org.apache.log4j.LogManager
 import org.apache.spark.rdd.RDD
@@ -42,7 +42,7 @@ object LocalStreamingFactory extends  StreamingFactory[EventData]{
             AppInsightLogger.trackException(e,
               Map("batchTime"->time.toString()),
               Map("batchMetric"->1))
-            throw e
+            throw ReportedException(e)
         }
 
         AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/localstreaming/batch/end", Map("batchTime"->time.toString), null)

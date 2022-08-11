@@ -37,6 +37,7 @@ object AppInsightLogger extends TelemetryService {
       logger.warn("AI Key is not found, AppInsight Sender is OFF")
   }
 
+  private val ExceptionTelemetryFlushDelayMs = 10000
   private val client = new TelemetryClient(config)
   private var defaultProps = new scala.collection.mutable.HashMap[String, String]
   private var batchMetricProps = new scala.collection.mutable.HashMap[String, String]
@@ -105,6 +106,25 @@ object AppInsightLogger extends TelemetryService {
   def trackException(e: Exception, properties: Map[String, String], measurements: Map[String, Double]) = {
     logger.warn(s"sending exception: ${e.getMessage}")
     client.trackException(e, mergeProps(properties), mergeMeasures(measurements))
+  }
+
+  def InstrumentedFunction[T](fn: Unit => T, location:String = null, batchTime: Timestamp = null): T = {
+    try {
+      fn.apply()
+    }
+    catch {
+      case re: ReportedException =>
+        // This has been reported through AI already, just bubble up the exception
+        throw re
+      case e: Exception =>
+        trackException(e, Map(
+          "location" -> Option(location).getOrElse(""),
+          "errorMessage" -> e.getMessage,
+          "batchTime" -> Option(batchTime).map(_.toString).getOrElse("")
+        ), null)
+        Thread.sleep(ExceptionTelemetryFlushDelayMs)
+        throw e
+    }
   }
 
   def initForApp(appName: String, mode: String = "") = {

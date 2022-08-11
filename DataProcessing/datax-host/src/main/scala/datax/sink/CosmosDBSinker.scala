@@ -15,6 +15,7 @@ import datax.utility.ConverterUtil._
 import datax.utility.SinkerUtil
 import org.apache.log4j.LogManager
 import org.apache.spark.sql.SparkSession
+import datax.sink.SinkCommon._
 
 class CosmosDBSinker(key: String, conf: CosmosDBConf) {
   private val logger = LogManager.getLogger(s"CosmosDBSinker-${key}")
@@ -122,7 +123,7 @@ object CosmosDBSinkerManager extends SinkOperatorFactory {
       isEnabled = conf!=null,
       sinkAsJson = true,
       flagColumnExprGenerator = () => null,
-      generator = flagColumnIndex => SinkerUtil.outputGenerator(
+      generator = flagColumnIndex => outputGenerator(
         (dataToSend:Seq[String],ls: String) => {
           val cosmosDBSinker = CosmosDBSinkerManager.getSinker(conf)
           dataToSend.count(d=>cosmosDBSinker.createDocument(d))

@@ -14,16 +14,18 @@ import datax.data.{FileInternal, ProcessResult}
 import datax.fs.HadoopClient
 import datax.securedsetting.KeyVaultClient
 import datax.sink.BlobOutputSetting.BlobOutputConf
-import datax.utility.{GZipHelper, SinkerUtil}
+import datax.utility.{DataMerger, GZipHelper, SinkerUtil}
 import datax.constants.{BlobProperties, ProductConstant}
 import datax.config.ConfigManager
 import datax.host.SparkSessionSingleton
 import datax.telemetry.AppInsightLogger
+import datax.utility.SinkerUtil.{outputAllEvents, outputFilteredEvents}
 import org.apache.spark.broadcast
 import org.apache.log4j.LogManager
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import datax.sink.SinkCommon._
 
 import scala.concurrent.duration.Duration
 
@@ -221,7 +223,7 @@ object BlobSinker extends SinkOperatorFactory {
     }
 
     (data: DataFrame, time: Timestamp, batchTime: Timestamp, loggerSuffix: String) => {
-      SinkerUtil.sinkJson(data, time, batchTime, jsonSinkDelegate)
+      sinkJson(data, time, batchTime, jsonSinkDelegate)
     }
   }
 

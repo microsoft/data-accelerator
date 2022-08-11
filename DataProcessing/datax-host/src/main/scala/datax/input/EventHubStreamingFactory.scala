@@ -6,13 +6,12 @@ package datax.input
 
 import java.sql.Timestamp
 import java.time.Instant
-
 import com.microsoft.azure.eventhubs.EventData
 import datax.checkpoint.EventhubCheckpointer
 import datax.constants.ProductConstant
 import datax.exception.EngineException
 import datax.securedsetting.KeyVaultClient
-import datax.telemetry.AppInsightLogger
+import datax.telemetry.{AppInsightLogger, ReportedException}
 import datax.utility.DateTimeUtil
 import org.apache.log4j.LogManager
 import org.apache.spark.eventhubs.{EventHubsConf, EventHubsUtils, EventPosition}
@@ -102,7 +101,7 @@ object EventHubStreamingFactory extends  StreamingFactory[EventData]{
           AppInsightLogger.trackException(e,
             Map("batchTime"->time.toString()),
             offsetRanges.map(offset=>s"${offset.name}-${offset.partitionId.toString}-fromSeqNo"->offset.fromSeqNo.toDouble).toMap)
-          throw e
+          throw ReportedException(e)
       }
 
       if(time.isMultipleOf(org.apache.spark.streaming.Duration(checkpointIntervalInMilliseconds))) {

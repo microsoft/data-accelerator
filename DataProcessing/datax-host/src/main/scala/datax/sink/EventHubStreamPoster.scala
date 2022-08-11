@@ -11,6 +11,7 @@ import datax.config.SettingDictionary
 import datax.exception.EngineException
 import datax.sink.EventHubOutputSetting.EventHubOutputConf
 import org.apache.log4j.LogManager
+import datax.sink.SinkCommon._
 
 object EventHubStreamPoster extends SinkOperatorFactory {
   val SinkName = "EventHub"
@@ -64,7 +65,7 @@ object EventHubStreamPoster extends SinkOperatorFactory {
       name = SinkerUtil.hashName(conf.connectionString),
       connectionString = conf.connectionString
     ), conf.appendProperties, ls, compressionType)
-    SinkerUtil.outputGenerator(sender,SinkName)(flagColumnIndex)
+    outputGenerator(sender,SinkName)(flagColumnIndex)
   }
 
   def getSinkOperator(dict: SettingDictionary, name: String) : SinkOperator = {

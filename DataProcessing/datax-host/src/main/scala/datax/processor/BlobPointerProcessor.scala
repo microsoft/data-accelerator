@@ -5,9 +5,9 @@
 package datax.processor
 
 import java.sql.Timestamp
-
 import com.microsoft.azure.eventhubs.EventData
 import datax.input.BlobPointerInput
+import datax.telemetry.AppInsightLogger
 import datax.utility.DateTimeUtil
 import org.apache.spark.rdd.RDD
 
@@ -20,6 +20,6 @@ class BlobPointerProcessor(processPaths: (RDD[String], Timestamp, Duration, Time
 
   override val process = (rdd: RDD[EventData], batchTime: Timestamp, batchInterval: Duration) => {
     val currentTime = DateTimeUtil.getCurrentTime()
-    processPaths(rdd.map(BlobPointerInput.parseBlobPath), batchTime, batchInterval, currentTime, "")
+    AppInsightLogger.InstrumentedFunction((Unit) =>processPaths(rdd.map(BlobPointerInput.parseBlobPath), batchTime, batchInterval, currentTime, ""), "UncaughtException")
   }
 }

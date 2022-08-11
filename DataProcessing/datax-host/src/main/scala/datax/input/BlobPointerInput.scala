@@ -16,7 +16,7 @@ import datax.exception.EngineException
 import datax.input.BlobPointerInputSetting.BlobPointerInputConf
 import datax.sink.BlobOutputSetting.BlobOutputConf
 import datax.sink.{BlobOutputSetting, BlobSinker}
-import datax.telemetry.AppInsightLogger
+import datax.telemetry.{AppInsightLogger, ReportedException}
 import org.apache.log4j.LogManager
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructType}
@@ -95,7 +95,7 @@ object BlobPointerInput {
             "regex" -> blobPathRegex.toString()
           ), null)
           //null
-          throw new EngineException(msg, e)
+          throw ReportedException(new EngineException(msg, e))
       }
       case None =>
         val msg = s"Error occurs in extract file name from blob path. \n Please check: \nregex='$blobPathRegex'\nblobPath='$blobPath'"
@@ -107,7 +107,7 @@ object BlobPointerInput {
           "regex" -> blobPathRegex.toString()
         ), null)
         //null
-        throw new EngineException(msg)
+        throw ReportedException(new EngineException(msg))
     }
   }
 

@@ -5,9 +5,8 @@
 package datax.input
 
 import java.sql.Timestamp
-
 import datax.constants.ProductConstant
-import datax.telemetry.AppInsightLogger
+import datax.telemetry.{AppInsightLogger, ReportedException}
 import datax.utility.DateTimeUtil
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -83,7 +82,7 @@ object KafkaStreamingFactory extends  StreamingFactory[ConsumerRecord[String,Str
       catch {
         case e: Exception =>
           AppInsightLogger.trackException(e)
-          throw e
+          throw ReportedException(e)
       }
 
       //todo: write checkpoints
