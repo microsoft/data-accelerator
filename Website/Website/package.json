@@ -45,7 +45,7 @@
     "react-dom": "16.6.3",
     "react-loadable": "5.5.0",
     "redis": "3.1.2",
-    "request": "2.88.0",
+    "request": "2.88.2",
     "request-promise": "4.2.2",
     "tree-kill": "1.2.2",
     "uuid": "3.3.2",
