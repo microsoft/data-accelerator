@@ -37,7 +37,7 @@
     "q": "1.5.1",
     "promise-polyfill": "8.2.3",
     "prop-types": "15.6.2",
-    "radium": "0.25.0",
+    "radium": "0.25.2",
     "react": "16.6.3",
     "react-ace": "6.2.0",
     "react-dom": "16.6.3",
