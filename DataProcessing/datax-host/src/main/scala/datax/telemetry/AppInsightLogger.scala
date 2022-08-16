@@ -21,7 +21,7 @@ import java.sql.Timestamp
 import scala.collection.JavaConverters._
 
 
-object AppInsightLogger extends TelemetryService with ContextInitializer {
+object AppInsightLogger extends TelemetryService {
   private val logger = LogManager.getLogger("AppInsightLogger")
   private val config = TelemetryConfiguration.getActive
   private val setDict = ConfigManager.getActiveDictionary()
@@ -142,9 +142,9 @@ object AppInsightLogger extends TelemetryService with ContextInitializer {
 
   initForApp(setDict.getAppName())
 
+  // Enable Log4j appender that uses Application insights
   aiAppender.activateOptions()
   aiAppender.setThreshold(Level.ERROR)
+  aiAppender.getTelemetryClientProxy.getTelemetryClient.getContext.getProperties.putAll(batchMetricProps.asJava)
   LogManager.getRootLogger.addAppender(aiAppender)
-
-  override def initialize(telemetryContext: TelemetryContext): Unit = telemetryContext.getProperties.putAll(batchMetricProps.asJava)
 }
