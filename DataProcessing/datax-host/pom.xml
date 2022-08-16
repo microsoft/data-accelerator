@@ -170,6 +170,11 @@ SOFTWARE
             <artifactId>dbutils-api_2.11</artifactId>
             <version>0.0.5</version>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>applicationinsights-logging-log4j1_2</artifactId>
+            <version>2.6.4</version>
+        </dependency>
     </dependencies>
   <profiles>
     <profile>
