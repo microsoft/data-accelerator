@@ -142,9 +142,11 @@ object AppInsightLogger extends TelemetryService {
 
   initForApp(setDict.getAppName())
 
-  // Enable Log4j appender that uses Application insights
-  aiAppender.activateOptions()
-  aiAppender.setThreshold(Level.ERROR)
-  aiAppender.getTelemetryClientProxy.getTelemetryClient.getContext.getProperties.putAll(batchMetricProps.asJava)
-  LogManager.getRootLogger.addAppender(aiAppender)
+  if(IsEnabled()) {
+    // Enable Log4j appender that uses Application insights
+    aiAppender.activateOptions()
+    aiAppender.setThreshold(Level.ERROR)
+    aiAppender.getTelemetryClientProxy.getTelemetryClient.getContext.getProperties.putAll(batchMetricProps.asJava)
+    LogManager.getRootLogger.addAppender(aiAppender)
+  }
 }
