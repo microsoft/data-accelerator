@@ -4,13 +4,16 @@
 // *********************************************************************
 package datax.telemetry
 
+import com.microsoft.applicationinsights.extensibility.ContextInitializer
+import com.microsoft.applicationinsights.log4j.v1_2.ApplicationInsightsAppender
+import com.microsoft.applicationinsights.telemetry.TelemetryContext
 import com.microsoft.applicationinsights.{TelemetryClient, TelemetryConfiguration}
 import datax.config.ConfigManager
 import datax.constants.JobArgument
 import datax.securedsetting.KeyVaultClient
 import datax.service.TelemetryService
 import datax.utility.DateTimeUtil
-import org.apache.log4j.LogManager
+import org.apache.log4j.{Level, LogManager, PatternLayout}
 import org.apache.spark.SparkEnv
 import org.apache.spark.streaming.Time
 
@@ -18,15 +21,17 @@ import java.sql.Timestamp
 import scala.collection.JavaConverters._
 
 
-object AppInsightLogger extends TelemetryService {
+object AppInsightLogger extends TelemetryService with ContextInitializer {
   private val logger = LogManager.getLogger("AppInsightLogger")
   private val config = TelemetryConfiguration.getActive
   private val setDict = ConfigManager.getActiveDictionary()
+  private val aiAppender = new ApplicationInsightsAppender()
   setDict.get(JobArgument.ConfName_AppInsightKeyRef) match {
     case Some(keyRef) =>
       KeyVaultClient.getSecret(keyRef) match {
         case Some(key) =>
           config.setInstrumentationKey(key)
+          aiAppender.setInstrumentationKey(key)
           logger.warn("AI Key is set, AppInsight Sender is ON")
         case None =>
           logger.warn(s"AI KeyRef is not found at $keyRef, AppInsight Sender is OFF")
@@ -136,4 +141,10 @@ object AppInsightLogger extends TelemetryService {
   }
 
   initForApp(setDict.getAppName())
+
+  aiAppender.activateOptions()
+  aiAppender.setThreshold(Level.ERROR)
+  LogManager.getRootLogger.addAppender(aiAppender)
+
+  override def initialize(telemetryContext: TelemetryContext): Unit = telemetryContext.getProperties.putAll(batchMetricProps.asJava)
 }
