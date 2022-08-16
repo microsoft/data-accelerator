@@ -4,21 +4,19 @@
 // *********************************************************************
 package datax.telemetry
 
-import com.microsoft.applicationinsights.extensibility.ContextInitializer
 import com.microsoft.applicationinsights.log4j.v1_2.ApplicationInsightsAppender
-import com.microsoft.applicationinsights.telemetry.TelemetryContext
 import com.microsoft.applicationinsights.{TelemetryClient, TelemetryConfiguration}
 import datax.config.ConfigManager
 import datax.constants.JobArgument
 import datax.securedsetting.KeyVaultClient
 import datax.service.TelemetryService
-import datax.utility.DateTimeUtil
-import org.apache.log4j.{Level, LogManager, PatternLayout}
+import org.apache.log4j.{Level, LogManager}
 import org.apache.spark.SparkEnv
 import org.apache.spark.streaming.Time
 
 import java.sql.Timestamp
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 
 object AppInsightLogger extends TelemetryService {
@@ -142,11 +140,19 @@ object AppInsightLogger extends TelemetryService {
 
   initForApp(setDict.getAppName())
 
-  if(IsEnabled()) {
+  // App Insights Log4j Appender (Default values: Enabled = false, Level = Error)
+  val bAppenderEnabled = setDict.get(JobArgument.ConfName_AppInsightAppenderEnabled)
+    .flatMap(x => Try(x.toBoolean).toOption)
+    .getOrElse(false)
+  if(bAppenderEnabled && IsEnabled()) {
     // Enable Log4j appender that uses Application insights
+    val appenderLevel = setDict.get(JobArgument.ConfName_AppInsightAppenderLevel)
+      .flatMap(x => Try(Level.toLevel(x)).toOption)
+      .getOrElse(Level.ERROR)
     aiAppender.activateOptions()
-    aiAppender.setThreshold(Level.ERROR)
+    aiAppender.setThreshold(appenderLevel)
     aiAppender.getTelemetryClientProxy.getTelemetryClient.getContext.getProperties.putAll(batchMetricProps.asJava)
     LogManager.getRootLogger.addAppender(aiAppender)
+    logger.info("Application Insight Log Appender enabled")
   }
 }
