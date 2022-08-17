@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono
 class SecretClientTokenCredential extends TokenCredential {
 
   def getToken(request:TokenRequestContext): Mono[AccessToken] = {
-		Mono.just(new AccessToken(getAccessToken("https://vault.azure.net"), OffsetDateTime.now().plusMinutes(5)))	
+		Mono.just(new AccessToken(getAccessToken("https://vault.azure.net"), OffsetDateTime.now().plusMinutes(60)))
   }
 
 }
