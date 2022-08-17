@@ -15,6 +15,7 @@ object JobArgument {
   def ConfName_AppInsightKeyRef = s"${ConfNamePrefix}APPINSIGHTKEYREF"
   def ConfName_AppInsightAppenderEnabled = s"${ConfNamePrefix}AIAPPENDERENABLED"
   def ConfName_AppInsightAppenderLevel = s"${ConfNamePrefix}AIAPPENDERLEVEL"
+  def ConfName_AppInsightAppenderBatchDate = s"${ConfNamePrefix}AIAPPENDERBATCHDATE"
   def ConfName_BlobWriterTimeout: String = s"${ConfNamePrefix}BlobWriterTimeout"
   def ConfName_DefaultVaultName: String = s"${ConfNamePrefix}DEFAULTVAULTNAME"
   def ConfName_DefaultStorageAccount: String = s"${ConfNamePrefix}DEFAULTSTORAGEACCOUNT"
