@@ -51,7 +51,7 @@
     "react-splitter-layout": "3.0.1",
     "redux": "4.2.0",
     "redux-thunk": "2.4.1",
-    "reselect": "4.0.0",
+    "reselect": "4.1.6",
     "rimraf": "3.0.2",
     "terser-webpack-plugin": "4.2.3",
     "url-loader": "4.1.1",
