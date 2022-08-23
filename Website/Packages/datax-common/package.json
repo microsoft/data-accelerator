@@ -31,7 +31,7 @@
     "file-loader": "6.2.0",
     "js-cookie": "3.0.1",
     "mini-css-extract-plugin": "1.6.2",
-    "office-ui-fabric-react": "6.111.2",
+    "office-ui-fabric-react": "6.195.3",
     "q": "1.5.1",
     "prop-types": "15.8.1",
     "radium": "0.25.2",
