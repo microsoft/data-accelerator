@@ -169,7 +169,11 @@ object AppInsightLogger extends TelemetryService {
     })
   }
 
-  initForApp(setDict.getAppName())
+  private def inferAppMode() = {
+    setDict.get(JobArgument.ConfName_AppInsightAppenderBatchDate).map(_ => "Batch").getOrElse("Streaming")
+  }
+
+  initForApp(setDict.getAppName(), inferAppMode())
 
   // App Insights Log4j Appender (Default values: Enabled = false, Level = Error)
   if(bAppenderEnabled && IsEnabled()) {
