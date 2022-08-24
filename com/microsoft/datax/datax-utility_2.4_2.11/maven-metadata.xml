@@ -4,8 +4,8 @@
   <artifactId>datax-utility_2.4_2.11</artifactId>
   <versioning>
     <versions>
-      <version>1.2.13.ALPHA-SNAPSHOT</version>
+      <version>1.2.13-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20220819012519</lastUpdated>
+    <lastUpdated>20220824230947</lastUpdated>
   </versioning>
 </metadata>
