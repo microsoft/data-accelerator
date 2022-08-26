@@ -41,7 +41,7 @@ object AppInsightLogger extends TelemetryService {
       logger.warn("AI Key is not found, AppInsight Sender is OFF")
   }
 
-  private val bAppenderEnabled = (for {
+  private val IsAIAppenderEnabled = (for {
     option <- setDict.get(JobArgument.ConfName_AppInsightAppenderEnabled)
     bEnabled <- Try(option.toBoolean).toOption
   } yield bEnabled).getOrElse(false)
@@ -63,7 +63,7 @@ object AppInsightLogger extends TelemetryService {
   }
 
   def trackException(e: Exception) = {
-    if(!bAppenderEnabled) {
+    if(!IsAIAppenderEnabled) {
       client.trackException(e, mergeProps(null), mergeMeasures(null))
     }
   }
@@ -114,7 +114,7 @@ object AppInsightLogger extends TelemetryService {
   }
 
   def trackException(e: Exception, properties: Map[String, String], measurements: Map[String, Double]) = {
-    if(!bAppenderEnabled) {
+    if(!IsAIAppenderEnabled) {
       logger.warn(s"sending exception: ${e.getMessage}")
       client.trackException(e, mergeProps(properties), mergeMeasures(measurements))
     }
@@ -176,7 +176,7 @@ object AppInsightLogger extends TelemetryService {
   initForApp(setDict.getAppName(), inferAppMode())
 
   // App Insights Log4j Appender (Default values: Enabled = false, Level = Error)
-  if(bAppenderEnabled && IsEnabled()) {
+  if(IsAIAppenderEnabled && IsEnabled()) {
     // Enable Log4j appender that uses Application insights
     val appenderLevel = (for {
       option <- setDict.get(JobArgument.ConfName_AppInsightAppenderLevel)
