@@ -36,7 +36,7 @@
     "moment": "2.29.4",
     "mongodb": "4.8.0",
     "ms-rest-azure": "2.6.2",
-    "mssql": "8.1.2",
+    "mssql": "9.0.1",
     "passport": "0.4.0",
     "passport-azure-ad": "4.3.4",
     "q": "1.5.1",
