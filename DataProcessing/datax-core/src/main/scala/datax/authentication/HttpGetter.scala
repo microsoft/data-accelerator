@@ -13,7 +13,7 @@ object HttpGetter {
   private def timeOutValue = 5000 // 5s
 
   def getHttpClient() = {
-    val requestConfig = RequestConfig.custom().setConnectionRequestTimeout(timeOutValue).setSocketTimeout(timeOutValue).build()
+    val requestConfig = RequestConfig.custom().setConnectionRequestTimeout(timeOutValue).setSocketTimeout(timeOutValue).setConnectTimeout(20000).build()
     HttpClients.custom().setDefaultRequestConfig(requestConfig).build()
   }
 
