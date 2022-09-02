@@ -10,16 +10,15 @@ import java.nio.channels.FileChannel
 import java.nio.file.Files
 import java.util.concurrent.{Executors, TimeUnit}
 import java.util.zip.GZIPInputStream
-
 import com.google.common.io.{Files => GFiles}
 import datax.config.SparkEnvVariables
-import datax.constants.{ProductConstant, BlobProperties}
+import datax.constants.{BlobProperties, ProductConstant}
 import datax.exception.EngineException
 import datax.securedsetting.KeyVaultClient
 import datax.telemetry.AppInsightLogger
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path, RemoteIterator}
+import org.apache.hadoop.fs.{FileStatus, FileSystem, Path, RemoteIterator}
 import org.apache.log4j.LogManager
 import org.apache.spark.broadcast
 
@@ -517,6 +516,23 @@ object HadoopClient {
 
     if(fs.exists(path))
       fs.listFiles(path, true).map(f=>f.getPath.toString)
+    else
+      Iterator.empty
+  }
+
+  /**
+   * list file objects under a folder
+   *
+   * @param folder path to the specified folder
+   * @return a list of file paths under the folder
+   */
+  def listFileObjects(folder: String): Iterator[FileStatus] = {
+    resolveStorageAccountKeyForPath(folder)
+    val path = new Path(folder)
+    val fs = path.getFileSystem(getConf)
+
+    if (fs.exists(path))
+      fs.listFiles(path, true)
     else
       Iterator.empty
   }
