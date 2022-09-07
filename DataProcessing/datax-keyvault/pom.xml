@@ -51,7 +51,7 @@ SOFTWARE
 
   <groupId>com.microsoft.datax</groupId>
   <artifactId>datax-keyvault_2.4_2.11</artifactId>
-  <version>1.2.12-SNAPSHOT</version>
+  <version>1.2.13-SNAPSHOT</version>
 
   <properties>
     <spark.version>2.4.5</spark.version>
@@ -67,7 +67,7 @@ SOFTWARE
     <dependency>
       <groupId>org.json4s</groupId>
       <artifactId>json4s-jackson_2.11</artifactId>
-      <version>3.5.3</version>
+      <version>4.0.5</version>
     </dependency>
     <!--Azure dependencies-->
     <dependency>
@@ -78,13 +78,13 @@ SOFTWARE
     <dependency>
       <groupId>com.azure</groupId>
       <artifactId>azure-security-keyvault-secrets</artifactId>
-      <version>4.4.4</version>
+      <version>4.4.6</version>
     </dependency>
     <!-- For Config Parser-->
     <dependency>
       <groupId>com.microsoft.azure</groupId>
       <artifactId>azure</artifactId>
-      <version>1.41.3</version>
+      <version>1.41.4</version>
     </dependency>
     <!--http-->
     <dependency>
@@ -95,12 +95,12 @@ SOFTWARE
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
-      <version>2.13.2</version>
+      <version>2.13.3</version>
     </dependency>
     <dependency>      
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.13.2.2</version>
+      <version>2.13.3</version>
     </dependency>
     <dependency>
       <groupId>com.microsoft.datax</groupId>
@@ -181,7 +181,7 @@ SOFTWARE
       <!-- enable scalatest -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.4.1</version>
+        <version>3.4.2</version>
         <configuration>
           <descriptors>
             <descriptor>with-dependencies.xml</descriptor>

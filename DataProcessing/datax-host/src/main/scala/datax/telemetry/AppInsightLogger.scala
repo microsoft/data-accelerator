@@ -4,29 +4,33 @@
 // *********************************************************************
 package datax.telemetry
 
+import com.microsoft.applicationinsights.log4j.v1_2.ApplicationInsightsAppender
 import com.microsoft.applicationinsights.{TelemetryClient, TelemetryConfiguration}
 import datax.config.ConfigManager
 import datax.constants.JobArgument
 import datax.securedsetting.KeyVaultClient
 import datax.service.TelemetryService
-import datax.utility.DateTimeUtil
-import org.apache.log4j.LogManager
+import org.apache.log4j.{Level, LogManager}
 import org.apache.spark.SparkEnv
 import org.apache.spark.streaming.Time
 
 import java.sql.Timestamp
+import java.time.Instant
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 
 object AppInsightLogger extends TelemetryService {
   private val logger = LogManager.getLogger("AppInsightLogger")
   private val config = TelemetryConfiguration.getActive
   private val setDict = ConfigManager.getActiveDictionary()
+  private val aiAppender = new ApplicationInsightsAppender()
   setDict.get(JobArgument.ConfName_AppInsightKeyRef) match {
     case Some(keyRef) =>
       KeyVaultClient.getSecret(keyRef) match {
         case Some(key) =>
           config.setInstrumentationKey(key)
+          aiAppender.setInstrumentationKey(key)
           logger.warn("AI Key is set, AppInsight Sender is ON")
         case None =>
           logger.warn(s"AI KeyRef is not found at $keyRef, AppInsight Sender is OFF")
@@ -36,6 +40,11 @@ object AppInsightLogger extends TelemetryService {
       config.setTrackingIsDisabled(true)
       logger.warn("AI Key is not found, AppInsight Sender is OFF")
   }
+
+  private val IsAIAppenderEnabled = (for {
+    option <- setDict.get(JobArgument.ConfName_AppInsightAppenderEnabled)
+    bEnabled <- Try(option.toBoolean).toOption
+  } yield bEnabled).getOrElse(false)
 
   private val client = new TelemetryClient(config)
   private var defaultProps = new scala.collection.mutable.HashMap[String, String]
@@ -54,7 +63,9 @@ object AppInsightLogger extends TelemetryService {
   }
 
   def trackException(e: Exception) = {
-    client.trackException(e, mergeProps(null), mergeMeasures(null))
+    if(!IsAIAppenderEnabled) {
+      client.trackException(e, mergeProps(null), mergeMeasures(null))
+    }
   }
 
   def mergeProps(props: Map[String, String]):java.util.Map[java.lang.String, java.lang.String] = {
@@ -103,8 +114,10 @@ object AppInsightLogger extends TelemetryService {
   }
 
   def trackException(e: Exception, properties: Map[String, String], measurements: Map[String, Double]) = {
-    logger.warn(s"sending exception: ${e.getMessage}")
-    client.trackException(e, mergeProps(properties), mergeMeasures(measurements))
+    if(!IsAIAppenderEnabled) {
+      logger.warn(s"sending exception: ${e.getMessage}")
+      client.trackException(e, mergeProps(properties), mergeMeasures(measurements))
+    }
   }
 
   def initForApp(appName: String, mode: String = "") = {
@@ -133,7 +146,46 @@ object AppInsightLogger extends TelemetryService {
       "Pipeline mode" -> mode,
       "Pipeline component" -> "HDInsight"
     )
+    updateAIAppenderContextProperties()
   }
 
-  initForApp(setDict.getAppName())
+  private def getAIAppenderContextProperties() = {
+    for {
+      proxyClient <- Option(aiAppender.getTelemetryClientProxy)
+      client <- Option(proxyClient.getTelemetryClient)
+      context <- Option(client.getContext)
+    } yield context.getProperties
+  }
+
+  private def updateAIAppenderContextProperties() = {
+    getAIAppenderContextProperties().foreach(props => {
+      props.putAll(batchMetricProps.asJava)
+      // Add context properties for batch mode if available
+      val batchTime = for {
+        option <- setDict.get(JobArgument.ConfName_AppInsightAppenderBatchDate)
+        date <- Try(Timestamp.from(Instant.parse(option))).toOption
+      } yield date.toString
+      batchTime.foreach(batchTime => props.put("Batch date", batchTime))
+    })
+  }
+
+  private def inferAppMode() = {
+    setDict.get(JobArgument.ConfName_AppInsightAppenderBatchDate).map(_ => "Batch").getOrElse("Streaming")
+  }
+
+  initForApp(setDict.getAppName(), inferAppMode())
+
+  // App Insights Log4j Appender (Default values: Enabled = false, Level = Error)
+  if(IsAIAppenderEnabled && IsEnabled()) {
+    // Enable Log4j appender that uses Application insights
+    val appenderLevel = (for {
+      option <- setDict.get(JobArgument.ConfName_AppInsightAppenderLevel)
+      level <- Try(Level.toLevel(option)).toOption
+    } yield level).getOrElse(Level.ERROR)
+    aiAppender.activateOptions()
+    aiAppender.setThreshold(appenderLevel)
+    updateAIAppenderContextProperties()
+    LogManager.getRootLogger.addAppender(aiAppender)
+    logger.info("Application Insight Log Appender enabled")
+  }
 }
