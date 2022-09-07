@@ -4,7 +4,7 @@
   <groupId>com.microsoft.datax</groupId>
   <artifactId>datax-core_2.4_2.11</artifactId>
   <name>Data Accelerator Core</name>
-  <version>1.2.12-SNAPSHOT</version>
+  <version>1.2.13-SNAPSHOT</version>
   <description>This package contains the core module of Data Accelerator functionality.</description>
   <url>https://github.com/Microsoft/data-accelerator</url>
   <developers>
@@ -145,7 +145,7 @@
                   <goal>site</goal>
                 </goals>
                 <configuration>
-                  <message>Maven artifacts for 1.2.12-SNAPSHOT</message>
+                  <message>Maven artifacts for 1.2.13-SNAPSHOT</message>
                   <noJekyll>true</noJekyll>
                   <outputDirectory>C:\Users\yinyuwang\Repos\github.com\microsoft\data-accelerator\DataProcessing\datax-core\target/mvn-repo</outputDirectory>
                   <branch>refs/heads/mvn-repo</branch>
@@ -159,7 +159,7 @@
               </execution>
             </executions>
             <configuration>
-              <message>Maven artifacts for 1.2.12-SNAPSHOT</message>
+              <message>Maven artifacts for 1.2.13-SNAPSHOT</message>
               <noJekyll>true</noJekyll>
               <outputDirectory>C:\Users\yinyuwang\Repos\github.com\microsoft\data-accelerator\DataProcessing\datax-core\target/mvn-repo</outputDirectory>
               <branch>refs/heads/mvn-repo</branch>
