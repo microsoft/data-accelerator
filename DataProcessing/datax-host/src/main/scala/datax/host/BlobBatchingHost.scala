@@ -108,9 +108,9 @@ object BlobBatchingHost {
     AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/batch/end", null, batchResult)
 
     //write tracker file
-    val (trackerFolder, dateTime) = getTrackerConfigs(config)
+    val (trackerFolder, dateTimeStart, dateTimeEnd) = getTrackerConfigs(config)
     if (trackerFolder != "") {
-      writeTracker(trackerFolder, dateTime)
+      writeTracker(trackerFolder, dateTimeStart, dateTimeEnd)
     }
     /*
     This is a temporary workaround for https://github.com/Microsoft/ApplicationInsights-Java/issues/891
@@ -129,17 +129,23 @@ object BlobBatchingHost {
 
   // get tracker configs from input arguments and sys env
   // if the trackerFolder is configured, a tracker file should be written in the folder
-  def getTrackerConfigs(config: UnifiedConfig) : (String, Timestamp) = {
+  def getTrackerConfigs(config: UnifiedConfig) : (String, Timestamp, Timestamp) = {
     val inputRoot = config.dict.getOrElse("trackerFolder", "")
     val timeStart = sys.env.getOrElse("process_start_datetime", "")
-    (inputRoot, Timestamp.from(Instant.parse(timeStart)))
+    val timeEnd = sys.env.getOrElse("process_end_datetime", "")
+    (inputRoot, Timestamp.from(Instant.parse(timeStart)), Timestamp.from(Instant.parse(timeEnd)))
   }
 
   // write a tracker file in specific folder with format _SUCCESS_yyyy_MM_dd_HH
-  def writeTracker(trackerFolder: String, dt: Timestamp): Unit = {
+  def writeTracker(trackerFolder: String, dt: Timestamp, dtEnd: Timestamp): Unit = {
     // first create folder if not exists
     HadoopClient.createFolder(trackerFolder)
-    val dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm")
+    var fmt = "yyyy_MM_dd_HH"
+    // if the interval is not 1h, the use the format yyyy_MM_dd_HH_mm
+    if (dtEnd.getTime / 1000 - dt.getTime / 1000 + 1 != 3600) {
+      fmt += "_mm"
+    }
+    val dateFormat = new SimpleDateFormat(fmt)
 
     val out = "_SUCCESS_" + dateFormat.format(dt)
     val outFilename = trackerFolder + out
