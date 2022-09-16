@@ -17,16 +17,16 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rimraf dist && webpack --mode production --config webpack.config.js  --progress --display-modules --display-error-details --colors --display-chunks --display-reasons",
-    "dev": "rimraf dist && webpack --mode development --config webpack.config.js  --progress --display-modules --display-error-details --colors --display-chunks --display-reasons",
-    "devpatch": "rimraf dist && webpack --mode development --config webpack.config.js  --progress --display-modules --display-error-details --colors --display-chunks --display-reasons && localdevpatch.bat"
+    "build": "rimraf dist && webpack --mode production --config webpack.config.js  --progress  --display-error-details --colors --display-chunks --display-reasons",
+    "dev": "rimraf dist && webpack --mode development --config webpack.config.js  --progress  --display-error-details --colors --display-chunks --display-reasons",
+    "devpatch": "rimraf dist && webpack --mode development --config webpack.config.js  --progress  --display-error-details --colors --display-chunks --display-reasons && localdevpatch.bat"
   },
   "dependencies": {
     "moment": "2.29.4"
   },
   "devDependencies": {
     "@babel/core": "7.19.0",
-    "@babel/preset-env": "7.19.0",
+    "@babel/preset-env": "7.18.10",
     "@babel/preset-react": "7.18.6",
     "babel-loader": "8.2.5",
     "css-loader": "5.2.7",
