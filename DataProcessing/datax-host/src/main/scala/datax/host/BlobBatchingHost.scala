@@ -15,7 +15,9 @@ import datax.fs.HadoopClient
 import datax.input.BatchBlobInputSetting
 import datax.processor.{BatchBlobProcessor, CommonProcessorFactory}
 import datax.telemetry.AppInsightLogger
+import org.apache.hadoop.fs.FileStatus
 import org.apache.log4j.LogManager
+
 import scala.language.postfixOps
 import scala.collection.mutable.{HashSet, ListBuffer}
 import scala.concurrent.duration._
@@ -92,7 +94,10 @@ object BlobBatchingHost {
     val sc = spark.sparkContext
     val processor = processorGenerator(config)
 
-    val filesToProcess = prefixes.flatMap(prefix=>HadoopClient.listFiles(prefix._1).toSeq)
+    val filterTimeRange = config.dict.getOrElse("filterTimeRange", "").equals("true")
+    appLog.warn(s"filterTimeRange: $filterTimeRange")
+    val filesToProcess = prefixes.flatMap(prefix=>HadoopClient.listFileObjects(prefix._1).flatMap(f=>inTimeRange(f, filterTimeRange)).toSeq)
+    appLog.warn(s"filesToProcess: ${filesToProcess.length}")
     val minTimestamp = prefixes.minBy(_._2.getTime)._2
     appLog.warn(s"Start processing for $minTimestamp")
     val pathsRDD = sc.makeRDD(filesToProcess)
@@ -103,9 +108,9 @@ object BlobBatchingHost {
     AppInsightLogger.trackEvent(ProductConstant.ProductRoot + "/batch/end", null, batchResult)
 
     //write tracker file
-    val (trackerFolder, dateTime) = getTrackerConfigs(config)
+    val (trackerFolder, dateTimeStart, dateTimeEnd) = getTrackerConfigs(config)
     if (trackerFolder != "") {
-      writeTracker(trackerFolder, dateTime)
+      writeTracker(trackerFolder, dateTimeStart, dateTimeEnd)
     }
     /*
     This is a temporary workaround for https://github.com/Microsoft/ApplicationInsights-Java/issues/891
@@ -124,22 +129,46 @@ object BlobBatchingHost {
 
   // get tracker configs from input arguments and sys env
   // if the trackerFolder is configured, a tracker file should be written in the folder
-  def getTrackerConfigs(config: UnifiedConfig) : (String, Timestamp) = {
+  def getTrackerConfigs(config: UnifiedConfig) : (String, Timestamp, Timestamp) = {
     val inputRoot = config.dict.getOrElse("trackerFolder", "")
     val timeStart = sys.env.getOrElse("process_start_datetime", "")
-    (inputRoot, Timestamp.from(Instant.parse(timeStart)))
+    val timeEnd = sys.env.getOrElse("process_end_datetime", "")
+    (inputRoot, Timestamp.from(Instant.parse(timeStart)), Timestamp.from(Instant.parse(timeEnd)))
   }
 
   // write a tracker file in specific folder with format _SUCCESS_yyyy_MM_dd_HH
-  def writeTracker(trackerFolder: String, dt: Timestamp): Unit = {
+  def writeTracker(trackerFolder: String, dt: Timestamp, dtEnd: Timestamp): Unit = {
     // first create folder if not exists
     HadoopClient.createFolder(trackerFolder)
-    val dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH")
+    var fmt = "yyyy_MM_dd_HH"
+    // if the interval is not 1h, the use the format yyyy_MM_dd_HH_mm
+    if (dtEnd.getTime / 1000 - dt.getTime / 1000 + 1 != 3600) {
+      fmt += "_mm"
+    }
+    val dateFormat = new SimpleDateFormat(fmt)
 
     val out = "_SUCCESS_" + dateFormat.format(dt)
     val outFilename = trackerFolder + out
     HadoopClient.writeHdfsFile(outFilename, "", overwriteIfExists=true, directWrite=true)
     appLog.warn(s"tracker file has been written: $outFilename")
 
+  }
+
+  def inTimeRange(fs: FileStatus, filterTimeRange: Boolean): Iterator[String] = {
+    if (!filterTimeRange) {
+      return Iterator(fs.getPath.toString)
+    }
+    val start = Timestamp.from(Instant.parse(sys.env.getOrElse("process_start_datetime", ""))).getTime / 1000
+    val end = Timestamp.from(Instant.parse(sys.env.getOrElse("process_end_datetime", ""))).getTime / 1000
+    val fTime = fs.getModificationTime / 1000
+    appLog.warn(s"inTimeRange: start $start, end $end, fTime $fTime")
+
+    if (start % 3600 == 0) {
+      if (fTime <= end) Iterator(fs.getPath.toString) else Iterator.empty
+    } else if ((end + 1) % 3600 == 0) {
+      if (fTime >= start) Iterator(fs.getPath.toString) else Iterator.empty
+    } else {
+      if (fTime >= start && fTime <= end) Iterator(fs.getPath.toString) else Iterator.empty
+    }
   }
 }
