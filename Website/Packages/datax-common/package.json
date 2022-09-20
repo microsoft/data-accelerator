@@ -17,9 +17,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rimraf dist && webpack --mode production --config webpack.config.js  --progress --display-modules --display-error-details --colors --display-chunks --display-reasons",
-    "dev": "rimraf dist && webpack --mode development --config webpack.config.js  --progress --display-modules --display-error-details --colors --display-chunks --display-reasons",
-    "devpatch": "rimraf dist && webpack --mode development --config webpack.config.js  --progress --display-modules --display-error-details --colors --display-chunks --display-reasons && localdevpatch.bat"
+    "build": "rimraf dist && webpack --mode production --config webpack.config.js  --progress  --display-error-details --colors --display-chunks --display-reasons",
+    "dev": "rimraf dist && webpack --mode development --config webpack.config.js  --progress  --display-error-details --colors --display-chunks --display-reasons",
+    "devpatch": "rimraf dist && webpack --mode development --config webpack.config.js  --progress  --display-error-details --colors --display-chunks --display-reasons && localdevpatch.bat"
   },
   "dependencies": {},
   "devDependencies": {
