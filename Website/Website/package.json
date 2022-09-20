@@ -14,10 +14,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js --dist=prod",
     "devstart": "node server.js",
-    "build": "rimraf dist\\prod && webpack --mode production --config webpack.config.js --progress --display-modules --display-error-details --colors",
-    "buildwatch": "webpack --mode production --config webpack.config.js  --progress --display-modules --display-error-details --colors --watch",
-    "dev": "rimraf dist\\dev && webpack --mode development --config webpack.config.js --env.dist \"dev\"  --progress --display-modules --display-error-details --colors --display-chunks --display-reasons",
-    "devwatch": "webpack --mode development --config webpack.config.js --env.dist \"dev\" --progress --display-modules --display-error-details --colors --display-chunks --display-reasons --watch",
+    "build": "rimraf dist\\prod && webpack --mode production --config webpack.config.js --progress  --display-error-details --colors",
+    "buildwatch": "webpack --mode production --config webpack.config.js  --progress  --display-error-details --colors --watch",
+    "dev": "rimraf dist\\dev && webpack --mode development --config webpack.config.js --env.dist \"dev\"  --progress  --display-error-details --colors --display-chunks --display-reasons",
+    "devwatch": "webpack --mode development --config webpack.config.js --env.dist \"dev\" --progress  --display-error-details --colors --display-chunks --display-reasons --watch",
     "deploy": "call ./deploy/deploy.cmd"
   },
   "author": "Microsoft",
@@ -48,7 +48,7 @@
     "request": "2.88.2",
     "request-promise": "4.2.6",
     "tree-kill": "1.2.2",
-    "uuid": "3.3.2",
+    "uuid": "9.0.0",
     "winston": "2.4.6",
     "winston-daily-rotate-file": "1.4.6"
   },
