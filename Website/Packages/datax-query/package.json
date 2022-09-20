@@ -31,7 +31,7 @@
     "babel-loader": "8.2.5",
     "css-loader": "3.6.0",
     "file-loader": "6.2.0",
-    "mini-css-extract-plugin": "0.4.4",
+    "mini-css-extract-plugin": "1.6.2",
     "datax-common": "1.4.0-SNAPSHOT-9",
     "office-ui-fabric-react": "6.195.3",
     "q": "1.5.1",
