@@ -15,9 +15,9 @@
     "start": "node server.js --dist=prod",
     "devstart": "node server.js",
     "build": "rimraf dist\\prod && webpack --mode production --config webpack.config.js --progress  --display-error-details --colors",
-    "buildwatch": "webpack --mode production --config webpack.config.js  --progress  --display-error-details --colors --watch",
-    "dev": "rimraf dist\\dev && webpack --mode development --config webpack.config.js --env.dist \"dev\"  --progress  --display-error-details --colors --display-chunks --display-reasons",
-    "devwatch": "webpack --mode development --config webpack.config.js --env.dist \"dev\" --progress  --display-error-details --colors --display-chunks --display-reasons --watch",
+    "buildwatch": "webpack --mode production --config webpack.config.js  --progress  --watch",
+    "dev": "rimraf dist\\dev && webpack --mode development --config webpack.config.js --env.dist \"dev\"  --progress  ",
+    "devwatch": "webpack --mode development --config webpack.config.js --env.dist \"dev\" --progress   --watch",
     "deploy": "call ./deploy/deploy.cmd"
   },
   "author": "Microsoft",
