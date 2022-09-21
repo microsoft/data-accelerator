@@ -14,10 +14,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js --dist=prod",
     "devstart": "node server.js",
-    "build": "rimraf dist\\prod && webpack --mode production --config webpack.config.js --progress  --display-error-details --colors",
+    "build": "rimraf dist\\prod && webpack --mode production --config webpack.config.js --progress",
     "buildwatch": "webpack --mode production --config webpack.config.js  --progress  --watch",
-    "dev": "rimraf dist\\dev && webpack --mode development --config webpack.config.js --env.dist \"dev\"  --progress  ",
-    "devwatch": "webpack --mode development --config webpack.config.js --env.dist \"dev\" --progress   --watch",
+    "dev": "rimraf dist\\dev && webpack --mode development --config webpack.config.js --env.dist \"dev\"  --progress",
+    "devwatch": "webpack --mode development --config webpack.config.js --env.dist \"dev\" --progress --watch",
     "deploy": "call ./deploy/deploy.cmd"
   },
   "author": "Microsoft",
