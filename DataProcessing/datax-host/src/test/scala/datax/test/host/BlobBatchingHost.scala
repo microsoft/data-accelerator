@@ -92,13 +92,13 @@ class BlobBatchingHost extends FlatSpec with Matchers with PrivateMethodTester{
     assert(result.toSeq.head._1 === "abfss://container@accountname.dfs.core.windows.net/root/0/2022-08-17/13/")
   }
 
-  "getDateTimePattern" should "extract pattern y={yyyy}/m={MM}/d={dd}/h={HH}" in {
+  "getDateTimePattern" should "extract pattern {'y'=yyyy/'m'=MM/'d'=dd/'h'=HH}" in {
     val getDateTimePattern = PrivateMethod[String]('getDateTimePattern)
     val result = bbh invokePrivate getDateTimePattern("abfss://container@accountname.dfs.core.windows.net/root/3/{'y'=yyyy/'m'=MM/'d'=dd/'h'=HH}/")
     assert(result === "'y'=yyyy/'m'=MM/'d'=dd/'h'=HH")
   }
 
-  "getInputBlobPathPrefixes" should "work with pattern y={yyyy}/m={MM}/d={dd}/h={HH}" in {
+  "getInputBlobPathPrefixes" should "work with pattern {'y'=yyyy/'m'=MM/'d'=dd/'h'=HH}" in {
     val StartTime = Instant.parse("2022-08-17T20:00:00Z")
     val EndTime = StartTime.plus(15, ChronoUnit.MINUTES)
     val inputBlobProcessingWindowInSec = StartTime.until(EndTime, ChronoUnit.SECONDS)
