@@ -346,7 +346,7 @@ object HadoopClient {
                                 ) = {
     val logger = LogManager.getLogger(s"FileWriter${SparkEnvVariables.getLoggerSuffix()}")
     def f = Future{
-      writeHdfsFile(hdfsPath, content, getConf(), overwriteIfExists=false, directWrite=false, blobStorageKey)
+      writeHdfsFile(hdfsPath, content, getConf(), overwriteIfExists=true, directWrite=false, blobStorageKey)
     }
     var remainingAttempts = retries+1
     while(remainingAttempts>0) {
