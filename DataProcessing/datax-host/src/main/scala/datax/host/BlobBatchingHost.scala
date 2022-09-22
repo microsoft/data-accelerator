@@ -56,7 +56,7 @@ object BlobBatchingHost {
   // Get the datetime pattern like {yyyy-MM-dd} in the input path.
   // For e.g. if the input path is "wasbs://outputs@myaccount.blob.core.windows.net/{yyyy-MM-dd}/flow1", this will return yyyy-MM-dd
   private def getDateTimePattern(inputPath:String):String ={
-    val regex = """\{([yMdHmsS\-/.]+)\}*""".r
+    val regex = """\{([yMdhHmsS\-='/.]+)\}*""".r
 
     regex.findFirstMatchIn(inputPath) match {
       case Some(partition) => partition.group(1)
