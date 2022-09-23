@@ -5,9 +5,10 @@ import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
 
 import java.time.Instant
 import java.time.temporal.{ChronoUnit, TemporalUnit}
+import java.util.TimeZone
 
 class BlobBatchingHost extends FlatSpec with Matchers with PrivateMethodTester{
-
+  TimeZone.setDefault(TimeZone.getTimeZone("GMT"))
   org.apache.log4j.BasicConfigurator.configure()
 
   val bbh = BlobBatchingHost
@@ -49,7 +50,7 @@ class BlobBatchingHost extends FlatSpec with Matchers with PrivateMethodTester{
       partitionIncrementDurationInSeconds = 60
     )
     assert(result.nonEmpty)
-    assert(result.toSeq.head._1 === "abfss://container@accountname.dfs.core.windows.net/root/0/2022/08/17/13/")
+    assert(result.toSeq.head._1 === "abfss://container@accountname.dfs.core.windows.net/root/0/2022/08/17/20/")
   }
 
   "getDateTimePattern" should "extract pattern {yyyy-MM-dd}" in {
@@ -89,7 +90,7 @@ class BlobBatchingHost extends FlatSpec with Matchers with PrivateMethodTester{
       partitionIncrementDurationInSeconds = 60
     )
     assert(result.nonEmpty)
-    assert(result.toSeq.head._1 === "abfss://container@accountname.dfs.core.windows.net/root/0/2022-08-17/13/")
+    assert(result.toSeq.head._1 === "abfss://container@accountname.dfs.core.windows.net/root/0/2022-08-17/20/")
   }
 
   "getDateTimePattern" should "extract pattern {'y'=yyyy/'m'=MM/'d'=dd/'h'=HH}" in {
@@ -109,7 +110,7 @@ class BlobBatchingHost extends FlatSpec with Matchers with PrivateMethodTester{
       partitionIncrementDurationInSeconds = 60
     )
     assert(result.nonEmpty)
-    assert(result.toSeq.head._1 === "abfss://container@accountname.dfs.core.windows.net/root/0/y=2022/m=08/d=17/h=13/")
+    assert(result.toSeq.head._1 === "abfss://container@accountname.dfs.core.windows.net/root/0/y=2022/m=08/d=17/h=20/")
   }
 
 }
