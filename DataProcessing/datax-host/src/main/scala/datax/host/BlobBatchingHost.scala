@@ -110,7 +110,7 @@ object BlobBatchingHost {
     //write tracker file
     val (trackerFolder, dateTimeStart, dateTimeEnd) = getTrackerConfigs(config)
     if (trackerFolder != "") {
-      writeTracker(trackerFolder, dateTimeStart, dateTimeEnd)
+      writeTracker(trackerFolder, dateTimeStart, filterTimeRange)
     }
     /*
     This is a temporary workaround for https://github.com/Microsoft/ApplicationInsights-Java/issues/891
@@ -137,12 +137,12 @@ object BlobBatchingHost {
   }
 
   // write a tracker file in specific folder with format _SUCCESS_yyyy_MM_dd_HH
-  def writeTracker(trackerFolder: String, dt: Timestamp, dtEnd: Timestamp): Unit = {
+  def writeTracker(trackerFolder: String, dt: Timestamp, filterTimeRange: Boolean): Unit = {
     // first create folder if not exists
     HadoopClient.createFolder(trackerFolder)
     var fmt = "yyyy_MM_dd_HH"
     // if the interval is not 1h, the use the format yyyy_MM_dd_HH_mm
-    if (dtEnd.getTime / 1000 - dt.getTime / 1000 + 1 != 3600) {
+    if (filterTimeRange) {
       fmt += "_mm"
     }
     val dateFormat = new SimpleDateFormat(fmt)
