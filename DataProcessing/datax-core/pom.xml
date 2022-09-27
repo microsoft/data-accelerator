@@ -51,7 +51,7 @@ SOFTWARE
 
   <groupId>com.microsoft.datax</groupId>
   <artifactId>datax-core_2.4_2.11</artifactId>
-  <version>1.2.13-SNAPSHOT</version>
+  <version>1.2.14-SNAPSHOT</version>
   <name>Data Accelerator Core</name>
   <description>This package contains the core module of Data Accelerator functionality.</description>
   <url>https://github.com/Microsoft/data-accelerator</url>
