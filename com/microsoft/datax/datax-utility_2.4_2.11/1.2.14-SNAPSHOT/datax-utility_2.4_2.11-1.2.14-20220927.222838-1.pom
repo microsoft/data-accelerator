@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+<!--
+MIT License
+
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE
+-->
+    <developers>
+        <developer>
+        <id>microsoft</id>
+        <name>Microsoft</name>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+        <name>MIT License</name>
+        <url>http://opensource.org/licenses/MIT</url>
+        <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git@github.com:Microsoft/data-accelerator.git</connection>
+        <developerConnection>scm:git:git@github.com:Microsoft/data-accelerator.git</developerConnection>
+        <url>https://github.com/Microsoft/data-accelerator.git</url>
+    </scm>
+
+    <groupId>com.microsoft.datax</groupId>
+    <artifactId>datax-utility_2.4_2.11</artifactId>
+    <version>1.2.14-SNAPSHOT</version>
+
+    <properties>
+        <spark.version>2.4.5</spark.version>
+        <scala.version.major>2.11</scala.version.major>
+        <scala.version.minor>8</scala.version.minor>
+        <scala.version>${scala.version.major}.${scala.version.minor}</scala.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <github.global.server>github</github.global.server>
+   </properties>
+
+  <repositories>
+    <repository>
+        <id>data-accelerator-mvn-repo</id>
+        <url>https://raw.github.com/Microsoft/data-accelerator/mvn-repo/</url>
+        <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+        </snapshots>
+    </repository>
+  </repositories>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.version.major}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.version.major}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming_${scala.version.major}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-mllib_${scala.version.major}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.18.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jmockit</groupId>
+            <artifactId>jmockit</artifactId>
+            <version>1.49</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_2.11</artifactId>
+            <version>2.2.6</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.datax</groupId>
+            <artifactId>datax-core_2.4_2.11</artifactId>
+            <version>${version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>applicationinsights-core</artifactId>
+            <version>2.6.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.datax</groupId>
+            <artifactId>datax-keyvault_2.4_2.11</artifactId>
+            <version>${version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-eventhubs-spark_2.11</artifactId>
+            <version>2.3.22</version>
+        </dependency>
+        <dependency>
+          <groupId>com.microsoft.azure</groupId>
+          <artifactId>azure-eventhubs</artifactId>
+          <version>3.3.0</version>
+        </dependency>
+        <dependency>
+          <groupId>com.fasterxml.uuid</groupId>
+          <artifactId>java-uuid-generator</artifactId>
+          <version>4.0.1</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.qpid</groupId>
+          <artifactId>proton-j</artifactId>
+          <version>0.34.0</version>
+        </dependency>
+        <dependency>
+          <groupId>org.scala-lang.modules</groupId>
+          <artifactId>scala-java8-compat_2.11</artifactId>
+          <version>1.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+            <version>6.2.0.RELEASE</version>
+        </dependency>
+    </dependencies>
+
+  <profiles>
+    <profile>
+      <id>build</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>net.alchim31.maven</groupId>
+            <artifactId>scala-maven-plugin</artifactId>
+            <version>4.7.1</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>compile</goal>
+                  <goal>testCompile</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <scalaVersion>${scala.version}</scalaVersion>
+              <args>
+                <arg>-deprecation</arg>
+                <arg>-feature</arg>
+              </args>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.10.1</version>
+            <configuration>
+              <source>1.8</source>
+              <target>1.8</target>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>3.3.0</version>
+            <executions>
+              <execution>
+                <id>copy-dependencies</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/dependency</outputDirectory>
+                  <overWriteReleases>false</overWriteReleases>
+                  <overWriteSnapshots>true</overWriteSnapshots>
+                  <excludeTransitive>true</excludeTransitive>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <!-- enable scalatest -->
+          <plugin>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest-maven-plugin</artifactId>
+            <version>2.1.0-SNAP2</version>
+            <configuration>
+              <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+              <junitxml>.</junitxml>
+              <filereports>WDF TestSuite.txt</filereports>
+            </configuration>
+            <executions>
+              <execution>
+                <id>test</id>
+                <goals>
+                  <goal>test</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.github.github</groupId>
+            <artifactId>site-maven-plugin</artifactId>
+            <version>0.12</version>
+            <configuration>
+              <message>Maven artifacts for ${project.version}</message>
+              <noJekyll>true</noJekyll>
+              <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory>
+              <branch>refs/heads/mvn-repo</branch>
+              <includes>
+                <include>**/*</include>
+              </includes>
+              <repositoryName>data-accelerator</repositoryName>
+              <repositoryOwner>Microsoft</repositoryOwner>
+              <merge>true</merge>
+            </configuration>
+            <executions>
+              <!-- run site-maven-plugin's 'site' target as part of the build's normal 'deploy' phase -->
+              <execution>
+                <goals>
+                  <goal>site</goal>
+                </goals>
+                <phase>deploy</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>publish</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <version>3.0.0</version>
+            <configuration>
+              <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+  <distributionManagement>
+    <repository>
+      <id>internal.repo</id>
+      <name>Data Accelerator Maven Repository</name>
+      <url>file://${project.build.directory}/mvn-repo</url>
+    </repository>
+  </distributionManagement>
+
+
+</project>
