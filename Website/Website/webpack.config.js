@@ -106,28 +106,28 @@ function configure(env, argv) {
                 },
                 {
                     test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
-                    loader: 'url-loader?name=img/[name].[ext]&limit=10000&mimetype=image/svg+xml'
+                    options: 'url-loader?name=img/[name].[ext]&limit=10000&mimetype=image/svg+xml'
                 },
                 {
                     test: /\.(svg|png|jpg|jpeg|gif)$/,
-                    loader: 'file-loader?name=img/[name].[ext]'
+                    options: 'file-loader?name=img/[name].[ext]'
                 },
                 {
                     test: /\.(html|ico)$/,
                     include: path.resolve(__dirname, 'client'),
-                    loader: 'file-loader?name=[name].[ext]'
+                    options: 'file-loader?name=[name].[ext]'
                 },
                 {
                     test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-                    loader: 'file-loader?name=fonts/[name].[ext]'
+                    options: 'file-loader?name=fonts/[name].[ext]'
                 },
                 {
                     test: /\.(woff|woff2)$/,
-                    loader: 'url-loader?name=fonts/[name].[ext]&prefix=font&limit=5000'
+                    options: 'url-loader?name=fonts/[name].[ext]&prefix=font&limit=5000'
                 },
                 {
                     test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-                    loader: 'url-loader?name=fonts/[name].[ext]&limit=10000&mimetype=application/octet-stream'
+                    options: 'url-loader?name=fonts/[name].[ext]&limit=10000&mimetype=application/octet-stream'
                 }
             ]
         },
