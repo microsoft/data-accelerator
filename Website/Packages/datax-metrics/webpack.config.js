@@ -86,7 +86,7 @@ function configure(env, argv) {
                 },
                 {
                     test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-                    use: [ { loader: 'url-loader?name=fonts/[name].[ext]&limit=10000&mimetype=application/octet-stream']}
+                    use: [ { loader: 'url-loader?name=fonts/[name].[ext]&limit=10000&mimetype=application/octet-stream'}]
                 }
             ]
         },
