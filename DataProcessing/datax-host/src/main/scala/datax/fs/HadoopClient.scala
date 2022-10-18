@@ -263,6 +263,11 @@ object HadoopClient {
       val path = new Path(hdfsPath)
       val fs = path.getFileSystem(getConf())
       val is = fs.open(path)
+      // if empty blob found, then just return the lines
+      if (is.available() == 0) {
+        logger.warn(s"Found empty file: $path")
+        return lines
+      }
 
       //val source = Source.fromInputStream(is)
       val inputStream = if(gzip)new GZIPInputStream(is) else is
@@ -373,6 +378,14 @@ object HadoopClient {
             "failedHdfsPath" -> hdfsPath
           ), null)
           throw e
+        case unknown: Exception =>
+          remainingAttempts = 0
+          AppInsightLogger.trackException(unknown, Map(
+            "errorLocation" -> "writeWithTimeoutAndRetries",
+            "errorMessage" -> "Unknown error in writing file",
+            "failedHdfsPath" -> hdfsPath
+          ), null)
+          throw unknown
       }
     }
   }
