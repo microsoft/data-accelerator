@@ -34,7 +34,7 @@
     "generate-schema": "2.6.0",
     "helmet": "6.0.0",
     "moment": "2.29.4",
-    "mongodb": "4.9.1",
+    "mongodb": "4.10.0",
     "ms-rest-azure": "3.0.2",
     "mssql": "9.0.1",
     "passport": "0.6.0",
