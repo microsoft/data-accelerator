@@ -27,7 +27,7 @@
     "applicationinsights": "2.3.5",
     "archiver": "5.3.1",
     "azure-keyvault": "3.0.5",
-    "body-parser": "1.20.0",
+    "body-parser": "1.20.1",
     "csurf": "1.11.0",
     "express": "4.18.1",
     "express-session": "1.17.3",
