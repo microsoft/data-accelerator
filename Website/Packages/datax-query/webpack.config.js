@@ -79,19 +79,19 @@ function configure(env, argv) {
                 },
                 {
                     test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
-                    loader: 'url-loader?name=img/[name].[ext]&limit=10000&mimetype=image/svg+xml'
+                    use: [ { loader: 'url-loader?name=img/[name].[ext]&limit=10000&mimetype=image/svg+xml'}]
                 },
                 {
                     test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-                    loader: 'file-loader?name=fonts/[name].[ext]'
+                    use: [ { loader: 'file-loader?name=fonts/[name].[ext]'}]
                 },
                 {
                     test: /\.(woff|woff2)$/,
-                    loader: 'url-loader?name=fonts/[name].[ext]&prefix=font&limit=5000'
+                    use: [ { loader: 'url-loader?name=fonts/[name].[ext]&prefix=font&limit=5000'}]
                 },
                 {
                     test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-                    loader: 'url-loader?name=fonts/[name].[ext]&limit=10000&mimetype=application/octet-stream'
+                    use: [ { loader: 'url-loader?name=fonts/[name].[ext]&limit=10000&mimetype=application/octet-stream' }]
                 }
             ]
         },
