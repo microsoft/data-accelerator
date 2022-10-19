@@ -36,7 +36,7 @@
     "datax-common": "1.4.0-SNAPSHOT-9",
     "office-ui-fabric-react": "6.195.3",
     "q": "1.5.1",
-    "plotly.js": "2.14.0",
+    "plotly.js": "2.16.0",
     "prop-types": "15.8.1",
     "radium": "0.25.2",
     "react": "16.6.3",
