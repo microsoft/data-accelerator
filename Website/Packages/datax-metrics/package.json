@@ -45,7 +45,7 @@
     "react-router": "5.3.4",
     "react-router-dom": "5.3.4",
     "redux": "4.2.0",
-    "redux-thunk": "2.4.1",
+    "redux-thunk": "2.4.2",
     "reselect": "4.1.6",
     "rimraf": "3.0.2",
     "simple-number-format": "1.0.0",
