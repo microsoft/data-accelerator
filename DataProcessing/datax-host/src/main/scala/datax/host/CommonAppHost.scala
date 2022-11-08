@@ -4,7 +4,7 @@
 // *********************************************************************
 package datax.host
 
-import datax.config.{ConfigManager,  UnifiedConfig}
+import datax.config.{ConfigManager, UnifiedConfig}
 import datax.constants._
 import datax.fs.HadoopClient
 import datax.service.{ConfigService, TelemetryService}
@@ -12,6 +12,8 @@ import datax.telemetry.AppInsightLogger
 import org.apache.log4j.LogManager
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
+
+import scala.util.Try
 
 object CommonAppHost extends AppHost {
   override def getConfigService(): ConfigService = ConfigManager
@@ -28,8 +30,15 @@ object CommonAppHost extends AppHost {
 
     val conf = ConfigManager.getConfigurationFromArguments(inputArguments)
 
+    val overwriteBlobIfExists = (for {
+      option <- conf.get(JobArgument.ConfName_OverwriteBlobIfExists)
+      value <- Try(option.toBoolean).toOption
+    } yield value).getOrElse(false)
+
+    appLog.warn(s"OverwriteBlobIfExists: ${overwriteBlobIfExists}")
+
     // Initialize FileSystemUtil
-    HadoopClient.setConf(spark.sparkContext.hadoopConfiguration)
+    HadoopClient.setConf(spark.sparkContext.hadoopConfiguration, overwriteBlobIfExists)
 
     appLog.warn(s"initializing with conf:"+ conf.toString)
 

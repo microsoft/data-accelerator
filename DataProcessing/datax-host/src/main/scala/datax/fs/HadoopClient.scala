@@ -35,19 +35,22 @@ object HadoopClient {
   implicit private val ec = ExecutionContext.fromExecutorService(threadPool)
 
   private var hadoopConf:Configuration = null
+  private var overwriteBlobIfExists = false
 
   /***
     * initialize the cached hadoop configuration
     * @param conf hadoop configuration for initialization
     */
-  def setConf(conf: Configuration = null): Unit ={
+  def setConf(conf: Configuration = null, overwriteBlobIfExists: Boolean = false): Unit ={
     if(conf==null) {
       hadoopConf = new Configuration()
       //Used to fetch fileSystem for wasbs
       hadoopConf.set("fs.wasbs.impl","org.apache.hadoop.fs.azure.NativeAzureFileSystem")
     }
-    else
+    else {
       hadoopConf = conf
+    }
+    this.overwriteBlobIfExists = overwriteBlobIfExists
   }
 
   /***
@@ -351,7 +354,7 @@ object HadoopClient {
                                 ) = {
     val logger = LogManager.getLogger(s"FileWriter${SparkEnvVariables.getLoggerSuffix()}")
     def f = Future{
-      writeHdfsFile(hdfsPath, content, getConf(), overwriteIfExists=true, directWrite=false, blobStorageKey)
+      writeHdfsFile(hdfsPath, content, getConf(), overwriteIfExists=this.overwriteBlobIfExists, directWrite=false, blobStorageKey)
     }
     var remainingAttempts = retries+1
     while(remainingAttempts>0) {
