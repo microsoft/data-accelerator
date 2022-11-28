@@ -51,7 +51,7 @@
     "simple-number-format": "1.0.0",
     "terser-webpack-plugin": "5.3.6",
     "url-loader": "4.1.1",
-    "webpack": "5.74.0",
+    "webpack": "5.75.0",
     "webpack-cli": "5.0.0"
   },
   "peerDependencies": {
