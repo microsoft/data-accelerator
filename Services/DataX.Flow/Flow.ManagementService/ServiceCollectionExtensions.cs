@@ -39,13 +39,14 @@ namespace Flow.Management
                     }
                 }
 
-                if (local)
-                {
-                    var localTemplateInitializer = container.GetExport<DataX.Config.Local.TemplateInitializer>();
-                    var result = localTemplateInitializer?.Initialize().Result;
+                //Todo: enable local after migrating away from liteDb
+                //if (local)
+                //{
+                //    var localTemplateInitializer = container.GetExport<DataX.Config.Local.TemplateInitializer>();
+                //    var result = localTemplateInitializer?.Initialize().Result;
 
-                    Ensure.IsSuccessResult(result);
-                }
+                //    Ensure.IsSuccessResult(result);
+                //}
 
             }
             return services;
