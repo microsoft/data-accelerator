@@ -53,7 +53,7 @@
     "winston-daily-rotate-file": "4.7.1"
   },
   "devDependencies": {
-    "@babel/core": "7.19.3",
+    "@babel/core": "7.20.12",
     "@babel/plugin-syntax-dynamic-import": "7.8.3",
     "@babel/preset-env": "7.19.4",
     "@babel/preset-react": "7.18.6",
