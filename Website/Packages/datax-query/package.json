@@ -39,7 +39,7 @@
     "prop-types": "15.8.1",
     "radium": "0.25.2",
     "react": "16.6.3",
-    "react-ace": "6.2.0",
+    "react-ace": "10.1.0",
     "react-dom": "16.6.3",
     "react-redux": "6.0.1",
     "jsoneditor": "9.9.2",
