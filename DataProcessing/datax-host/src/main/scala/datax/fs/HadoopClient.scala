@@ -45,6 +45,7 @@ object HadoopClient {
       hadoopConf = new Configuration()
       //Used to fetch fileSystem for wasbs
       hadoopConf.set("fs.wasbs.impl","org.apache.hadoop.fs.azure.NativeAzureFileSystem")
+      hadoopConf.set("fs.azure.io.retry.max.retries", "3")
     }
     else
       hadoopConf = conf

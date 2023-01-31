@@ -4,6 +4,8 @@
 // *********************************************************************
 package datax.host
 
+import org.apache.hadoop.fs.azurebfs.AzureBlobFileSystemStore
+import org.apache.hadoop.fs.azurebfs.services.{AbfsClient, AbfsRestOperation}
 import org.apache.log4j.{Level, LogManager}
 
 object Logger {
@@ -13,5 +15,8 @@ object Logger {
     val logger = LogManager.getRootLogger
     logger.setLevel(level)
     logger.warn(s"root logger level set to ${level}")
+    LogManager.getLogger(classOf[AzureBlobFileSystemStore]).setLevel(level)
+    LogManager.getLogger(classOf[AbfsClient]).setLevel(level)
+    LogManager.getLogger(classOf[AbfsRestOperation]).setLevel(level)
   }
 }
