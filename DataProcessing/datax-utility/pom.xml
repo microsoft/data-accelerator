@@ -125,7 +125,7 @@ SOFTWARE
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>applicationinsights-core</artifactId>
-            <version>2.6.4</version>
+            <version>3.4.10</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.datax</groupId>
