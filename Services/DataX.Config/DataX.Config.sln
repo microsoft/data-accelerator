@@ -59,10 +59,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommonData.Templates", "Com
 		CommonData.Templates\flattenerConfig.json = CommonData.Templates\flattenerConfig.json
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Config.Local", "DataX.Config.Local\DataX.Config.Local.csproj", "{3FADC9B0-0A39-4BD6-80D1-58FA0351BC85}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Config.Local.Test", "DataX.Config.Local.Test\DataX.Config.Local.Test.csproj", "{0EE2B851-3D66-4975-B371-F46EBBE2C844}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.ServiceHost.ServiceFabric", "..\DataX.ServiceHost\DataX.ServiceHost.ServiceFabric\DataX.ServiceHost.ServiceFabric.csproj", "{A5627F57-73C6-4E81-B36A-B91EDCC03487}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Config.DatabricksClient", "DataX.Config.DatabricksClient\DataX.Config.DatabricksClient.csproj", "{8A0240B7-397A-4F3D-8433-2AF694E9D399}"
@@ -143,10 +139,6 @@ Global
 		{4EC08127-ED3A-45C4-A9F9-15E154C1ED4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4EC08127-ED3A-45C4-A9F9-15E154C1ED4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4EC08127-ED3A-45C4-A9F9-15E154C1ED4A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3FADC9B0-0A39-4BD6-80D1-58FA0351BC85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3FADC9B0-0A39-4BD6-80D1-58FA0351BC85}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3FADC9B0-0A39-4BD6-80D1-58FA0351BC85}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3FADC9B0-0A39-4BD6-80D1-58FA0351BC85}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0EE2B851-3D66-4975-B371-F46EBBE2C844}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0EE2B851-3D66-4975-B371-F46EBBE2C844}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EE2B851-3D66-4975-B371-F46EBBE2C844}.Release|Any CPU.ActiveCfg = Release|Any CPU
