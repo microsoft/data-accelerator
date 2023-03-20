@@ -1,4 +1,0 @@
-{
-  "name": "localCluster",
-  "connectionString": "endpoint=http://localhost;username=local;password=insertpasswordhere"
-}
