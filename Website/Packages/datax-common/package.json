@@ -37,7 +37,7 @@
     "radium": "0.25.2",
     "react": "16.6.3",
     "react-dom": "16.6.3",
-    "reselect": "4.1.6",
+    "reselect": "4.1.7",
     "rimraf": "3.0.2",
     "terser-webpack-plugin": "5.3.6",
     "url-loader": "4.1.1",
