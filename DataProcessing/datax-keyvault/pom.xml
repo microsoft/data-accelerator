@@ -117,7 +117,7 @@ SOFTWARE
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_2.11</artifactId>
-      <version>3.3.0-SNAP3</version>
+      <version>3.3.0-SNAP4</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
