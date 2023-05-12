@@ -76,13 +76,13 @@ object SinkerUtil {
     (flagColumnIndex: Int) => {
       if (flagColumnIndex < 0) {
         (data: DataFrame, time: Timestamp, batchTime: Timestamp, loggerSuffix: String) => {
-          sinkJson(data, time, batchTime, 0, 0, (rowInfo: Row, rows: Seq[Row], partitionTime: Timestamp, batchTime: Timestamp, partitionId: Int, loggerSuffix: String) =>
+          sinkJson(data, time, batchTime, (rowInfo: Row, rows: Seq[Row], partitionTime: Timestamp, batchTime: Timestamp, partitionId: Int, loggerSuffix: String) =>
             outputAllEvents(rows, writer, sinkerName, loggerSuffix))
         }
       }
       else {
         (data: DataFrame, time: Timestamp, batchTime: Timestamp, loggerSuffix: String) => {
-          sinkJson(data, time, batchTime, 0, 0, (rowInfo: Row, rows: Seq[Row], partitionTime: Timestamp, batchTime: Timestamp, partitionId: Int, loggerSuffix: String) =>
+          sinkJson(data, time, batchTime, (rowInfo: Row, rows: Seq[Row], partitionTime: Timestamp, batchTime: Timestamp, partitionId: Int, loggerSuffix: String) =>
             outputFilteredEvents(rows, flagColumnIndex, writer, sinkerName, loggerSuffix))
         }
       }
@@ -90,7 +90,7 @@ object SinkerUtil {
   }
 
   // Convert dataframe to sequence of rows and sink using the passed in sinker delegate. The rows contain data as json column
-  def sinkJson(df:DataFrame, partitionTime: Timestamp, batchTime: Timestamp, estimatedOutputBlobSizeInBytes: Long = 0, outputBlobCount: Int = 0, jsonSinkDelegate:JsonSinkDelegate ): Map[String, Int] = {
+  def sinkJson(df:DataFrame, partitionTime: Timestamp, batchTime: Timestamp, jsonSinkDelegate:JsonSinkDelegate, estimatedOutputBlobSizeInBytes: Long = 0, outputBlobCount: Int = 0 ): Map[String, Int] = {
     val logger = LogManager.getLogger(s"sinkJson")
     val dfDataSet: DataFrame =
       if(estimatedOutputBlobSizeInBytes <= 0 && outputBlobCount <= 0) {

@@ -223,7 +223,7 @@ object BlobSinker extends SinkOperatorFactory {
     }
 
     (data: DataFrame, time: Timestamp, batchTime: Timestamp, loggerSuffix: String) => {
-      SinkerUtil.sinkJson(data, time, batchTime, estimatedOutputBlobSizeInBytesConf.getOrElse(0), outputBlobCountConf.getOrElse(0), jsonSinkDelegate)
+      SinkerUtil.sinkJson(data, time, batchTime, jsonSinkDelegate, estimatedOutputBlobSizeInBytesConf.getOrElse(0), outputBlobCountConf.getOrElse(0))
     }
   }
 
