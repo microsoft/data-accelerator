@@ -90,7 +90,7 @@ object SinkerUtil {
   }
 
   // Convert dataframe to sequence of rows and sink using the passed in sinker delegate. The rows contain data as json column
-  def sinkJson(df:DataFrame, partitionTime: Timestamp, batchTime: Timestamp, estimatedOutputBlobSizeInBytes: Long, outputBlobCount: Int, jsonSinkDelegate:JsonSinkDelegate ): Map[String, Int] = {
+  def sinkJson(df:DataFrame, partitionTime: Timestamp, batchTime: Timestamp, estimatedOutputBlobSizeInBytes: Long = 0, outputBlobCount: Int = 0, jsonSinkDelegate:JsonSinkDelegate ): Map[String, Int] = {
     val logger = LogManager.getLogger(s"sinkJson")
     val dfDataSet: DataFrame =
       if(estimatedOutputBlobSizeInBytes <= 0 && outputBlobCount <= 0) {
