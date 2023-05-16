@@ -3,27 +3,27 @@
   <groupId>com.microsoft.datax</groupId>
   <artifactId>datax-keyvault_2.4_2.11</artifactId>
   <versioning>
-    <lastUpdated>20230511235138</lastUpdated>
+    <lastUpdated>20230516225103</lastUpdated>
     <snapshot>
-      <timestamp>20230511.235138</timestamp>
+      <timestamp>20230516.225103</timestamp>
       <buildNumber>1</buildNumber>
     </snapshot>
     <snapshotVersions>
       <snapshotVersion>
         <extension>pom</extension>
-        <value>1.2.16-20230511.235138-1</value>
-        <updated>20230511235138</updated>
+        <value>1.2.16-20230516.225103-1</value>
+        <updated>20230516225103</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>jar</extension>
-        <value>1.2.16-20230511.235138-1</value>
-        <updated>20230511235138</updated>
+        <value>1.2.16-20230516.225103-1</value>
+        <updated>20230516225103</updated>
       </snapshotVersion>
       <snapshotVersion>
         <classifier>with-dependencies</classifier>
         <extension>jar</extension>
-        <value>1.2.16-20230511.235138-1</value>
-        <updated>20230511235138</updated>
+        <value>1.2.16-20230516.225103-1</value>
+        <updated>20230516225103</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>
