@@ -8,7 +8,7 @@ import datax.config.{SettingDictionary, SettingNamespace}
 
 object BlobOutputSetting {
   case class BlobGroupOutputConf(folder: String)
-  case class BlobOutputConf(groupEvaluation: Option[String], groups: Map[String, BlobGroupOutputConf], compressionType: Option[String], format: Option[String])
+  case class BlobOutputConf(groupEvaluation: Option[String], groups: Map[String, BlobGroupOutputConf], compressionType: Option[String], format: Option[String], estimatedOutputBlobSizeInBytes: Option[Long], outputBlobCount: Option[Int])
 
   val Namespace = "blob"
   val SettingGroupEvaluation = "groupevaluation"
@@ -16,6 +16,8 @@ object BlobOutputSetting {
   val SettingFormat = "format"
   val SettingGroup = "group"
   val BlobGroupPrefix = SettingGroup + SettingNamespace.Seperator
+  val SettingEstimatedOutputBlobSizeInBytes = "estimatedoutputblobsizeinbytes"
+  val SettingOutputBlobCount = "outputblobcount"
 
   val SettingGroupOutputFolder = "folder"
 
@@ -31,7 +33,9 @@ object BlobOutputSetting {
         groupEvaluation = dict.get(SettingGroupEvaluation),
         groups = groups,
         compressionType = dict.get(SettingCompressionType),
-        format = dict.get(SettingFormat)
+        format = dict.get(SettingFormat),
+        estimatedOutputBlobSizeInBytes = dict.getLongOption(SettingEstimatedOutputBlobSizeInBytes),
+        outputBlobCount = dict.getIntOption(SettingOutputBlobCount)
       )
     else
       null
