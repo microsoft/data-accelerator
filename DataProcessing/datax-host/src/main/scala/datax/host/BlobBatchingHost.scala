@@ -96,8 +96,11 @@ object BlobBatchingHost {
 
     val filterTimeRange = config.dict.getOrElse("filterTimeRange", "").equals("true")
     appLog.warn(s"filterTimeRange: $filterTimeRange")
-    val filesToProcess = prefixes.flatMap(prefix=>HadoopClient.listFileObjects(prefix._1).flatMap(f=>inTimeRange(f, filterTimeRange)).toSeq)
-    appLog.warn(s"filesToProcess: ${filesToProcess.length}")
+    //val filesToProcess = prefixes.flatMap(prefix=>HadoopClient.listFileObjects(prefix._1).flatMap(f=>inTimeRange(f, filterTimeRange)).toSeq)
+    val temp = prefixes.flatMap(prefix=>HadoopClient.listFileObjects(prefix._1).flatMap(f=>inTimeRange(f, filterTimeRange)))
+    val filesToProcess = temp.flatMap(x => x._1)
+    val missedFilesCount = temp.count(x => x._2)
+    appLog.warn(s"filesToProcess: ${filesToProcess.length}, Potentially missed files: ${missedFilesCount}")
     val minTimestamp = prefixes.minBy(_._2.getTime)._2
     appLog.warn(s"Start processing for $minTimestamp")
     val pathsRDD = sc.makeRDD(filesToProcess)
@@ -154,21 +157,26 @@ object BlobBatchingHost {
 
   }
 
-  def inTimeRange(fs: FileStatus, filterTimeRange: Boolean): Iterator[String] = {
+  // Returns an iterator of tuples (path, isMissed) pairs
+  // Path is the accepted file path in the batch
+  // isMissed tells whether the file was potentially missed by the filter (ie. it was found in the prefix but is modified date is earlier or past the batch date)
+  def inTimeRange(fs: FileStatus, filterTimeRange: Boolean): Iterator[(Option[String], Boolean)] = {
     if (!filterTimeRange) {
-      return Iterator(fs.getPath.toString)
+      return Iterator((Option(fs.getPath.toString), false))
     }
     val start = Timestamp.from(Instant.parse(sys.env.getOrElse("process_start_datetime", ""))).getTime / 1000
     val end = Timestamp.from(Instant.parse(sys.env.getOrElse("process_end_datetime", ""))).getTime / 1000
+    val boundaryStart = 3600 * (start / 3600)  // Find the hour chunk the batch time is in. ie if we are in second 7204, we are at chunk #2, thus the start is second 7200
+    val boundaryEnd = 3600 * ((end + 1) / 3600)
     val fTime = fs.getModificationTime / 1000
     appLog.warn(s"inTimeRange: start $start, end $end, fTime $fTime")
 
     if (start % 3600 == 0) {
-      if (fTime <= end) Iterator(fs.getPath.toString) else Iterator.empty
+      if (fTime <= end) Iterator((Option(fs.getPath.toString), false)) else Iterator((None, fTime < boundaryStart || fTime >= boundaryEnd))
     } else if ((end + 1) % 3600 == 0) {
-      if (fTime >= start) Iterator(fs.getPath.toString) else Iterator.empty
+      if (fTime >= start) Iterator((Option(fs.getPath.toString), false)) else Iterator((None, fTime < boundaryStart || fTime >= boundaryEnd))
     } else {
-      if (fTime >= start && fTime <= end) Iterator(fs.getPath.toString) else Iterator.empty
+      if (fTime >= start && fTime <= end) Iterator((Option(fs.getPath.toString), false)) else Iterator((None, fTime < boundaryStart || fTime >= boundaryEnd))
     }
   }
 }
