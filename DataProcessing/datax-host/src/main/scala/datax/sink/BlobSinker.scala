@@ -19,12 +19,15 @@ import datax.constants.{BlobProperties, ProductConstant}
 import datax.config.ConfigManager
 import datax.host.SparkSessionSingleton
 import datax.telemetry.AppInsightLogger
+import datax.utility.GZipHelper.newLineByte
 import org.apache.spark.broadcast
 import org.apache.log4j.LogManager
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
+import java.io.{BufferedOutputStream, OutputStream}
+import java.util.zip.GZIPOutputStream
 import scala.concurrent.duration.Duration
 
 object BlobSinker extends SinkOperatorFactory {
@@ -50,6 +53,26 @@ object BlobSinker extends SinkOperatorFactory {
     }
   }
 
+  def compressFile(lines: Seq[String], outputStream: OutputStream): Int = {
+    val zipOutputStream = new GZIPOutputStream(outputStream, 8192)
+    var firstLine = true
+    var byteCount = 0
+    lines.foreach(l => {
+      if (firstLine) {
+        firstLine = false
+      }
+      else {
+        zipOutputStream.write(newLineByte)
+        byteCount = byteCount + 1
+      }
+      val bytes = l.getBytes()
+      zipOutputStream.write(bytes)
+      byteCount = byteCount + bytes.length
+    })
+    zipOutputStream.close()
+    byteCount
+  }
+
   // write events to blob location
   def writeEventsToBlob(data: Seq[String], outputPath: String, compression: Boolean, blobStorageKey: broadcast.Broadcast[String] = null, InputPath: String = null, Group: String = null, outputPartitionTime: Timestamp = null, batchTime: Timestamp = null) {
     val logger = LogManager.getLogger(s"EventsToBlob-Writer${SparkEnvVariables.getLoggerSuffix()}")
@@ -65,20 +88,25 @@ object BlobSinker extends SinkOperatorFactory {
       timeNow = System.nanoTime()
       logger.info(s"$timeNow:Step 1: collected ${countEvents} records, spent time=${(timeNow - timeLast) / 1E9} seconds")
       timeLast = timeNow
-      val content = if (compression) {
-        val result = GZipHelper.deflateToBytes(data)
-        timeNow = System.nanoTime()
-        logger.info(s"$timeNow:Step 2: compressed to ${result.length} bytes, spent time=${(timeNow - timeLast) / 1E9} seconds")
-        timeLast = timeNow
-        result
+      val writer = if (compression) {
+        (outputStream: OutputStream) => {
+          val tLast = System.nanoTime()
+          val length = compressFile(data, outputStream)
+          val tNow = System.nanoTime()
+          logger.info(s"$timeNow:Step 2: compressed to ${length} bytes, spent time=${(tNow - tLast) / 1E9} seconds")
+        }
       }
       else {
-        data.mkString("\n").getBytes
+        (outputStream: OutputStream) => {
+          val bs = new BufferedOutputStream(outputStream)
+          bs.write(data.mkString("\n").getBytes)
+          bs.close()
+        }
       }
 
       HadoopClient.writeWithTimeoutAndRetries(
         hdfsPath = outputPath,
-        content = content,
+        writer = writer,
         timeout = Duration.create(ConfigManager.getActiveDictionary().getOrElse(JobArgument.ConfName_BlobWriterTimeout, "10 seconds")),
         retries = 10,
         blobStorageKey

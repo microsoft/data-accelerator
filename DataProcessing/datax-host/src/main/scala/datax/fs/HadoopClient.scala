@@ -46,6 +46,7 @@ object HadoopClient {
       //Used to fetch fileSystem for wasbs
       hadoopConf.set("fs.wasbs.impl","org.apache.hadoop.fs.azure.NativeAzureFileSystem")
       hadoopConf.set("fs.azure.io.retry.max.retries", "3")
+      hadoopConf.set("fs.azure.write.request.size", "33554432") // 32 MB
     }
     else
       hadoopConf = conf
@@ -316,7 +317,7 @@ object HadoopClient {
     */
   @throws[IOException]
   def writeHdfsFile(hdfsPath: String, content: String, overwriteIfExists:Boolean, directWrite:Boolean) {
-    writeHdfsFile(hdfsPath, content.getBytes("UTF-8"), getConf(), overwriteIfExists, directWrite)
+    writeHdfsFile(hdfsPath, (outputStream: OutputStream) => outputStream.write(content.getBytes("UTF-8")), getConf(), overwriteIfExists, directWrite)
   }
 
   /**
@@ -345,14 +346,14 @@ object HadoopClient {
     * @param blobStorageKey storage account key broadcast variable
     */
   def writeWithTimeoutAndRetries(hdfsPath: String,
-                                 content: Array[Byte],
+                                 writer: OutputStream => Unit,
                                  timeout: Duration = Duration(5, TimeUnit.SECONDS),
                                  retries: Int = 0,
                                  blobStorageKey: broadcast.Broadcast[String]
                                 ) = {
     val logger = LogManager.getLogger(s"FileWriter${SparkEnvVariables.getLoggerSuffix()}")
     def f = Future{
-      writeHdfsFile(hdfsPath, content, getConf(), overwriteIfExists=false, directWrite=false, blobStorageKey)
+      writeHdfsFile(hdfsPath, writer, getConf(), overwriteIfExists=false, directWrite=false, blobStorageKey)
     }
     var remainingAttempts = retries+1
     while(remainingAttempts>0) {
@@ -432,7 +433,7 @@ object HadoopClient {
     * @throws IOException if any from lower file system operation
     */
   @throws[IOException]
-  private def writeHdfsFile(hdfsPath: String, content: Array[Byte], conf: Configuration, overwriteIfExists:Boolean, directWrite:Boolean, blobStorageKey: broadcast.Broadcast[String] = null) {
+  private def writeHdfsFile(hdfsPath: String, writer: OutputStream => Unit, conf: Configuration, overwriteIfExists:Boolean, directWrite:Boolean, blobStorageKey: broadcast.Broadcast[String] = null) {
     resolveStorageAccountKeyForPath(hdfsPath, blobStorageKey)
 
     val logger = LogManager.getLogger("writeHdfsFile")
@@ -458,11 +459,8 @@ object HadoopClient {
     // If directWrite is true, write the file directly to the target path without renaming from a temp file
     if (directWrite) {
       val outStream = fs.create(path, true)
-      if (content.length > 0) {
-        val bs = new BufferedOutputStream(outStream)
-        bs.write(content)
-        bs.close()
-      }
+      writer(outStream)
+      outStream.close()
     } else {
       val tempHdfsPath = new URI(uri.getScheme, uri.getAuthority, "/_$tmpHdfsFolder$/"+tempFilePrefix(hdfsPath) + "-" + path.getName, null, null)
       //val pos = hdfsPath.lastIndexOf('/')
@@ -470,9 +468,9 @@ object HadoopClient {
       // TODO: create unique name for each temp file.
       val tempPath = new Path(tempHdfsPath)
 
-      val bs = new BufferedOutputStream(fs.create(tempPath, true))
-      bs.write(content)
-      bs.close()
+      val outStream = fs.create(tempPath, true)
+      writer(outStream)
+      outStream.close()
 
       if(!fs.rename(tempPath, path)) {
         // Rename failed, check if it was due to destination path already exists.
