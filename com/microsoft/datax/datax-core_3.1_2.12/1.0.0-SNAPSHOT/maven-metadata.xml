@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>com.microsoft.datax</groupId>
+  <artifactId>datax-core_3.1_2.12</artifactId>
+  <versioning>
+    <lastUpdated>20230912074638</lastUpdated>
+    <snapshot>
+      <timestamp>20230912.074638</timestamp>
+      <buildNumber>6</buildNumber>
+    </snapshot>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>1.0.0-20230912.074638-6</value>
+        <updated>20230912074638</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>jar</extension>
+        <value>1.0.0-20230912.074638-6</value>
+        <updated>20230912074638</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+  <version>1.0.0-SNAPSHOT</version>
+</metadata>
