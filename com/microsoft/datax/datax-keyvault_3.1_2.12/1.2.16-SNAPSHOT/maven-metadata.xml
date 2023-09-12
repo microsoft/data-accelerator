@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>com.microsoft.datax</groupId>
+  <artifactId>datax-keyvault_3.1_2.12</artifactId>
+  <versioning>
+    <lastUpdated>20230912181820</lastUpdated>
+    <snapshot>
+      <timestamp>20230912.181820</timestamp>
+      <buildNumber>1</buildNumber>
+    </snapshot>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>1.2.16-20230912.181820-1</value>
+        <updated>20230912181820</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>jar</extension>
+        <value>1.2.16-20230912.181820-1</value>
+        <updated>20230912181820</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <classifier>with-dependencies</classifier>
+        <extension>jar</extension>
+        <value>1.2.16-20230912.181820-1</value>
+        <updated>20230912181820</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+  <version>1.2.16-SNAPSHOT</version>
+</metadata>

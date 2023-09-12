@@ -4,8 +4,8 @@
   <artifactId>datax-keyvault_3.1_2.12</artifactId>
   <versioning>
     <versions>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.2.16-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20230912075427</lastUpdated>
+    <lastUpdated>20230912181820</lastUpdated>
   </versioning>
 </metadata>
