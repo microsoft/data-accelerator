@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>com.microsoft.datax</groupId>
+  <artifactId>datax-host_3.1_2.12</artifactId>
+  <versioning>
+    <versions>
+      <version>1.2.16-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20230912182554</lastUpdated>
+  </versioning>
+</metadata>
