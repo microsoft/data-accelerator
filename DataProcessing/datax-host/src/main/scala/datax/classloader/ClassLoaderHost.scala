@@ -5,11 +5,10 @@
 package datax.classloader
 
 import java.net.{URL, URLClassLoader}
+
 import org.apache.spark.SparkEnv
 import org.apache.spark.sql.catalyst.ScalaReflection
 
-import java.io.File
-import java.nio.file.Files
 import scala.collection.JavaConverters._
 import scala.collection.mutable.HashMap
 
