@@ -13,15 +13,19 @@ class BatchAppTests extends FlatSpec with Matchers with PrivateMethodTester with
   org.apache.log4j.BasicConfigurator.configure()
 
   lazy val test1Spark = createTestSparkSession()
+  lazy val test1InputDir = "/datax/tests/test1/input"
+  lazy val test1OutputDir = "/datax/tests/test1/output"
 
   "BatchApp" should "process correctly a single blob" in {
-    copyDirectoryToFs("datax/tests/test1", "/test1/input")
+    copyDirectoryToFs("datax/tests/test1", test1InputDir)
+    cleanupDirectory(test1OutputDir)
     setEnv("process_start_datetime", "2023-10-03T00:00:00Z")
     setEnv("process_end_datetime", "2023-10-03T00:59:59Z")
     BatchApp.create(Array(
-      "conf=/test1/input/test.conf",
+      "conf=datax/tests/test1/input/test.conf",
       "partition=false",
       "batchflushmetricsdelayduration=1 seconds",
       "filterTimeRange=false"), test1Spark)
+    assert(fileExists(test1OutputDir + "/0.json"))
   }
 }

@@ -40,11 +40,26 @@ trait SparkSessionTestWrapper {
 
   def isClasspathFileUri(filePath: String) = filePath != null && filePath.nonEmpty && filePath.startsWith("classpath:")
 
-  def copyDirectoryToFs(resourceSourceFolder: String, fsTargetFolder: String) = {
+  def cleanupDirectory(fsTargetFolder: String) = {
+    val targetFolder = new File(fsTargetFolder)
+    if (targetFolder.exists()) {
+      FileUtils.cleanDirectory(targetFolder)
+    }
+  }
+
+  def fileExists(fsFileName: String): Boolean = {
+    new File(fsFileName).exists()
+  }
+
+  def copyDirectoryToFs(resourceSourceFolder: String, fsTargetFolder: String, cleanupTarget: Boolean = true) = {
     val loader = Thread.currentThread.getContextClassLoader
     Option(loader.getResource(resourceSourceFolder)).foreach(url => {
       val path = url.getPath
-      FileUtils.copyDirectory(new File(path), new File(fsTargetFolder), false)
+      val targetFolder = new File(fsTargetFolder)
+      if(cleanupTarget && targetFolder.exists()) {
+        cleanupDirectory(fsTargetFolder)
+      }
+      FileUtils.copyDirectory(new File(path), targetFolder, false)
     })
   }
   def findInClasspathFolder(fileFolder: String): Iterator[File] = {
