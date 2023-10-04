@@ -4,6 +4,7 @@
 // *********************************************************************
 package datax.handler
 
+import datax.classloader.ClassLoaderUtils.{getClasspathFileLines, isClasspathFileUri}
 import datax.config.{SettingDictionary, SettingNamespace}
 import datax.fs.HadoopClient
 import datax.securedsetting.KeyVaultClient
@@ -28,7 +29,12 @@ object TransformHandler {
       case Some(transform) =>Future {
         logger.warn(s"Load transform script from '${transform}'")
         val filePath = KeyVaultClient.resolveSecretIfAny(transform)
-        val sqlParsed = TransformSQLParser.parse(HadoopClient.readHdfsFile(filePath).toSeq)
+        val sqlParsed = if(isClasspathFileUri(filePath)) {
+          TransformSQLParser.parse(getClasspathFileLines(filePath).toSeq)
+        }
+        else {
+          TransformSQLParser.parse(HadoopClient.readHdfsFile(filePath).toSeq)
+        }
 
         if(sqlParsed!=null) {
           val queries = sqlParsed.commands.filter(_.commandType==TransformSQLParser.CommandType_Query)
