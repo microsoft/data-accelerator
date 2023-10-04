@@ -116,6 +116,12 @@ SOFTWARE
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.globalmentor</groupId>
+            <artifactId>hadoop-bare-naked-local-fs</artifactId>
+            <version>0.1.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.microsoft.datax</groupId>
             <artifactId>datax-core_3.1_2.12</artifactId>
             <version>${version}</version>
