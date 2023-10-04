@@ -5,13 +5,11 @@
 package datax.input
 
 import datax.classloader.ClassLoaderUtils.{getClasspathFileLines, isClasspathFileUri}
-import datax.config.{ConfigManager, SettingDictionary, SettingNamespace}
+import datax.config.{SettingDictionary, SettingNamespace}
 import datax.fs.HadoopClient
 import datax.securedsetting.KeyVaultClient
 import org.apache.log4j.LogManager
-import org.apache.spark.sql.types.{DataType, StructType}
-
-import scala.concurrent.{ExecutionContext, Future}
+import org.apache.spark.sql.types.DataType
 
 object SchemaFile {
   val SettingSchemaFile="blobschemafile"
@@ -21,15 +19,8 @@ object SchemaFile {
   }
 
  private def loadRawBlobSchema(blobSchemaFile: String) = {
-    if(isClasspathFileUri(blobSchemaFile)) {
-      val schemaJsonString = getClasspathFileLines(blobSchemaFile).mkString("")
-      DataType.fromJson(schemaJsonString)
-    }
-    else {
-      // Schema of VS block extraction data
-      val schemaJsonString = HadoopClient.readHdfsFile(blobSchemaFile).mkString("")
-      DataType.fromJson(schemaJsonString)
-    }
+   val schemaJsonString = HadoopClient.readHdfsFile(blobSchemaFile).mkString("")
+   DataType.fromJson(schemaJsonString)
   }
 
   def loadInputSchema(dict: SettingDictionary) = {

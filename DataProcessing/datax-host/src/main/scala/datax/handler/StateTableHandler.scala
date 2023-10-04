@@ -7,8 +7,6 @@ package datax.handler
 import datax.config._
 import datax.exception.EngineException
 import datax.fs.HadoopClient
-import datax.securedsetting.KeyVaultClient
-import datax.utility.AzureFunctionCaller
 import org.apache.log4j.LogManager
 import org.apache.spark.sql.SparkSession
 

@@ -53,9 +53,14 @@ object ExecutorHelper {
     */
   private def getStorageAccountName(path:String):String ={
     val regex = s"@([a-zA-Z0-9-_]+)(${BlobProperties.BlobHostPath}|${BlobProperties.DfsHostPath})".r
-    regex.findFirstMatchIn(path) match {
-      case Some(partition) => partition.group(1)
-      case None =>  null
+    if(path != null) {
+      regex.findFirstMatchIn(path) match {
+        case Some(partition) => partition.group(1)
+        case None => null
+      }
+    }
+    else {
+      null
     }
   }
 

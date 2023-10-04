@@ -4,7 +4,6 @@
 // *********************************************************************
 package datax.handler
 
-import datax.classloader.ClassLoaderUtils.{getClasspathFileLines, isClasspathFileUri}
 import datax.config.{SettingDictionary, SettingNamespace}
 import datax.fs.HadoopClient
 import datax.securedsetting.KeyVaultClient
@@ -27,12 +26,7 @@ object ProjectionHandler {
         Future.sequence(projections.map(projectionFile => Future {
           logger.warn(s"Load projection file from '$projectionFile'")
           val filePath = KeyVaultClient.resolveSecretIfAny(projectionFile)
-          if(isClasspathFileUri(filePath)) {
-            getClasspathFileLines(filePath).toSeq
-          }
-          else {
-            HadoopClient.readHdfsFile(filePath).toSeq
-          }
+          HadoopClient.readHdfsFile(filePath).toSeq
         }))
       }
       case None => Future {

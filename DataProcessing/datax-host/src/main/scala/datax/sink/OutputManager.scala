@@ -5,7 +5,6 @@
 package datax.sink
 
 import java.sql.Timestamp
-
 import datax.config.{SettingDictionary, SettingNamespace, SparkEnvVariables}
 import datax.constants.{ColumnName, MetricName, ProductConstant}
 import datax.data.FileInternal

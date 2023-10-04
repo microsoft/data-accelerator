@@ -116,12 +116,7 @@ object ConfigManager extends ConfigService {
       throw new EngineException(s"No conf file is provided")
     else if(!filePath.toLowerCase().endsWith(".conf"))
       throw new EngineException(s"non-conf file is not supported as configuration input")
-    if(isClasspathFileUri(filePath)) {
-      parseConfLines(getClasspathFileLines(filePath), replacements)
-    }
-    else {
-      parseConfLines(HadoopClient.readHdfsFile(filePath), replacements)
-    }
+    parseConfLines(HadoopClient.readHdfsFile(filePath), replacements)
   }
 
   def loadConfig(sparkConf: SparkConf): UnifiedConfig = {
