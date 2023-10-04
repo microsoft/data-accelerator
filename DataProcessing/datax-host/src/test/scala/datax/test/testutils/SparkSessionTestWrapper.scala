@@ -1,15 +1,21 @@
 package datax.test.testutils
 
+import com.globalmentor.apache.hadoop.fs.BareLocalFileSystem
+import org.apache.hadoop.fs.FileSystem
 import org.apache.spark.sql.SparkSession
 
 trait SparkSessionTestWrapper {
 
-  lazy val spark: SparkSession = {
-    SparkSession
+  def createTestSparkSession(useLocalFS: Boolean = true) = {
+    val spark = SparkSession
       .builder()
       .master("local")
       .appName("spark test")
       .getOrCreate()
+    if(useLocalFS) {
+      spark.sparkContext.hadoopConfiguration.setClass("fs.file.impl", classOf[BareLocalFileSystem], classOf[FileSystem])
+    }
+    spark
   }
 
   def setEnv(key: String, value: String) = {

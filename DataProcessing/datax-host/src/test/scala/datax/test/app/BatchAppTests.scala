@@ -13,11 +13,10 @@ class BatchAppTests extends FlatSpec with Matchers with PrivateMethodTester with
   "app" should "app" in {
     setEnv("process_start_datetime", "2023-10-03T00:00:00Z")
     setEnv("process_end_datetime", "2023-10-03T00:59:59Z")
-    spark.sparkContext.hadoopConfiguration.setClass("fs.file.impl", classOf[BareLocalFileSystem], classOf[FileSystem])
     BatchApp.create(Array(
       "conf=classpath:example.conf",
       "partition=false",
       "batchflushmetricsdelayduration=1 seconds",
-      "filterTimeRange=false"), spark)
+      "filterTimeRange=false"), createTestSparkSession())
   }
 }
