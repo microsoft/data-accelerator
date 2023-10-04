@@ -14,21 +14,21 @@ import scala.collection.mutable.HashMap
 
 object ClassLoaderHost {
   /**
-    * Get the ClassLoader which loaded Spark.
-    */
+   * Get the ClassLoader which loaded Spark.
+   */
   def getSparkClassLoader: ClassLoader = getClass.getClassLoader
 
   /**
-    * Get the Context ClassLoader on this thread or, if not present, the ClassLoader that
-    * loaded Spark.
-    */
+   * Get the Context ClassLoader on this thread or, if not present, the ClassLoader that
+   * loaded Spark.
+   */
   def getContextOrSparkClassLoader: ClassLoader =
     Option(Thread.currentThread().getContextClassLoader).getOrElse(getSparkClassLoader)
 
   /**
-    * Create a ClassLoader for use in tasks, adding any JARs specified by the user or any classes
-    * created by the interpreter to the search path
-    */
+   * Create a ClassLoader for use in tasks, adding any JARs specified by the user or any classes
+   * created by the interpreter to the search path
+   */
   private def createClassLoader(): MutableURLClassLoader = {
     // Bootstrap the list of jars with the user class path.
     val now = System.currentTimeMillis()
@@ -85,8 +85,8 @@ object ClassLoaderHost {
 
 
 /**
-  * A class loader which makes some protected methods in ClassLoader accessible.
-  */
+ * A class loader which makes some protected methods in ClassLoader accessible.
+ */
 class ParentClassLoader(parent: ClassLoader) extends ClassLoader(parent) {
 
   override def findClass(name: String): Class[_] = {
@@ -104,8 +104,8 @@ class ParentClassLoader(parent: ClassLoader) extends ClassLoader(parent) {
 }
 
 /**
-  * URL class loader that exposes the `addURL` and `getURLs` methods in URLClassLoader.
-  */
+ * URL class loader that exposes the `addURL` and `getURLs` methods in URLClassLoader.
+ */
 class MutableURLClassLoader(urls: Array[URL], parent: ClassLoader)
   extends URLClassLoader(urls, parent) {
 
@@ -120,9 +120,9 @@ class MutableURLClassLoader(urls: Array[URL], parent: ClassLoader)
 }
 
 /**
-  * A mutable class loader that gives preference to its own URLs over the parent class loader
-  * when loading classes and resources.
-  */
+ * A mutable class loader that gives preference to its own URLs over the parent class loader
+ * when loading classes and resources.
+ */
 class ChildFirstURLClassLoader(urls: Array[URL], parent: ClassLoader)
   extends MutableURLClassLoader(urls, null) {
 
@@ -152,4 +152,5 @@ class ChildFirstURLClassLoader(urls: Array[URL], parent: ClassLoader)
   override def addURL(url: URL) {
     super.addURL(url)
   }
+
 }
