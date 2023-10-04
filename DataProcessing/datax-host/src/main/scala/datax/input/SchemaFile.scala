@@ -20,8 +20,9 @@ object SchemaFile {
   }
 
  private def loadRawBlobSchema(blobSchemaFile: String) = {
-   val schemaJsonString = HadoopClient.readHdfsFile(blobSchemaFile).mkString("")
-   DataType.fromJson(schemaJsonString)
+    // Schema of VS block extraction data
+    val schemaJsonString = HadoopClient.readHdfsFile(blobSchemaFile).mkString("")
+    DataType.fromJson(schemaJsonString)
   }
 
   def loadInputSchema(dict: SettingDictionary) = {
