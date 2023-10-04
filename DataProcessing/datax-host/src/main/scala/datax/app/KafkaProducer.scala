@@ -6,7 +6,7 @@ package datax.app
 
 import org.apache.kafka.clients.producer._
 
-import java.util.Properties
+import java.util.{Properties}
 import datax.fs.HadoopClient
 import datax.host.SparkSessionSingleton
 import datax.input.DataGenerator

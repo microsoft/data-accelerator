@@ -4,12 +4,13 @@
 // *********************************************************************
 package datax.input
 
-import datax.classloader.ClassLoaderUtils.{getClasspathFileLines, isClasspathFileUri}
-import datax.config.{SettingDictionary, SettingNamespace}
+import datax.config.{ConfigManager, SettingDictionary, SettingNamespace}
 import datax.fs.HadoopClient
 import datax.securedsetting.KeyVaultClient
 import org.apache.log4j.LogManager
-import org.apache.spark.sql.types.DataType
+import org.apache.spark.sql.types.{DataType, StructType}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 object SchemaFile {
   val SettingSchemaFile="blobschemafile"
