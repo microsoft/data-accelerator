@@ -152,5 +152,4 @@ class ChildFirstURLClassLoader(urls: Array[URL], parent: ClassLoader)
   override def addURL(url: URL) {
     super.addURL(url)
   }
-
 }
