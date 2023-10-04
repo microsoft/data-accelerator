@@ -27,4 +27,10 @@ object SparkSessionSingleton {
     instance
   }
 
+  def setInstance(sparkSession: SparkSession) = {
+    if (instance == null) {
+      instance = sparkSession
+    }
+  }
+
 }

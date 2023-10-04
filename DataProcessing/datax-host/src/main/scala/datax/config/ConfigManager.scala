@@ -4,6 +4,7 @@
 // *********************************************************************
 package datax.config
 
+import datax.classloader.ClassLoaderUtils.{getClasspathFileLines, isClasspathFileUri}
 import datax.constants.JobArgument
 import datax.exception.EngineException
 import datax.fs.HadoopClient
@@ -11,6 +12,9 @@ import datax.service.ConfigService
 import datax.utility.ArgumentsParser
 import org.apache.log4j.LogManager
 import org.apache.spark.SparkConf
+
+import java.io.File
+import java.nio.file.Files
 
 /***
   * Singleton service to set and get a Dictionary object
@@ -112,8 +116,12 @@ object ConfigManager extends ConfigService {
       throw new EngineException(s"No conf file is provided")
     else if(!filePath.toLowerCase().endsWith(".conf"))
       throw new EngineException(s"non-conf file is not supported as configuration input")
-
-    parseConfLines(HadoopClient.readHdfsFile(filePath), replacements)
+    if(isClasspathFileUri(filePath)) {
+      parseConfLines(getClasspathFileLines(filePath), replacements)
+    }
+    else {
+      parseConfLines(HadoopClient.readHdfsFile(filePath), replacements)
+    }
   }
 
   def loadConfig(sparkConf: SparkConf): UnifiedConfig = {

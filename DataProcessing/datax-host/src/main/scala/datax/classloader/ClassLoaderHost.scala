@@ -5,10 +5,11 @@
 package datax.classloader
 
 import java.net.{URL, URLClassLoader}
-
 import org.apache.spark.SparkEnv
 import org.apache.spark.sql.catalyst.ScalaReflection
 
+import java.io.File
+import java.nio.file.Files
 import scala.collection.JavaConverters._
 import scala.collection.mutable.HashMap
 
@@ -153,4 +154,42 @@ class ChildFirstURLClassLoader(urls: Array[URL], parent: ClassLoader)
     super.addURL(url)
   }
 
+}
+
+object ClassLoaderUtils
+{
+
+  def getClasspathFile(filePath: String): File = {
+    val resourceFilePath = filePath.substring(10)
+    new File(getClass.getClassLoader.getResource(resourceFilePath).getFile)
+  }
+  def isClasspathFileUri(filePath: String) = filePath != null && filePath.nonEmpty && filePath.startsWith("classpath:")
+
+  def findInClasspathFolder(fileFolder: String): Iterator[File] = {
+    if(isClasspathFileUri(fileFolder)) {
+      val resourceFilePath = fileFolder.substring(10)
+      val loader = Thread.currentThread.getContextClassLoader
+      val url = loader.getResource(resourceFilePath)
+      if(url != null) {
+        val path = url.getPath
+        new File(path).listFiles.toIterator
+      }
+      else {
+        Iterator.empty
+      }
+    }
+    else {
+      Iterator.empty
+    }
+  }
+  def getClasspathFileLines(filePath: String): Iterable[String]  = {
+    if(isClasspathFileUri(filePath)) {
+      val file = getClasspathFile(filePath)
+      import collection.JavaConverters._
+      Files.readAllLines(file.toPath).asScala
+    }
+    else {
+      Iterable.empty
+    }
+  }
 }

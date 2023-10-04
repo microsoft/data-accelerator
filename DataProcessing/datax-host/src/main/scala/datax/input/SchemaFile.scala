@@ -4,6 +4,7 @@
 // *********************************************************************
 package datax.input
 
+import datax.classloader.ClassLoaderUtils.{getClasspathFileLines, isClasspathFileUri}
 import datax.config.{ConfigManager, SettingDictionary, SettingNamespace}
 import datax.fs.HadoopClient
 import datax.securedsetting.KeyVaultClient
@@ -20,9 +21,15 @@ object SchemaFile {
   }
 
  private def loadRawBlobSchema(blobSchemaFile: String) = {
-    // Schema of VS block extraction data
-    val schemaJsonString = HadoopClient.readHdfsFile(blobSchemaFile).mkString("")
-    DataType.fromJson(schemaJsonString)
+    if(isClasspathFileUri(blobSchemaFile)) {
+      val schemaJsonString = getClasspathFileLines(blobSchemaFile).mkString("")
+      DataType.fromJson(schemaJsonString)
+    }
+    else {
+      // Schema of VS block extraction data
+      val schemaJsonString = HadoopClient.readHdfsFile(blobSchemaFile).mkString("")
+      DataType.fromJson(schemaJsonString)
+    }
   }
 
   def loadInputSchema(dict: SettingDictionary) = {

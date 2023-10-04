@@ -4,6 +4,8 @@
 // *********************************************************************
 package datax.host
 
+import datax.classloader.ClassLoaderUtils.{findInClasspathFolder, isClasspathFileUri}
+
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.time.Instant
@@ -96,7 +98,17 @@ object BlobBatchingHost {
 
     val filterTimeRange = config.dict.getOrElse("filterTimeRange", "").equals("true")
     appLog.warn(s"filterTimeRange: $filterTimeRange")
-    val filesToProcess = prefixes.flatMap(prefix=>HadoopClient.listFileObjects(prefix._1).flatMap(f=>inTimeRange(f, filterTimeRange)).toSeq)
+    val filesToProcess = prefixes.flatMap(prefix => {
+        if(isClasspathFileUri(prefix._1)) {
+          findInClasspathFolder(prefix._1).map(f => f.getPath).toSeq
+        }
+        else {
+          HadoopClient.listFileObjects(prefix._1)
+            .flatMap(f => inTimeRange(f, filterTimeRange))
+            .toSeq
+        }
+      }
+    )
     appLog.warn(s"filesToProcess: ${filesToProcess.length}")
     val minTimestamp = prefixes.minBy(_._2.getTime)._2
     appLog.warn(s"Start processing for $minTimestamp")
