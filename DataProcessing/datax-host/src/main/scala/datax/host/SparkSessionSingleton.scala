@@ -15,22 +15,22 @@ object SparkSessionSingleton {
   @transient private var instance: SparkSession = _
 
   def getInstance(sparkConf: SparkConf): SparkSession = {
-
+    val logger = LogManager.getLogger(s"getInstance")
     if (instance == null) {
-      instance = SparkSession
+      var builder = SparkSession
         .builder
         .config(sparkConf)
-        .enableHiveSupport()
-        .getOrCreate()
+      val isLocalMode = sparkConf.getOption("spark.master").contains("local")
+      if(!isLocalMode) {
+        builder = builder.enableHiveSupport()
+      }
+      else {
+        logger.warn("Spark executing in local mode")
+      }
+      instance = builder.getOrCreate()
     }
 
     instance
-  }
-
-  def setInstance(sparkSession: SparkSession) = {
-    if (instance == null) {
-      instance = sparkSession
-    }
   }
 
 }

@@ -9,6 +9,7 @@ import datax.exception.EngineException
 import datax.fs.HadoopClient
 import datax.service.ConfigService
 import datax.utility.ArgumentsParser
+import org.apache.commons.lang3.StringUtils
 import org.apache.log4j.LogManager
 import org.apache.spark.SparkConf
 
@@ -17,8 +18,22 @@ import org.apache.spark.SparkConf
   */
 object ConfigManager extends ConfigService {
   private val logger = LogManager.getLogger("DictionaryigManager")
+  @transient private var sparkConf: SparkConf = _
 
-  def initSparkConf() = new SparkConf()
+  def getSparkConf() = sparkConf
+
+  def initSparkConf(inputArguments: Array[String]) = {
+    val namedArgs = ArgumentsParser.getNamedArgs(inputArguments)
+    sparkConf = new SparkConf()
+    namedArgs.foreach(arg => {
+      if (StringUtils.isNotEmpty(arg._2) && StringUtils.isNotEmpty(arg._1) && arg._1.startsWith("spark.")) {
+        val property = arg._1
+        val value = arg._2
+        sparkConf.set(property, value)
+      }
+    })
+    sparkConf
+  }
 
   def loadLocalConfigIfExists[T](configurationFile: String)(implicit mf: Manifest[T]) : Option[T] = {
     val configString = HadoopClient.readLocalFileIfExists(configurationFile)

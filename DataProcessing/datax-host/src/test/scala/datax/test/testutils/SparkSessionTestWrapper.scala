@@ -10,22 +10,6 @@ import java.nio.file.Files
 
 trait SparkSessionTestWrapper {
 
-  def createTestSparkSession(useLocalFS: Boolean = true, useMemoryFS: Boolean = true, logLevel: String = "INFO") = {
-    val spark = SparkSession
-      .builder()
-      .master("local")
-      .appName("spark test")
-      .getOrCreate()
-    if(useLocalFS) {
-      spark.sparkContext.hadoopConfiguration.setClass("fs.file.impl", classOf[BareLocalFileSystem], classOf[FileSystem])
-    }
-    if(useMemoryFS) {
-      spark.sparkContext.hadoopConfiguration.set("fs.igfs.impl", "org.apache.ignite.hadoop.fs.v1.IgniteHadoopFileSystem")
-    }
-    spark.sparkContext.setLogLevel(logLevel)
-    spark
-  }
-
   def setEnv(key: String, value: String) = {
     val field = System.getenv().getClass.getDeclaredField("m")
     field.setAccessible(true)
