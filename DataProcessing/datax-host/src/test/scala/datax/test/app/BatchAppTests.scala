@@ -2,6 +2,7 @@ package datax.test.app
 
 import datax.app.BatchApp
 import datax.test.testutils.SparkSessionTestWrapper
+import org.json4s.jackson.JsonMethods.render
 import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
 
 import java.util.TimeZone
@@ -27,5 +28,11 @@ class BatchAppTests extends FlatSpec with Matchers with PrivateMethodTester with
       "batchflushmetricsdelayduration=1 seconds",
       "filterTimeRange=false"), test1Spark)
     assert(fileExists(test1OutputDir + "/0.json"))
+    val jsonVal = readFile(test1OutputDir + "/0.json")
+    implicit val formats = org.json4s.DefaultFormats
+    val output = org.json4s.jackson
+      .parseJson(jsonVal)
+    val nameValue = render(output \\ "Raw" \\ "name").extract[String]
+    assert("hi" == nameValue)
   }
 }

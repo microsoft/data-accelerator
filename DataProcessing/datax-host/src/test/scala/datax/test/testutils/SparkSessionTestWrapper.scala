@@ -51,6 +51,10 @@ trait SparkSessionTestWrapper {
     new File(fsFileName).exists()
   }
 
+  def readFile(fsFileName: String): String = {
+    FileUtils.readFileToString(new File(fsFileName))
+  }
+
   def copyDirectoryToFs(resourceSourceFolder: String, fsTargetFolder: String, cleanupTarget: Boolean = true) = {
     val loader = Thread.currentThread.getContextClassLoader
     Option(loader.getResource(resourceSourceFolder)).foreach(url => {
