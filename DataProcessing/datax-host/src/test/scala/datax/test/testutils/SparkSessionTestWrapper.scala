@@ -1,9 +1,6 @@
 package datax.test.testutils
 
-import com.globalmentor.apache.hadoop.fs.BareLocalFileSystem
 import org.apache.commons.io.FileUtils
-import org.apache.hadoop.fs.FileSystem
-import org.apache.spark.sql.SparkSession
 
 import java.io.File
 import java.nio.file.Files
@@ -77,6 +74,10 @@ trait SparkSessionTestWrapper {
     else {
       Iterable.empty
     }
+  }
+
+  def encodeToBase64String(src: String) = {
+    new String(java.util.Base64.getEncoder.encode(src.getBytes()))
   }
 
 }

@@ -4,6 +4,7 @@
 // *********************************************************************
 package datax.handler
 
+import datax.config.ConfigManager.loadConfigFile
 import datax.config.{SettingDictionary, SettingNamespace}
 import datax.fs.HadoopClient
 import datax.securedsetting.KeyVaultClient
@@ -28,7 +29,7 @@ object TransformHandler {
       case Some(transform) =>Future {
         logger.warn(s"Load transform script from '${transform}'")
         val filePath = KeyVaultClient.resolveSecretIfAny(transform)
-        val sqlParsed = TransformSQLParser.parse(HadoopClient.readHdfsFile(filePath).toSeq)
+        val sqlParsed = TransformSQLParser.parse(loadConfigFile(filePath).toSeq)
 
         if(sqlParsed!=null) {
           val queries = sqlParsed.commands.filter(_.commandType==TransformSQLParser.CommandType_Query)

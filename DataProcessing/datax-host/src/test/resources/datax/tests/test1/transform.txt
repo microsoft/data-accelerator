@@ -1,1 +1,0 @@
-default = SELECT * FROM DataXProcessedInput

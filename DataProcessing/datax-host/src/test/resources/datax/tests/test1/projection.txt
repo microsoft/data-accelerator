@@ -1,4 +1,0 @@
-__DataX_FileInfo
-__DataXMetadata_OutputPartitionTime
-Raw
-DataXProperties

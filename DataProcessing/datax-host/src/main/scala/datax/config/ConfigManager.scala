@@ -13,6 +13,8 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.log4j.LogManager
 import org.apache.spark.SparkConf
 
+import scala.util.Try
+
 /***
   * Singleton service to set and get a Dictionary object
   */
@@ -122,13 +124,32 @@ object ConfigManager extends ConfigService {
       s.trim()->null
   }
 
+  def decodeBase64(src: String) : Option[String] = {
+    Try(new String(java.util.Base64.getDecoder.decode(src))).toOption
+  }
+
+  def readConfigFileAsBase64Encoded(fileContents: String): Option[Iterable[String]] = {
+    decodeBase64(fileContents)
+      .map(contents => contents.replace("\r", "").trim().split("\n"))
+  }
+
+  def readConfigFileAsFile(filePath: String, extension: Option[String] = None): Iterable[String] = {
+    if (extension.isDefined && !filePath.toLowerCase().endsWith(extension.get))
+      throw EngineException(s"non-conf file is not supported as configuration input")
+    HadoopClient.readHdfsFile(filePath)
+  }
+
+  def loadConfigFile(filePath: String, extension: Option[String] = None): Iterable[String] = {
+    // Try to decode any base64 encode config first, then fallback to look it as a filepath
+    readConfigFileAsBase64Encoded(filePath)
+      .getOrElse(readConfigFileAsFile(filePath, extension))
+  }
+
   private def readConfFile(filePath: String, replacements: Map[String, String]) = {
     if(filePath==null)
-      throw new EngineException(s"No conf file is provided")
-    else if(!filePath.toLowerCase().endsWith(".conf"))
-      throw new EngineException(s"non-conf file is not supported as configuration input")
+      throw EngineException(s"No conf file or conf data is provided")
 
-    parseConfLines(HadoopClient.readHdfsFile(filePath), replacements)
+    parseConfLines(loadConfigFile(filePath, Option(".conf")), replacements)
   }
 
   def loadConfig(sparkConf: SparkConf): UnifiedConfig = {
