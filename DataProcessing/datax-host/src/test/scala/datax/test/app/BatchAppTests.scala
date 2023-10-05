@@ -2,6 +2,7 @@ package datax.test.app
 
 import datax.app.BatchApp
 import datax.test.testutils.SparkSessionTestWrapper
+import org.apache.commons.io.FileUtils
 import org.json4s.jackson.JsonMethods.render
 import org.scalatest.PrivateMethodTester
 import org.scalatest.flatspec.AnyFlatSpec
@@ -14,8 +15,14 @@ class BatchAppTests extends AnyFlatSpec with Matchers with PrivateMethodTester w
 
   TimeZone.setDefault(TimeZone.getTimeZone("GMT"))
 
-  lazy val test1InputDir = "/datax/tests/test1/input"
-  lazy val test1OutputDir = s"/datax/tests/test1/${Instant.now().toEpochMilli}/output"
+  lazy val test1Timestamp = Instant.now().toEpochMilli
+  lazy val test1Directory = FileUtils.getTempDirectory
+  lazy val test1InputDir = s"${test1Directory.getPath}/datax/${test1Timestamp}/input"
+  lazy val test1OutputDir = s"${test1Directory.getPath}/datax/${test1Timestamp}/output"
+  lazy val test1Blobs =
+    """
+      |{ "name": "hi" }
+      |""".stripMargin
   lazy val test1Projection =
     """
       |__DataX_FileInfo
@@ -47,7 +54,7 @@ class BatchAppTests extends AnyFlatSpec with Matchers with PrivateMethodTester w
       |datax.job.input.default.blobschemafile=${encodeToBase64String(test1Schema)}
       |datax.job.input.default.blobpathregex=.*/blobs/\\d{4}/\\d{2}/\\d{2}/\\d{2}/blob.json$$
       |datax.job.input.default.filetimeregex=(\\d{4}/\\d{2}/\\d{2}/\\d{2})$$
-      |datax.job.input.default.blob.test.path=/datax/tests/test1/input/blobs/{yyyy/MM/dd/HH}/
+      |datax.job.input.default.blob.test.path=${test1InputDir}/blobs/{yyyy/MM/dd/HH}/
       |datax.job.input.default.blob.test.partitionincrement=1
       |datax.job.input.default.blob.test.compressiontype=none
       |datax.job.input.default.source.testinput.target=testoutput
@@ -57,7 +64,7 @@ class BatchAppTests extends AnyFlatSpec with Matchers with PrivateMethodTester w
       |datax.job.process.projection=${encodeToBase64String(test1Projection)}
       |""".stripMargin
   "BatchApp" should "process correctly a single blob running in local machine" in {
-    copyDirectoryToFs("datax/tests/test1", test1InputDir)
+    writeFile(s"${test1InputDir}/blobs/2023/10/03/00/blob.json", test1Blobs.trim())
     setEnv("process_start_datetime", "2023-10-03T00:00:00Z")
     setEnv("process_end_datetime", "2023-10-03T00:59:59Z")
     BatchApp.main(Array(
