@@ -11,7 +11,6 @@ import java.util.TimeZone
 
 class BlobBatchingHost extends AnyFlatSpec with Matchers with PrivateMethodTester{
   TimeZone.setDefault(TimeZone.getTimeZone("GMT"))
-  org.apache.log4j.BasicConfigurator.configure()
 
   val bbh = BlobBatchingHost
 

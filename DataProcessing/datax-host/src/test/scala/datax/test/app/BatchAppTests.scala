@@ -3,15 +3,15 @@ package datax.test.app
 import datax.app.BatchApp
 import datax.test.testutils.SparkSessionTestWrapper
 import org.json4s.jackson.JsonMethods.render
-import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
+import org.scalatest.PrivateMethodTester
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import java.util.TimeZone
 
-class BatchAppTests extends FlatSpec with Matchers with PrivateMethodTester with SparkSessionTestWrapper {
+class BatchAppTests extends AnyFlatSpec with Matchers with PrivateMethodTester with SparkSessionTestWrapper {
 
   TimeZone.setDefault(TimeZone.getTimeZone("GMT"))
-
-  org.apache.log4j.BasicConfigurator.configure()
 
   lazy val test1Spark = createTestSparkSession()
   lazy val test1InputDir = "/datax/tests/test1/input"

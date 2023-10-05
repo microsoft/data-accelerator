@@ -119,7 +119,11 @@ SOFTWARE
             <groupId>com.globalmentor</groupId>
             <artifactId>hadoop-bare-naked-local-fs</artifactId>
             <version>0.1.0</version>
-            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.10.0</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.datax</groupId>

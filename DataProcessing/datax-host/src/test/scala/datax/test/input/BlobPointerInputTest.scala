@@ -8,7 +8,6 @@ import org.scalatest.PrivateMethodTester
 import java.sql.Timestamp
 
 class BlobPointerInputTest extends AnyFlatSpec with Matchers with PrivateMethodTester{
-  org.apache.log4j.BasicConfigurator.configure()
 
   "BlobPointerInput class" should "initialize correctly" in {
     BlobPointerInput
