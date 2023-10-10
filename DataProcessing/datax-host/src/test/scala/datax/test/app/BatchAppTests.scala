@@ -1,6 +1,6 @@
 package datax.test.app
 
-import datax.app.{LocalBatchApp, ValueConfiguration}
+import datax.app.{LocalBatchApp, ValueConfiguration, ValueSourceBlob}
 import org.json4s.jackson.JsonMethods.render
 import org.scalatest.PrivateMethodTester
 import org.scalatest.flatspec.AnyFlatSpec
@@ -12,15 +12,15 @@ class BatchAppTests extends AnyFlatSpec with Matchers with PrivateMethodTester {
 import scala.collection.mutable
 
   lazy val testApp = LocalBatchApp(blobs = Array(
-    ("2023/10/03/00",
+    ValueSourceBlob("2023/10/03/00",
       """
         |{ "name": "hello" }
         |""".stripMargin),
-    ("2023/10/03/01",
+    ValueSourceBlob("2023/10/03/01",
       """
         |{ "name": "world" }
         |""".stripMargin),
-    ("2023/10/03/02",
+    ValueSourceBlob("2023/10/03/02",
       """
         |{ "name": "!" }
         |""".stripMargin)),

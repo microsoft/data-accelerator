@@ -61,6 +61,24 @@ trait LocalConfiguration {
   def getConfig(fs: LocalAppFileSystem): String
 }
 
+trait SourceBlob {
+  def getBlob(fs: LocalAppFileSystem) : String
+  def getPartition: String
+}
+
+case class ValueSourceBlob(partition: String, blobData: String) extends SourceBlob {
+  def getBlob(fs: LocalAppFileSystem) = blobData
+  def getPartition = partition
+}
+
+case class FileSourceBlob(partition: String, blobFilePath: String) extends SourceBlob {
+  def getBlob(fs: LocalAppFileSystem): String = {
+    fs.readFile(blobFilePath)
+  }
+
+  def getPartition: String = partition
+}
+
 /**
  * The configuration is supplied via string values
  * @param jobName The job name
@@ -86,7 +104,7 @@ case class ValueConfiguration(jobName: String, projectionData: String, transform
   }
 }
 
-case class LocalBatchApp(inputArgs: Array[String], configuration: Option[LocalConfiguration] = None, blobs: Array[(String, String)] = Array(), envVars: Array[(String, String)] = Array(), fs: LocalAppFileSystem = LocalAppLocalFileSystem()) {
+case class LocalBatchApp(inputArgs: Array[String], configuration: Option[LocalConfiguration] = None, blobs: Array[SourceBlob] = Array(), envVars: Array[(String, String)] = Array(), fs: LocalAppFileSystem = LocalAppLocalFileSystem()) {
 
   lazy val LocalModeInputArgs = Array(
     "spark.master=local",
@@ -100,8 +118,8 @@ case class LocalBatchApp(inputArgs: Array[String], configuration: Option[LocalCo
   def writeBlobs(): Unit = {
     if(!blobs.isEmpty) {
       var i = 0
-      blobs.foreach(blobData => blobData._2.trim().split("\n").foreach(blob => {
-        fs.writeFile(s"${fs.InputDir}/${blobData._1}/blob_$i.json", blob.trim())
+      blobs.foreach(blobData => blobData.getBlob(fs).trim().split("\n").foreach(blob => {
+        fs.writeFile(s"${fs.InputDir}/${blobData.getPartition}/blob_$i.json", blob.trim())
         i += 1
       }))
     }
