@@ -1,6 +1,6 @@
 package datax.test.app
 
-import datax.app.{LocalBatchApp, ValueConfiguration, ValueSourceBlob}
+import datax.app.{LocalBatchApp, ValueConfiguration, ValueSourceBlob, ValueConfigSource}
 import org.json4s.jackson.JsonMethods.render
 import org.scalatest.PrivateMethodTester
 import org.scalatest.flatspec.AnyFlatSpec
@@ -27,18 +27,18 @@ import scala.collection.mutable
     configuration = Some(ValueConfiguration(
       jobName = "test",
       projectionData =
-        """
+        ValueConfigSource("""
           |__DataX_FileInfo
           |__DataXMetadata_OutputPartitionTime
           |Raw
           |DataXProperties
-          |""".stripMargin,
+          |""".stripMargin),
       transformData =
-        """
+        ValueConfigSource("""
           |default = SELECT * FROM DataXProcessedInput
-          |""".stripMargin,
+          |""".stripMargin),
       schemaData =
-        """
+        ValueConfigSource("""
           |{
           |  "type": "struct",
           |  "fields": [
@@ -50,7 +50,7 @@ import scala.collection.mutable
           |    }
           |  ]
           |}
-          |""".stripMargin,
+          |""".stripMargin),
       additionalSettings =
         """
           |datax.job.input.default.blob.input.partitionincrement=1

@@ -79,6 +79,18 @@ case class FileSourceBlob(partition: String, blobFilePath: String) extends Sourc
   def getPartition: String = partition
 }
 
+trait ConfigSource {
+  def Value: String
+}
+
+case class ValueConfigSource(configData: String) extends ConfigSource with ConfigValueEncoder {
+  def Value: String = encodeValue(configData)
+}
+
+case class FileConfigSource(configFilePath: String) extends ConfigSource with ConfigValueEncoder {
+  def Value: String = configFilePath
+}
+
 /**
  * The configuration is supplied via string values
  * @param jobName The job name
@@ -87,19 +99,19 @@ case class FileSourceBlob(partition: String, blobFilePath: String) extends Sourc
  * @param schemaData The schema data file content
  * @param additionalSettings Additional properties from conf files
  */
-case class ValueConfiguration(jobName: String, projectionData: String, transformData: String, schemaData: String, additionalSettings: String = "") extends LocalConfiguration with ConfigValueEncoder {
+case class ValueConfiguration(jobName: String, projectionData: ConfigSource, transformData: ConfigSource, schemaData: ConfigSource, additionalSettings: String = "") extends LocalConfiguration with ConfigValueEncoder {
   def getConfig(fs: LocalAppFileSystem): String = {
     encodeValue(s"""
        |datax.job.name=$jobName
-       |datax.job.input.default.blobschemafile=${encodeValue(schemaData)}
+       |datax.job.input.default.blobschemafile=${schemaData.Value}
        |datax.job.input.default.blobpathregex=.*/input/(\\d{4})/(\\d{2})/(\\d{2})/(\\d{2})/.*$$
        |datax.job.input.default.filetimeregex=(\\d{4}/\\d{2}/\\d{2}/\\d{2})$$
        |datax.job.input.default.sourceidregex=file:/.*/(input)/.*
        |datax.job.input.default.source.input.target=output
        |datax.job.input.default.blob.input.path=${fs.InputDir}/{yyyy/MM/dd/HH}/
        |datax.job.output.default.blob.group.main.folder=${fs.OutputDir}
-       |datax.job.process.transform=${encodeValue(transformData)}
-       |datax.job.process.projection=${encodeValue(projectionData)}
+       |datax.job.process.transform=${transformData.Value}
+       |datax.job.process.projection=${projectionData.Value}
        |""".stripMargin.trim() + "\n" + additionalSettings.trim())
   }
 }
