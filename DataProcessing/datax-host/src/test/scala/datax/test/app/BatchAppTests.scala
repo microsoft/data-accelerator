@@ -6,11 +6,10 @@ import org.scalatest.PrivateMethodTester
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.json4s.jackson.parseJson
-
-class BatchAppTests extends AnyFlatSpec with Matchers with PrivateMethodTester {
-
 import scala.collection.mutable
 
+class BatchAppTests extends AnyFlatSpec with Matchers with PrivateMethodTester {
+  
   lazy val testApp = LocalBatchApp(blobs = Array(
     ValueSourceBlob("2023/10/03/00", "20231003_002655",
       """
