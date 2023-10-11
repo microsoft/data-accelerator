@@ -74,7 +74,7 @@ trait SourceBlob {
   def getStamp: String
 }
 
-case class ValueSourceBlob(partition: String, blobData: String = "{}", stamp: String = "") extends SourceBlob {
+case class ValueSourceBlob(partition: String, blobData: String, stamp: String = "") extends SourceBlob {
   def getBlob(fs: LocalAppFileSystem) = blobData
   def getPartition = partition
   def getStamp = stamp
