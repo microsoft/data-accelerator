@@ -120,21 +120,21 @@ case class ValueInputFileSource (fileName: String, fileContent: String) extends 
  * @param schemaData The schema data file content
  * @param additionalSettings Additional properties from conf files
  */
-case class ValueConfiguration(jobName: String, startTime: String, endTime: String, projectionData: ConfigSource, transformData: ConfigSource, schemaData: ConfigSource, additionalSettings: LocalAppFileSystem => String = _ => "", prefix: String = "datax", outputPartition: String = "") extends LocalConfiguration with ConfigValueEncoder {
+case class ValueConfiguration(jobName: String, startTime: String, endTime: String, projectionData: ConfigSource, transformData: ConfigSource, schemaData: ConfigSource, additionalSettings: LocalAppFileSystem => String = _ => "", prefix: String = "DataX", outputPartition: String = "") extends LocalConfiguration with ConfigValueEncoder {
   def getEnvPrefix = prefix
   def getConfig(fs: LocalAppFileSystem): String = {
     encodeValue(s"""
-       |$prefix.job.name=$jobName
-       |$prefix.job.input.default.blobschemafile=${schemaData.Value}
-       |$prefix.job.input.default.blobpathregex=.*/input/(\\d{4})/(\\d{2})/(\\d{2})/(\\d{2})/.*$$
-       |$prefix.job.input.default.filetimeregex=.*/input/\\d{4}/\\d{2}/\\d{2}/\\d{2}/(\\d{4}\\d{2}\\d{2}_\\d{2}\\d{2}\\d{2}).*$$
-       |$prefix.job.input.default.sourceidregex=file:/.*/(input)/.*
-       |$prefix.job.input.default.filetimeformat=yyyyMMdd_HHmmss
-       |$prefix.job.input.default.source.input.target=output
-       |$prefix.job.input.default.blob.input.path=${fs.InputDir}/{yyyy/MM/dd/HH}/
-       |$prefix.job.output.default.blob.group.main.folder=${fs.OutputDir}/$outputPartition
-       |$prefix.job.process.transform=${transformData.Value}
-       |$prefix.job.process.projection=${projectionData.Value}
+       |${prefix.toLowerCase}.job.name=$jobName
+       |${prefix.toLowerCase}.job.input.default.blobschemafile=${schemaData.Value}
+       |${prefix.toLowerCase}.job.input.default.blobpathregex=.*/input/(\\d{4})/(\\d{2})/(\\d{2})/(\\d{2})/.*$$
+       |${prefix.toLowerCase}.job.input.default.filetimeregex=.*/input/\\d{4}/\\d{2}/\\d{2}/\\d{2}/(\\d{4}\\d{2}\\d{2}_\\d{2}\\d{2}\\d{2}).*$$
+       |${prefix.toLowerCase}.job.input.default.sourceidregex=file:/.*/(input)/.*
+       |${prefix.toLowerCase}.job.input.default.filetimeformat=yyyyMMdd_HHmmss
+       |${prefix.toLowerCase}.job.input.default.source.input.target=output
+       |${prefix.toLowerCase}.job.input.default.blob.input.path=${fs.InputDir}/{yyyy/MM/dd/HH}/
+       |${prefix.toLowerCase}.job.output.default.blob.group.main.folder=${fs.OutputDir}/$outputPartition
+       |${prefix.toLowerCase}.job.process.transform=${transformData.Value}
+       |${prefix.toLowerCase}.job.process.projection=${projectionData.Value}
        |""".stripMargin.trim() + "\n" + additionalSettings(fs).trim())
   }
 
