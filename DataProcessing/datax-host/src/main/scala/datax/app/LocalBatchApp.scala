@@ -212,8 +212,14 @@ case class LocalBatchApp(inputArgs: Array[String], configuration: Option[LocalCo
     TimeZone.setDefault(TimeZone.getTimeZone("GMT"))
     if(!envVars.isEmpty) {
       envVars.foreach(envVar => setEnv(envVar._1, envVar._2))
-      configuration.foreach(conf => setEnv("DATAX_NAMEPREFIX", conf.getEnvPrefix))
     }
+
+    configuration.foreach(conf => {
+      if(StringUtils.isNotEmpty(conf.getEnvPrefix)) {
+        setEnv("DATAX_NAMEPREFIX", conf.getEnvPrefix)
+      }
+    })
+
     if(!blobs.isEmpty) {
       writeBlobs()
     }
