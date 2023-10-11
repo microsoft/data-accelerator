@@ -74,13 +74,13 @@ trait SourceBlob {
   def getStamp: String
 }
 
-case class ValueSourceBlob(partition: String, stamp: String = "", blobData: String = "{}") extends SourceBlob {
+case class ValueSourceBlob(partition: String, blobData: String = "{}", stamp: String = "") extends SourceBlob {
   def getBlob(fs: LocalAppFileSystem) = blobData
   def getPartition = partition
   def getStamp = stamp
 }
 
-case class FileSourceBlob(partition: String, stamp: String, blobFilePath: String) extends SourceBlob {
+case class FileSourceBlob(partition: String, blobFilePath: String, stamp: String = "") extends SourceBlob {
   def getBlob(fs: LocalAppFileSystem): String = {
     fs.readFile(blobFilePath)
   }

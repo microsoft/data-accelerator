@@ -11,15 +11,15 @@ import scala.collection.mutable
 class BatchAppTests extends AnyFlatSpec with Matchers with PrivateMethodTester {
   
   lazy val testApp = LocalBatchApp(blobs = Array(
-    ValueSourceBlob("2023/10/03/00", "20231003_002655",
+    ValueSourceBlob(partition = "2023/10/03/00", stamp = "20231003_002655", blobData =
       """
         |{ "name": "hello" }
         |""".stripMargin),
-    ValueSourceBlob("2023/10/03/01", "20231003_012655",
+    ValueSourceBlob(partition = "2023/10/03/01", stamp = "20231003_012655", blobData =
       """
         |{ "name": "world" }
         |""".stripMargin),
-    ValueSourceBlob("2023/10/03/02", "20231003_022655",
+    ValueSourceBlob(partition = "2023/10/03/02", stamp = "20231003_022655", blobData =
       """
         |{ "name": "!" }
         |""".stripMargin)),
