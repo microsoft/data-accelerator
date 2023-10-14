@@ -52,19 +52,8 @@ class BatchAppTests extends AnyFlatSpec with Matchers with PrivateMethodTester {
           |    }
           |  ]
           |}
-          |""".stripMargin),
-      additionalSettings = _ =>
-        """
-          |datax.job.input.default.blob.input.partitionincrement=1
-          |datax.job.input.default.blob.input.compressiontype=none
-          |datax.job.output.default.blob.compressiontype=none
-          |""".stripMargin
-    )),
-    inputArgs = Array(
-      "partition=true",
-      "batchflushmetricsdelayduration=1 seconds",
-      "filterTimeRange=false"
-    )
+          |""".stripMargin)
+    ))
   )
   "BatchApp" should "process correctly a single blob running in local machine" in {
     testApp.main()

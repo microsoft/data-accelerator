@@ -73,6 +73,9 @@ trait LocalConfiguration {
   def getAIAppenderBatchDate: String
 }
 
+/**
+ * Represents a blob that exists in the workspace
+ */
 trait SourceBlob {
   def getBlob(fs: LocalAppFileSystem) : String
   def getPartition: String
@@ -81,6 +84,13 @@ trait SourceBlob {
   def getBlobName: String = s"${getStamp}.${getExtension}"
 }
 
+/**
+ * Defines a blob that is going to be generated within the LocalBatchApp workspace
+ * @param partition The blob assigned partition within the workspace
+ * @param blobData The blob content
+ * @param stamp The assigned stamp to the created blob
+ * @param extension The extension of the created blob
+ */
 case class ValueSourceBlob(partition: String, blobData: String, stamp: String = "", extension: String = "blob") extends SourceBlob {
   def getBlob(fs: LocalAppFileSystem): String = blobData
   def getPartition: String = partition
@@ -88,6 +98,13 @@ case class ValueSourceBlob(partition: String, blobData: String, stamp: String = 
   def getExtension: String = extension
 }
 
+/**
+ * Reference to a blob that already exists in a fs and is copied within the LocalBatchApp workspace
+ * @param partition The blob assigned partition within the workspace
+ * @param blobFilePath The existing blob path
+ * @param stamp The assigned stamp to the blob to be imported
+ * @param extension The extension for the assigned blob
+ */
 case class FileSourceBlob(partition: String, blobFilePath: String, stamp: String = "", extension: String = "blob") extends SourceBlob {
   def getBlob(fs: LocalAppFileSystem): String = {
     fs.readFile(blobFilePath)
@@ -97,23 +114,42 @@ case class FileSourceBlob(partition: String, blobFilePath: String, stamp: String
   def getExtension: String = extension
 }
 
+/**
+ * Represents a configuration value piece
+ */
 trait ConfigSource {
   def Value: String
 }
 
+/**
+ * Configuration supplied as base64 content
+ * @param configData A base64 configuration file content
+ */
 case class ValueConfigSource(configData: String) extends ConfigSource with ConfigValueEncoder {
   def Value: String = encodeValue(configData)
 }
 
+/**
+ * Configuration supplied as a file
+ * @param configFilePath The configuration file path
+ */
 case class FileConfigSource(configFilePath: String) extends ConfigSource with ConfigValueEncoder {
   def Value: String = configFilePath
 }
 
+/**
+ * Represents an extra file to be deployed in LocalBatchApp workspace
+ */
 trait InputFileSource {
   def getFileData(fs: LocalAppFileSystem): String
   def getFileName(fs: LocalAppFileSystem): String
 }
 
+/**
+ * Represents a file source by providing the string value directly for deploy new files method
+ * @param fileName The file name to use
+ * @param fileContent The file contents
+ */
 case class ValueInputFileSource (fileName: String, fileContent: String) extends InputFileSource {
   def getFileData(fs: LocalAppFileSystem): String = fileContent
   def getFileName(fs: LocalAppFileSystem): String = s"${fs.getInputDirectory}/$fileName"
@@ -137,6 +173,9 @@ case class ValueConfiguration(jobName: String,
                               prefix: String = "DataX",
                               outputPartition: String = "",
                               appName: String = "test",
+                              inputCompressionType: String = "none",
+                              outputCompressionType: String = "none",
+                              inputPartitionIncrement: Int = 1,
                               blobPathRegex: String = ".*/input/(\\d{4})/(\\d{2})/(\\d{2})/(\\d{2})/.*$",
                               fileTimeRegex: String = ".*/input/\\d{4}/\\d{2}/\\d{2}/\\d{2}/(\\d{4}\\d{2}\\d{2}_\\d{2}\\d{2}\\d{2}).*$",
                               sourceIdRegex: String = "file:/.*/(input)/.*",
@@ -165,6 +204,9 @@ case class ValueConfiguration(jobName: String,
        |${prefix.toLowerCase}.job.input.default.filetimeformat=$fileTimeFormat
        |${prefix.toLowerCase}.job.input.default.source.input.target=output
        |${prefix.toLowerCase}.job.input.default.blob.input.path=${fs.InputDir}/$blobInputPath/
+       |${prefix.toLowerCase}.job.input.default.blob.input.partitionincrement=$inputPartitionIncrement
+       |${prefix.toLowerCase}.job.input.default.blob.input.compressiontype=$inputCompressionType
+       |${prefix.toLowerCase}.job.output.default.blob.compressiontype=$outputCompressionType
        |${prefix.toLowerCase}.job.output.default.blob.group.main.folder=${fs.OutputDir}/$outputPartition
        |${prefix.toLowerCase}.job.process.transform=${transformData.Value}
        |${prefix.toLowerCase}.job.process.projection=${projectionData.Value}
@@ -176,13 +218,28 @@ case class ValueConfiguration(jobName: String,
   def getEndTime: String = endTime
 }
 
-case class LocalBatchApp(inputArgs: Array[String], configuration: Option[LocalConfiguration] = None, blobs: Array[SourceBlob] = Array(), envVars: Array[(String, String)] = Array(), additionalFiles: Array[InputFileSource] = Array.empty, fs: LocalAppFileSystem = LocalAppLocalFileSystem()) {
+/**
+ * Represents a BatchApp that is managed and configured to be run in the local machine along
+ * @param inputArgs The list of input arguments
+ * @param configuration The configuration supplied as a set of values
+ * @param blobs A list of blobs to be copied within the local batch app workspace
+ * @param envVars A list of key pairs to be deployed as environment variables
+ * @param additionalFiles A list of additional files to be deployed within the local batch app workspace
+ * @param fs The file system used by the local batch app, default is the local file system of the running local machine
+ */
+case class LocalBatchApp(inputArgs: Array[String] = Array.empty, configuration: Option[LocalConfiguration] = None, blobs: Array[SourceBlob] = Array(), envVars: Array[(String, String)] = Array(), additionalFiles: Array[InputFileSource] = Array.empty, fs: LocalAppFileSystem = LocalAppLocalFileSystem()) {
 
   lazy val LocalModeInputArgs = Array(
     "spark.master=local",
     "spark.hadoop.fs.file.impl=com.globalmentor.apache.hadoop.fs.BareLocalFileSystem",
     "spark.hadoop.fs.azure.test.emulator=true",
     "spark.hadoop.fs.azure.storage.emulator.account.name=devstoreaccount1.blob.windows.core.net")
+
+  def getDefaultInputArgs(): Array[String] = {
+    val partition = inputArgs.find(arg => arg.startsWith("partition=")).getOrElse("partition=true")
+    val filterTimeRange = inputArgs.find(arg => arg.startsWith("filterTimeRange=")).getOrElse("filterTimeRange=false")
+    Array(partition, filterTimeRange)
+  }
 
   /**
    * Writes the value supplied blobs into the backed up file system
@@ -212,6 +269,7 @@ case class LocalBatchApp(inputArgs: Array[String], configuration: Option[LocalCo
    */
   def getInputArgs(): Array[String] = {
     LocalModeInputArgs ++
+      getDefaultInputArgs ++
       (configuration.map(conf => Array(s"conf=${conf.getConfig(fs)}")).getOrElse(Array.empty)) ++
       inputArgs
   }
