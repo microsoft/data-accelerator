@@ -1,6 +1,5 @@
 package datax.app
 
-import datax.utility.ArgumentsParser
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.StringUtils
 
@@ -62,32 +61,40 @@ case class LocalAppLocalFileSystem() extends LocalAppFileSystem {
  * Configuration supplied to input parameter -conf
  */
 trait LocalConfiguration {
+  def getAppName: String
   def getEnvPrefix: String
   def getConfig(fs: LocalAppFileSystem): String
   def getStartTime: String
   def getEndTime: String
+  def getBlobWriterTimeout: String
+  def getDefaultVaultName: String
+  def getAppInsightsKeyRef: String
+  def getAIAppenderEnabled: String
+  def getAIAppenderBatchDate: String
 }
 
 trait SourceBlob {
   def getBlob(fs: LocalAppFileSystem) : String
   def getPartition: String
   def getStamp: String
+  def getExtension: String
+  def getBlobName: String = s"${getStamp}.${getExtension}"
 }
 
-case class ValueSourceBlob(partition: String, blobData: String, stamp: String = "") extends SourceBlob {
-  def getBlob(fs: LocalAppFileSystem) = blobData
-  def getPartition = partition
-  def getStamp = stamp
+case class ValueSourceBlob(partition: String, blobData: String, stamp: String = "", extension: String = "blob") extends SourceBlob {
+  def getBlob(fs: LocalAppFileSystem): String = blobData
+  def getPartition: String = partition
+  def getStamp: String = stamp
+  def getExtension: String = extension
 }
 
-case class FileSourceBlob(partition: String, blobFilePath: String, stamp: String = "") extends SourceBlob {
+case class FileSourceBlob(partition: String, blobFilePath: String, stamp: String = "", extension: String = "blob") extends SourceBlob {
   def getBlob(fs: LocalAppFileSystem): String = {
     fs.readFile(blobFilePath)
   }
-
   def getPartition: String = partition
-
-  def getStamp = stamp
+  def getStamp: String = stamp
+  def getExtension: String = extension
 }
 
 trait ConfigSource {
@@ -120,18 +127,44 @@ case class ValueInputFileSource (fileName: String, fileContent: String) extends 
  * @param schemaData The schema data file content
  * @param additionalSettings Additional properties from conf files
  */
-case class ValueConfiguration(jobName: String, startTime: String, endTime: String, projectionData: ConfigSource, transformData: ConfigSource, schemaData: ConfigSource, additionalSettings: LocalAppFileSystem => String = _ => "", prefix: String = "DataX", outputPartition: String = "") extends LocalConfiguration with ConfigValueEncoder {
+case class ValueConfiguration(jobName: String,
+                              startTime: String,
+                              endTime: String,
+                              projectionData: ConfigSource,
+                              transformData: ConfigSource,
+                              schemaData: ConfigSource,
+                              additionalSettings: LocalAppFileSystem => String = _ => "",
+                              prefix: String = "DataX",
+                              outputPartition: String = "",
+                              appName: String = "test",
+                              blobPathRegex: String = ".*/input/(\\d{4})/(\\d{2})/(\\d{2})/(\\d{2})/.*$",
+                              fileTimeRegex: String = ".*/input/\\d{4}/\\d{2}/\\d{2}/\\d{2}/(\\d{4}\\d{2}\\d{2}_\\d{2}\\d{2}\\d{2}).*$",
+                              sourceIdRegex: String = "file:/.*/(input)/.*",
+                              fileTimeFormat: String = "yyyyMMdd_HHmmss",
+                              blobInputPath: String = "{yyyy/MM/dd/HH}",
+                              blobWriterTimeout: String = "60 seconds",
+                              defaultVaultName: String = "",
+                              appInsightsKeyRef: String = "",
+                              aiAppenderEnabled: String = "false",
+                              aiAppenderBatchDate: String = ""
+                             ) extends LocalConfiguration with ConfigValueEncoder {
   def getEnvPrefix = prefix
+  def getAppName = appName
+  def getDefaultVaultName: String = defaultVaultName
+  def getAppInsightsKeyRef: String = appInsightsKeyRef
+  def getAIAppenderEnabled: String = aiAppenderEnabled
+  def getAIAppenderBatchDate: String = aiAppenderBatchDate
+  def getBlobWriterTimeout: String = blobWriterTimeout
   def getConfig(fs: LocalAppFileSystem): String = {
     encodeValue(s"""
        |${prefix.toLowerCase}.job.name=$jobName
        |${prefix.toLowerCase}.job.input.default.blobschemafile=${schemaData.Value}
-       |${prefix.toLowerCase}.job.input.default.blobpathregex=.*/input/(\\d{4})/(\\d{2})/(\\d{2})/(\\d{2})/.*$$
-       |${prefix.toLowerCase}.job.input.default.filetimeregex=.*/input/\\d{4}/\\d{2}/\\d{2}/\\d{2}/(\\d{4}\\d{2}\\d{2}_\\d{2}\\d{2}\\d{2}).*$$
-       |${prefix.toLowerCase}.job.input.default.sourceidregex=file:/.*/(input)/.*
-       |${prefix.toLowerCase}.job.input.default.filetimeformat=yyyyMMdd_HHmmss
+       |${prefix.toLowerCase}.job.input.default.blobpathregex=$blobPathRegex
+       |${prefix.toLowerCase}.job.input.default.filetimeregex=$fileTimeRegex
+       |${prefix.toLowerCase}.job.input.default.sourceidregex=$sourceIdRegex
+       |${prefix.toLowerCase}.job.input.default.filetimeformat=$fileTimeFormat
        |${prefix.toLowerCase}.job.input.default.source.input.target=output
-       |${prefix.toLowerCase}.job.input.default.blob.input.path=${fs.InputDir}/{yyyy/MM/dd/HH}/
+       |${prefix.toLowerCase}.job.input.default.blob.input.path=${fs.InputDir}/$blobInputPath/
        |${prefix.toLowerCase}.job.output.default.blob.group.main.folder=${fs.OutputDir}/$outputPartition
        |${prefix.toLowerCase}.job.process.transform=${transformData.Value}
        |${prefix.toLowerCase}.job.process.projection=${projectionData.Value}
@@ -157,11 +190,14 @@ case class LocalBatchApp(inputArgs: Array[String], configuration: Option[LocalCo
   def writeBlobs(): Unit = {
     if(!blobs.isEmpty) {
       blobs.foreach(blob => {
-        fs.writeFile(s"${fs.InputDir}/${blob.getPartition}/${blob.getStamp}.blob", blob.getBlob(fs))
+        fs.writeFile(s"${fs.InputDir}/${blob.getPartition}/${blob.getBlobName}", blob.getBlob(fs))
       })
     }
   }
 
+  /**
+   * Deploys additional files configured by the caller, that are copied into the workspace
+   */
   def deployAdditionalFiles(): Unit = {
     if(!additionalFiles.isEmpty) {
       additionalFiles.foreach(file => {
@@ -193,8 +229,8 @@ case class LocalBatchApp(inputArgs: Array[String], configuration: Option[LocalCo
   }
 
   /**
-   * Sets a environment variable programatically
-   * @param key The enviroment variable name
+   * Sets a environment variable programmatically
+   * @param key The environment variable name
    * @param value The environment variable value
    * @return
    */
@@ -213,10 +249,27 @@ case class LocalBatchApp(inputArgs: Array[String], configuration: Option[LocalCo
     if(!envVars.isEmpty) {
       envVars.foreach(envVar => setEnv(envVar._1, envVar._2))
     }
-
     configuration.foreach(conf => {
       if(StringUtils.isNotEmpty(conf.getEnvPrefix)) {
-        setEnv("DATAX_NAMEPREFIX", conf.getEnvPrefix)
+        setEnv(s"${conf.getEnvPrefix.toUpperCase()}_NAMEPREFIX", conf.getEnvPrefix)
+      }
+      if(StringUtils.isNotEmpty(conf.getAppName)) {
+        setEnv(s"${conf.getEnvPrefix.toUpperCase()}_APPNAME", conf.getAppName)
+      }
+      if(StringUtils.isNotEmpty(conf.getBlobWriterTimeout)) {
+        setEnv(s"${conf.getEnvPrefix.toUpperCase()}_BlobWriterTimeout", conf.getBlobWriterTimeout)
+      }
+      if(StringUtils.isNotEmpty(conf.getDefaultVaultName)) {
+        setEnv(s"${conf.getEnvPrefix.toUpperCase()}_DEFAULTVAULTNAME", conf.getDefaultVaultName)
+      }
+      if(StringUtils.isNotEmpty(conf.getAppInsightsKeyRef)) {
+        setEnv(s"${conf.getEnvPrefix.toUpperCase()}_APPINSIGHTKEYREF", conf.getAppInsightsKeyRef)
+      }
+      if(StringUtils.isNotEmpty(conf.getAIAppenderEnabled)) {
+        setEnv(s"${conf.getEnvPrefix.toUpperCase()}_AIAPPENDERENABLED", conf.getAIAppenderEnabled)
+      }
+      if(StringUtils.isNotEmpty(conf.getAIAppenderBatchDate)) {
+        setEnv(s"${conf.getEnvPrefix.toUpperCase()}_AIAPPENDERBATCHDATE", conf.getAIAppenderBatchDate)
       }
     })
 
