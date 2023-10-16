@@ -51,7 +51,7 @@ SOFTWARE
 
     <groupId>com.microsoft.datax</groupId>
     <artifactId>datax-host_3.1_2.12</artifactId>
-    <version>1.2.16-SNAPSHOT</version>
+    <version>1.2.17-SNAPSHOT</version>
 
     <properties>
         <spark.version>3.1.3</spark.version>
