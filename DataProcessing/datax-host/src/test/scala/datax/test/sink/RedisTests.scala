@@ -5,9 +5,10 @@
 package datax.test.sink
 
 import datax.client.redis.{RedisBase, RedisServerConf}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class RedisTests extends FlatSpec with Matchers{
+class RedisTests extends AnyFlatSpec with Matchers{
   org.apache.log4j.BasicConfigurator.configure()
 
   "RedisBase" should "parse connection string correctly" in {

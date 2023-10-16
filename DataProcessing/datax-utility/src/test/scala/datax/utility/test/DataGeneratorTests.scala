@@ -14,9 +14,10 @@ import org.apache.spark.sql.types._
 import org.json4s.DefaultFormats
 import org.json4s.JsonAST.JObject
 import org.json4s.jackson.JsonMethods
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class DataGeneratorTests extends FlatSpec with Matchers {
+class DataGeneratorTests extends AnyFlatSpec with Matchers {
 
   implicit val formats = DefaultFormats
 
