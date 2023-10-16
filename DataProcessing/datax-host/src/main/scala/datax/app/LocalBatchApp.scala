@@ -267,7 +267,7 @@ case class LocalBatchApp(inputArgs: Array[String] = Array.empty, configuration: 
     val additionalEnvVars = {
       configuration.map(conf => {
         (if (StringUtils.isNotEmpty(conf.getEnvPrefix)) {
-          setEnvVarAndConvertToSparkProp(s"${conf.getEnvPrefix.toUpperCase()}_NAMEPREFIX", conf.getEnvPrefix)
+          setEnvVarAndConvertToSparkProp(s"DATAX_NAMEPREFIX", conf.getEnvPrefix)
         } else {
           Array[String]()
         }) ++
