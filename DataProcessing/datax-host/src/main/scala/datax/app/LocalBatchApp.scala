@@ -170,7 +170,7 @@ case class ValueConfiguration(jobName: String,
                               transformData: ConfigSource,
                               schemaData: ConfigSource,
                               additionalSettings: LocalAppFileSystem => String = _ => "",
-                              prefix: String = "DataX",
+                              envPrefix: String = "DataX",
                               outputPartition: String = "",
                               appName: String = "test",
                               inputCompressionType: String = "none",
@@ -187,7 +187,7 @@ case class ValueConfiguration(jobName: String,
                               aiAppenderEnabled: String = "false",
                               aiAppenderBatchDate: String = ""
                              ) extends LocalConfiguration with ConfigValueEncoder {
-  def getEnvPrefix = prefix
+  def getEnvPrefix = envPrefix
   def getAppName = appName
   def getDefaultVaultName: String = defaultVaultName
   def getAppInsightsKeyRef: String = appInsightsKeyRef
@@ -196,20 +196,20 @@ case class ValueConfiguration(jobName: String,
   def getBlobWriterTimeout: String = blobWriterTimeout
   def getConfig(fs: LocalAppFileSystem): String = {
     encodeValue(s"""
-       |${prefix.toLowerCase}.job.name=$jobName
-       |${prefix.toLowerCase}.job.input.default.blobschemafile=${schemaData.Value}
-       |${prefix.toLowerCase}.job.input.default.blobpathregex=$blobPathRegex
-       |${prefix.toLowerCase}.job.input.default.filetimeregex=$fileTimeRegex
-       |${prefix.toLowerCase}.job.input.default.sourceidregex=$sourceIdRegex
-       |${prefix.toLowerCase}.job.input.default.filetimeformat=$fileTimeFormat
-       |${prefix.toLowerCase}.job.input.default.source.input.target=output
-       |${prefix.toLowerCase}.job.input.default.blob.input.path=${fs.InputDir}/$blobInputPath/
-       |${prefix.toLowerCase}.job.input.default.blob.input.partitionincrement=$inputPartitionIncrement
-       |${prefix.toLowerCase}.job.input.default.blob.input.compressiontype=$inputCompressionType
-       |${prefix.toLowerCase}.job.output.default.blob.compressiontype=$outputCompressionType
-       |${prefix.toLowerCase}.job.output.default.blob.group.main.folder=${fs.OutputDir}/$outputPartition
-       |${prefix.toLowerCase}.job.process.transform=${transformData.Value}
-       |${prefix.toLowerCase}.job.process.projection=${projectionData.Value}
+       |${envPrefix.toLowerCase}.job.name=$jobName
+       |${envPrefix.toLowerCase}.job.input.default.blobschemafile=${schemaData.Value}
+       |${envPrefix.toLowerCase}.job.input.default.blobpathregex=$blobPathRegex
+       |${envPrefix.toLowerCase}.job.input.default.filetimeregex=$fileTimeRegex
+       |${envPrefix.toLowerCase}.job.input.default.sourceidregex=$sourceIdRegex
+       |${envPrefix.toLowerCase}.job.input.default.filetimeformat=$fileTimeFormat
+       |${envPrefix.toLowerCase}.job.input.default.source.input.target=output
+       |${envPrefix.toLowerCase}.job.input.default.blob.input.path=${fs.InputDir}/$blobInputPath/
+       |${envPrefix.toLowerCase}.job.input.default.blob.input.partitionincrement=$inputPartitionIncrement
+       |${envPrefix.toLowerCase}.job.input.default.blob.input.compressiontype=$inputCompressionType
+       |${envPrefix.toLowerCase}.job.output.default.blob.compressiontype=$outputCompressionType
+       |${envPrefix.toLowerCase}.job.output.default.blob.group.main.folder=${fs.OutputDir}/$outputPartition
+       |${envPrefix.toLowerCase}.job.process.transform=${transformData.Value}
+       |${envPrefix.toLowerCase}.job.process.projection=${projectionData.Value}
        |""".stripMargin.trim() + "\n" + additionalSettings(fs).trim())
   }
 
@@ -235,10 +235,76 @@ case class LocalBatchApp(inputArgs: Array[String] = Array.empty, configuration: 
     "spark.hadoop.fs.azure.test.emulator=true",
     "spark.hadoop.fs.azure.storage.emulator.account.name=devstoreaccount1.blob.windows.core.net")
 
+  /**
+   * Sets a environment variable programmatically
+   *
+   * @param key   The environment variable name
+   * @param value The environment variable value
+   * @return
+   */
+  def setEnv(key: String, value: String) = {
+    val field = System.getenv().getClass.getDeclaredField("m")
+    field.setAccessible(true)
+    val map = field.get(System.getenv()).asInstanceOf[java.util.Map[java.lang.String, java.lang.String]]
+    map.put(key, value)
+  }
+
+  /**
+   * Converts a environment variable into its spark representation
+   * @param envVarName The environment variable name
+   * @param envVarValue The environment variable value
+   * @return
+   */
+  def setEnvVarAndConvertToSparkProp(envVarName: String, envVarValue: String): Array[String] = {
+    setEnv(envVarName, envVarValue)
+    Array(s"spark.yarn.appMasterEnv.${envVarName}=${envVarValue}",
+      s"spark.executorEnv.${envVarName}=${envVarValue}")
+  }
+
   def getDefaultInputArgs(): Array[String] = {
     val partition = inputArgs.find(arg => arg.startsWith("partition=")).getOrElse("partition=true")
     val filterTimeRange = inputArgs.find(arg => arg.startsWith("filterTimeRange=")).getOrElse("filterTimeRange=false")
-    Array(partition, filterTimeRange)
+    val additionalEnvVars = {
+      configuration.map(conf => {
+        (if (StringUtils.isNotEmpty(conf.getEnvPrefix)) {
+          setEnvVarAndConvertToSparkProp(s"${conf.getEnvPrefix.toUpperCase()}_NAMEPREFIX", conf.getEnvPrefix)
+        } else {
+          Array[String]()
+        }) ++
+        (if (StringUtils.isNotEmpty(conf.getAppName)) {
+          setEnvVarAndConvertToSparkProp(s"${conf.getEnvPrefix.toUpperCase()}_APPNAME", conf.getAppName)
+        } else {
+          Array[String]()
+        }) ++
+        (if (StringUtils.isNotEmpty(conf.getBlobWriterTimeout)) {
+          setEnvVarAndConvertToSparkProp(s"${conf.getEnvPrefix.toUpperCase()}_BlobWriterTimeout", conf.getBlobWriterTimeout)
+        } else {
+          Array[String]()
+        }) ++
+        (if (StringUtils.isNotEmpty(conf.getDefaultVaultName)) {
+          setEnvVarAndConvertToSparkProp(s"${conf.getEnvPrefix.toUpperCase()}_DEFAULTVAULTNAME", conf.getDefaultVaultName)
+        } else {
+          Array[String]()
+        }) ++
+        (if (StringUtils.isNotEmpty(conf.getAppInsightsKeyRef)) {
+          setEnvVarAndConvertToSparkProp(s"${conf.getEnvPrefix.toUpperCase()}_APPINSIGHTKEYREF", conf.getAppInsightsKeyRef)
+        } else {
+          Array[String]()
+        }) ++
+        (if (StringUtils.isNotEmpty(conf.getAIAppenderEnabled)) {
+          setEnvVarAndConvertToSparkProp(s"${conf.getEnvPrefix.toUpperCase()}_AIAPPENDERENABLED", conf.getAIAppenderEnabled)
+        } else {
+          Array[String]()
+        }) ++
+        (if (StringUtils.isNotEmpty(conf.getAIAppenderBatchDate)) {
+          setEnvVarAndConvertToSparkProp(s"${conf.getEnvPrefix.toUpperCase()}_AIAPPENDERBATCHDATE", conf.getAIAppenderBatchDate)
+        } else {
+          Array[String]()
+        }) ++ setEnvVarAndConvertToSparkProp("process_start_datetime", conf.getStartTime) ++ setEnvVarAndConvertToSparkProp("process_end_datetime", conf.getEndTime)
+      })
+    }.getOrElse(Array[String]())
+    val envVarsInput = envVars.flatMap(envVar => setEnvVarAndConvertToSparkProp(envVar._1, envVar._2))
+    Array(partition, filterTimeRange) ++ envVarsInput ++ additionalEnvVars
   }
 
   /**
@@ -287,60 +353,16 @@ case class LocalBatchApp(inputArgs: Array[String] = Array.empty, configuration: 
   }
 
   /**
-   * Sets a environment variable programmatically
-   * @param key The environment variable name
-   * @param value The environment variable value
-   * @return
-   */
-  def setEnv(key: String, value: String) = {
-    val field = System.getenv().getClass.getDeclaredField("m")
-    field.setAccessible(true)
-    val map = field.get(System.getenv()).asInstanceOf[java.util.Map[java.lang.String, java.lang.String]]
-    map.put(key, value)
-  }
-
-  /**
    * Entrypoint
    */
   def main(): Unit = {
     TimeZone.setDefault(TimeZone.getTimeZone("GMT"))
-    if(!envVars.isEmpty) {
-      envVars.foreach(envVar => setEnv(envVar._1, envVar._2))
-    }
-    configuration.foreach(conf => {
-      if(StringUtils.isNotEmpty(conf.getEnvPrefix)) {
-        setEnv(s"${conf.getEnvPrefix.toUpperCase()}_NAMEPREFIX", conf.getEnvPrefix)
-      }
-      if(StringUtils.isNotEmpty(conf.getAppName)) {
-        setEnv(s"${conf.getEnvPrefix.toUpperCase()}_APPNAME", conf.getAppName)
-      }
-      if(StringUtils.isNotEmpty(conf.getBlobWriterTimeout)) {
-        setEnv(s"${conf.getEnvPrefix.toUpperCase()}_BlobWriterTimeout", conf.getBlobWriterTimeout)
-      }
-      if(StringUtils.isNotEmpty(conf.getDefaultVaultName)) {
-        setEnv(s"${conf.getEnvPrefix.toUpperCase()}_DEFAULTVAULTNAME", conf.getDefaultVaultName)
-      }
-      if(StringUtils.isNotEmpty(conf.getAppInsightsKeyRef)) {
-        setEnv(s"${conf.getEnvPrefix.toUpperCase()}_APPINSIGHTKEYREF", conf.getAppInsightsKeyRef)
-      }
-      if(StringUtils.isNotEmpty(conf.getAIAppenderEnabled)) {
-        setEnv(s"${conf.getEnvPrefix.toUpperCase()}_AIAPPENDERENABLED", conf.getAIAppenderEnabled)
-      }
-      if(StringUtils.isNotEmpty(conf.getAIAppenderBatchDate)) {
-        setEnv(s"${conf.getEnvPrefix.toUpperCase()}_AIAPPENDERBATCHDATE", conf.getAIAppenderBatchDate)
-      }
-    })
-
     if(!blobs.isEmpty) {
       writeBlobs()
     }
     if(!additionalFiles.isEmpty) {
       deployAdditionalFiles()
     }
-    configuration.foreach(conf => {
-      setEnv("process_start_datetime", conf.getStartTime)
-      setEnv("process_end_datetime", conf.getEndTime)
-    })
     BatchApp.main(getInputArgs())
   }
 }
