@@ -23,6 +23,7 @@ import org.apache.log4j.LogManager
 import org.apache.spark.broadcast
 
 import java.util.UUID
+import scala.Option
 import scala.language.implicitConversions
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -331,11 +332,14 @@ object HadoopClient {
   /**
     * generate a random string for prefixing a temp file name
     * @param seed seed for the randomization of names
-    * @return a random string with 8 characters for prefixing file names
+    * @return a random string based from seed. A full random string if seed is null
     */
   def tempFilePrefix(seed: String): String = {
     //DigestUtils.sha256Hex(seed).substring(0, 8)
-    UUID.nameUUIDFromBytes(seed.getBytes).toString
+    Option(seed) match {
+      case Some(_seed) => UUID.nameUUIDFromBytes(_seed.getBytes).toString
+      case None => UUID.randomUUID().toString
+    }
   }
 
   /**
@@ -466,7 +470,7 @@ object HadoopClient {
         bs.close()
       }
     } else {
-      val tempHdfsPath = new URI(uri.getScheme, uri.getAuthority, "/_$tmpHdfsFolder$/"+tempFilePrefix(hdfsPath) + "-" + path.getName, null, null)
+      val tempHdfsPath = new URI(uri.getScheme, uri.getAuthority, "/_$tmpHdfsFolder$/"+tempFilePrefix(null) + "-" + path.getName, null, null)
       //val pos = hdfsPath.lastIndexOf('/')
       //val tempHdfsPath = hdfsPath.patch(pos, "/_temporary", 0)
       // TODO: create unique name for each temp file.
