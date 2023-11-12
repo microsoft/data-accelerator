@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.{FileStatus, FileSystem, Path, RemoteIterator}
 import org.apache.log4j.LogManager
 import org.apache.spark.broadcast
 
+import java.util.UUID
 import scala.language.implicitConversions
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -333,7 +334,8 @@ object HadoopClient {
     * @return a random string with 8 characters for prefixing file names
     */
   def tempFilePrefix(seed: String): String = {
-    DigestUtils.sha256Hex(seed).substring(0, 8)
+    //DigestUtils.sha256Hex(seed).substring(0, 8)
+    UUID.nameUUIDFromBytes(seed.getBytes).toString
   }
 
   /**
