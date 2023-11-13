@@ -331,8 +331,7 @@ object HadoopClient {
 
   /**
     * generate a random string for prefixing a temp file name
-    * @param seed seed for the randomization of names
-    * @return a random string based from seed. A full random string if seed is null
+    * @return a full random uuid
     */
   def tempFilePrefix: String = {
     //DigestUtils.sha256Hex(seed).substring(0, 8)
