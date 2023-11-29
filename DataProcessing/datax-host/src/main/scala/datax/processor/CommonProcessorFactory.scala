@@ -456,6 +456,7 @@ object CommonProcessorFactory {
         val inputDf = spark.sparkContext.parallelize(files, filesCount)
           .flatMap(file => {
             val timeLast = System.nanoTime()
+
             val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
               .filter(l => {
                 val bNotEmptyBlob = l != null && !l.isEmpty
@@ -479,6 +480,25 @@ object CommonProcessorFactory {
             retVal
           })
           .toDF(ColumnName.InternalColumnFileInfo, ColumnName.MetadataColumnOutputPartitionTime, ColumnName.RawObjectColumn)
+
+        // Calculate and log the DataFrame Size stats.
+        // This data will be used next to determine if we need to do any repartitioning
+        val dfSizeInBytes: BigInt = inputDf.sparkSession.sessionState.executePlan(inputDf.queryExecution.logical).optimizedPlan.stats.sizeInBytes
+        val numPartitions = inputDf
+          .select(org.apache.spark.sql.functions.spark_partition_id()).distinct().count()
+        val sizeOfEachPartitionInBytes: BigInt = dfSizeInBytes/numPartitions
+        batchLog.warn(s"Input DataFrame Stats: Size in Bytes ${dfSizeInBytes}, Partitions Count:${numPartitions}, Approx. Size of each partition:${sizeOfEachPartitionInBytes}")
+
+        // Doing the repartition after loading the data from all input files into a dataframe
+        // This method may work well to fix current issue, but may not be fully future proof.
+        // That is, additional changes are needed to handle case where individual large file(s) do not fit into memory
+        // Repartition Calculation: dfSizeInBytes/partitionCount should be close to 1 GB (default, to be made configurable)
+        // if it exceeds, then repartition count = round(dfSizeInBytes/1GB)
+        if(dfSizeInBytes >  38654705664L && sizeOfEachPartitionInBytes > 1073741824) {
+          val newPartitionCount = (dfSizeInBytes / 1073741824).toInt + 1
+          batchLog.warn(s"Re-partitioning to smaller partitions: Original Partition Count ${numPartitions}, New Partitions Count:${newPartitionCount}")
+          inputDf.repartition(newPartitionCount)
+        }
 
         val targets = files.map(_.target).toSet
         val processedMetrics = processDataset(inputDf, batchTime, batchInterval, outputPartitionTime, targets, partition)
