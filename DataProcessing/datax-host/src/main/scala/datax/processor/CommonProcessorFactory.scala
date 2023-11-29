@@ -456,6 +456,7 @@ object CommonProcessorFactory {
         val inputDf = spark.sparkContext.parallelize(files, filesCount)
           .flatMap(file => {
             val timeLast = System.nanoTime()
+
             val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
               .filter(l => {
                 val bNotEmptyBlob = l != null && !l.isEmpty
