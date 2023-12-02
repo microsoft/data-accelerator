@@ -14,7 +14,7 @@ import datax.data.FileInternal
 import datax.exception.EngineException
 import datax.fs.HadoopClient
 import datax.host.{AppHost, CommonAppHost, SparkSessionSingleton, UdfInitializer}
-import datax.input.{BlobPointerInput, InputManager, SchemaFile, StreamingInputSetting}
+import datax.input.{BlobPointerInput, BatchBlobInputSetting, InputManager, SchemaFile, StreamingInputSetting}
 import datax.sink.{BlobSinker, OutputManager, OutputOperator}
 import datax.telemetry.{AppInsightLogger, MetricLogger, MetricLoggerFactory}
 import datax.utility._
