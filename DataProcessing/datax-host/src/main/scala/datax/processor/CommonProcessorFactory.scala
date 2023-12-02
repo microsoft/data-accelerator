@@ -14,7 +14,7 @@ import datax.data.FileInternal
 import datax.exception.EngineException
 import datax.fs.HadoopClient
 import datax.host.{AppHost, CommonAppHost, SparkSessionSingleton, UdfInitializer}
-import datax.input.{BlobPointerInput, InputManager, SchemaFile, StreamingInputSetting}
+import datax.input.{BlobPointerInput, BatchBlobInputSetting, InputManager, SchemaFile, StreamingInputSetting}
 import datax.sink.{BlobSinker, OutputManager, OutputOperator}
 import datax.telemetry.{AppInsightLogger, MetricLogger, MetricLoggerFactory}
 import datax.utility._
@@ -483,10 +483,10 @@ object CommonProcessorFactory {
 
         // Calculate and log the DataFrame Size stats.
         // This data will be used next to determine if we need to do any repartitioning
-        val dfSizeInBytes: BigInt = inputDf.sparkSession.sessionState.executePlan(inputDf.queryExecution.logical).optimizedPlan.stats.sizeInBytes
+        val dfSizeInBytes = inputDf.sparkSession.sessionState.executePlan(inputDf.queryExecution.logical).optimizedPlan.stats.sizeInBytes
         val numPartitions = inputDf
           .select(org.apache.spark.sql.functions.spark_partition_id()).distinct().count()
-        val sizeOfEachPartitionInBytes: BigInt = dfSizeInBytes/numPartitions
+        val sizeOfEachPartitionInBytes = dfSizeInBytes/numPartitions
         batchLog.warn(s"Input DataFrame Stats: Size in Bytes ${dfSizeInBytes}, Partitions Count:${numPartitions}, Approx. Size of each partition:${sizeOfEachPartitionInBytes}")
 
         // Doing the repartition after loading the data from all input files into a dataframe
@@ -494,8 +494,9 @@ object CommonProcessorFactory {
         // That is, additional changes are needed to handle case where individual large file(s) do not fit into memory
         // Repartition Calculation: dfSizeInBytes/partitionCount should be close to 1 GB (default, to be made configurable)
         // if it exceeds, then repartition count = round(dfSizeInBytes/1GB)
-        if(dfSizeInBytes >  38654705664L && sizeOfEachPartitionInBytes > 1073741824) {
-          val newPartitionCount = (dfSizeInBytes / 1073741824).toInt + 1
+        val inputPartitionSizeThresholdInBytes = 1
+        if(inputPartitionSizeThresholdInBytes > 0 && sizeOfEachPartitionInBytes > inputPartitionSizeThresholdInBytes) {
+          val newPartitionCount = (dfSizeInBytes / 1073741824).toInt + 1 //add override option also
           batchLog.warn(s"Re-partitioning to smaller partitions: Original Partition Count ${numPartitions}, New Partitions Count:${newPartitionCount}")
           inputDf.repartition(newPartitionCount)
         }
