@@ -413,7 +413,7 @@ object CommonProcessorFactory {
     /*
     * called by both batch and streaming jobs, to get 1:1 output filename
     * */
-    def groupPartitionProcessMetrics(pathsRDD: RDD[String], batchTime: Timestamp, batchInterval: Duration, outputPartitionTime: Timestamp, namespace: String, batchLog: Logger, metricLogger: MetricLogger): Map[String, Double] = {
+    def groupPartitionProcessMetrics(pathsRDD: RDD[String], batchTime: Timestamp, batchInterval: Duration, outputPartitionTime: Timestamp, namespace: String, batchLog: Logger, metricLogger: MetricLogger, inputPartitionSizeThresholdInBytes: Long): Map[String, Double] = {
       def postMetrics(metrics: Iterable[(String, Double)]): Unit = {
         metricLogger.sendBatchMetrics(metrics, batchTime)
         batchLog.warn(s"Metric ${metrics.map(m => m._1 + "=" + m._2).mkString(",")}")
@@ -494,7 +494,6 @@ object CommonProcessorFactory {
         // That is, additional changes are needed to handle case where individual large file(s) do not fit into memory
         // Repartition Calculation: dfSizeInBytes/partitionCount should be close to 1 GB (default, to be made configurable)
         // if it exceeds, then repartition count = round(dfSizeInBytes/1GB)
-        val inputPartitionSizeThresholdInBytes = 1
         if(inputPartitionSizeThresholdInBytes > 0 && sizeOfEachPartitionInBytes > inputPartitionSizeThresholdInBytes) {
           val newPartitionCount = (dfSizeInBytes / 1073741824).toInt + 1 //add override option also
           batchLog.warn(s"Re-partitioning to smaller partitions: Original Partition Count ${numPartitions}, New Partitions Count:${newPartitionCount}")
@@ -638,8 +637,8 @@ object CommonProcessorFactory {
                                batchTime: Timestamp,
                                batchInterval: Duration,
                                outputPartitionTime: Timestamp,
-                               namespace: String) => {
-
+                               namespace: String,
+                               inputPartitionSizeThresholdInBytes: Long) => {
 
         val spark = SparkSessionSingleton.getInstance(pathsRDD.sparkContext.getConf)
 
@@ -649,7 +648,7 @@ object CommonProcessorFactory {
 
         // a flag to determine whether to get 1:1 output filename
         if (dict.getOrElse("partition","false") == "true") {
-          groupPartitionProcessMetrics(pathsRDD, batchTime, batchInterval, outputPartitionTime, namespace, batchLog, metricLogger)
+          groupPartitionProcessMetrics(pathsRDD, batchTime, batchInterval, outputPartitionTime, namespace, batchLog, metricLogger, inputPartitionSizeThresholdInBytes)
         } else {
           def postMetrics(metrics: Iterable[(String, Double)]): Unit = {
             metricLogger.sendBatchMetrics(metrics, batchTime)
@@ -727,7 +726,7 @@ object CommonProcessorFactory {
         val batchTimeStr = DateTimeUtil.formatSimple(batchTime)
         val batchLog = LogManager.getLogger(s"BatchProcessor-B$batchTimeStr")
 
-        groupPartitionProcessMetrics(pathsRDD, batchTime, batchInterval, outputPartitionTime, namespace, batchLog, metricLogger)
+        groupPartitionProcessMetrics(pathsRDD, batchTime, batchInterval, outputPartitionTime, namespace, batchLog, metricLogger, 0)
       }, // end of processPaths
       /*
       process a batch of ConsumerRecords from kafka

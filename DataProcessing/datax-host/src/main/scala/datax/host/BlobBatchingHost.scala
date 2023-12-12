@@ -94,6 +94,8 @@ object BlobBatchingHost {
     val sc = spark.sparkContext
     val processor = processorGenerator(config)
 
+    val inputPartitionSizeThresholdInBytes: Long = config.dict.getLongOption("inputPartitionSizeThresholdInBytes").getOrElse(0)
+    appLog.warn(s"inputPartitionSizeThresholdInBytes: $inputPartitionSizeThresholdInBytes")
     val filterTimeRange = config.dict.getOrElse("filterTimeRange", "").equals("true")
     appLog.warn(s"filterTimeRange: $filterTimeRange")
     val filesToProcess = prefixes.flatMap(prefix=>HadoopClient.listFileObjects(prefix._1).flatMap(f=>inTimeRange(f, filterTimeRange)).toSeq)
@@ -101,7 +103,7 @@ object BlobBatchingHost {
     val minTimestamp = prefixes.minBy(_._2.getTime)._2
     appLog.warn(s"Start processing for $minTimestamp")
     val pathsRDD = sc.makeRDD(filesToProcess)
-    val batchResult = processor.process(pathsRDD, minTimestamp, 1 hour)
+    val batchResult = processor.process(pathsRDD, minTimestamp, 1 hour, inputPartitionSizeThresholdInBytes)
     appLog.warn(s"End processing for $minTimestamp")
 
     appLog.warn(s"Batch Mode Work Ended, processed metrics: $batchResult")
