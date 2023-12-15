@@ -14,7 +14,7 @@ import datax.data.FileInternal
 import datax.exception.EngineException
 import datax.fs.HadoopClient
 import datax.host.{AppHost, CommonAppHost, SparkSessionSingleton, UdfInitializer}
-import datax.input.{BlobPointerInput, BatchBlobInputSetting, InputManager, SchemaFile, StreamingInputSetting}
+import datax.input.{BlobPointerInput, InputManager, SchemaFile, StreamingInputSetting}
 import datax.sink.{BlobSinker, OutputManager, OutputOperator}
 import datax.telemetry.{AppInsightLogger, MetricLogger, MetricLoggerFactory}
 import datax.utility._
@@ -456,7 +456,6 @@ object CommonProcessorFactory {
         val inputDf = spark.sparkContext.parallelize(files, filesCount)
           .flatMap(file => {
             val timeLast = System.nanoTime()
-
             val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
               .filter(l => {
                 val bNotEmptyBlob = l != null && !l.isEmpty
