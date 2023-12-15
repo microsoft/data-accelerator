@@ -196,7 +196,7 @@ object BlobSinker extends SinkOperatorFactory {
     val estimatedOutputBlobSizeInBytesConf = blobOutputConf.estimatedOutputBlobSizeInBytes
     val outputBlobCountConf = blobOutputConf.outputBlobCount
 
-    val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(outputFolders.head._2, SparkSessionSingleton.getInstance(ConfigManager.initSparkConf))
+    val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(outputFolders.head._2, SparkSessionSingleton.getInstance(ConfigManager.getSparkConf))
 
     val jsonSinkDelegate = (rowInfo: Row, rows: Seq[Row], outputPartitionTime: Timestamp, batchTime: Timestamp, partitionId: Int, loggerSuffix: String) => {
       val target = FileInternal.getInfoTargetTag(rowInfo)

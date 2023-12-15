@@ -14,6 +14,7 @@ import org.apache.spark.broadcast
 import org.apache.spark.sql.SparkSession
 
 import java.net.URI
+import scala.util.Try
 
 object ExecutorHelper {
   private val logger = LogManager.getLogger(this.getClass)
@@ -29,15 +30,17 @@ object ExecutorHelper {
     val sa = getStorageAccountName(path)
     var key = ""
 
-    val uri = new URI(path.replace(" ", "%20").replaceAll("[%\\$\\{\\}]", ""))
-    val scheme = uri.getScheme
+    val uri = Try(new URI(path.replace(" ", "%20").replaceAll("[%\\$\\{\\}]", ""))).toOption
+    if(uri.isDefined) {
+      val scheme = uri.get.getScheme
 
-    if(sa != null && !sa.isEmpty){
-      if(scheme == "wasb" || scheme == "wasbs")
-        KeyVaultClient.withKeyVault {vaultName => key = HadoopClient.resolveStorageAccount(vaultName, sa).get}
-      else if(scheme == "abfs" || scheme == "abfss")
-      // abfs protocol use Managed Identity for authentication
-        None
+      if (sa != null && !sa.isEmpty) {
+        if (scheme == "wasb" || scheme == "wasbs")
+          KeyVaultClient.withKeyVault { vaultName => key = HadoopClient.resolveStorageAccount(vaultName, sa).get }
+        else if (scheme == "abfs" || scheme == "abfss")
+        // abfs protocol use Managed Identity for authentication
+          None
+      }
     }
 
     val blobStorageKey = sc.broadcast(key)
@@ -50,9 +53,14 @@ object ExecutorHelper {
     */
   private def getStorageAccountName(path:String):String ={
     val regex = s"@([a-zA-Z0-9-_]+)(${BlobProperties.BlobHostPath}|${BlobProperties.DfsHostPath})".r
-    regex.findFirstMatchIn(path) match {
-      case Some(partition) => partition.group(1)
-      case None =>  null
+    if(path != null) {
+      regex.findFirstMatchIn(path) match {
+        case Some(partition) => partition.group(1)
+        case None => null
+      }
+    }
+    else {
+      null
     }
   }
 

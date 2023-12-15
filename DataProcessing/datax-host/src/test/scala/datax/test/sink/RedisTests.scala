@@ -9,7 +9,6 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class RedisTests extends AnyFlatSpec with Matchers{
-  org.apache.log4j.BasicConfigurator.configure()
 
   "RedisBase" should "parse connection string correctly" in {
     val connectionString = "asdfasdf.asdfasd.com:6380,password=insertpasswordhere=,ssl=True,abortConnect=False"
