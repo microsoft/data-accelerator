@@ -85,6 +85,8 @@ object CommonProcessorFactory {
     val preProjection = PreProjectionHandler.initialize(spark, dict)
     val buildPropertiesUdf = PropertiesHandler.initialize(spark, dict)
 
+    val newArgument = dict.getOrElse(JobArgument.ConfName_NewParameter, "false").toBoolean
+
     /*
       function parse input string into a Raw object column based on the input raw blob schema and also project the data frame
        based on the columns from projection files
