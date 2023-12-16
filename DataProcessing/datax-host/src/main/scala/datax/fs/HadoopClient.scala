@@ -4,6 +4,8 @@
 // *********************************************************************
 package datax.fs
 
+import com.globalmentor.apache.hadoop.fs.{BareLocalFileSystem, NakedLocalFileSystem}
+
 import java.io._
 import java.net.URI
 import java.nio.channels.FileChannel
@@ -16,18 +18,20 @@ import datax.constants.{BlobProperties, ProductConstant}
 import datax.exception.EngineException
 import datax.securedsetting.KeyVaultClient
 import datax.telemetry.AppInsightLogger
-import org.apache.commons.codec.digest.DigestUtils
+import org.apache.commons.io.FileUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileStatus, FileSystem, Path, RemoteIterator}
 import org.apache.log4j.LogManager
 import org.apache.spark.broadcast
 
+import java.util.UUID
 import scala.language.implicitConversions
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future, TimeoutException}
 import scala.io.Source
+import scala.util.Try
 
 object HadoopClient {
   val logger = LogManager.getLogger(this.getClass)
@@ -45,6 +49,7 @@ object HadoopClient {
       hadoopConf = new Configuration()
       //Used to fetch fileSystem for wasbs
       hadoopConf.set("fs.wasbs.impl","org.apache.hadoop.fs.azure.NativeAzureFileSystem")
+      hadoopConf.set("fs.azure.io.retry.max.retries", "3")
     }
     else
       hadoopConf = conf
@@ -70,16 +75,21 @@ object HadoopClient {
     * @return the storage account name if there is storage account name in the wasbs/wasb or abfs/abfss path, else null
     */
   private def getStorageAccount(path: String): String = {
-    val uri = new URI(path.replace(" ", "%20"))
-    val scheme = uri.getScheme
+    val uri = Try(new URI(path.replace(" ", "%20"))).toOption
+    if(uri.isDefined) {
+      val scheme = uri.get.getScheme
 
-    if(scheme == "wasb" || scheme == "wasbs" || scheme == "abfs" || scheme == "abfss")
-      Option(uri.getHost) match {
-        case Some(host) => host.toLowerCase().replaceAll(s"(${BlobProperties.BlobHostPath}|${BlobProperties.DfsHostPath})", "")
-        case None => null
-      }
-    else
+      if (scheme == "wasb" || scheme == "wasbs" || scheme == "abfs" || scheme == "abfss")
+        Option(uri.get.getHost) match {
+          case Some(host) => host.toLowerCase().replaceAll(s"(${BlobProperties.BlobHostPath}|${BlobProperties.DfsHostPath})", "")
+          case None => null
+        }
+      else
+        null
+    }
+    else {
       null
+    }
   }
 
   /***
@@ -162,15 +172,20 @@ object HadoopClient {
     */
   private def resolveStorageAccountKeyForPath(path: String, blobStorageKey: broadcast.Broadcast[String] = null) = {
     val sa = getStorageAccount(path)
-    val uri = new URI(path.replace(" ", "%20"))
-    val scheme = uri.getScheme
+    val uri = Try(new URI(path.replace(" ", "%20"))).toOption
+    if(uri.isDefined) {
+      val scheme = uri.get.getScheme
 
-    if(sa != null && !sa.isEmpty){
-      if(scheme == "wasb" || scheme == "wasbs")
-        KeyVaultClient.withKeyVault {vaultName => resolveStorageAccount(vaultName, sa, blobStorageKey, false)}
-      else if(scheme == "abfs" || scheme == "abfss")
+      if (sa != null && !sa.isEmpty) {
+        if (scheme == "wasb" || scheme == "wasbs")
+          KeyVaultClient.withKeyVault { vaultName => resolveStorageAccount(vaultName, sa, blobStorageKey, false) }
+        else if (scheme == "abfs" || scheme == "abfss")
         // abfs protocol use Managed Identity for authentication
-        None
+          None
+      }
+    }
+    else {
+      None
     }
   }
 
@@ -263,6 +278,11 @@ object HadoopClient {
       val path = new Path(hdfsPath)
       val fs = path.getFileSystem(getConf())
       val is = fs.open(path)
+      // if empty blob found, then just return the lines
+      if (is.available() == 0) {
+        logger.warn(s"Found empty file: $path")
+        return lines
+      }
 
       //val source = Source.fromInputStream(is)
       val inputStream = if(gzip)new GZIPInputStream(is) else is
@@ -323,11 +343,11 @@ object HadoopClient {
 
   /**
     * generate a random string for prefixing a temp file name
-    * @param seed seed for the randomization of names
-    * @return a random string with 8 characters for prefixing file names
+    * @return a full random uuid
     */
-  def tempFilePrefix(seed: String): String = {
-    DigestUtils.sha256Hex(seed).substring(0, 8)
+  def tempFilePrefix: String = {
+    //DigestUtils.sha256Hex(seed).substring(0, 8)
+    UUID.randomUUID().toString
   }
 
   /**
@@ -346,7 +366,7 @@ object HadoopClient {
                                 ) = {
     val logger = LogManager.getLogger(s"FileWriter${SparkEnvVariables.getLoggerSuffix()}")
     def f = Future{
-      writeHdfsFile(hdfsPath, content, getConf(), overwriteIfExists=true, directWrite=false, blobStorageKey)
+      writeHdfsFile(hdfsPath, content, getConf(), overwriteIfExists=false, directWrite=false, blobStorageKey)
     }
     var remainingAttempts = retries+1
     while(remainingAttempts>0) {
@@ -373,6 +393,14 @@ object HadoopClient {
             "failedHdfsPath" -> hdfsPath
           ), null)
           throw e
+        case unknown: Exception =>
+          remainingAttempts = 0
+          AppInsightLogger.trackException(unknown, Map(
+            "errorLocation" -> "writeWithTimeoutAndRetries",
+            "errorMessage" -> "Unknown error in writing file",
+            "failedHdfsPath" -> hdfsPath
+          ), null)
+          throw unknown
       }
     }
   }
@@ -404,6 +432,50 @@ object HadoopClient {
     val fs = folder.getFileSystem(getConf())
     if(!fs.exists(folder)){
       fs.mkdirs(folder)
+    }
+  }
+
+  /**
+   * Auxiliary method to build a temporary file path name
+   * @param path The path to the file
+   * @param prefix An optional prefix for the file path
+   * @return A temporary file path
+   */
+  def getTemporaryPath(path: Path, prefix: String = ""): String = {
+    s"$prefix/$tempFilePrefix-${path.getName}"
+  }
+
+  /**
+   * Generates a temporary file path for the provided local file system file
+   * @param path The path to the file
+   * @return The temporary path for the provided file
+   */
+  def getLocalFileSystemTemporaryPath(path: Path): String = {
+    s"file:///${getTemporaryPath(path, FileUtils.getTempDirectory.getPath)}"
+  }
+
+  /**
+   * Generates a generic temporary file path for file system that does not require a special treatment
+   * @param path The path to the file
+   * @return The temporary path for the provided file
+   */
+  def getDefaultTemporaryPath(path: Path): String = {
+    getTemporaryPath(path, "/_$tmpHdfsFolder$")
+  }
+
+  /**
+   * Generate a temporary file path location for the provided file information
+   * @param fs The file filesystem
+   * @param uri The file uri
+   * @param path The file path
+   * @return A generated temporary folder location for the provided file
+   */
+  def createTempFilePathUri(fs: FileSystem, uri: URI, path: Path): URI = {
+    fs match {
+      case _: NakedLocalFileSystem | _: BareLocalFileSystem => // From local runs that uses those classes as FS implementation
+        new URI(uri.getScheme, uri.getAuthority, getLocalFileSystemTemporaryPath(path), null, null)
+      case _ => // Other FS including HDFS, use the normal method of generating the uri from scheme and authority
+        new URI(uri.getScheme, uri.getAuthority, getDefaultTemporaryPath(path), null, null)
     }
   }
 
@@ -450,7 +522,7 @@ object HadoopClient {
         bs.close()
       }
     } else {
-      val tempHdfsPath = new URI(uri.getScheme, uri.getAuthority, "/_$tmpHdfsFolder$/"+tempFilePrefix(hdfsPath) + "-" + path.getName, null, null)
+      val tempHdfsPath = createTempFilePathUri(fs, uri, path)
       //val pos = hdfsPath.lastIndexOf('/')
       //val tempHdfsPath = hdfsPath.patch(pos, "/_temporary", 0)
       // TODO: create unique name for each temp file.

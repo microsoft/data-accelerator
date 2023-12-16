@@ -5,9 +5,10 @@
 package datax.test.sql
 
 import datax.sql.{ParsedResult, SqlCommand, TransformSQLParser}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class TransformSQLParserTests extends FlatSpec with Matchers{
+class TransformSQLParserTests extends AnyFlatSpec with Matchers{
   "DataX-SQL parser" should "work as expected" in {
     val sql = "--DataXQuery--\niottestbatch5s = \nSELECT MIN(myTime) AS __receivedtime,\n      '00000000-0000-0000-0000-000000000000' AS __ruleid,\n\tIoTDeviceId AS __deviceid,\n        MAP('avg', AVG(temperature), 'max', MAX(temperature), 'min', MIN(temperature), 'count', COUNT(temperature)) AS temperature\nFROM DataXProcessedInput\nGROUP BY IoTDeviceId\n--DataXQuery--\niottestbatch5salert = \nSELECT 1 AS `doc.schemaversion`,\n\t'alarm' AS `doc.schema`,\n\t'open' AS status,\n\t'1Rule-1Device-NMessage' AS logic,\n\tunix_timestamp()*1000 AS created,\n\tunix_timestamp()*1000 AS modified,\n\t'Temperature > 80 degrees' AS `rule.description`,\n\t'Critical' AS `rule.severity`,\n\t__ruleid AS `rule.id`,\n\t__deviceid AS `device.id`,\n\tSTRUCT(__ruleid, __deviceid, temperature) AS __aggregates,\n   \t__receivedtime AS `device.msg.received`\nFROM iottestbatch5s\nWHERE temperature.avg>0"
 

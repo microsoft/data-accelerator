@@ -4,6 +4,7 @@
 // *********************************************************************
 package datax.input
 
+import datax.config.ConfigManager.loadConfigFile
 import datax.config.{ConfigManager, SettingDictionary, SettingNamespace}
 import datax.fs.HadoopClient
 import datax.securedsetting.KeyVaultClient
@@ -21,7 +22,7 @@ object SchemaFile {
 
  private def loadRawBlobSchema(blobSchemaFile: String) = {
     // Schema of VS block extraction data
-    val schemaJsonString = HadoopClient.readHdfsFile(blobSchemaFile).mkString("")
+    val schemaJsonString = loadConfigFile(blobSchemaFile).mkString("")
     DataType.fromJson(schemaJsonString)
   }
 

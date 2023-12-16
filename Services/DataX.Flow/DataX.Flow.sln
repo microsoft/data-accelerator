@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28203.51
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.33027.164
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "DataX.Flow", "DataX.Flow\DataX.Flow.sfproj", "{34E85436-8F73-44FC-9C03-CA205077D68D}"
 EndProject
@@ -68,10 +68,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Config.Test.Utility", "..\DataX.Config\DataX.Config.Test.Utility\DataX.Config.Test.Utility.csproj", "{1376E883-42CB-4573-9955-C52B6054FE16}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Config.LivyClient", "..\DataX.Config\DataX.Config.LivyClient\DataX.Config.LivyClient.csproj", "{563A6DAE-08C8-4366-B48F-D452376E0ECF}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Config.Local", "..\DataX.Config\DataX.Config.Local\DataX.Config.Local.csproj", "{8E348951-91A9-41BF-942B-0747826573E1}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Config.Local.Test", "..\DataX.Config\DataX.Config.Local.Test\DataX.Config.Local.Test.csproj", "{8B08C0EA-974D-47B1-9E32-EDAAB1C660B4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataX.Config.Input.EventHub", "..\DataX.Config\DataX.Config.Input.EventHub\DataX.Config.Input.EventHub.csproj", "{2086CBF7-42F5-4110-BFF3-54463D743E1F}"
 EndProject
@@ -357,22 +353,6 @@ Global
 		{563A6DAE-08C8-4366-B48F-D452376E0ECF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{563A6DAE-08C8-4366-B48F-D452376E0ECF}.Release|x64.ActiveCfg = Release|Any CPU
 		{563A6DAE-08C8-4366-B48F-D452376E0ECF}.Release|x64.Build.0 = Release|Any CPU
-		{8E348951-91A9-41BF-942B-0747826573E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8E348951-91A9-41BF-942B-0747826573E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8E348951-91A9-41BF-942B-0747826573E1}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{8E348951-91A9-41BF-942B-0747826573E1}.Debug|x64.Build.0 = Debug|Any CPU
-		{8E348951-91A9-41BF-942B-0747826573E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8E348951-91A9-41BF-942B-0747826573E1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8E348951-91A9-41BF-942B-0747826573E1}.Release|x64.ActiveCfg = Release|Any CPU
-		{8E348951-91A9-41BF-942B-0747826573E1}.Release|x64.Build.0 = Release|Any CPU
-		{8B08C0EA-974D-47B1-9E32-EDAAB1C660B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8B08C0EA-974D-47B1-9E32-EDAAB1C660B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8B08C0EA-974D-47B1-9E32-EDAAB1C660B4}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{8B08C0EA-974D-47B1-9E32-EDAAB1C660B4}.Debug|x64.Build.0 = Debug|Any CPU
-		{8B08C0EA-974D-47B1-9E32-EDAAB1C660B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8B08C0EA-974D-47B1-9E32-EDAAB1C660B4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8B08C0EA-974D-47B1-9E32-EDAAB1C660B4}.Release|x64.ActiveCfg = Release|Any CPU
-		{8B08C0EA-974D-47B1-9E32-EDAAB1C660B4}.Release|x64.Build.0 = Release|Any CPU
 		{2086CBF7-42F5-4110-BFF3-54463D743E1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2086CBF7-42F5-4110-BFF3-54463D743E1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2086CBF7-42F5-4110-BFF3-54463D743E1F}.Debug|x64.ActiveCfg = Debug|Any CPU
