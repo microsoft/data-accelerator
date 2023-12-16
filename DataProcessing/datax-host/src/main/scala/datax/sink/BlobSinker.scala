@@ -154,7 +154,7 @@ object BlobSinker extends SinkOperatorFactory {
     val timeStart = System.nanoTime ()
     val eventCounts = dataGroups.flatMap {
       case (group, data) =>
-        val fileName = FileInternal.getInfoOutputFileName(rowInfo)
+        val fileName = partitionId.toString
         val InputPath = FileInternal.getInfoInputPath(rowInfo)
         val FileTime = FileInternal.getInfoFileTimeString(rowInfo)
         val tag = FileInternal.getInfoTargetTag(rowInfo)
@@ -193,8 +193,10 @@ object BlobSinker extends SinkOperatorFactory {
     if(formatConf.isDefined && !formatConf.get.equalsIgnoreCase("json"))
       throw new Error(s"Output format: ${formatConf.get} as specified in the config is not supported")
     val outputFolders = blobOutputConf.groups.map{case(k,v)=>k->KeyVaultClient.resolveSecretIfAny(v.folder)}
+    val estimatedOutputBlobSizeInBytesConf = blobOutputConf.estimatedOutputBlobSizeInBytes
+    val outputBlobCountConf = blobOutputConf.outputBlobCount
 
-    val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(outputFolders.head._2, SparkSessionSingleton.getInstance(ConfigManager.initSparkConf))
+    val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(outputFolders.head._2, SparkSessionSingleton.getInstance(ConfigManager.getSparkConf))
 
     val jsonSinkDelegate = (rowInfo: Row, rows: Seq[Row], outputPartitionTime: Timestamp, batchTime: Timestamp, partitionId: Int, loggerSuffix: String) => {
       val target = FileInternal.getInfoTargetTag(rowInfo)
@@ -221,7 +223,7 @@ object BlobSinker extends SinkOperatorFactory {
     }
 
     (data: DataFrame, time: Timestamp, batchTime: Timestamp, loggerSuffix: String) => {
-      SinkerUtil.sinkJson(data, time, batchTime, jsonSinkDelegate)
+      SinkerUtil.sinkJson(data, time, batchTime, jsonSinkDelegate, estimatedOutputBlobSizeInBytesConf.getOrElse(0), outputBlobCountConf.getOrElse(0))
     }
   }
 

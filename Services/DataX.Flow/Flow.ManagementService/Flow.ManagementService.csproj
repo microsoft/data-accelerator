@@ -38,6 +38,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="System.Net.NameResolution" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,7 +47,6 @@
     <ProjectReference Include="..\..\DataX.Config\DataX.Config.Input.EventHub\DataX.Config.Input.EventHub.csproj" />
     <ProjectReference Include="..\..\DataX.Config\DataX.Config.KeyVault\DataX.Config.KeyVault.csproj" />
     <ProjectReference Include="..\..\DataX.Config\DataX.Config.LivyClient\DataX.Config.LivyClient.csproj" />
-    <ProjectReference Include="..\..\DataX.Config\DataX.Config.Local\DataX.Config.Local.csproj" />
     <ProjectReference Include="..\..\DataX.Config\DataX.Config.Storage\DataX.Config.Storage.csproj" />
     <ProjectReference Include="..\..\DataX.Config\DataX.Config\DataX.Config.csproj" />
     <ProjectReference Include="..\..\DataX.ServiceHost\DataX.ServiceHost.AspNetCore\DataX.ServiceHost.AspNetCore.csproj" />

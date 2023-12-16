@@ -5,7 +5,6 @@
 using DataX.Config;
 using DataX.Config.ConfigDataModel;
 using DataX.Config.ConfigurationProviders;
-using DataX.Config.Local;
 using DataX.Config.PublicService;
 using DataX.Contract.Settings;
 using DataX.Flow.Scheduler;
@@ -80,8 +79,9 @@ namespace Flow.ManagementService
         private IList<Assembly> OneBoxModeDependencyAssemblies
             => new List<Assembly>()
                 {
-                    typeof(DataX.Config.ConfigGenConfiguration).Assembly,
-                    typeof(DataX.Config.Local.LocalDesignTimeStorage).Assembly
+                    typeof(DataX.Config.ConfigGenConfiguration).Assembly
+                    //Todo: enable local after migrating away from liteDb
+                    //,typeof(DataX.Config.Local.LocalDesignTimeStorage).Assembly
                 };
 
         // Get the required settings to bootstrap the config gen
@@ -101,7 +101,8 @@ namespace Flow.ManagementService
                 // Local settings
                 var metricsHttpEndpoint = Settings.MetricsHttpEndpoint.TrimEnd('/') + _MetricsHttpEndpointRelativeUri;
                 InitialConfiguration.Set(Constants.ConfigSettingName_LocalRoot, Settings.LocalRoot);
-                InitialConfiguration.Set(LocalSparkClient.ConfigSettingName_SparkHomeFolder, Settings.SparkHome);
+                //Todo: enable local after migrating away from liteDb
+                //InitialConfiguration.Set(LocalSparkClient.ConfigSettingName_SparkHomeFolder, Settings.SparkHome);
                 InitialConfiguration.Set(Constants.ConfigSettingName_ClusterName, "localCluster");
                 InitialConfiguration.Set(Constants.ConfigSettingName_ServiceKeyVaultName, "local");
                 InitialConfiguration.Set(Constants.ConfigSettingName_RuntimeKeyVaultName, "local");

@@ -21,7 +21,7 @@ object CommonAppHost extends AppHost {
     val appLog = LogManager.getLogger(this.getClass)
     appLog.warn("===App log turned ON===")
 
-    val sparkConf = ConfigManager.initSparkConf
+    val sparkConf = ConfigManager.initSparkConf(inputArguments)
 
     // Get the singleton instance of SparkSession
     val spark = SparkSessionSingleton.getInstance(sparkConf)

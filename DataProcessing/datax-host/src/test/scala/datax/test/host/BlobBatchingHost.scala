@@ -1,15 +1,16 @@
 package datax.test.host
 
 import datax.host.BlobBatchingHost
-import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.PrivateMethodTester
 
 import java.time.Instant
 import java.time.temporal.{ChronoUnit, TemporalUnit}
 import java.util.TimeZone
 
-class BlobBatchingHost extends FlatSpec with Matchers with PrivateMethodTester{
+class BlobBatchingHost extends AnyFlatSpec with Matchers with PrivateMethodTester{
   TimeZone.setDefault(TimeZone.getTimeZone("GMT"))
-  org.apache.log4j.BasicConfigurator.configure()
 
   val bbh = BlobBatchingHost
 

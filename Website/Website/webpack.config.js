@@ -106,28 +106,28 @@ function configure(env, argv) {
                 },
                 {
                     test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
-                    loader: 'url-loader?name=img/[name].[ext]&limit=10000&mimetype=image/svg+xml'
+                    use: [ { loader: 'url-loader?name=img/[name].[ext]&limit=10000&mimetype=image/svg+xml' } ]
                 },
                 {
                     test: /\.(svg|png|jpg|jpeg|gif)$/,
-                    loader: 'file-loader?name=img/[name].[ext]'
+                    use: [ { loader: 'file-loader?name=img/[name].[ext]'} ]
                 },
                 {
                     test: /\.(html|ico)$/,
                     include: path.resolve(__dirname, 'client'),
-                    loader: 'file-loader?name=[name].[ext]'
+                    use: [ { loader:  'file-loader?name=[name].[ext]'} ]
                 },
                 {
                     test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-                    loader: 'file-loader?name=fonts/[name].[ext]'
+                    use: [ { loader:  'file-loader?name=fonts/[name].[ext]'} ]
                 },
                 {
                     test: /\.(woff|woff2)$/,
-                    loader: 'url-loader?name=fonts/[name].[ext]&prefix=font&limit=5000'
+                    use: [ { loader:  'url-loader?name=fonts/[name].[ext]&prefix=font&limit=5000'} ]
                 },
                 {
                     test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-                    loader: 'url-loader?name=fonts/[name].[ext]&limit=10000&mimetype=application/octet-stream'
+                    use: [ { loader:  'url-loader?name=fonts/[name].[ext]&limit=10000&mimetype=application/octet-stream'} ]
                 }
             ]
         },
@@ -144,16 +144,6 @@ function configure(env, argv) {
                 filename: 'css/[name].css'
             })
         ],
-
-        // Some libraries import Node modules but don't use them in the browser.
-        // Tell Webpack to provide empty mocks for them so importing them works.
-        // https://webpack.github.io/docs/configuration.html#node
-        // https://github.com/webpack/node-libs-browser/tree/master/mock
-        node: {
-            fs: 'empty',
-            net: 'empty',
-            tls: 'empty'
-        }
     };
 
     if (!isDebug) {

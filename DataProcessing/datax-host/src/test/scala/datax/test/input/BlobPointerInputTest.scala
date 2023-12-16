@@ -1,12 +1,13 @@
 package datax.test.input
 
 import datax.input.BlobPointerInput
-import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.PrivateMethodTester
 
 import java.sql.Timestamp
 
-class BlobPointerInputTest extends FlatSpec with Matchers with PrivateMethodTester{
-  org.apache.log4j.BasicConfigurator.configure()
+class BlobPointerInputTest extends AnyFlatSpec with Matchers with PrivateMethodTester{
 
   "BlobPointerInput class" should "initialize correctly" in {
     BlobPointerInput
