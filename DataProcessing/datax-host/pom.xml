@@ -178,7 +178,7 @@ SOFTWARE
 		    <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>dbutils-api_2.12</artifactId>
-            <version>0.0.5</version>
+            <version>0.0.6</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
