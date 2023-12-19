@@ -19,7 +19,7 @@ object BlobPointerInputSetting {
                        fileTimeRegex: String,
                        fileTimeFormat: String)
 
-  val NamespacePrefix = SettingNamespace.JobInputPrefix
+  def NamespacePrefix = SettingNamespace.JobInputPrefix
   val SettingSourceIdRegex = "sourceidregex"
   val SettingEventNamePath = "eventnamepath"
   val SettingBlobPathRegex = "blobpathregex"

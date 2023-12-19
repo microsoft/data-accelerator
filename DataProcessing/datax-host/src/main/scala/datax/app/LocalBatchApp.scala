@@ -1,5 +1,6 @@
 package datax.app
 
+import datax.host.SparkSessionSingleton
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.StringUtils
 
@@ -363,6 +364,8 @@ case class LocalBatchApp(inputArgs: Array[String] = Array.empty, configuration: 
     if(!additionalFiles.isEmpty) {
       deployAdditionalFiles()
     }
+    // Reset spark session singleton
+    SparkSessionSingleton.resetInstance()
     BatchApp.main(getInputArgs())
   }
 }

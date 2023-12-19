@@ -7,5 +7,5 @@ package datax.constants
 object NamePrefix {
   val DefaultValue =  "DataX"
   val ConfSetting = "DATAX_NAMEPREFIX"
-  val Value: String = sys.env.getOrElse(ConfSetting, DefaultValue)
+  def Value: String = sys.env.getOrElse(ConfSetting, DefaultValue)
 }

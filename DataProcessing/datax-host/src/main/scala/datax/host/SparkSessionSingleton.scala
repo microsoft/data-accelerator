@@ -14,6 +14,14 @@ object SparkSessionSingleton {
 
   @transient private var instance: SparkSession = _
 
+  def resetInstance() = {
+    if (instance != null) {
+      instance.stop()
+      instance.close()
+      instance = null
+    }
+  }
+
   def getInstance(sparkConf: SparkConf): SparkSession = {
     val logger = LogManager.getLogger(s"getInstance")
     if (instance == null) {
