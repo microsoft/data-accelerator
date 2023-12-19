@@ -20,7 +20,7 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 
 object OutputManager {
-  val NamespacePrefix = SettingNamespace.JobOutputPrefix
+  def NamespacePrefix = SettingNamespace.JobOutputPrefix
   val SettingOutputProcessedSchemaPath = "processedschemapath"
 
   val sinkFactories = Seq[SinkOperatorFactory](
