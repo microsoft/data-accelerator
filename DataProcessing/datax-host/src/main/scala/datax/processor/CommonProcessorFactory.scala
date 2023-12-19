@@ -488,6 +488,16 @@ object CommonProcessorFactory {
         val sizeOfEachPartitionInBytes = dfSizeInBytes/numPartitions
         batchLog.warn(s"Input DataFrame Stats: Size in Bytes ${dfSizeInBytes}, Partitions Count:${numPartitions}, Approx. Size of each partition:${sizeOfEachPartitionInBytes}")
 
+        val dataframeStats = Map(s"dfSizeInBytes" -> dfSizeInBytes.toDouble, s"numPartitions" -> numPartitions.toDouble, s"sizeOfEachPartitionInBytes" -> sizeOfEachPartitionInBytes.toDouble)
+        AppInsightLogger.trackBatchEvent(
+          ProductConstant.ProductRoot + "/InputDataFrameStats",
+          null,
+          dataframeStats,
+          batchTime
+        )
+
+        batchLog.warn(s"inputPartitionSizeThresholdInBytes: ${inputPartitionSizeThresholdInBytes}")
+
         // Doing the repartition after loading the data from all input files into a dataframe
         // This method may work well to fix current issue, but may not be fully future proof.
         // That is, additional changes are needed to handle case where individual large file(s) do not fit into memory
