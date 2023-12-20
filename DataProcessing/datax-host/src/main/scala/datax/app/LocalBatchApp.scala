@@ -1,8 +1,10 @@
 package datax.app
 
+import datax.fs.HadoopClient
 import datax.host.SparkSessionSingleton
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.StringUtils
+import org.apache.hadoop.fs.FileStatus
 
 import java.io.File
 import java.time.Instant
@@ -31,7 +33,13 @@ trait LocalAppFileSystem {
 
   def writeFile(path: String, data: String): Unit
 
+  def getWorkingDirectory: String
+
   def getInputDirectory: String
+
+  def getOutputDirectory: String
+
+  def getFiles(path: String): Iterator[FileStatus]
 }
 
 /**
@@ -40,8 +48,9 @@ trait LocalAppFileSystem {
 case class LocalAppLocalFileSystem() extends LocalAppFileSystem {
   val Timestamp: String = Instant.now().toEpochMilli.toString
   val Directory: String = FileUtils.getTempDirectory.getPath
-  val InputDir = s"${Directory}/datax/${Timestamp}/input"
-  val OutputDir = s"${Directory}/datax/${Timestamp}/output"
+  val WorkingDir = s"${Directory}/datax/${Timestamp}"
+  val InputDir = s"${WorkingDir}/input"
+  val OutputDir = s"${WorkingDir}/output"
 
   def fileExists(fsFileName: String): Boolean = {
     new File(fsFileName).exists()
@@ -55,7 +64,15 @@ case class LocalAppLocalFileSystem() extends LocalAppFileSystem {
     FileUtils.write(new File(path), data)
   }
 
+  def getFiles(path: String): Iterator[FileStatus] = {
+    HadoopClient.listFileObjects(path)
+  }
+
+  def getWorkingDirectory(): String = WorkingDir
+
   def getInputDirectory(): String = InputDir
+
+  def getOutputDirectory(): String = OutputDir
 }
 
 /**
@@ -354,6 +371,14 @@ case class LocalBatchApp(inputArgs: Array[String] = Array.empty, configuration: 
   }
 
   /**
+   * Enumerate files in output folder
+   * @return
+   */
+  def getOutputBlobFiles(): Iterator[FileStatus] = {
+    fs.getFiles(fs.OutputDir)
+  }
+
+  /**
    * Read a blob from the input directory
    * @param blobFileName The blob file name
    * @return
@@ -362,6 +387,14 @@ case class LocalBatchApp(inputArgs: Array[String] = Array.empty, configuration: 
     val blobFullPath = s"${fs.InputDir}/$blobFileName"
     assert(fs.fileExists(blobFullPath))
     fs.readFile(blobFullPath)
+  }
+
+  /**
+   * Enumerate files at input folder
+   * @return
+   */
+  def getInputBlobFiles(): Iterator[FileStatus] = {
+    fs.getFiles(fs.InputDir)
   }
 
   /**
