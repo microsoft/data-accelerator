@@ -90,9 +90,26 @@ object SinkerUtil {
   }
 
   // Convert dataframe to sequence of rows and sink using the passed in sinker delegate. The rows contain data as json column
-  def sinkJson(df:DataFrame, partitionTime: Timestamp, batchTime: Timestamp, jsonSinkDelegate:JsonSinkDelegate ): Map[String, Int] = {
+  def sinkJson(df:DataFrame, partitionTime: Timestamp, batchTime: Timestamp, jsonSinkDelegate:JsonSinkDelegate, estimatedOutputBlobSizeInBytes: Long = 0, outputBlobCount: Int = 0 ): Map[String, Int] = {
+    val logger = LogManager.getLogger(s"sinkJson")
+    val dfDataSet: DataFrame =
+      if(estimatedOutputBlobSizeInBytes <= 0 && outputBlobCount <= 0) {
+        df
+      }
+      else if(estimatedOutputBlobSizeInBytes > 0) {
+        val dfSizeInBytes = df.sparkSession.sessionState.executePlan(df.queryExecution.logical).optimizedPlan.stats.sizeInBytes
+        val dfPartitionCount = ((dfSizeInBytes / estimatedOutputBlobSizeInBytes) + 1).toInt
+        logger.warn(s"df SizeInBytes: '${dfSizeInBytes}'")
+        logger.warn(s"Estimated Output Blob SizeInBytes: '${estimatedOutputBlobSizeInBytes}'")
+        logger.warn(s"df Partition Count: '${dfPartitionCount}'")
+        df.repartition(dfPartitionCount)
+      }
+      else {
+        logger.warn(s"outputBlobCount: '${outputBlobCount}'")
+        df.repartition(outputBlobCount)
+      }
 
-    df
+    dfDataSet
       .rdd
       .mapPartitions(it => {
         val partitionId = TaskContext.getPartitionId()

@@ -654,7 +654,7 @@ object CommonProcessorFactory {
           postMetrics(InputBlobsMetric)
           batchLog.warn(s"InputBlob count=${paths.size}");
 
-          val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(paths.head, spark)
+          val blobStorageKey = ExecutorHelper.createBlobStorageKeyBroadcastVariable(paths.headOption.orNull, spark)
 
           val inputDf = internalFiles
             .flatMap(file => {
