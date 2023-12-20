@@ -354,6 +354,17 @@ case class LocalBatchApp(inputArgs: Array[String] = Array.empty, configuration: 
   }
 
   /**
+   * Read a blob from the input directory
+   * @param blobFileName The blob file name
+   * @return
+   */
+  def readInputBlob(blobFileName: String): String = {
+    val blobFullPath = s"${fs.InputDir}/$blobFileName"
+    assert(fs.fileExists(blobFullPath))
+    fs.readFile(blobFullPath)
+  }
+
+  /**
    * Entrypoint
    */
   def main(): Unit = {

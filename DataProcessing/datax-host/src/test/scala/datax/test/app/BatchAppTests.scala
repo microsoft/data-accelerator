@@ -1,11 +1,12 @@
 package datax.test.app
 
-import datax.app.{LocalBatchApp, ValueConfigSource, ValueConfiguration, ValueSourceBlob}
+import datax.app.{LocalBatchApp, ValueConfigSource, ValueConfiguration, ValueInputFileSource, ValueSourceBlob}
 import org.json4s.jackson.JsonMethods.render
 import org.scalatest.PrivateMethodTester
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.json4s.jackson.parseJson
+
 import scala.collection.mutable
 
 class BatchAppTests extends AnyFlatSpec with Matchers with PrivateMethodTester {
@@ -53,10 +54,16 @@ class BatchAppTests extends AnyFlatSpec with Matchers with PrivateMethodTester {
           |  ]
           |}
           |""".stripMargin)
-    ))
+    )),
+    additionalFiles = Array(
+      ValueInputFileSource(fileName = "test.test", fileContent =
+        """
+          |This is a test""".trim.stripMargin)
+    )
   )
   "BatchApp" should "process correctly a single blob running in local machine" in {
     testApp.main()
+    assert(testApp.readInputBlob("test.test") == "This is a test")
     implicit val formats = org.json4s.DefaultFormats
     val results = Array[String](
       render(parseJson(testApp.readOutputBlob("0.json", "2023/10/03/00")) \\ "Raw" \\ "name").extract[String],
