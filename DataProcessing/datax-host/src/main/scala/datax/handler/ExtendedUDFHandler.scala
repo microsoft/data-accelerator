@@ -94,7 +94,7 @@ object ExtendedUDFHandler {
 
   def registerFunction(spark:SparkSession, name: String, func: AnyRef, returnType: DataType, argumentCount: Int, inputsNullSafe: Seq[Boolean]) = {
     def builder(e: Seq[Expression]) = if (e.length == argumentCount) {
-      ScalaUDF(func, returnType, e, inputsNullSafe=inputsNullSafe, udfName = Some(name))
+      ScalaUDF(func, returnType, e, udfName = Some(name))
     } else {
       throw new EngineException(s"Invalid number of arguments for function $name. Expected: $argumentCount; Found: ${e.length}")
     }
