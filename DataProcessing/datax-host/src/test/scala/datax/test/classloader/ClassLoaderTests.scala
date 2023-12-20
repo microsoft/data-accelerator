@@ -8,11 +8,12 @@ import java.sql.Timestamp
 
 import datax.classloader.ClassLoaderHost
 import org.apache.spark.sql.types._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 case class A(timestamp: Timestamp, reading: Double, category: String)
 
-class ClassLoaderTests extends FlatSpec with Matchers{
+class ClassLoaderTests extends AnyFlatSpec with Matchers{
   "infer case class to struct type" should "works" in {
 
     ClassLoaderHost.javaTypeToDataType(classOf[A]) shouldBe StructType(Array(

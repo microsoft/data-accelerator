@@ -50,12 +50,12 @@ SOFTWARE
     </scm>
 
     <groupId>com.microsoft.datax</groupId>
-    <artifactId>datax-host_2.4_2.11</artifactId>
-    <version>1.2.15-SNAPSHOT</version>
+    <artifactId>datax-host_3.1_2.12</artifactId>
+    <version>1.2.17-SNAPSHOT</version>
 
     <properties>
-        <spark.version>2.4.5</spark.version>
-        <scala.version.major>2.11</scala.version.major>
+        <spark.version>3.1.3</spark.version>
+        <scala.version.major>2.12</scala.version.major>
         <scala.version.minor>8</scala.version.minor>
         <scala.version>${scala.version.major}.${scala.version.minor}</scala.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -100,7 +100,7 @@ SOFTWARE
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming-kafka-0-10_2.11</artifactId>
+            <artifactId>spark-streaming-kafka-0-10_2.12</artifactId>
             <version>${spark.version}</version>
         </dependency>
         <dependency>
@@ -111,29 +111,39 @@ SOFTWARE
         </dependency>
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.11</artifactId>
+            <artifactId>scalatest_2.12</artifactId>
             <version>3.3.0-SNAP4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.globalmentor</groupId>
+            <artifactId>hadoop-bare-naked-local-fs</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.16.0</version>
+        </dependency>
+        <dependency>
             <groupId>com.microsoft.datax</groupId>
-            <artifactId>datax-core_2.4_2.11</artifactId>
+            <artifactId>datax-core_3.1_2.12</artifactId>
             <version>${version}</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.datax</groupId>
-            <artifactId>datax-utility_2.4_2.11</artifactId>
+            <artifactId>datax-utility_3.1_2.12</artifactId>
             <version>${version}</version>
         </dependency>		
         <dependency>
             <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-eventhubs-spark_2.11</artifactId>
+            <artifactId>azure-eventhubs-spark_2.12</artifactId>
             <version>2.3.22</version>
         </dependency>
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>6.2.3.RELEASE</version>
+            <version>6.2.6.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
@@ -148,7 +158,7 @@ SOFTWARE
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-azure</artifactId>
-            <version>3.3.4</version>
+            <version>3.3.6</version>
         </dependency>
         <dependency>
             <groupId>org.mortbay.jetty</groupId>
@@ -158,17 +168,17 @@ SOFTWARE
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20220924</version>
+            <version>20231013</version>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>3.4.0</version>
+            <version>3.6.1</version>
         </dependency>
 		    <dependency>
             <groupId>com.databricks</groupId>
-            <artifactId>dbutils-api_2.11</artifactId>
-            <version>0.0.5</version>
+            <artifactId>dbutils-api_2.12</artifactId>
+            <version>0.0.6</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
@@ -187,7 +197,7 @@ SOFTWARE
           <plugin>
             <groupId>net.alchim31.maven</groupId>
             <artifactId>scala-maven-plugin</artifactId>
-            <version>4.8.0</version>
+            <version>4.8.1</version>
             <executions>
               <execution>
                 <goals>
@@ -206,7 +216,7 @@ SOFTWARE
           </plugin>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.10.1</version>
+            <version>3.11.0</version>
             <configuration>
               <source>1.8</source>
               <target>1.8</target>
@@ -215,7 +225,7 @@ SOFTWARE
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
-            <version>3.5.0</version>
+            <version>3.6.0</version>
             <executions>
               <execution>
                 <id>copy-dependencies</id>
@@ -286,7 +296,7 @@ SOFTWARE
         <plugins>
           <plugin>
             <artifactId>maven-deploy-plugin</artifactId>
-            <version>3.1.0</version>
+            <version>3.1.1</version>
             <configuration>
               <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
             </configuration>

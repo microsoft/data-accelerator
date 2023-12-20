@@ -50,16 +50,16 @@ SOFTWARE
   </scm>
 
   <groupId>com.microsoft.datax</groupId>
-  <artifactId>datax-core_2.4_2.11</artifactId>
-  <version>1.2.15-SNAPSHOT</version>
+  <artifactId>datax-core_3.1_2.12</artifactId>
+  <version>1.2.17-SNAPSHOT</version>
   <name>Data Accelerator Core</name>
   <description>This package contains the core module of Data Accelerator functionality.</description>
   <url>https://github.com/Microsoft/data-accelerator</url>
   <packaging>jar</packaging>
 
   <properties>
-    <spark.version>2.4.5</spark.version>
-    <scala.version.major>2.11</scala.version.major>
+    <spark.version>3.1.3</spark.version>
+    <scala.version.major>2.12</scala.version.major>
     <scala.version.minor>8</scala.version.minor>
     <scala.version>${scala.version.major}.${scala.version.minor}</scala.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -78,7 +78,7 @@ SOFTWARE
       <exclusions>
         <exclusion>
           <groupId>org.json4s</groupId>
-          <artifactId>json4s-jackson_2.11</artifactId>
+          <artifactId>json4s-jackson_2.12</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -90,7 +90,7 @@ SOFTWARE
       <exclusions>
         <exclusion>
           <groupId>org.scala-lang.modules</groupId>
-          <artifactId>scala-parser-combinators_2.11</artifactId>
+          <artifactId>scala-parser-combinators_2.12</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -108,18 +108,18 @@ SOFTWARE
       <exclusions>
         <exclusion>
           <groupId>org.scala-lang.modules</groupId>
-          <artifactId>scala-parser-combinators_2.11</artifactId>
+          <artifactId>scala-parser-combinators_2.12</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.typelevel</groupId>
-          <artifactId>macro-compat_2.11</artifactId>
+          <artifactId>macro-compat_2.12</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>org.json4s</groupId>
-      <artifactId>json4s-jackson_2.11</artifactId>
-      <version>3.5.3</version>
+      <artifactId>json4s-jackson_2.12</artifactId>
+      <version>4.0.7</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
@@ -134,7 +134,7 @@ SOFTWARE
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_2.11</artifactId>
+      <artifactId>scalatest_2.12</artifactId>
       <version>3.3.0-SNAP3</version>
       <scope>test</scope>
     </dependency>
@@ -180,7 +180,7 @@ SOFTWARE
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
-            <version>3.5.0</version>
+            <version>3.6.0</version>
             <executions>
               <execution>
                 <id>copy-dependencies</id>
@@ -251,7 +251,7 @@ SOFTWARE
       <plugins>
         <plugin>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.1.0</version>
+          <version>3.1.1</version>
           <configuration>
             <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
           </configuration>

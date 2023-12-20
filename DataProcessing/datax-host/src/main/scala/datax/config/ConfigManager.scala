@@ -9,16 +9,42 @@ import datax.exception.EngineException
 import datax.fs.HadoopClient
 import datax.service.ConfigService
 import datax.utility.ArgumentsParser
+import org.apache.commons.lang3.StringUtils
 import org.apache.log4j.LogManager
 import org.apache.spark.SparkConf
+
+import scala.util.Try
 
 /***
   * Singleton service to set and get a Dictionary object
   */
 object ConfigManager extends ConfigService {
   private val logger = LogManager.getLogger("DictionaryigManager")
+  @transient private var sparkConf: SparkConf = _
 
-  def initSparkConf() = new SparkConf()
+  /**
+   * Retrieves the current spark configuration singleton
+   * @return
+   */
+  def getSparkConf() = sparkConf
+
+  /**
+   * Forwards any spark configuration property from input arguments to the current spark configuration object
+   * @param inputArguments The array of input arguments
+   * @return
+   */
+  def initSparkConf(inputArguments: Array[String]) = {
+    val namedArgs = ArgumentsParser.getNamedArgs(inputArguments)
+    sparkConf = new SparkConf()
+    namedArgs.foreach(arg => {
+      if (StringUtils.isNotEmpty(arg._2) && StringUtils.isNotEmpty(arg._1) && arg._1.startsWith("spark.")) {
+        val property = arg._1
+        val value = arg._2
+        sparkConf.set(property, value)
+      }
+    })
+    sparkConf
+  }
 
   def loadLocalConfigIfExists[T](configurationFile: String)(implicit mf: Manifest[T]) : Option[T] = {
     val configString = HadoopClient.readLocalFileIfExists(configurationFile)
@@ -107,13 +133,62 @@ object ConfigManager extends ConfigService {
       s.trim()->null
   }
 
+  /**
+   * Auxiliary method to decode a string base64 value into its original representation
+   * @param base64str A base64 encoded string
+   * @return
+   */
+  def decodeBase64(base64str: String) : Option[String] = {
+    Try(new String(java.util.Base64.getDecoder.decode(base64str))).toOption
+  }
+
+  /**
+   * Attempts to decode a configuration file path as content supplied as a base64 encoded string
+   * @param fileContents The raw file contents encoded as base64
+   * @return
+   */
+  def readConfigFileAsBase64Encoded(fileContents: String): Option[Iterable[String]] = {
+    decodeBase64(fileContents)
+      .map(contents => contents.replace("\r", "").trim().split("\n"))
+  }
+
+  /**
+   * Attempts to load the file from the path provided
+   * @param filePath The file path
+   * @param extension The extension the file must have
+   * @return
+   */
+  def readConfigFileAsFile(filePath: String, extension: Option[String] = None): Iterable[String] = {
+    if (extension.isDefined && !filePath.toLowerCase().endsWith(extension.get))
+      throw EngineException(s"non-conf file is not supported as configuration input")
+    HadoopClient.readHdfsFile(filePath)
+  }
+
+  /**
+   * Attempts to load the configuration file considering the file path as a base64 encoded content first, if
+   * that fails, load the file from the file path
+   * @param filePath The base64 encoded file content or a file path
+   * @param extension The extension the file path must have (if filePath is not content)
+   * @return
+   */
+  def loadConfigFile(filePath: String, extension: Option[String] = None): Iterable[String] = {
+    // Try to decode any base64 encode config first, then fallback to look it as a filepath
+    readConfigFileAsBase64Encoded(filePath)
+      .getOrElse(readConfigFileAsFile(filePath, extension))
+  }
+
+  /**
+   * Attempts to load the configuration file considering the file path as a base64 encoded content first, if
+   * that fails, load the file from the file path
+   * @param filePath The base64 encoded file content or a file path
+   * @param replacements Substitutions to be made on the file content
+   * @return
+   */
   private def readConfFile(filePath: String, replacements: Map[String, String]) = {
     if(filePath==null)
-      throw new EngineException(s"No conf file is provided")
-    else if(!filePath.toLowerCase().endsWith(".conf"))
-      throw new EngineException(s"non-conf file is not supported as configuration input")
+      throw EngineException(s"No conf file or conf data is provided")
 
-    parseConfLines(HadoopClient.readHdfsFile(filePath), replacements)
+    parseConfLines(loadConfigFile(filePath, Option(".conf")), replacements)
   }
 
   def loadConfig(sparkConf: SparkConf): UnifiedConfig = {
