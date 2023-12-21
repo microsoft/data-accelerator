@@ -29,6 +29,7 @@ import org.apache.spark.sql.streaming.{OutputMode, Trigger}
 import org.apache.spark.sql.types.DataTypes
 import org.apache.spark.storage.StorageLevel
 import shapeless.syntax.typeable.typeableOps
+import org.apache.spark.util.SizeEstimator
 
 import java.math.{MathContext, RoundingMode}
 import java.util.Locale
@@ -484,50 +485,16 @@ object CommonProcessorFactory {
           })
           .toDF(ColumnName.InternalColumnFileInfo, ColumnName.MetadataColumnOutputPartitionTime, ColumnName.RawObjectColumn)
 
-        def bytesToString(size: BigInt): String = {
-          val EiB = 1L << 60
-          val PiB = 1L << 50
-          val TiB = 1L << 40
-          val GiB = 1L << 30
-          val MiB = 1L << 20
-          val KiB = 1L << 10
-
-          if (size >= BigInt(1L << 11) * EiB) {
-            // The number is too large, show it in scientific notation.
-            BigDecimal(size, new MathContext(3, RoundingMode.HALF_UP)).toString() + " B"
-          } else {
-            val (value, unit) = {
-              if (size >= 2 * EiB) {
-                (BigDecimal(size) / EiB, "EiB")
-              } else if (size >= 2 * PiB) {
-                (BigDecimal(size) / PiB, "PiB")
-              } else if (size >= 2 * TiB) {
-                (BigDecimal(size) / TiB, "TiB")
-              } else if (size >= 2 * GiB) {
-                (BigDecimal(size) / GiB, "GiB")
-              } else if (size >= 2 * MiB) {
-                (BigDecimal(size) / MiB, "MiB")
-              } else if (size >= 2 * KiB) {
-                (BigDecimal(size) / KiB, "KiB")
-              } else {
-                (BigDecimal(size), "B")
-              }
-            }
-            "%.1f %s".formatLocal(Locale.US, value, unit)
-          }
-        }
-
         // Calculate and log the DataFrame Size stats.
         // This data will be used next to determine if we need to do any repartitioning
-        val dfSizeInBytes = inputDf.sparkSession.sessionState.executePlan(inputDf.queryExecution.logical).optimizedPlan.stats.sizeInBytes
-        val dfSizeInString = bytesToString(dfSizeInBytes)
+        val dfSizeInBytes = SizeEstimator.estimate(inputDf)
 
         val numPartitions = inputDf
           .select(org.apache.spark.sql.functions.spark_partition_id()).distinct().count()
         val sizeOfEachPartitionInBytes = dfSizeInBytes/numPartitions
-        batchLog.warn(s"Input DataFrame Stats: Size in Bytes ${dfSizeInString}, Partitions Count:${numPartitions}, Approx. Size of each partition:${sizeOfEachPartitionInBytes}")
+        batchLog.warn(s"Input DataFrame Stats: Size in Bytes ${dfSizeInBytes}, Partitions Count:${numPartitions}, Approx. Size of each partition:${sizeOfEachPartitionInBytes}")
 
-        val dataframeStats = Map("dfSize" -> dfSizeInString, "numPartitions" -> numPartitions.toString, "sizeOfEachPartitionInBytes" -> sizeOfEachPartitionInBytes.toString)
+        val dataframeStats = Map("dfSize" -> dfSizeInBytes.toString, "numPartitions" -> numPartitions.toString, "sizeOfEachPartitionInBytes" -> sizeOfEachPartitionInBytes.toString)
         AppInsightLogger.trackBatchEvent(
           ProductConstant.ProductRoot + "/InputDataFrameStats",
           dataframeStats,
