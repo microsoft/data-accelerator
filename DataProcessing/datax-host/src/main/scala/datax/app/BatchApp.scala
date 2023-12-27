@@ -4,13 +4,18 @@
 // *********************************************************************
 package datax.app
 
+import datax.config.UnifiedConfig
 import datax.host.BlobBatchingHost
-import datax.processor.CommonProcessorFactory
+import datax.processor.{BatchBlobProcessor, CommonProcessorFactory}
 
 object BatchApp {
   def main(inputArguments: Array[String]): Unit = {
+    startWithProcessor(inputArguments, config => CommonProcessorFactory.createProcessor(config).asBatchBlobProcessor())
+  }
+
+  def startWithProcessor(inputArguments: Array[String], processor: UnifiedConfig => BatchBlobProcessor) = {
     BlobBatchingHost.runBatchApp(
       inputArguments,
-      config => CommonProcessorFactory.createProcessor(config).asBatchBlobProcessor())
+      processor)
   }
 }

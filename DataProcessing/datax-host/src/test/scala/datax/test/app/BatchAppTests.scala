@@ -1,6 +1,6 @@
 package datax.test.app
 
-import datax.app.{LocalBatchApp, ValueConfigSource, ValueConfiguration, ValueInputFileSource, ValueSourceBlob}
+import datax.app.{LocalBatchApp, LocalConfigGenerator, ValueConfigSource, ValueInputFileSource, ValueSourceBlob}
 import org.json4s.jackson.JsonMethods.render
 import org.scalatest.PrivateMethodTester
 import org.scalatest.flatspec.AnyFlatSpec
@@ -11,20 +11,8 @@ import scala.collection.mutable
 
 class BatchAppTests extends AnyFlatSpec with Matchers with PrivateMethodTester {
   
-  lazy val testApp = LocalBatchApp(blobs = Array(
-    ValueSourceBlob(partition = "2023/10/03/00", stamp = "20231003_002655", blobData =
-      """
-        |{ "name": "hello" }
-        |""".stripMargin),
-    ValueSourceBlob(partition = "2023/10/03/01", stamp = "20231003_012655", blobData =
-      """
-        |{ "name": "world" }
-        |""".stripMargin),
-    ValueSourceBlob(partition = "2023/10/03/02", stamp = "20231003_022655", blobData =
-      """
-        |{ "name": "!" }
-        |""".stripMargin)),
-    configuration = Some(ValueConfiguration(
+  lazy val testApp = LocalBatchApp(
+    configuration = LocalConfigGenerator(
       jobName = "test",
       startTime = "2023-10-03T00:00:00Z",
       endTime = "2023-10-03T02:59:59Z",
@@ -35,11 +23,13 @@ class BatchAppTests extends AnyFlatSpec with Matchers with PrivateMethodTester {
           |__DataXMetadata_OutputPartitionTime
           |Raw
           |DataXProperties
-          |""".stripMargin),
+          |""".stripMargin
+        ),
       transformData =
         ValueConfigSource("""
           |default = SELECT * FROM DataXProcessedInput
-          |""".stripMargin),
+          |""".stripMargin
+        ),
       schemaData =
         ValueConfigSource("""
           |{
@@ -53,12 +43,31 @@ class BatchAppTests extends AnyFlatSpec with Matchers with PrivateMethodTester {
           |    }
           |  ]
           |}
-          |""".stripMargin)
-    )),
-    additionalFiles = Array(
-      ValueInputFileSource(fileName = "test.test", fileContent =
-        """
-          |This is a test""".trim.stripMargin)
+          |""".stripMargin
+        ),
+      blobs = Array(
+        ValueSourceBlob(partition = "2023/10/03/00", stamp = "20231003_002655", blobData =
+          """
+            |{ "name": "hello" }
+            |""".stripMargin
+        ),
+        ValueSourceBlob(partition = "2023/10/03/01", stamp = "20231003_012655", blobData =
+          """
+            |{ "name": "world" }
+            |""".stripMargin
+        ),
+        ValueSourceBlob(partition = "2023/10/03/02", stamp = "20231003_022655", blobData =
+          """
+            |{ "name": "!" }
+            |""".stripMargin
+        )
+      ),
+      additionalFiles = Array(
+        ValueInputFileSource(fileName = "test.test", fileContent =
+          """
+              |This is a test""".trim.stripMargin
+        )
+      )
     )
   )
   "BatchApp" should "process correctly a single blob running in local machine" in {

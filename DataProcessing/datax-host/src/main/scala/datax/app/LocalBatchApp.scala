@@ -1,7 +1,9 @@
 package datax.app
 
+import datax.config.UnifiedConfig
 import datax.fs.HadoopClient
 import datax.host.SparkSessionSingleton
+import datax.processor.BatchBlobProcessor
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.FileStatus
@@ -10,6 +12,36 @@ import java.io.File
 import java.time.Instant
 import java.util.Base64.getEncoder
 import java.util.TimeZone
+
+trait EnvUtils {
+  /**
+   * Sets a environment variable programmatically
+   *
+   * @param key   The environment variable name
+   * @param value The environment variable value
+   * @return
+   */
+  def setEnv(key: String, value: String) = {
+    val field = System.getenv().getClass.getDeclaredField("m")
+    field.setAccessible(true)
+    val map = field.get(System.getenv()).asInstanceOf[java.util.Map[java.lang.String, java.lang.String]]
+    map.put(key, value)
+  }
+}
+
+trait SparkUtils extends EnvUtils {
+  /**
+   * Converts a environment variable into its spark representation
+   *
+   * @param envVarName  The environment variable name
+   * @param envVarValue The environment variable value
+   * @return
+   */
+  def ToSparkProps(envVarName: String, envVarValue: String): Array[String] = {
+    Array(s"spark.yarn.appMasterEnv.${envVarName}=${envVarValue}",
+      s"spark.executorEnv.${envVarName}=${envVarValue}")
+  }
+}
 
 /**
  * Encoder for configuration string supplied values
@@ -78,10 +110,10 @@ case class LocalAppLocalFileSystem() extends LocalAppFileSystem {
 /**
  * Configuration supplied to input parameter -conf
  */
-trait LocalConfiguration {
+trait ConfigGenerator {
   def getAppName: String
   def getEnvPrefix: String
-  def getConfig(fs: LocalAppFileSystem): String
+  def getConfig: LocalAppFileSystem => AppConfiguration
   def getStartTime: String
   def getEndTime: String
   def getBlobWriterTimeout: String
@@ -144,7 +176,7 @@ trait ConfigSource {
  * @param configData A base64 configuration file content
  */
 case class ValueConfigSource(configData: String) extends ConfigSource with ConfigValueEncoder {
-  def Value: String = encodeValue(configData)
+  def Value: String = encodeValue(configData.stripMargin.trim())
 }
 
 /**
@@ -153,6 +185,10 @@ case class ValueConfigSource(configData: String) extends ConfigSource with Confi
  */
 case class FileConfigSource(configFilePath: String) extends ConfigSource with ConfigValueEncoder {
   def Value: String = configFilePath
+}
+
+case class MapConfigSource(configData: Map[String, String]) extends ConfigSource with ConfigValueEncoder {
+  def Value: String = encodeValue(configData.map(kv => s"${kv._1}=${kv._2}").mkString("\n"))
 }
 
 /**
@@ -173,6 +209,31 @@ case class ValueInputFileSource (fileName: String, fileContent: String) extends 
   def getFileName(fs: LocalAppFileSystem): String = s"${fs.getInputDirectory}/$fileName"
 }
 
+trait AppConfiguration {
+  def getConfig: Option[ConfigSource]
+  def getInputArguments: Array[String]
+  def getEnvironmentVariables: Array[(String, String)]
+  def getBlobs: Array[SourceBlob]
+  def getAdditionalFiles: Array[InputFileSource]
+}
+
+case class ValueAppConfiguration(configData: String,
+                                 inputArguments: Array[String] = Array(),
+                                 environmentVariables: Array[(String, String)] = Array(),
+                                 blobs: Array[SourceBlob] = Array(),
+                                 additionalFiles: Array[InputFileSource] = Array()) extends AppConfiguration {
+  override def getConfig: Option[ConfigSource] = Some(ValueConfigSource(configData))
+
+  override def getInputArguments: Array[String] = inputArguments
+
+  override def getEnvironmentVariables: Array[(String, String)] = environmentVariables
+
+  override def getBlobs: Array[SourceBlob] = blobs
+
+  override def getAdditionalFiles: Array[InputFileSource] = additionalFiles
+}
+
+
 /**
  * The configuration is supplied via string values
  * @param jobName The job name
@@ -181,30 +242,34 @@ case class ValueInputFileSource (fileName: String, fileContent: String) extends 
  * @param schemaData The schema data file content
  * @param additionalSettings Additional properties from conf files
  */
-case class ValueConfiguration(jobName: String,
-                              startTime: String,
-                              endTime: String,
-                              projectionData: ConfigSource,
-                              transformData: ConfigSource,
-                              schemaData: ConfigSource,
-                              additionalSettings: LocalAppFileSystem => String = _ => "",
-                              envPrefix: String = "DataX",
-                              outputPartition: String = "",
-                              appName: String = "test",
-                              inputCompressionType: String = "none",
-                              outputCompressionType: String = "none",
-                              inputPartitionIncrement: Int = 1,
-                              blobPathRegex: String = ".*/input/(\\d{4})/(\\d{2})/(\\d{2})/(\\d{2})/.*$",
-                              fileTimeRegex: String = ".*/input/\\d{4}/\\d{2}/\\d{2}/\\d{2}/(\\d{4}\\d{2}\\d{2}_\\d{2}\\d{2}\\d{2}).*$",
-                              sourceIdRegex: String = "file:/.*/(input)/.*",
-                              fileTimeFormat: String = "yyyyMMdd_HHmmss",
-                              blobInputPath: String = "{yyyy/MM/dd/HH}",
-                              blobWriterTimeout: String = "60 seconds",
-                              defaultVaultName: String = "",
-                              appInsightsKeyRef: String = "",
-                              aiAppenderEnabled: String = "false",
-                              aiAppenderBatchDate: String = ""
-                             ) extends LocalConfiguration with ConfigValueEncoder {
+case class LocalConfigGenerator(jobName: String,
+                                startTime: String,
+                                endTime: String,
+                                projectionData: ConfigSource,
+                                transformData: ConfigSource,
+                                schemaData: ConfigSource,
+                                additionalSettings: LocalAppFileSystem => Map[String, String] = _ => Map(),
+                                envPrefix: String = "DataX",
+                                outputPartition: String = "",
+                                appName: String = "test",
+                                inputCompressionType: String = "none",
+                                outputCompressionType: String = "none",
+                                inputPartitionIncrement: Int = 1,
+                                blobPathRegex: String = ".*/input/(\\d{4})/(\\d{2})/(\\d{2})/(\\d{2})/.*$",
+                                fileTimeRegex: String = ".*/input/\\d{4}/\\d{2}/\\d{2}/\\d{2}/(\\d{4}\\d{2}\\d{2}_\\d{2}\\d{2}\\d{2}).*$",
+                                sourceIdRegex: String = "file:/.*/(input)/.*",
+                                fileTimeFormat: String = "yyyyMMdd_HHmmss",
+                                blobInputPath: String = "{yyyy/MM/dd/HH}",
+                                blobWriterTimeout: String = "60 seconds",
+                                defaultVaultName: String = "",
+                                appInsightsKeyRef: String = "",
+                                aiAppenderEnabled: String = "false",
+                                aiAppenderBatchDate: String = "",
+                                inputArgs: Array[String] = Array(),
+                                envVars: Array[(String, String)] = Array(),
+                                blobs: Array[SourceBlob] = Array(),
+                                additionalFiles: Array[InputFileSource] = Array()
+                           ) extends ConfigGenerator with SparkUtils {
   def getEnvPrefix = envPrefix
   def getAppName = appName
   def getDefaultVaultName: String = defaultVaultName
@@ -212,139 +277,122 @@ case class ValueConfiguration(jobName: String,
   def getAIAppenderEnabled: String = aiAppenderEnabled
   def getAIAppenderBatchDate: String = aiAppenderBatchDate
   def getBlobWriterTimeout: String = blobWriterTimeout
-  def getConfig(fs: LocalAppFileSystem): String = {
-    encodeValue(s"""
-       |${envPrefix.toLowerCase}.job.name=$jobName
-       |${envPrefix.toLowerCase}.job.input.default.blobschemafile=${schemaData.Value}
-       |${envPrefix.toLowerCase}.job.input.default.blobpathregex=$blobPathRegex
-       |${envPrefix.toLowerCase}.job.input.default.filetimeregex=$fileTimeRegex
-       |${envPrefix.toLowerCase}.job.input.default.sourceidregex=$sourceIdRegex
-       |${envPrefix.toLowerCase}.job.input.default.filetimeformat=$fileTimeFormat
-       |${envPrefix.toLowerCase}.job.input.default.source.input.target=output
-       |${envPrefix.toLowerCase}.job.input.default.blob.input.path=${fs.InputDir}/$blobInputPath/
-       |${envPrefix.toLowerCase}.job.input.default.blob.input.partitionincrement=$inputPartitionIncrement
-       |${envPrefix.toLowerCase}.job.input.default.blob.input.compressiontype=$inputCompressionType
-       |${envPrefix.toLowerCase}.job.output.default.blob.compressiontype=$outputCompressionType
-       |${envPrefix.toLowerCase}.job.output.default.blob.group.main.folder=${fs.OutputDir}/$outputPartition
-       |${envPrefix.toLowerCase}.job.process.transform=${transformData.Value}
-       |${envPrefix.toLowerCase}.job.process.projection=${projectionData.Value}
-       |""".stripMargin.trim() + "\n" + additionalSettings(fs).trim())
+  def getConfig: LocalAppFileSystem => AppConfiguration = {
+    fs => new AppConfiguration {
+      override def getConfig: Option[ConfigSource] = Some(MapConfigSource(
+        Map(s"${envPrefix.toLowerCase}.job.name" -> s"$jobName",
+            s"${envPrefix.toLowerCase}.job.input.default.blobschemafile" -> s"${schemaData.Value}",
+            s"${envPrefix.toLowerCase}.job.input.default.blobpathregex" -> s"$blobPathRegex",
+            s"${envPrefix.toLowerCase}.job.input.default.filetimeregex" -> s"$fileTimeRegex",
+            s"${envPrefix.toLowerCase}.job.input.default.sourceidregex" -> s"$sourceIdRegex",
+            s"${envPrefix.toLowerCase}.job.input.default.filetimeformat" -> s"$fileTimeFormat",
+            s"${envPrefix.toLowerCase}.job.input.default.source.input.target" -> "output",
+            s"${envPrefix.toLowerCase}.job.input.default.blob.input.path" -> s"${fs.InputDir}/$blobInputPath/",
+            s"${envPrefix.toLowerCase}.job.input.default.blob.input.partitionincrement" -> s"$inputPartitionIncrement",
+            s"${envPrefix.toLowerCase}.job.input.default.blob.input.compressiontype" -> s"$inputCompressionType",
+            s"${envPrefix.toLowerCase}.job.output.default.blob.compressiontype" -> s"$outputCompressionType",
+            s"${envPrefix.toLowerCase}.job.output.default.blob.group.main.folder" -> s"${fs.OutputDir}/$outputPartition",
+            s"${envPrefix.toLowerCase}.job.process.transform" -> s"${transformData.Value}",
+            s"${envPrefix.toLowerCase}.job.process.projection" -> s"${projectionData.Value}")
+              ++ additionalSettings(fs)))
+
+      override def getInputArguments: Array[String] = {
+        val inputArgsPlusEnvVarsArgs = inputArgs ++ getEnvironmentVariables.flatMap(envPair => ToSparkProps(envPair._1, envPair._2))
+        val partition = inputArgsPlusEnvVarsArgs.find(arg => arg.startsWith("partition=")).getOrElse("partition=true")
+        val filterTimeRange = inputArgsPlusEnvVarsArgs.find(arg => arg.startsWith("filterTimeRange=")).getOrElse("filterTimeRange=false")
+        Array(partition, filterTimeRange) ++ inputArgsPlusEnvVarsArgs
+      }
+
+      override def getEnvironmentVariables: Array[(String, String)] = {
+        envVars ++ (if (StringUtils.isNotEmpty(getEnvPrefix)) {
+          Array((s"DATAX_NAMEPREFIX", getEnvPrefix))
+        } else {
+          Array[(String, String)]()
+        }) ++
+          (if (StringUtils.isNotEmpty(getAppName)) {
+            Array((s"${getEnvPrefix.toUpperCase()}_APPNAME", getAppName))
+          } else {
+            Array[(String, String)]()
+          }) ++
+          (if (StringUtils.isNotEmpty(getBlobWriterTimeout)) {
+            Array((s"${getEnvPrefix.toUpperCase()}_BlobWriterTimeout", getBlobWriterTimeout))
+          } else {
+            Array[(String, String)]()
+          }) ++
+          (if (StringUtils.isNotEmpty(getDefaultVaultName)) {
+            Array((s"${getEnvPrefix.toUpperCase()}_DEFAULTVAULTNAME", getDefaultVaultName))
+          } else {
+            Array[(String, String)]()
+          }) ++
+          (if (StringUtils.isNotEmpty(getAppInsightsKeyRef)) {
+            Array((s"${getEnvPrefix.toUpperCase()}_APPINSIGHTKEYREF", getAppInsightsKeyRef))
+          } else {
+            Array[(String, String)]()
+          }) ++
+          (if (StringUtils.isNotEmpty(getAIAppenderEnabled)) {
+            Array((s"${getEnvPrefix.toUpperCase()}_AIAPPENDERENABLED", getAIAppenderEnabled))
+          } else {
+            Array[(String, String)]()
+          }) ++
+          (if (StringUtils.isNotEmpty(getAIAppenderBatchDate)) {
+            Array((s"${getEnvPrefix.toUpperCase()}_AIAPPENDERBATCHDATE", getAIAppenderBatchDate))
+          } else {
+            Array[(String, String)]()
+          }) ++ Array(("process_start_datetime", getStartTime)) ++ Array(("process_end_datetime", getEndTime))
+      }
+
+      override def getBlobs: Array[SourceBlob] = blobs
+
+      override def getAdditionalFiles: Array[InputFileSource] = additionalFiles
+    }
   }
 
   def getStartTime: String = startTime
 
   def getEndTime: String = endTime
 }
-
-/**
- * Represents a BatchApp that is managed and configured to be run in the local machine along
- * @param inputArgs The list of input arguments
- * @param configuration The configuration supplied as a set of values
- * @param blobs A list of blobs to be copied within the local batch app workspace
- * @param envVars A list of key pairs to be deployed as environment variables
- * @param additionalFiles A list of additional files to be deployed within the local batch app workspace
- * @param fs The file system used by the local batch app, default is the local file system of the running local machine
- */
-case class LocalBatchApp(inputArgs: Array[String] = Array.empty, configuration: Option[LocalConfiguration] = None, blobs: Array[SourceBlob] = Array(), envVars: Array[(String, String)] = Array(), additionalFiles: Array[InputFileSource] = Array.empty, fs: LocalAppFileSystem = LocalAppLocalFileSystem()) {
-
-  lazy val LocalModeInputArgs = Array(
+trait LocalSparkApp {
+  val LocalModeInputArgs = Array(
     "spark.master=local",
     "spark.hadoop.fs.file.impl=com.globalmentor.apache.hadoop.fs.BareLocalFileSystem",
     "spark.hadoop.fs.azure.test.emulator=true",
     "spark.hadoop.fs.azure.storage.emulator.account.name=devstoreaccount1.blob.windows.core.net")
+}
 
-  /**
-   * Sets a environment variable programmatically
-   *
-   * @param key   The environment variable name
-   * @param value The environment variable value
-   * @return
-   */
-  def setEnv(key: String, value: String) = {
-    val field = System.getenv().getClass.getDeclaredField("m")
-    field.setAccessible(true)
-    val map = field.get(System.getenv()).asInstanceOf[java.util.Map[java.lang.String, java.lang.String]]
-    map.put(key, value)
-  }
+/**
+ * Represents a BatchApp that is managed and configured to be run in the local machine along
+ * @param configuration The configuration supplied as a set of values
+ * @param fs            The file system used by the local batch app, default is the local file system of the running local machine
+ */
+class LocalBatchApp(fs: LocalAppFileSystem,
+                    configuration: Option[LocalAppFileSystem => AppConfiguration],
+                    processor: Option[UnifiedConfig => BatchBlobProcessor]
+                   ) extends EnvUtils with SparkUtils with LocalSparkApp {
 
-  /**
-   * Converts a environment variable into its spark representation
-   * @param envVarName The environment variable name
-   * @param envVarValue The environment variable value
-   * @return
-   */
-  def setEnvVarAndConvertToSparkProp(envVarName: String, envVarValue: String): Array[String] = {
-    setEnv(envVarName, envVarValue)
-    Array(s"spark.yarn.appMasterEnv.${envVarName}=${envVarValue}",
-      s"spark.executorEnv.${envVarName}=${envVarValue}")
-  }
-
-  def getDefaultInputArgs(): Array[String] = {
-    val partition = inputArgs.find(arg => arg.startsWith("partition=")).getOrElse("partition=true")
-    val filterTimeRange = inputArgs.find(arg => arg.startsWith("filterTimeRange=")).getOrElse("filterTimeRange=false")
-    val additionalEnvVars = {
-      configuration.map(conf => {
-        (if (StringUtils.isNotEmpty(conf.getEnvPrefix)) {
-          setEnvVarAndConvertToSparkProp(s"DATAX_NAMEPREFIX", conf.getEnvPrefix)
-        } else {
-          Array[String]()
-        }) ++
-        (if (StringUtils.isNotEmpty(conf.getAppName)) {
-          setEnvVarAndConvertToSparkProp(s"${conf.getEnvPrefix.toUpperCase()}_APPNAME", conf.getAppName)
-        } else {
-          Array[String]()
-        }) ++
-        (if (StringUtils.isNotEmpty(conf.getBlobWriterTimeout)) {
-          setEnvVarAndConvertToSparkProp(s"${conf.getEnvPrefix.toUpperCase()}_BlobWriterTimeout", conf.getBlobWriterTimeout)
-        } else {
-          Array[String]()
-        }) ++
-        (if (StringUtils.isNotEmpty(conf.getDefaultVaultName)) {
-          setEnvVarAndConvertToSparkProp(s"${conf.getEnvPrefix.toUpperCase()}_DEFAULTVAULTNAME", conf.getDefaultVaultName)
-        } else {
-          Array[String]()
-        }) ++
-        (if (StringUtils.isNotEmpty(conf.getAppInsightsKeyRef)) {
-          setEnvVarAndConvertToSparkProp(s"${conf.getEnvPrefix.toUpperCase()}_APPINSIGHTKEYREF", conf.getAppInsightsKeyRef)
-        } else {
-          Array[String]()
-        }) ++
-        (if (StringUtils.isNotEmpty(conf.getAIAppenderEnabled)) {
-          setEnvVarAndConvertToSparkProp(s"${conf.getEnvPrefix.toUpperCase()}_AIAPPENDERENABLED", conf.getAIAppenderEnabled)
-        } else {
-          Array[String]()
-        }) ++
-        (if (StringUtils.isNotEmpty(conf.getAIAppenderBatchDate)) {
-          setEnvVarAndConvertToSparkProp(s"${conf.getEnvPrefix.toUpperCase()}_AIAPPENDERBATCHDATE", conf.getAIAppenderBatchDate)
-        } else {
-          Array[String]()
-        }) ++ setEnvVarAndConvertToSparkProp("process_start_datetime", conf.getStartTime) ++ setEnvVarAndConvertToSparkProp("process_end_datetime", conf.getEndTime)
-      })
-    }.getOrElse(Array[String]())
-    val envVarsInput = envVars.flatMap(envVar => setEnvVarAndConvertToSparkProp(envVar._1, envVar._2))
-    Array(partition, filterTimeRange) ++ envVarsInput ++ additionalEnvVars
-  }
+  def getAppConfiguration = configuration.map(conf => conf(fs))
 
   /**
    * Writes the value supplied blobs into the backed up file system
    */
   def writeBlobs(): Unit = {
-    if(!blobs.isEmpty) {
-      blobs.foreach(blob => {
+    val appConfiguration = getAppConfiguration
+    appConfiguration.foreach(appConfiguration => {
+      appConfiguration.getBlobs.foreach(blob => {
         fs.writeFile(s"${fs.InputDir}/${blob.getPartition}/${blob.getBlobName}", blob.getBlob(fs))
       })
-    }
+    })
   }
 
   /**
    * Deploys additional files configured by the caller, that are copied into the workspace
    */
   def deployAdditionalFiles(): Unit = {
-    if(!additionalFiles.isEmpty) {
-      additionalFiles.foreach(file => {
+    val appConfiguration = getAppConfiguration
+    appConfiguration.foreach(appConfiguration => {
+      appConfiguration.getAdditionalFiles.foreach(file => {
         fs.writeFile(file.getFileName(fs), file.getFileData(fs))
       })
-    }
+    })
   }
 
   /**
@@ -352,10 +400,12 @@ case class LocalBatchApp(inputArgs: Array[String] = Array.empty, configuration: 
    * @return
    */
   def getInputArgs(): Array[String] = {
+    val appConfiguration = getAppConfiguration
+    val inputArguments = appConfiguration.map(conf => conf.getInputArguments).getOrElse(Array())
+    val confValueArg = appConfiguration.flatMap(conf => conf.getConfig.map(conf => s"conf=${conf.Value}"))
     LocalModeInputArgs ++
-      getDefaultInputArgs ++
-      (configuration.map(conf => Array(s"conf=${conf.getConfig(fs)}")).getOrElse(Array.empty)) ++
-      inputArgs
+      inputArguments ++
+      confValueArg.map(value => Array(value)).getOrElse(Array())
   }
 
   /**
@@ -397,20 +447,35 @@ case class LocalBatchApp(inputArgs: Array[String] = Array.empty, configuration: 
     fs.getFiles(fs.InputDir)
   }
 
+  def installEnvironmentVariables() = {
+    val appConfiguration = getAppConfiguration
+    appConfiguration.foreach(
+      appConfiguration => appConfiguration.getEnvironmentVariables.foreach(
+        envVar => setEnv(envVar._1, envVar._2
+        )
+      )
+    )
+  }
+
   /**
    * Entrypoint
    */
   def main(): Unit = {
+
     TimeZone.setDefault(TimeZone.getTimeZone("GMT"))
-    if(!blobs.isEmpty) {
-      writeBlobs()
-    }
-    if(!additionalFiles.isEmpty) {
-      deployAdditionalFiles()
-    }
+    // Install any env vars first
+    installEnvironmentVariables()
+    // Initialize workspace files
+    writeBlobs()
+    deployAdditionalFiles()
     // Reset spark session singleton
     SparkSessionSingleton.resetInstance()
-    BatchApp.main(getInputArgs())
+    if(processor.isEmpty) {
+      BatchApp.main(getInputArgs())
+    }
+    else {
+      BatchApp.startWithProcessor(getInputArgs(), processor.get)
+    }
   }
 }
 
@@ -424,5 +489,37 @@ object LocalBatchApp {
    */
   def main(inputArguments: Array[String]): Unit = {
     LocalBatchApp(inputArgs = inputArguments).main()
+  }
+
+  def apply(inputArgs: Array[String]) = {
+    new LocalBatchApp(
+      configuration = None,
+      fs = LocalAppLocalFileSystem(),
+      processor = None
+    )
+  }
+
+  def apply(configuration: AppConfiguration): LocalBatchApp = {
+    LocalBatchApp(configuration, None)
+  }
+
+  def apply(configuration: AppConfiguration, processor: Option[UnifiedConfig => BatchBlobProcessor]): LocalBatchApp = {
+    new LocalBatchApp(
+      fs = LocalAppLocalFileSystem(),
+      configuration = Option(_ => configuration),
+      processor = processor
+    )
+  }
+
+  def apply(configuration: LocalConfigGenerator): LocalBatchApp = {
+    LocalBatchApp(configuration, None)
+  }
+
+  def apply(configuration: LocalConfigGenerator, processor: Option[UnifiedConfig => BatchBlobProcessor]): LocalBatchApp = {
+    new LocalBatchApp(
+      fs = LocalAppLocalFileSystem(),
+      configuration = Option(configuration.getConfig),
+      processor = processor
+    )
   }
 }
