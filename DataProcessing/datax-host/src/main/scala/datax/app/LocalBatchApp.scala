@@ -209,24 +209,35 @@ case class ValueInputFileSource (fileName: String, fileContent: String) extends 
   def getFileName(fs: LocalAppFileSystem): String = s"${fs.getInputDirectory}/$fileName"
 }
 
+/**
+ * Generic configuration for a local job app
+ */
 trait AppConfiguration {
   def getConfig: Option[ConfigSource]
   def getInputArguments: Array[String]
-  def getEnvironmentVariables: Array[(String, String)]
+  def getEnvironmentVariables: Map[String, String]
   def getBlobs: Array[SourceBlob]
   def getAdditionalFiles: Array[InputFileSource]
 }
 
-case class ValueAppConfiguration(configData: String,
+/**
+ * Implementation of a local job app configuration
+ * @param configData A map containing the main configuration properties for the job app
+ * @param inputArguments The input command line arguments sent to the job
+ * @param environmentVariables A map containing the environment variables
+ * @param blobs A list of source jobs to be added to the job workspace
+ * @param additionalFiles Additional files to be deployed in the workspace
+ */
+case class ValueAppConfiguration(configData: MapConfigSource,
                                  inputArguments: Array[String] = Array(),
-                                 environmentVariables: Array[(String, String)] = Array(),
+                                 environmentVariables: Map[String, String] = Map(),
                                  blobs: Array[SourceBlob] = Array(),
                                  additionalFiles: Array[InputFileSource] = Array()) extends AppConfiguration {
-  override def getConfig: Option[ConfigSource] = Some(ValueConfigSource(configData))
+  override def getConfig: Option[ConfigSource] = Some(configData)
 
   override def getInputArguments: Array[String] = inputArguments
 
-  override def getEnvironmentVariables: Array[(String, String)] = environmentVariables
+  override def getEnvironmentVariables: Map[String, String] = environmentVariables
 
   override def getBlobs: Array[SourceBlob] = blobs
 
@@ -266,7 +277,7 @@ case class LocalConfigGenerator(jobName: String,
                                 aiAppenderEnabled: String = "false",
                                 aiAppenderBatchDate: String = "",
                                 inputArgs: Array[String] = Array(),
-                                envVars: Array[(String, String)] = Array(),
+                                envVars: Map[String, String] = Map(),
                                 blobs: Array[SourceBlob] = Array(),
                                 additionalFiles: Array[InputFileSource] = Array()
                            ) extends ConfigGenerator with SparkUtils {
@@ -303,7 +314,7 @@ case class LocalConfigGenerator(jobName: String,
         Array(partition, filterTimeRange) ++ inputArgsPlusEnvVarsArgs
       }
 
-      override def getEnvironmentVariables: Array[(String, String)] = {
+      override def getEnvironmentVariables: Map[String, String] = {
         envVars ++ (if (StringUtils.isNotEmpty(getEnvPrefix)) {
           Array((s"DATAX_NAMEPREFIX", getEnvPrefix))
         } else {
@@ -369,15 +380,15 @@ class LocalBatchApp(fs: LocalAppFileSystem,
                     processor: Option[UnifiedConfig => BatchBlobProcessor]
                    ) extends EnvUtils with SparkUtils with LocalSparkApp {
 
-  def getAppConfiguration = configuration.map(conf => conf(fs))
+  def getAppConfiguration: Option[AppConfiguration] = configuration.map(conf => conf(fs))
 
   /**
    * Writes the value supplied blobs into the backed up file system
    */
   def writeBlobs(): Unit = {
     val appConfiguration = getAppConfiguration
-    appConfiguration.foreach(appConfiguration => {
-      appConfiguration.getBlobs.foreach(blob => {
+    appConfiguration.foreach(conf => {
+      conf.getBlobs.foreach(blob => {
         fs.writeFile(s"${fs.InputDir}/${blob.getPartition}/${blob.getBlobName}", blob.getBlob(fs))
       })
     })
@@ -388,8 +399,8 @@ class LocalBatchApp(fs: LocalAppFileSystem,
    */
   def deployAdditionalFiles(): Unit = {
     val appConfiguration = getAppConfiguration
-    appConfiguration.foreach(appConfiguration => {
-      appConfiguration.getAdditionalFiles.foreach(file => {
+    appConfiguration.foreach(conf => {
+      conf.getAdditionalFiles.foreach(file => {
         fs.writeFile(file.getFileName(fs), file.getFileData(fs))
       })
     })
@@ -449,10 +460,9 @@ class LocalBatchApp(fs: LocalAppFileSystem,
 
   def installEnvironmentVariables() = {
     val appConfiguration = getAppConfiguration
-    appConfiguration.foreach(
-      appConfiguration => appConfiguration.getEnvironmentVariables.foreach(
-        envVar => setEnv(envVar._1, envVar._2
-        )
+    appConfiguration.foreach(conf =>
+      conf.getEnvironmentVariables.foreach(
+        envVar => setEnv(envVar._1, envVar._2)
       )
     )
   }
