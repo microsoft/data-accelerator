@@ -2,30 +2,30 @@
 <metadata modelVersion="1.1.0">
   <groupId>com.microsoft.datax</groupId>
   <artifactId>datax-keyvault_3.1_2.12</artifactId>
-  <version>1.2.17-SNAPSHOT</version>
   <versioning>
+    <lastUpdated>20240103202819</lastUpdated>
     <snapshot>
-      <timestamp>20231016.230849</timestamp>
+      <timestamp>20240103.202819</timestamp>
       <buildNumber>1</buildNumber>
     </snapshot>
-    <lastUpdated>20231016230849</lastUpdated>
     <snapshotVersions>
       <snapshotVersion>
-        <extension>jar</extension>
-        <value>1.2.17-20231016.230849-1</value>
-        <updated>20231016230849</updated>
+        <extension>pom</extension>
+        <value>1.2.17-20240103.202819-1</value>
+        <updated>20240103202819</updated>
       </snapshotVersion>
       <snapshotVersion>
-        <extension>pom</extension>
-        <value>1.2.17-20231016.230849-1</value>
-        <updated>20231016230849</updated>
+        <extension>jar</extension>
+        <value>1.2.17-20240103.202819-1</value>
+        <updated>20240103202819</updated>
       </snapshotVersion>
       <snapshotVersion>
         <classifier>with-dependencies</classifier>
         <extension>jar</extension>
-        <value>1.2.17-20231016.230849-1</value>
-        <updated>20231016230849</updated>
+        <value>1.2.17-20240103.202819-1</value>
+        <updated>20240103202819</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>
+  <version>1.2.17-SNAPSHOT</version>
 </metadata>
