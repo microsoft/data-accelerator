@@ -488,12 +488,11 @@ object CommonProcessorFactory {
         // Calculate and log the DataFrame Size stats.
         // This data will be used next to determine if we need to do any repartitioning
         val dfSizeInBytes = SizeEstimator.estimate(inputDf)
-
         val numPartitions = inputDf
           .select(org.apache.spark.sql.functions.spark_partition_id()).distinct().count()
         val sizeOfEachPartitionInBytes = dfSizeInBytes/numPartitions
-        batchLog.warn(s"Input DataFrame Stats: Size in Bytes ${dfSizeInBytes}, Partitions Count:${numPartitions}, Approx. Size of each partition:${sizeOfEachPartitionInBytes}")
 
+        batchLog.warn(s"Input DataFrame Stats - Size in Bytes: ${dfSizeInBytes}, Partitions Count:${numPartitions}, Approx. Size of each partition:${sizeOfEachPartitionInBytes}")
         val dataframeStats = Map("dfSize" -> dfSizeInBytes.toString, "numPartitions" -> numPartitions.toString, "sizeOfEachPartitionInBytes" -> sizeOfEachPartitionInBytes.toString)
         AppInsightLogger.trackBatchEvent(
           ProductConstant.ProductRoot + "/InputDataFrameStats",
@@ -502,17 +501,21 @@ object CommonProcessorFactory {
           batchTime
         )
 
-        batchLog.warn(s"inputPartitionSizeThresholdInBytes: ${inputPartitionSizeThresholdInBytes}")
+        val inputPartitionSizeThresholdInBytes = 20000000L
 
-        // Doing the repartition after loading the data from all input files into a dataframe
-        // This method may work well to fix current issue, but may not be fully future proof.
-        // That is, additional changes are needed to handle case where individual large file(s) do not fit into memory
-        // Repartition Calculation: dfSizeInBytes/partitionCount should be close to 1 GB (default, to be made configurable)
-        // if it exceeds, then repartition count = round(dfSizeInBytes/1GB)
-        if(inputPartitionSizeThresholdInBytes > 0 && sizeOfEachPartitionInBytes > inputPartitionSizeThresholdInBytes) {
-          val newPartitionCount = (dfSizeInBytes / 1073741824).toInt + 1 //add override option also
-          batchLog.warn(s"Re-partitioning to smaller partitions: Original Partition Count ${numPartitions}, New Partitions Count:${newPartitionCount}")
-          inputDf.repartition(newPartitionCount)
+        if(sizeOfEachPartitionInBytes > inputPartitionSizeThresholdInBytes) {
+          val newPartitionsCount = (dfSizeInBytes/inputPartitionSizeThresholdInBytes).toInt+1
+          inputDf.repartition(newPartitionsCount)
+          val newPartitionsSize = dfSizeInBytes/newPartitionsCount
+
+          batchLog.warn(s"Repartition needed, New Partition Count: ${newPartitionsCount}, New Partitions Size:${newPartitionsSize}")
+          val dataframeStats = Map("newPartitionsCount" -> newPartitionsCount.toString, "newPartitionsSize" -> newPartitionsSize.toString)
+          AppInsightLogger.trackBatchEvent(
+            ProductConstant.ProductRoot + "/InputDataFrameStatsAfterRepartition",
+            dataframeStats,
+            null,
+            batchTime
+          )
         }
 
         val targets = files.map(_.target).toSet
