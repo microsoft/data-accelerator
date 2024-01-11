@@ -458,7 +458,7 @@ object CommonProcessorFactory {
 
         val pathsList = paths.mkString(",")
         batchLog.debug(s"Batch loading files:$pathsList")
-        val inputDf = spark.sparkContext.parallelize(files, filesCount)
+        val inputDfRaw = spark.sparkContext.parallelize(files, filesCount)
           .flatMap(file => {
             val timeLast = System.nanoTime()
             val retVal = HadoopClient.readHdfsFile(file.inputPath, gzip = file.inputPath.endsWith(".gz"))
@@ -487,36 +487,41 @@ object CommonProcessorFactory {
 
         // Calculate and log the DataFrame Size stats.
         // This data will be used next to determine if we need to do any repartitioning
-        val dfSizeInBytes = SizeEstimator.estimate(inputDf)
-        val numPartitions = inputDf
-          .select(org.apache.spark.sql.functions.spark_partition_id()).distinct().count()
-        val sizeOfEachPartitionInBytes = dfSizeInBytes/numPartitions
+        def getPartitionStats(df: DataFrame,DataFrameStatsStage: String): (Long, Long) = {
+          val dfSizeInBytes = SizeEstimator.estimate(df)
+          val numPartitions = df
+            .select(org.apache.spark.sql.functions.spark_partition_id()).distinct().count()
+          val sizeOfEachPartitionInBytes = dfSizeInBytes / numPartitions
+          val dfPartitionSizes = df.mapPartitions(it => Iterator(it.size))
+          val min_partition_size = dfPartitionSizes.reduce(_ min _)
+          val max_partition_size = dfPartitionSizes.reduce(_ max _)
 
-        batchLog.warn(s"Input DataFrame Stats - Size in Bytes: ${dfSizeInBytes}, Partitions Count:${numPartitions}, Approx. Size of each partition:${sizeOfEachPartitionInBytes}")
-        val dataframeStats = Map("dfSize" -> dfSizeInBytes.toString, "numPartitions" -> numPartitions.toString, "sizeOfEachPartitionInBytes" -> sizeOfEachPartitionInBytes.toString)
-        AppInsightLogger.trackBatchEvent(
-          ProductConstant.ProductRoot + "/InputDataFrameStats",
-          dataframeStats,
-          null,
-          batchTime
-        )
-
-        val inputPartitionSizeThresholdInBytes = 20000000L
-
-        if(sizeOfEachPartitionInBytes > inputPartitionSizeThresholdInBytes) {
-          val newPartitionsCount = (dfSizeInBytes/inputPartitionSizeThresholdInBytes).toInt+1
-          inputDf.repartition(newPartitionsCount)
-          val newPartitionsSize = dfSizeInBytes/newPartitionsCount
-
-          batchLog.warn(s"Repartition needed, New Partition Count: ${newPartitionsCount}, New Partitions Size:${newPartitionsSize}")
-          val dataframeStats = Map("newPartitionsCount" -> newPartitionsCount.toString, "newPartitionsSize" -> newPartitionsSize.toString)
+          batchLog.warn(s"${DataFrameStatsStage} - Size in Bytes: ${dfSizeInBytes}, Partitions Count:${numPartitions}, Approx. Size of each partition:${sizeOfEachPartitionInBytes},Smallest Partition Size:${min_partition_size}, Largest Partition Size:${max_partition_size}")
+          val dataframeStats = Map("dfSize" -> dfSizeInBytes.toString, "numPartitions" -> numPartitions.toString, "sizeOfEachPartitionInBytes" -> sizeOfEachPartitionInBytes.toString, "minPartitionSize" -> min_partition_size.toString, "maxPartitionSize" -> max_partition_size.toString)
           AppInsightLogger.trackBatchEvent(
-            ProductConstant.ProductRoot + "/InputDataFrameStatsAfterRepartition",
+            ProductConstant.ProductRoot + "/" + DataFrameStatsStage,
             dataframeStats,
             null,
             batchTime
           )
+          (dfSizeInBytes, sizeOfEachPartitionInBytes)
         }
+
+        val (inputDfSizeInBytes, sizeOfEachInputPartitionInBytes) = getPartitionStats(inputDfRaw, "InputDataFrameStats")
+
+        def checkAndRepartitionInputDf(inputDfRaw: DataFrame, inputPartitionSizeThresholdInBytes: Long = 30000L): DataFrame = {
+          if (sizeOfEachInputPartitionInBytes > inputPartitionSizeThresholdInBytes) {
+            val newPartitionsCount = (inputDfSizeInBytes / inputPartitionSizeThresholdInBytes).toInt + 1
+            val inputDf = inputDfRaw.repartition (newPartitionsCount)
+            getPartitionStats (inputDf, "RepartitionedInputDataFrameStats")
+            inputDf
+          }
+          else{
+            inputDfRaw
+          }
+        }
+
+        val inputDf = checkAndRepartitionInputDf(inputDfRaw)
 
         val targets = files.map(_.target).toSet
         val processedMetrics = processDataset(inputDf, batchTime, batchInterval, outputPartitionTime, targets, partition)
