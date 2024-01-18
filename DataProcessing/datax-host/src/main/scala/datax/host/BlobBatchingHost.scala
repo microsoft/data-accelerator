@@ -94,8 +94,8 @@ object BlobBatchingHost {
     val sc = spark.sparkContext
     val processor = processorGenerator(config)
 
-    val inputPartitionSizeThresholdInBytes: Long = config.dict.getLongOption("inputPartitionSizeThresholdInBytes").getOrElse(0)
-    appLog.warn(s"inputPartitionSizeThresholdInBytes: $inputPartitionSizeThresholdInBytes")
+    val inputPartitionSizeThresholdInBytes = blobsConf.head.inputPartitionSizeThresholdInBytes
+    appLog.warn(s"In runBatchApp, inputPartitionSizeThresholdInBytes: $inputPartitionSizeThresholdInBytes")
     val filterTimeRange = config.dict.getOrElse("filterTimeRange", "").equals("true")
     appLog.warn(s"filterTimeRange: $filterTimeRange")
     val filesToProcess = prefixes.flatMap(prefix=>HadoopClient.listFileObjects(prefix._1).flatMap(f=>inTimeRange(f, filterTimeRange)).toSeq)
