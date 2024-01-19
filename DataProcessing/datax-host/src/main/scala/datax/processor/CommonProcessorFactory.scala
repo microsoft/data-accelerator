@@ -755,7 +755,7 @@ object CommonProcessorFactory {
         val batchTimeStr = DateTimeUtil.formatSimple(batchTime)
         val batchLog = LogManager.getLogger(s"BatchProcessor-B$batchTimeStr")
 
-        groupPartitionProcessMetrics(pathsRDD, batchTime, batchInterval, outputPartitionTime, namespace, batchLog, metricLogger, inputPartitionSizeThresholdInBytes = 0)
+        groupPartitionProcessMetrics(pathsRDD, batchTime, batchInterval, outputPartitionTime, namespace, batchLog, metricLogger, 0)
       }, // end of processPaths
       /*
       process a batch of ConsumerRecords from kafka

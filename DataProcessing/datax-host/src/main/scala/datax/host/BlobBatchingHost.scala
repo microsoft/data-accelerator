@@ -93,7 +93,7 @@ object BlobBatchingHost {
     val spark = appHost.getSpark(config.sparkConf)
     val sc = spark.sparkContext
     val processor = processorGenerator(config)
-    
+
     val inputPartitionSizeThresholdInBytes = blobsConf.head.inputPartitionSizeThresholdInBytes
     appLog.warn(s"In runBatchApp, inputPartitionSizeThresholdInBytes: $inputPartitionSizeThresholdInBytes")
     val filterTimeRange = config.dict.getOrElse("filterTimeRange", "").equals("true")
