@@ -50,7 +50,7 @@ SOFTWARE
     </scm>
 
     <groupId>com.microsoft.datax</groupId>
-    <artifactId>datax-utility_3.1_2.12</artifactId>
+    <artifactId>datax-utility_3.1_2.13</artifactId>
     <version>1.2.17-SNAPSHOT</version>
 
     <properties>
@@ -119,7 +119,7 @@ SOFTWARE
         </dependency>
         <dependency>
             <groupId>com.microsoft.datax</groupId>
-            <artifactId>datax-core_3.1_2.12</artifactId>
+            <artifactId>datax-core_3.1_2.13</artifactId>
             <version>${version}</version>
         </dependency>
         <dependency>
@@ -129,7 +129,7 @@ SOFTWARE
         </dependency>
         <dependency>
             <groupId>com.microsoft.datax</groupId>
-            <artifactId>datax-keyvault_3.1_2.12</artifactId>
+            <artifactId>datax-keyvault_3.1_2.13</artifactId>
             <version>${version}</version>
         </dependency>
         <dependency>
