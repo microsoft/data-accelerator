@@ -493,10 +493,6 @@ object CommonProcessorFactory {
             .select(org.apache.spark.sql.functions.spark_partition_id()).distinct().count()
           val sizeOfEachPartitionInBytes = dfSizeInBytes / numPartitions
           val dfPartitionSizes = df.mapPartitions(it => Iterator(it.size))
-          //val dfPartitionSizesList = dfPartitionSizes.collectAsList()
-          //val min_partition_size = dfPartitionSizesList.get(dfPartitionSizes.reduce(_ min _))
-          //val max_partition_size = dfPartitionSizesList.get(dfPartitionSizes.reduce(_ max _))
-
           val min_partition_size = dfPartitionSizes.reduce(_ min _)
           val max_partition_size = dfPartitionSizes.reduce(_ max _)
 
@@ -513,6 +509,7 @@ object CommonProcessorFactory {
 
         val (inputDfSizeInBytes, sizeOfEachInputPartitionInBytes) = getPartitionStats(inputDfRaw, "InputDataFrameStats")
 
+        // check if the partition sizes exceed the threshold and perform a re-partition if needed
         def checkAndRepartitionInputDf(inputDfRaw: DataFrame, inputPartitionSizeThresholdInBytes: Long = 20000000L): DataFrame = {
           if (inputPartitionSizeThresholdInBytes > 0 && sizeOfEachInputPartitionInBytes > inputPartitionSizeThresholdInBytes) {
             batchLog.warn(s"Repartitioning is in progress since threshold is ${inputPartitionSizeThresholdInBytes}")
@@ -755,7 +752,7 @@ object CommonProcessorFactory {
         val batchTimeStr = DateTimeUtil.formatSimple(batchTime)
         val batchLog = LogManager.getLogger(s"BatchProcessor-B$batchTimeStr")
 
-        groupPartitionProcessMetrics(pathsRDD, batchTime, batchInterval, outputPartitionTime, namespace, batchLog, metricLogger, 0)
+        groupPartitionProcessMetrics(pathsRDD, batchTime, batchInterval, outputPartitionTime, namespace, batchLog, metricLogger, inputPartitionSizeThresholdInBytes = 0)
       }, // end of processPaths
       /*
       process a batch of ConsumerRecords from kafka
