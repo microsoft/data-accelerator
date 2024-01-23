@@ -1,7 +1,9 @@
 package datax.app
 
+import datax.fs.HadoopClient
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.StringUtils
+import org.apache.hadoop.fs.FileStatus
 
 import java.io.File
 import java.time.Instant
@@ -31,6 +33,8 @@ trait LocalAppFileSystem {
   def writeFile(path: String, data: String): Unit
 
   def getInputDirectory: String
+
+  def getFiles(path: String): Iterator[FileStatus]
 }
 
 /**
@@ -55,6 +59,10 @@ case class LocalAppLocalFileSystem() extends LocalAppFileSystem {
   }
 
   def getInputDirectory(): String = InputDir
+
+  def getFiles(path: String): Iterator[FileStatus] = {
+    HadoopClient.listFileObjects(path)
+  }
 }
 
 /**
@@ -350,6 +358,15 @@ case class LocalBatchApp(inputArgs: Array[String] = Array.empty, configuration: 
     val blobFullPath = if(StringUtils.isEmpty(outputPartition)) s"${fs.OutputDir}/$blobFileName" else s"${fs.OutputDir}/$outputPartition/$blobFileName"
     assert(fs.fileExists(blobFullPath))
     fs.readFile(blobFullPath)
+  }
+
+  /**
+   * Enumerate files in output folder
+   *
+   * @return
+   */
+  def getOutputBlobFiles(): Iterator[FileStatus] = {
+    fs.getFiles(fs.OutputDir)
   }
 
   /**

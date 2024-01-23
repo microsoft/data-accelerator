@@ -58,11 +58,9 @@ class BatchAppTests extends AnyFlatSpec with Matchers with PrivateMethodTester {
   "BatchApp" should "process correctly a single blob running in local machine" in {
     testApp.main()
     implicit val formats = org.json4s.DefaultFormats
-    val results = Array[String](
-      render(parseJson(testApp.readOutputBlob("0.json", "2023/10/03/00")) \\ "Raw" \\ "name").extract[String],
-      render(parseJson(testApp.readOutputBlob("1.json", "2023/10/03/00")) \\ "Raw" \\ "name").extract[String],
-      render(parseJson(testApp.readOutputBlob("2.json", "2023/10/03/00")) \\ "Raw" \\ "name").extract[String]
-    )
+    val results = testApp.getOutputBlobFiles().map(
+      f => render(parseJson(testApp.readOutputBlob(f.getPath.getName, "2023/10/03/00")) \\ "Raw" \\ "name").extract[String]
+    ).toList
     val expected = mutable.Queue[String]("hello", "world", "!")
     while(expected.nonEmpty) {
       val check = expected.dequeue()
