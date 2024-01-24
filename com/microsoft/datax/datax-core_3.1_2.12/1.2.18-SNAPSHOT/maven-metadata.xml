@@ -3,21 +3,21 @@
   <groupId>com.microsoft.datax</groupId>
   <artifactId>datax-core_3.1_2.12</artifactId>
   <versioning>
-    <lastUpdated>20240123232034</lastUpdated>
+    <lastUpdated>20240124060219</lastUpdated>
     <snapshot>
-      <timestamp>20240123.232034</timestamp>
-      <buildNumber>3</buildNumber>
+      <timestamp>20240124.060219</timestamp>
+      <buildNumber>1</buildNumber>
     </snapshot>
     <snapshotVersions>
       <snapshotVersion>
         <extension>pom</extension>
-        <value>1.2.18-20240123.232034-3</value>
-        <updated>20240123232034</updated>
+        <value>1.2.18-20240124.060219-1</value>
+        <updated>20240124060219</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>jar</extension>
-        <value>1.2.18-20240123.232034-3</value>
-        <updated>20240123232034</updated>
+        <value>1.2.18-20240124.060219-1</value>
+        <updated>20240124060219</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>
