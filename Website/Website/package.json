@@ -75,7 +75,7 @@
     "react-router-dom": "5.3.4",
     "redis-console": "1.0.0",
     "redux": "4.2.0",
-    "redux-thunk": "2.4.1",
+    "redux-thunk": "2.4.2",
     "reselect": "4.1.6",
     "rimraf": "3.0.2",
     "style-loader": "3.3.1",
