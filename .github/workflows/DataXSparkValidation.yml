@@ -2,9 +2,7 @@ name: DataX.Spark.Validation
 
 on:
   pull_request:
-    branches: [ "master" ]
-    paths: ["DataProcessing/**"]
-    
+    branches: [ "master" ]    
 
 jobs:
   build:
