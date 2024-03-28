@@ -29,7 +29,7 @@
     "azure-keyvault": "3.0.5",
     "body-parser": "1.20.1",
     "csurf": "1.11.0",
-    "express": "4.18.2",
+    "express": "4.19.2",
     "express-session": "1.17.3",
     "generate-schema": "2.6.0",
     "helmet": "6.0.0",
