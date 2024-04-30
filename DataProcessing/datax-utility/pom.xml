@@ -51,7 +51,7 @@ SOFTWARE
 
     <groupId>com.microsoft.datax</groupId>
     <artifactId>datax-utility_3.1_2.12</artifactId>
-    <version>1.2.17-SNAPSHOT</version>
+    <version>1.2.18-SNAPSHOT</version>
 
     <properties>
         <spark.version>3.1.3</spark.version>
@@ -114,7 +114,7 @@ SOFTWARE
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.12</artifactId>
-            <version>3.3.0-SNAP3</version>
+            <version>3.3.0-SNAP4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -145,7 +145,7 @@ SOFTWARE
         <dependency>
           <groupId>com.fasterxml.uuid</groupId>
           <artifactId>java-uuid-generator</artifactId>
-          <version>4.1.0</version>
+          <version>4.3.0</version>
         </dependency>
         <dependency>
           <groupId>org.apache.qpid</groupId>
@@ -160,7 +160,7 @@ SOFTWARE
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>6.2.3.RELEASE</version>
+            <version>6.3.0.RELEASE</version>
         </dependency>
     </dependencies>
 
@@ -175,7 +175,7 @@ SOFTWARE
           <plugin>
             <groupId>net.alchim31.maven</groupId>
             <artifactId>scala-maven-plugin</artifactId>
-            <version>4.8.0</version>
+            <version>4.8.1</version>
             <executions>
               <execution>
                 <goals>
@@ -274,7 +274,7 @@ SOFTWARE
         <plugins>
           <plugin>
             <artifactId>maven-deploy-plugin</artifactId>
-            <version>3.1.0</version>
+            <version>3.1.1</version>
             <configuration>
               <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
             </configuration>
