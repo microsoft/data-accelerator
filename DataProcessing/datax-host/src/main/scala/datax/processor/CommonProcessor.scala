@@ -18,7 +18,7 @@ case class CommonProcessor( processJson: (RDD[String], Timestamp, Duration, Time
                             processEventHubDataFrame: (DataFrame) => Map[String, StreamingQuery],
                             processEventData: (RDD[EventData], Timestamp, Duration, Timestamp) => Map[String, Double],
                             processPaths: (RDD[String], Timestamp, Duration, Timestamp, String) => Map[String, Double],
-                            processBatchBlobPaths: (RDD[String], Timestamp, Duration, Timestamp, String) => Map[String, Double],
+                            processBatchBlobPaths: (RDD[String], Timestamp, Duration, Timestamp, String, Long) => Map[String, Double],
                             processConsumerRecord: (RDD[ConsumerRecord[String,String]], Timestamp, Duration, Timestamp) => Map[String, Double]){
 
   def asBlobPointerProcessor() = new BlobPointerProcessor(processPaths = this.processPaths)

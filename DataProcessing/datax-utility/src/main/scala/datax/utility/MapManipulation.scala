@@ -40,4 +40,17 @@ object MapManipulation {
     else
       properties + (prop->propValue)
   }
+
+  /**
+   * Merges to maps whose values might contain null
+   *
+   * @param map1 The first map to merge
+   * @param map2 The second map to merge
+   * @return A map resulting from merging the two input maps including those with null values
+   */
+  def mergeMapOfNullableValues[K, V](map1: Map[K, Option[V]], map2: Map[K, Option[V]]): Map[K, Option[V]] = {
+    val checkedMap1 = Option(map1).getOrElse(Map.empty[K, Option[V]])
+    val checkedMap2 = Option(map2).getOrElse(Map.empty[K, Option[V]])
+    checkedMap1 ++ checkedMap2
+  }
 }

@@ -4,8 +4,6 @@
 // *********************************************************************
 package datax.fs
 
-import com.globalmentor.apache.hadoop.fs.{BareLocalFileSystem, NakedLocalFileSystem}
-
 import java.io._
 import java.net.URI
 import java.nio.channels.FileChannel
@@ -471,11 +469,16 @@ object HadoopClient {
    * @return A generated temporary folder location for the provided file
    */
   def createTempFilePathUri(fs: FileSystem, uri: URI, path: Path): URI = {
-    fs match {
-      case _: NakedLocalFileSystem | _: BareLocalFileSystem => // From local runs that uses those classes as FS implementation
-        new URI(uri.getScheme, uri.getAuthority, getLocalFileSystemTemporaryPath(path), null, null)
-      case _ => // Other FS including HDFS, use the normal method of generating the uri from scheme and authority
-        new URI(uri.getScheme, uri.getAuthority, getDefaultTemporaryPath(path), null, null)
+    val logger = LogManager.getLogger("createTempFilePathUri")
+    if(fs.isInstanceOf[org.apache.hadoop.fs.LocalFileSystem]) {
+      logger.info(s"Generating temporary local file path for ${fs.getClass}")
+      // From local runs that uses those classes as FS implementation
+      new URI(uri.getScheme, uri.getAuthority, getLocalFileSystemTemporaryPath(path), null, null)
+    }
+    else {
+      logger.info(s"Generating temporary non-local file path for ${fs.getClass}")
+      // Other FS including HDFS, use the normal method of generating the uri from scheme and authority
+      new URI(uri.getScheme, uri.getAuthority, getDefaultTemporaryPath(path), null, null)
     }
   }
 

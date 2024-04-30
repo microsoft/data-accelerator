@@ -51,7 +51,7 @@ SOFTWARE
 
   <groupId>com.microsoft.datax</groupId>
   <artifactId>datax-core_3.1_2.12</artifactId>
-  <version>1.2.17-SNAPSHOT</version>
+  <version>1.2.18-SNAPSHOT</version>
   <name>Data Accelerator Core</name>
   <description>This package contains the core module of Data Accelerator functionality.</description>
   <url>https://github.com/Microsoft/data-accelerator</url>
@@ -135,7 +135,7 @@ SOFTWARE
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_2.12</artifactId>
-      <version>3.3.0-SNAP3</version>
+      <version>3.3.0-SNAP4</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -151,7 +151,7 @@ SOFTWARE
           <plugin>
             <groupId>net.alchim31.maven</groupId>
             <artifactId>scala-maven-plugin</artifactId>
-            <version>4.8.1</version>
+            <version>4.9.0</version>
             <executions>
               <execution>
                 <goals>
@@ -170,7 +170,7 @@ SOFTWARE
           </plugin>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.11.0</version>
+            <version>3.12.1</version>
             <configuration>
               <source>1.8</source>
               <target>1.8</target>
@@ -180,7 +180,7 @@ SOFTWARE
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
-            <version>3.6.0</version>
+            <version>3.6.1</version>
             <executions>
               <execution>
                 <id>copy-dependencies</id>
