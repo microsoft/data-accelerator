@@ -158,7 +158,7 @@ SOFTWARE
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-azure</artifactId>
-            <version>3.3.6</version>
+            <version>3.4.0</version>
         </dependency>
         <dependency>
             <groupId>org.mortbay.jetty</groupId>
