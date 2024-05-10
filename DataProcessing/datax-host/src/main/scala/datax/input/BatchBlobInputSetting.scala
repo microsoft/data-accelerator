@@ -13,7 +13,8 @@ case class InputBlobsConf(path:String,
                          endTime: String,
                          format: String,
                          compression: String,
-                         partitionIncrementInMin:Long)
+                         partitionIncrementInMin:Long,
+                         inputPartitionSizeThresholdInBytes: Long)
 
 object BatchBlobInputSetting {
   val NamespaceBlobsSource = "blob"
@@ -25,6 +26,7 @@ object BatchBlobInputSetting {
   val SettingPartitionIncrement = "partitionincrement"
   val SettingFormat = "format"
   val SettingCompression = "compression"
+  val SettingInputPartitionSizeThresholdInBytes = "inputPartitionSizeThresholdInBytes"
 
   val logger = LogManager.getLogger(this.getClass)
 
@@ -37,7 +39,8 @@ object BatchBlobInputSetting {
       endTime = dict.getOrElse(SettingProcessEndTime, sys.env.getOrElse("process_end_datetime", "")),
       format = dict.getOrNull(SettingFormat),
       compression = dict.getOrNull(SettingCompression),
-      partitionIncrementInMin = dict.getLong(SettingPartitionIncrement)
+      partitionIncrementInMin = dict.getLong(SettingPartitionIncrement),
+      inputPartitionSizeThresholdInBytes = dict.getLongOption(SettingInputPartitionSizeThresholdInBytes).getOrElse(0)
     )
   }
 

@@ -1,0 +1,22 @@
+name: DataX.Spark.Validation
+
+on:
+  pull_request:
+    branches: [ "master" ]    
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build datax-core with Maven
+      run: mvn -e install --file DataProcessing/datax-core/pom.xml
+    - name: Build datax-keyvault with Maven
+      run: mvn -e install --file DataProcessing/datax-keyvault/pom.xml
+    - name: Build datax-utility with Maven
+      run: mvn -e install --file DataProcessing/datax-utility/pom.xml      
+    - name: Build datax-udf-samples with Maven
+      run: mvn -e install --file DataProcessing/datax-udf-samples/pom.xml
+    - name: Build datax-host with Maven
+      run: mvn -e package --file DataProcessing/datax-host/pom.xml
