@@ -183,7 +183,7 @@ SOFTWARE
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>applicationinsights-logging-log4j1_2</artifactId>
-            <version>2.6.4</version>
+            <version>3.5.2</version>
         </dependency>
     </dependencies>
   <profiles>
