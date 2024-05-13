@@ -67,7 +67,7 @@ SOFTWARE
     <dependency>
       <groupId>org.json4s</groupId>
       <artifactId>json4s-jackson_2.12</artifactId>
-      <version>3.5.3</version>
+      <version>4.0.7</version>
     </dependency>
     <!--Azure dependencies-->
     <dependency>
