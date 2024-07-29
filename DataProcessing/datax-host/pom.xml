@@ -173,7 +173,7 @@ SOFTWARE
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>3.6.1</version>
+            <version>3.8.0</version>
         </dependency>
 		    <dependency>
             <groupId>com.databricks</groupId>
