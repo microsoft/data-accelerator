@@ -78,7 +78,7 @@ SOFTWARE
     <dependency>
       <groupId>com.azure</groupId>
       <artifactId>azure-security-keyvault-secrets</artifactId>
-      <version>4.8.2</version>
+      <version>4.8.6</version>
     </dependency>
     <!-- For Config Parser-->
     <dependency>
