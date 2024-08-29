@@ -1,0 +1,10 @@
+[Unit]
+Description=hdinsight msalmsiserver app
+
+[Service]
+Type=idle
+
+ExecStart=/usr/bin/python /usr/hdinsight/msalmsiserver.py &
+
+[Install]
+WantedBy=multi-user.target
