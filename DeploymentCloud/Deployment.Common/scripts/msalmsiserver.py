@@ -15,15 +15,15 @@ This script exposes a local http endpoint which the spark jobs can call to get t
 Note that since it's a local endpoint, it's accessible only from within the cluster and not from outside.
 
 Usage:
-http://localhost:40382/managed/identity/oauth2/token?resource=<resourceid>&api-version=2018-11-01
+http://localhost:40381/managed/identity/oauth2/token?resource=<resourceid>&api-version=2018-11-01
 
 Example:
-curl -H "Metadata: true" -X GET "http://localhost:40382/managed/identity/oauth2/token?resource=https://vault.azure.net&api-version=2018-11-01"
+curl -H "Metadata: true" -X GET "http://localhost:40381/managed/identity/oauth2/token?resource=https://vault.azure.net&api-version=2018-11-01"
 """
 
 class Constants(object):
     loopback_address = '127.0.0.1'
-    server_port = 40382
+    server_port = 40381
     token_url_path = '/managed/identity/oauth2/token'
     header_metadata = 'Metadata'
     query_resource = 'resource'

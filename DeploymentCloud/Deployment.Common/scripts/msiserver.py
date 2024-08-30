@@ -66,7 +66,7 @@ class ManagedIdentityHandler(BaseHTTPRequestHandler):
     def _acquire_token(self, resource):
         cluster_manifest = self._get_cluster_manifest()
         msi_settings = json.loads(cluster_manifest.settings['managedServiceIdentity'])
-# assuming there is only 1 MSI associated with the cluster, get the first one
+        # assuming there is only 1 MSI associated with the cluster, get the first one
         msi_setting = list(msi_settings.values())[0]
 
         thumbprint = msi_setting['thumbprint']
