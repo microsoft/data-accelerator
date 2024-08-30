@@ -1,7 +1,6 @@
 #!/bin/bash
 
 echo "Install Python Packages"
-pip install adal
 pip install msal
 
 echo "Remove the existing files if they exist"
