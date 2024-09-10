@@ -83,6 +83,10 @@ class ManagedIdentityHandler(BaseHTTPRequestHandler):
             client_credential={"private_key": key, "thumbprint": thumbprint}
         )
 
+        # Ensure resource ends with "/.default"
+        if not resource.endswith("/.default"):
+            resource += "/.default"
+
         auth_result = app.acquire_token_for_client(scopes=[resource])
 
         res = ManagedIdentityTokenResponse()
