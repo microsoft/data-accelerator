@@ -20,11 +20,7 @@ sudo systemctl daemon-reload
 echo "Enable MSAL service to start on boot"
 sudo systemctl enable msalmsiserverapp.service
 
-if sudo systemctl is-active --quiet msiserverapp.service; then
-    echo "ADAL service is running, ending it and starting MSAL service"
-    sudo systemctl stop msiserverapp.service
-    sudo systemctl start msalmsiserverapp.service
-elif sudo systemctl is-active --quiet msalmsiserverapp.service; then
+if sudo systemctl is-active --quiet msalmsiserverapp.service; then
     echo "MSAL service is already running, restarting it"
     sudo systemctl restart msalmsiserverapp.service
 else
