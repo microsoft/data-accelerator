@@ -33,7 +33,7 @@
     "express-session": "1.17.3",
     "generate-schema": "2.6.0",
     "helmet": "6.0.0",
-    "moment": "2.29.4",
+    "moment": "2.31.0",
     "mongodb": "6.0.0",
     "ms-rest-azure": "3.0.2",
     "mssql": "9.0.1",
