@@ -22,7 +22,7 @@
     "devpatch": "rimraf dist && webpack --mode development --config webpack.config.js  --progress   && localdevpatch.bat"
   },
   "dependencies": {
-    "moment": "2.29.4"
+    "moment": "2.31.0"
   },
   "devDependencies": {
     "@babel/core": "7.20.2",
